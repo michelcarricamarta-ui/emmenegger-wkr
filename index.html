@@ -74,6 +74,44 @@ fetch(url)
         option.text = m;
         select.appendChild(option);
     });
+    fetch(url)
+.then(res => res.json())
+.then(data => {
+
+    let currentModel = "";
+    let cleanData = [];
+
+    data.forEach(row => {
+
+        // Modell merken
+        if (row["Modell"]) {
+            currentModel = row["Modell"];
+        }
+
+        // Nur echte Datensätze
+        if (row["TN"]) {
+            row["Modell"] = currentModel;
+            cleanData.push(row);
+        }
+
+    });
+
+    window.reifenData = cleanData;
+
+    let modelle = [...new Set(cleanData.map(x => x["Modell"]))];
+
+    let select = document.getElementById("modell");
+
+    select.innerHTML = '<option value="">Modell wählen</option>';
+
+    modelle.forEach(m => {
+        let option = document.createElement("option");
+        option.value = m;
+        option.text = m;
+        select.appendChild(option);
+    });
+
+});
 
 });
 
