@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Emmenegger Winterräder</title>
+
+<style>
+body { font-family: Arial; padding: 20px; }
+
+select {
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 10px;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+button {
+    background: black;
+    color: white;
+    border: none;
+    padding: 10px;
+    width: 100%;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Winterräder Konfigurator</h1>
+
+<select id="modell">
+<option value="">Modell wählen</option>
+</select>
+
+<div class="grid" id="results"></div>
+
+<script>
+
+const url = "https://opensheet.elk.sh/1nVDxSSX2yJ-MBLUZKF4alNXIAPlYHHeb0wcOJG4b0qE/1";
+
+fetch(url)
+.then(res => res.json())
+.then(data => {
+
+    let cleanData = data.filter(x => x["TN"]);
+
+    window.reifenData = cleanData;
+
+    let modelle = [...new Set(cleanData.map(x => x["Modell"]))];
+
+    let select = document.getElementById("modell");
+
+    modelle.forEach(m => {
+        let option = document.createElement("option");
+        option.value = m;
+        option.text = m;
+        select.appendChild(option);
+    });
+
+});
+
+document.getElementById("modell").addEventListener("change", function() {
+
+    let value = this.value;
+
+    let results = window.reifenData.filter(x => x["Modell"] === value);
+
+    let html = "";
+
+    results.forEach(r => {
+
+        let preis = r["Kundenpreis inkl. MwSt"] || "-";
+        let lager = parseInt(r["Menge an Lager"]) || 0;
+
+        let lagerText = lager > 3 
+            ? `🟢 Lager: ${lager}` 
+            : lager > 0 
+                ? `🟠 nur noch ${lager} Stück` 
+                : `🔴 aktuell nicht verfügbar`;
+
+        html += `
+        <div class="card">
+            <img src="${r["Bild"] || "https://via.placeholder.com/300"}">
+
+            <h3>${r["Modell"]}</h3>
+            <p><strong>${r["Bezeichnung"]}</strong></p>
+
+            <p>${r["Dimension"]}</p>
+            <p>${r["Reifen"]}</p>
+
+            <p>${lagerText}</p>
+
+            <strong style="font-size:18px;">${preis} CHF</strong>
+        </div>`;
+    });
+
+    document.getElementById("results").innerHTML = html;
+
+});
+
+</script>
+
+</body>
+</html>
