@@ -1,3 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>WKR Konfigurator</title>
+</head>
+
+<body>
+
+<h2>Konfigurator</h2>
+
+<select id="reihe"></select>
+<select id="modell"></select>
+<select id="generation"></select>
+<select id="motor"></select>
+
+<div id="fahrzeugBild"></div>
+<div id="results"></div>
+
+<!-- HIER kommt dein JS rein -->
+<script>
+
 const urlProdukte = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Produkte";
 const urlMapping = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Zuordnung";
 const urlFahrzeuge = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Fahrzeuge";
@@ -12,144 +34,20 @@ Promise.all([
     fetch(urlFahrzeuge).then(r => r.json())
 ])
 .then(([p, m, f]) => {
-
     produkte = p;
     mapping = m;
     fahrzeuge = f;
-
     init();
 });
 
 function init() {
-
     let reihen = [...new Set(mapping.map(x => x["Reihe"]))];
-
     reihen.forEach(r => {
         document.getElementById("reihe").add(new Option(r, r));
     });
 }
 
+</script>
 
-// REIHE → MODELL
-document.getElementById("reihe").addEventListener("change", function() {
-
-    let modelle = [...new Set(
-        mapping.filter(x => x["Reihe"] === this.value)
-               .map(x => x["Modell"])
-    )];
-
-    let el = document.getElementById("modell");
-    el.innerHTML = "";
-
-    modelle.forEach(m => el.add(new Option(m, m)));
-});
-
-
-// MODELL → GENERATION
-document.getElementById("modell").addEventListener("change", function() {
-
-    let reihe = document.getElementById("reihe").value;
-
-    let gens = [...new Set(
-        mapping.filter(x =>
-            x["Reihe"] === reihe &&
-            x["Modell"] === this.value
-        ).map(x => x["Generation"])
-    )];
-
-    let el = document.getElementById("generation");
-    el.innerHTML = "";
-
-    gens.forEach(g => el.add(new Option(g, g)));
-});
-
-
-// GENERATION → MOTOR + BILD
-document.getElementById("generation").addEventListener("change", function() {
-
-    let reihe = document.getElementById("reihe").value;
-    let modell = document.getElementById("modell").value;
-
-    let motors = [...new Set(
-        mapping.filter(x =>
-            x["Reihe"] === reihe &&
-            x["Modell"] === modell &&
-            x["Generation"] === this.value
-        ).map(x => x["Motor"])
-    )];
-
-    let el = document.getElementById("motor");
-    el.innerHTML = "";
-
-    motors.forEach(m => el.add(new Option(m, m)));
-
-    // Fahrzeugbild anzeigen
-    let fahrzeug = fahrzeuge.find(f =>
-        f["Reihe"] === reihe &&
-        f["Modell"] === modell &&
-        f["Generation"] === this.value
-    );
-
-    if (fahrzeug) {
-        document.getElementById("fahrzeugBild").innerHTML =
-            `<img src="${fahrzeug["Bild"]}" style="max-width:300px;">`;
-    }
-});
-
-
-// MOTOR → RESULTATE
-document.getElementById("motor").addEventListener("change", function() {
-
-    let reihe = document.getElementById("reihe").value;
-    let modell = document.getElementById("modell").value;
-    let gen = document.getElementById("generation").value;
-    let motor = this.value;
-
-    let tnList = mapping
-        .filter(x =>
-            x["Reihe"] === reihe &&
-            x["Modell"] === modell &&
-            x["Generation"] === gen &&
-            x["Motor"] === motor
-        )
-        .map(x => x["TN"]);
-
-    let results = produkte.filter(p => tnList.includes(p["TN"]));
-
-    render(results);
-});
-
-
-function render(results) {
-
-    let html = "";
-
-    results.forEach(r => {
-
-        let lager = parseInt(r["Lager"]) || 0;
-
-        let lagerText =
-            lager > 3 ? "🟢 Lager verfügbar" :
-            lager > 0 ? "🟠 Wenig Lager" :
-            "🔴 Nicht verfügbar";
-
-        html += `
-        <div style="border:1px solid #ddd; padding:15px; margin:10px;">
-
-            <img src="${r["Bild"]}" style="width:100%; max-width:250px;">
-
-            <h3>${r["Bezeichnung"]}</h3>
-
-            <p>${r["Dimension"]}</p>
-
-            <p>${r["Reifen"]}</p>
-
-            <p>${lagerText}</p>
-
-            <strong>${r["Preis"]} CHF</strong>
-
-        </div>`;
-    });
-
-    document.getElementById("results").innerHTML = html;
-}
+</body>
+</html>
