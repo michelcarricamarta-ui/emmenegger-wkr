@@ -54,12 +54,6 @@ select {
     border-radius: 10px;
     margin-bottom: 20px;
     background: #fafafa;
-    transition: 0.2s;
-}
-
-.card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
 .card img {
@@ -119,6 +113,18 @@ function clean(v) {
     return (v || "").toString().trim();
 }
 
+// 👉 GOOGLE DRIVE FIX
+function getImageUrl(url) {
+    if (!url) return "";
+    if (url.includes("drive.google.com")) {
+        let match = url.match(/\/d\/(.*?)\//);
+        if (match && match[1]) {
+            return "https://drive.google.com/uc?export=view&id=" + match[1];
+        }
+    }
+    return url;
+}
+
 Promise.all([
     fetch(urlProdukte).then(r => r.json()),
     fetch(urlMapping).then(r => r.json()),
@@ -132,7 +138,6 @@ Promise.all([
 });
 
 function init() {
-
     let reihen = [...new Set(mapping.map(x => clean(x["Reihe"])).filter(x => x))];
 
     let el = document.getElementById("reihe");
@@ -203,7 +208,7 @@ document.getElementById("generation").addEventListener("change", function() {
 
     document.getElementById("fahrzeugBild").innerHTML =
         fahrzeug && fahrzeug["Bild"]
-        ? `<img src="${fahrzeug["Bild"]}" style="max-width:300px;" onerror="this.style.display='none'">`
+        ? `<img src="${getImageUrl(fahrzeug["Bild"])}" style="max-width:300px;">`
         : "";
 });
 
@@ -247,7 +252,7 @@ function render(results) {
         html += `
         <div class="card">
 
-            ${r["Bild"] ? `<img src="${r["Bild"]}" onerror="this.style.display='none'">` : ""}
+            ${r["Bild"] ? `<img src="${getImageUrl(r["Bild"])}">` : ""}
 
             <h3>${r["Bezeichnung"] || "-"}</h3>
 
