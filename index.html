@@ -10,7 +10,6 @@
 <div id="fahrzeugBild"></div>
 <div id="results"></div>
 
-
 <script>
 
 const urlProdukte = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Produkte";
@@ -33,11 +32,17 @@ Promise.all([
     init();
 });
 
+function clean(v) {
+    return (v || "").toString().trim();
+}
+
 function init() {
-    let reihen = [...new Set(mapping.map(x => x["Reihe"]))];
-    reihen.forEach(r => {
-        document.getElementById("reihe").add(new Option(r, r));
-    });
+    let reihen = [...new Set(mapping.map(x => clean(x["Reihe"])).filter(x => x))];
+
+    let el = document.getElementById("reihe");
+    el.innerHTML = "<option value=''>Reihe wählen</option>";
+
+    reihen.forEach(r => el.add(new Option(r, r)));
 }
 
 
@@ -45,12 +50,13 @@ function init() {
 document.getElementById("reihe").addEventListener("change", function() {
 
     let modelle = [...new Set(
-        mapping.filter(x => x["Reihe"] === this.value)
-               .map(x => x["Modell"])
+        mapping
+            .filter(x => clean(x["Reihe"]) === this.value)
+            .map(x => clean(x["Modell"]))
     )];
 
     let el = document.getElementById("modell");
-    el.innerHTML = "";
+    el.innerHTML = "<option value=''>Modell wählen</option>";
 
     modelle.forEach(m => el.add(new Option(m, m)));
 });
@@ -63,13 +69,13 @@ document.getElementById("modell").addEventListener("change", function() {
 
     let gens = [...new Set(
         mapping.filter(x =>
-            x["Reihe"] === reihe &&
-            x["Modell"] === this.value
-        ).map(x => x["Generation"])
+            clean(x["Reihe"]) === reihe &&
+            clean(x["Modell"]) === this.value
+        ).map(x => clean(x["Generation"]))
     )];
 
     let el = document.getElementById("generation");
-    el.innerHTML = "";
+    el.innerHTML = "<option value=''>Generation wählen</option>";
 
     gens.forEach(g => el.add(new Option(g, g)));
 });
@@ -83,27 +89,29 @@ document.getElementById("generation").addEventListener("change", function() {
 
     let motors = [...new Set(
         mapping.filter(x =>
-            x["Reihe"] === reihe &&
-            x["Modell"] === modell &&
-            x["Generation"] === this.value
-        ).map(x => x["Motor"])
+            clean(x["Reihe"]) === reihe &&
+            clean(x["Modell"]) === modell &&
+            clean(x["Generation"]) === this.value
+        ).map(x => clean(x["Motor"]))
     )];
 
     let el = document.getElementById("motor");
-    el.innerHTML = "";
+    el.innerHTML = "<option value=''>Motor wählen</option>";
 
     motors.forEach(m => el.add(new Option(m, m)));
 
     // 👉 Fahrzeugbild
     let fahrzeug = fahrzeuge.find(f =>
-        f["Reihe"] === reihe &&
-        f["Modell"] === modell &&
-        f["Generation"] === this.value
+        clean(f["Reihe"]) === reihe &&
+        clean(f["Modell"]) === modell &&
+        clean(f["Generation"]) === this.value
     );
 
-    if (fahrzeug) {
+    if (fahrzeug && fahrzeug["Bild"]) {
         document.getElementById("fahrzeugBild").innerHTML =
-            `<img src="${fahrzeug["Bild"]}" style="max-width:300px;">`;
+            `<img src="${fahrzeug["Bild"]}" style="max-width:300px;" onerror="this.style.display='none'">`;
+    } else {
+        document.getElementById("fahrzeugBild").innerHTML = "";
     }
 });
 
@@ -118,14 +126,14 @@ document.getElementById("motor").addEventListener("change", function() {
 
     let tnList = mapping
         .filter(x =>
-            x["Reihe"] === reihe &&
-            x["Modell"] === modell &&
-            x["Generation"] === gen &&
-            x["Motor"] === motor
+            clean(x["Reihe"]) === reihe &&
+            clean(x["Modell"]) === modell &&
+            clean(x["Generation"]) === gen &&
+            clean(x["Motor"]) === motor
         )
-        .map(x => x["TN"]);
+        .map(x => clean(x["TN"]));
 
-    let results = produkte.filter(p => tnList.includes(p["TN"]));
+    let results = produkte.filter(p => tnList.includes(clean(p["TN"])));
 
     render(results);
 });
@@ -145,19 +153,21 @@ function render(results) {
             "🔴 Nicht verfügbar";
 
         html += `
-        <div style="border:1px solid #ddd; padding:15px; margin:10px;">
+        <div style="border:1px solid #ddd; padding:15px; margin:10px; border-radius:10px;">
 
-            <img src="${r["Bild"]}" style="width:200px;">
+            ${r["Bild"] ? `<img src="${r["Bild"]}" style="width:200px;" onerror="this.style.display='none'">` : ""}
 
-            <h3>${r["Bezeichnung"]}</h3>
+            <h3>${r["Bezeichnung"] || "-"}</h3>
 
-            <p>${r["Dimension"]}</p>
+            <p><strong>${r["Dimension"] || ""}</strong></p>
 
-            <p>${r["Reifen"]}</p>
+            <p>${r["Reifen"] || ""}</p>
+
+            ${r["Hinweistext"] ? `<p style="color:red; font-size:12px;">${r["Hinweistext"]}</p>` : ""}
 
             <p>${lagerText}</p>
 
-            <strong>${r["Preis"]} CHF</strong>
+            <strong>${r["Preis"] || "-"} CHF</strong>
 
         </div>`;
     });
@@ -166,3 +176,5 @@ function render(results) {
 }
 
 </script>
+
+</body>
