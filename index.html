@@ -1,90 +1,155 @@
-<script>
+const urlProdukte = "https://opensheet.elk.sh/DEINE_ID/Produkte";
+const urlMapping = "https://opensheet.elk.sh/DEINE_ID/Zuordnung";
+const urlFahrzeuge = "https://opensheet.elk.sh/DEINE_ID/Fahrzeuge";
 
-const url = "https://opensheet.elk.sh/1nVDxSSX2yJ-MBLUZKF4alNXIAPlYHHeb0wcOJG4b0qE/1";
+let produkte = [];
+let mapping = [];
+let fahrzeuge = [];
 
-fetch(url)
-.then(res => res.json())
-.then(data => {
+Promise.all([
+    fetch(urlProdukte).then(r => r.json()),
+    fetch(urlMapping).then(r => r.json()),
+    fetch(urlFahrzeuge).then(r => r.json())
+])
+.then(([p, m, f]) => {
 
-    let currentModel = "";
-    let cleanData = [];
+    produkte = p;
+    mapping = m;
+    fahrzeuge = f;
 
-    data.forEach(row => {
-
-        if (row["Modell"]) {
-            currentModel = row["Modell"];
-        }
-
-        if (row["TN"]) {
-            row["Modell"] = currentModel;
-            cleanData.push(row);
-        }
-
-    });
-
-    window.reifenData = cleanData;
-
-    let modelle = [...new Set(cleanData.map(x => x["Modell"]))];
-
-    let select = document.getElementById("modell");
-    select.innerHTML = '<option value="">Modell wählen</option>';
-
-    modelle.forEach(m => {
-        let option = document.createElement("option");
-        option.value = m;
-        option.text = m;
-        select.appendChild(option);
-    });
-
+    init();
 });
 
+function init() {
+
+    let reihen = [...new Set(mapping.map(x => x["Reihe"]))];
+
+    reihen.forEach(r => {
+        document.getElementById("reihe").add(new Option(r, r));
+    });
+}
+
+
+// REIHE → MODELL
+document.getElementById("reihe").addEventListener("change", function() {
+
+    let modelle = [...new Set(
+        mapping.filter(x => x["Reihe"] === this.value)
+               .map(x => x["Modell"])
+    )];
+
+    let el = document.getElementById("modell");
+    el.innerHTML = "";
+
+    modelle.forEach(m => el.add(new Option(m, m)));
+});
+
+
+// MODELL → GENERATION
 document.getElementById("modell").addEventListener("change", function() {
 
-    let value = this.value;
+    let reihe = document.getElementById("reihe").value;
 
-    let results = window.reifenData.filter(x => x["Modell"] === value);
+    let gens = [...new Set(
+        mapping.filter(x =>
+            x["Reihe"] === reihe &&
+            x["Modell"] === this.value
+        ).map(x => x["Generation"])
+    )];
+
+    let el = document.getElementById("generation");
+    el.innerHTML = "";
+
+    gens.forEach(g => el.add(new Option(g, g)));
+});
+
+
+// GENERATION → MOTOR + BILD
+document.getElementById("generation").addEventListener("change", function() {
+
+    let reihe = document.getElementById("reihe").value;
+    let modell = document.getElementById("modell").value;
+
+    let motors = [...new Set(
+        mapping.filter(x =>
+            x["Reihe"] === reihe &&
+            x["Modell"] === modell &&
+            x["Generation"] === this.value
+        ).map(x => x["Motor"])
+    )];
+
+    let el = document.getElementById("motor");
+    el.innerHTML = "";
+
+    motors.forEach(m => el.add(new Option(m, m)));
+
+    // Fahrzeugbild anzeigen
+    let fahrzeug = fahrzeuge.find(f =>
+        f["Reihe"] === reihe &&
+        f["Modell"] === modell &&
+        f["Generation"] === this.value
+    );
+
+    if (fahrzeug) {
+        document.getElementById("fahrzeugBild").innerHTML =
+            `<img src="${fahrzeug["Bild"]}" style="max-width:300px;">`;
+    }
+});
+
+
+// MOTOR → RESULTATE
+document.getElementById("motor").addEventListener("change", function() {
+
+    let reihe = document.getElementById("reihe").value;
+    let modell = document.getElementById("modell").value;
+    let gen = document.getElementById("generation").value;
+    let motor = this.value;
+
+    let tnList = mapping
+        .filter(x =>
+            x["Reihe"] === reihe &&
+            x["Modell"] === modell &&
+            x["Generation"] === gen &&
+            x["Motor"] === motor
+        )
+        .map(x => x["TN"]);
+
+    let results = produkte.filter(p => tnList.includes(p["TN"]));
+
+    render(results);
+});
+
+
+function render(results) {
 
     let html = "";
 
     results.forEach(r => {
 
-        let preis = r["Kundenpreis inkl. MwSt"] || "-";
-        let lager = parseInt(r["Menge an Lager"]) || 0;
+        let lager = parseInt(r["Lager"]) || 0;
 
-        let lagerText = lager > 3 
-            ? `🟢 Lager: ${lager}` 
-            : lager > 0 
-                ? `🟠 nur noch ${lager} Stück` 
-                : `🔴 aktuell nicht verfügbar`;
+        let lagerText =
+            lager > 3 ? "🟢 Lager verfügbar" :
+            lager > 0 ? "🟠 Wenig Lager" :
+            "🔴 Nicht verfügbar";
 
         html += `
-<div class="card">
+        <div style="border:1px solid #ddd; padding:15px; margin:10px;">
 
-    <img src="${r["Bild"] || "https://via.placeholder.com/300"}">
+            <img src="${r["Bild"]}" style="width:100%; max-width:250px;">
 
-    <h3>${r["Modell"] || "-"}</h3>
+            <h3>${r["Bezeichnung"]}</h3>
 
-    <p><strong>${r["Bezeichnung"] || "-"}</strong></p>
+            <p>${r["Dimension"]}</p>
 
-    <p style="font-weight:600;">
-        ${r["Dimension"] || ""}
-    </p>
+            <p>${r["Reifen"]}</p>
 
-    <p>${r["Reifen"] || ""}</p>
+            <p>${lagerText}</p>
 
-    <p style="font-size:12px; color:gray; line-height:1.4;">
-        ${(r["Hinweistext"] || "").replace(/\n/g, "<br>")}
-    </p>
+            <strong>${r["Preis"]} CHF</strong>
 
-    <p>${lagerText}</p>
-
-    <strong style="font-size:18px;">${preis} CHF</strong>
-
-</div>`;
+        </div>`;
     });
 
     document.getElementById("results").innerHTML = html;
-
-});
-
-</script>
+}
