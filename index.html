@@ -11,7 +11,7 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1100px;
     margin: auto;
     background: white;
     padding: 30px;
@@ -27,7 +27,7 @@ body {
 
 h2 { text-align:center; }
 
-/* STEP TITEL */
+/* TITEL */
 .step-title {
     margin-top: 30px;
     font-weight: bold;
@@ -41,7 +41,7 @@ h2 { text-align:center; }
     margin-top: 10px;
 }
 
-/* CARD */
+/* AUSWAHL */
 .card {
     border: 1px solid #ccc;
     padding: 12px;
@@ -50,25 +50,32 @@ h2 { text-align:center; }
     background: white;
     text-align: center;
     min-width: 160px;
-    transition: 0.2s;
 }
 
 .card:hover {
     border-color: #1c69d4;
-    transform: scale(1.03);
 }
 
 .card img {
-    max-width: 140px;
-    margin-bottom: 8px;
+    max-width: 130px;
 }
 
-/* PRODUKT */
+/* SUMMARY */
+.summary {
+    background: #f0f0f0;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+}
+
+/* PRODUKTE */
 .product {
     display: flex;
     justify-content: space-between;
     border-bottom: 1px solid #ddd;
-    padding: 20px 0;
+    padding: 25px 0;
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 .product-left {
@@ -77,7 +84,7 @@ h2 { text-align:center; }
 }
 
 .product-left img {
-    width: 200px;
+    width: 180px;
     border-radius: 8px;
 }
 
@@ -150,69 +157,15 @@ function render(){
 
 let html="";
 
-/* 1. REIHE */
-let reihen=[...new Set(mapping.map(x=>clean(x["Reihe"])))];
-
-html+=`<div class="step-title">1. Reihe wählen</div><div class="grid">`;
-
-reihen.forEach(r=>{
-html+=`<div class="card" onclick="selectReihe('${r}')">${r}</div>`;
-});
-
-html+=`</div>`;
-
-
-/* 2. MODELL (MIT BILD!) */
-if(state.reihe){
-
-let modelle=[...new Set(mapping
-.filter(x=>clean(x["Reihe"])===state.reihe)
-.map(x=>clean(x["Modell"]))
-)];
-
-html+=`<div class="step-title">2. Modell wählen</div><div class="grid">`;
-
-modelle.forEach(m=>{
-
-let fahrzeug = fahrzeuge.find(f =>
-clean(f["Reihe"])===state.reihe &&
-clean(f["Modell"])===m
-);
-
-html+=`
-<div class="card" onclick="selectModell('${m}')">
-<img src="${fahrzeug?.Bild || ''}">
-<div>${m}</div>
-</div>`;
-});
-
-html+=`</div>`;
-}
-
-
-/* 3. MOTOR */
-if(state.modell){
-
-let motors=[...new Set(mapping
-.filter(x=>
-clean(x["Reihe"])===state.reihe &&
-clean(x["Modell"])===state.modell
-)
-.map(x=>clean(x["Motor"]))
-)];
-
-html+=`<div class="step-title">3. Motor wählen</div><div class="grid">`;
-
-motors.forEach(m=>{
-html+=`<div class="card" onclick="selectMotor('${m}')">${m}</div>`;
-});
-
-html+=`</div>`;
-}
-
-
-/* PRODUKTE */
+/* 👉 WENN MOTOR GEWÄHLT → NUR SUMMARY + PRODUKTE */
 if(state.motor){
+
+html += `
+<div class="summary">
+<b>Deine Auswahl:</b><br>
+${state.reihe} → ${state.modell} → ${state.motor}
+</div>
+`;
 
 let tnList=mapping.filter(x=>
 clean(x["Reihe"])===state.reihe &&
@@ -250,6 +203,71 @@ ${r["VP"] ? `<div class="old-price">${r["VP"]} CHF</div>` : ""}
 </div>`;
 });
 
+document.getElementById("app").innerHTML=html;
+return;
+}
+
+
+/* 👉 NORMALER FLOW */
+
+/* REIHE */
+let reihen=[...new Set(mapping.map(x=>clean(x["Reihe"])))];
+
+html+=`<div class="step-title">1. Reihe wählen</div><div class="grid">`;
+
+reihen.forEach(r=>{
+html+=`<div class="card" onclick="selectReihe('${r}')">${r}</div>`;
+});
+
+html+=`</div>`;
+
+
+/* MODELL */
+if(state.reihe){
+
+let modelle=[...new Set(mapping
+.filter(x=>clean(x["Reihe"])===state.reihe)
+.map(x=>clean(x["Modell"]))
+)];
+
+html+=`<div class="step-title">2. Modell wählen</div><div class="grid">`;
+
+modelle.forEach(m=>{
+
+let fahrzeug = fahrzeuge.find(f =>
+clean(f["Reihe"])===state.reihe &&
+clean(f["Modell"])===m
+);
+
+html+=`
+<div class="card" onclick="selectModell('${m}')">
+<img src="${fahrzeug?.Bild || ''}">
+<div>${m}</div>
+</div>`;
+});
+
+html+=`</div>`;
+}
+
+
+/* MOTOR */
+if(state.modell){
+
+let motors=[...new Set(mapping
+.filter(x=>
+clean(x["Reihe"])===state.reihe &&
+clean(x["Modell"])===state.modell
+)
+.map(x=>clean(x["Motor"]))
+)];
+
+html+=`<div class="step-title">3. Motor wählen</div><div class="grid">`;
+
+motors.forEach(m=>{
+html+=`<div class="card" onclick="selectMotor('${m}')">${m}</div>`;
+});
+
+html+=`</div>`;
 }
 
 document.getElementById("app").innerHTML=html;
