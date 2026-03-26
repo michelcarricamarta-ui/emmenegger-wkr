@@ -200,14 +200,14 @@ produkte=p; mapping=m; fahrzeuge=f; init();
 function init(){
 let reihen=[...new Set(mapping.map(x=>clean(x["Reihe"])))];
 let el=document.getElementById("reihe");
-el.innerHTML="<option>Reihe</option>";
+el.innerHTML="<option value=''>Reihe wählen (z.B. BMW 1er)</option>";
 reihen.forEach(r=>el.add(new Option(r,r)));
 }
 
 document.getElementById("reihe").onchange=function(){
 let modelle=[...new Set(mapping.filter(x=>clean(x["Reihe"])===this.value).map(x=>clean(x["Modell"])))];
 let el=document.getElementById("modell");
-el.innerHTML="<option>Modell</option>";
+el.innerHTML="<option value=''>Modell wählen (z.B. 5-Türer)</option>";
 modelle.forEach(m=>el.add(new Option(m,m)));
 };
 
@@ -215,7 +215,7 @@ document.getElementById("modell").onchange=function(){
 let reihe=document.getElementById("reihe").value;
 let gens=[...new Set(mapping.filter(x=>clean(x["Reihe"])===reihe && clean(x["Modell"])===this.value).map(x=>clean(x["Generation"])))];
 let el=document.getElementById("generation");
-el.innerHTML="<option>Generation</option>";
+el.innerHTML="<option value=''>Baujahr / Generation wählen</option>";
 gens.forEach(g=>el.add(new Option(g,g)));
 };
 
@@ -237,7 +237,7 @@ clean(x["Generation"])===generation
 )];
 
 let el=document.getElementById("motor");
-el.innerHTML="<option>Motor</option>";
+el.innerHTML="<option value=''>Motorisierung wählen</option>";
 motors.forEach(m=>el.add(new Option(m,m)));
 
 /* Fahrzeugbild */
@@ -248,10 +248,14 @@ clean(f["Generation"])===generation
 );
 
 document.getElementById("mainContent").innerHTML =
-fahrzeug ? `<div style="text-align:center;">
-<img src="${getImageUrl(fahrzeug["Bild"])}" style="max-width:350px;">
-</div>` : "";
-};
+fahrzeug ? `
+<div style="text-align:center; margin-top:20px;">
+    <img src="${getImageUrl(fahrzeug["Bild"])}" style="max-width:250px;">
+    <div style="margin-top:10px; font-size:14px; color:#666;">
+        ${modell} ${generation}
+    </div>
+</div>
+` : "";
 
 document.getElementById("motor").onchange=function(){
 
