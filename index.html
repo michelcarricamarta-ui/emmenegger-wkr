@@ -204,10 +204,33 @@ gens.forEach(g=>el.add(new Option(g,g)));
 };
 
 document.getElementById("generation").onchange=function(){
+
 let reihe=document.getElementById("reihe").value;
 let modell=document.getElementById("modell").value;
+let generation=this.value;
 
-let fahrzeug=fahrzeuge.find(f=>clean(f["Reihe"])===reihe && clean(f["Modell"])===modell && clean(f["Generation"])===this.value);
+/* 👉 MOTOR WIEDER FÜLLEN (DAS HAT GEFEHLT!) */
+let motors=[...new Set(
+mapping
+.filter(x =>
+clean(x["Reihe"])===reihe &&
+clean(x["Modell"])===modell &&
+clean(x["Generation"])===generation
+)
+.map(x => clean(x["Motor"]))
+)];
+
+let el=document.getElementById("motor");
+el.innerHTML="<option>Motor</option>";
+
+motors.forEach(m=>el.add(new Option(m,m)));
+
+/* 👉 Fahrzeug anzeigen */
+let fahrzeug=fahrzeuge.find(f=>
+clean(f["Reihe"])===reihe &&
+clean(f["Modell"])===modell &&
+clean(f["Generation"])===generation
+);
 
 document.getElementById("mainContent").innerHTML =
 fahrzeug ? `<div style="text-align:center;">
