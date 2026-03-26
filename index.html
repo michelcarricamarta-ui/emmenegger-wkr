@@ -27,9 +27,7 @@ body {
     max-width: 500px;
 }
 
-h2 {
-    text-align: center;
-}
+h2 { text-align:center; }
 
 .section-title {
     font-weight: bold;
@@ -41,22 +39,19 @@ h2 {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 25px;
-    margin-top: 15px;
 }
 
 .reihe-card {
     padding: 30px;
     text-align: center;
-    border-radius: 12px;
     border: 2px solid #ddd;
+    border-radius: 12px;
     cursor: pointer;
-    font-size: 20px;
     font-weight: bold;
 }
 
 .reihe-card:hover {
     border-color: #1c69d4;
-    background: #f5f9ff;
 }
 
 .card {
@@ -65,55 +60,37 @@ h2 {
     overflow: hidden;
     cursor: pointer;
     box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-    transition: 0.25s;
-}
-
-.card:hover {
-    transform: scale(1.03);
 }
 
 .card img {
     width: 100%;
     height: 150px;
     object-fit: contain;
-    background: #f9f9f9;
 }
 
 .card-title {
     padding: 15px;
     text-align: center;
-    font-weight: bold;
 }
 
 .summary-box {
     display: flex;
     justify-content: space-between;
-    align-items: center;
     background: #f3f3f3;
     padding: 20px;
     border-radius: 10px;
-    margin-bottom: 30px;
-}
-
-.summary-img img {
-    max-width: 140px;
-}
-
-.preview {
-    text-align: center;
     margin-bottom: 20px;
 }
 
 .preview img {
     width: 550px;
-    max-width: 100%;
 }
 
 .product {
     display: flex;
     justify-content: space-between;
     border-bottom: 1px solid #ddd;
-    padding: 25px 0;
+    padding: 20px 0;
 }
 
 .product-left {
@@ -123,12 +100,7 @@ h2 {
 
 .product-left img {
     width: 220px;
-    transition: 0.3s;
     cursor: pointer;
-}
-
-.product-left img:hover {
-    transform: scale(1.1);
 }
 
 .old-price {
@@ -147,30 +119,14 @@ h2 {
 .hinweis {
     font-size: 12px;
     margin-top: 10px;
-    color: #555;
 }
 
 .button {
     background: #1c69d4;
     color: white;
-    padding: 10px 15px;
+    padding: 10px;
     border: none;
     cursor: pointer;
-    border-radius: 6px;
-    margin-top: 10px;
-}
-
-.form-box {
-    margin-top: 40px;
-    padding: 20px;
-    background: #f3f3f3;
-    border-radius: 10px;
-}
-
-input, textarea {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
 }
 </style>
 </head>
@@ -225,18 +181,66 @@ html+=`
 <div class="summary-box">
 <div>
 <b>Ihre Auswahl:</b><br>
-${state.reihe} / ${state.modell} / ${state.motor}<br><br>
-<button class="button" onclick="resetSelection()">Zurück</button>
+${state.reihe} / ${state.modell} / ${state.motor}
 </div>
-<div class="summary-img">
-<img src="${clean(fahrzeug?.Bild) || 'https://via.placeholder.com/150'}">
-</div>
+<img src="${clean(fahrzeug?.Bild) || ''}" style="max-width:120px;">
 </div>`;
 }
 
 /* PREVIEW */
 if(state.produktPreview){
 html+=`<div class="preview"><img src="${state.produktPreview["Bild"]}"></div>`;
+}
+
+/* REIHE */
+if(!state.reihe){
+let reihen=[...new Set(mapping.map(x=>clean(x["Reihe"])))];
+
+html+=`<div class="section-title">1. Reihe wählen</div><div class="grid">`;
+
+reihen.forEach(r=>{
+html+=`<div class="reihe-card" onclick="selectReihe('${r}')">${r}</div>`;
+});
+
+html+=`</div>`;
+}
+
+/* MODELL */
+if(state.reihe && !state.modell){
+let modelle=[...new Set(mapping.filter(x=>clean(x["Reihe"])===state.reihe).map(x=>clean(x["Modell"])))];
+
+html+=`<div class="section-title">2. Modell wählen</div><div class="grid">`;
+
+modelle.forEach(m=>{
+let fahrzeug = fahrzeuge.find(f =>
+clean(f["Reihe"])===state.reihe &&
+clean(f["Modell"])===m
+);
+
+html+=`
+<div class="card" onclick="selectModell('${m}')">
+<img src="${clean(fahrzeug?.Bild) || ''}">
+<div class="card-title">${m}</div>
+</div>`;
+});
+
+html+=`</div>`;
+}
+
+/* MOTOR */
+if(state.modell && !state.motor){
+let motors=[...new Set(mapping.filter(x=>
+clean(x["Reihe"])===state.reihe &&
+clean(x["Modell"])===state.modell
+).map(x=>clean(x["Motor"])))];
+
+html+=`<div class="section-title">3. Motor wählen</div><div class="grid">`;
+
+motors.forEach(m=>{
+html+=`<div class="reihe-card" onclick="selectMotor('${m}')">${m}</div>`;
+});
+
+html+=`</div>`;
 }
 
 /* PRODUKTE */
@@ -259,18 +263,9 @@ let text = lager > 0 ? "Verfügbar" : "Auf Bestellung";
 let vp = parseFloat(r["VP"]) || 0;
 let angebot = parseFloat(r["Angebotspreis"]) || 0;
 
-let preisHTML = "";
-
-if(angebot > 0){
-    preisHTML = `
-    <div class="old-price">VP: ${vp} CHF</div>
-    <div class="new-price">Angebotspreis: ${angebot} CHF</div>
-    `;
-} else {
-    preisHTML = `
-    <div class="new-price">${vp} CHF</div>
-    `;
-}
+let preisHTML = angebot > 0 
+? `<div class="old-price">VP: ${vp} CHF</div><div class="new-price">Angebotspreis: ${angebot} CHF</div>`
+: `<div class="new-price">${vp} CHF</div>`;
 
 html+=`
 <div class="product">
@@ -282,23 +277,21 @@ html+=`
 ${r["Reifen"]}<br>
 ${r["Dimension"]}
 
-${r["Hinweistext"] ? `
 <div class="hinweis">
-${r["Hinweistext"].replace(/\n/g,"<br>")}
+${r["Hinweistext"] || ""}
 <br><br>
 Teilenummer: ${r["TN"]}
-</div>` : `<div class="hinweis">Teilenummer: ${r["TN"]}</div>`}
+</div>
 </div>
 </div>
 
 <div>
 ${preisHTML}
-
-<div style="font-size:11px; color:#777;">Preise inkl. MwST</div>
+<div style="font-size:11px;">Preise inkl. MwST</div>
 
 <div class="${status}">${text}</div>
 
-${lager === 0 ? `<div style="font-size:12px;">Lieferzeit ca. 5–10 Arbeitstage</div>` : ""}
+${lager===0 ? `<div style="font-size:12px;">Lieferzeit ca. 5–10 Arbeitstage</div>` : ""}
 
 <button class="button" onclick='selectProdukt(${JSON.stringify(r)})'>Auswählen</button>
 </div>
@@ -310,9 +303,11 @@ ${lager === 0 ? `<div style="font-size:12px;">Lieferzeit ca. 5–10 Arbeitstage<
 document.getElementById("app").innerHTML=html;
 }
 
+function selectReihe(r){ state.reihe=r; render(); }
+function selectModell(m){ state.modell=m; render(); }
+function selectMotor(m){ state.motor=m; render(); }
 function showPreview(p){ state.produktPreview=p; render(); }
 function selectProdukt(p){ state.produkt=p; render(); }
-function resetSelection(){ state={reihe:null,modell:null,motor:null,produkt:null,produktPreview:null}; render(); }
 
 </script>
 
