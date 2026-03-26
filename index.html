@@ -29,16 +29,23 @@ body {
     max-width: 500px;
 }
 
+.title {
+    margin-top: 15px;
+}
+
 /* FILTER */
 .select-row {
     display: flex;
-    gap: 10px;
+    gap: 15px;
     justify-content: center;
     margin-bottom: 30px;
 }
 
 select {
-    padding: 10px;
+    padding: 12px;
+    min-width: 160px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
 
 /* LAYOUT */
@@ -79,10 +86,6 @@ select {
     font-size: 18px;
 }
 
-.product-right {
-    text-align: right;
-}
-
 /* PREISE */
 .old-price {
     text-decoration: line-through;
@@ -90,13 +93,6 @@ select {
     font-size: 14px;
 }
 
-.hinweis {
-    margin-top: 10px;
-    font-size: 12px;
-    color: #555;
-    line-height: 1.5;
-}
-    
 .new-price {
     font-size: 24px;
     font-weight: bold;
@@ -107,14 +103,23 @@ select {
     font-size: 13px;
 }
 
+/* HINWEIS */
+.hinweis {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #555;
+    line-height: 1.5;
+}
+
+/* LAGER */
 .available {
-    font-weight: bold;   /* KEIN color hier! */
+    font-weight: bold;
 }
 
 .green { color: green; }
 .orange { color: orange; }
 .red { color: red; }
-    
+
 /* BUTTON */
 .button {
     background: #555;
@@ -207,7 +212,7 @@ reihen.forEach(r=>el.add(new Option(r,r)));
 document.getElementById("reihe").onchange=function(){
 let modelle=[...new Set(mapping.filter(x=>clean(x["Reihe"])===this.value).map(x=>clean(x["Modell"])))];
 let el=document.getElementById("modell");
-el.innerHTML="<option value=''>Modell wählen (z.B. 5-Türer)</option>";
+el.innerHTML="<option value=''>Modell wählen</option>";
 modelle.forEach(m=>el.add(new Option(m,m)));
 };
 
@@ -215,7 +220,7 @@ document.getElementById("modell").onchange=function(){
 let reihe=document.getElementById("reihe").value;
 let gens=[...new Set(mapping.filter(x=>clean(x["Reihe"])===reihe && clean(x["Modell"])===this.value).map(x=>clean(x["Generation"])))];
 let el=document.getElementById("generation");
-el.innerHTML="<option value=''>Baujahr / Generation wählen</option>";
+el.innerHTML="<option value=''>Generation wählen</option>";
 gens.forEach(g=>el.add(new Option(g,g)));
 };
 
@@ -227,17 +232,15 @@ let generation=this.value;
 
 /* MOTOR */
 let motors=[...new Set(
-mapping
-.filter(x =>
+mapping.filter(x =>
 clean(x["Reihe"])===reihe &&
 clean(x["Modell"])===modell &&
 clean(x["Generation"])===generation
-)
-.map(x => clean(x["Motor"]))
+).map(x => clean(x["Motor"]))
 )];
 
 let el=document.getElementById("motor");
-el.innerHTML="<option value=''>Motorisierung wählen</option>";
+el.innerHTML="<option value=''>Motor wählen</option>";
 motors.forEach(m=>el.add(new Option(m,m)));
 
 /* Fahrzeugbild */
@@ -250,13 +253,11 @@ clean(f["Generation"])===generation
 document.getElementById("mainContent").innerHTML =
 fahrzeug ? `
 <div style="text-align:center; margin-top:20px;">
-    <img src="${getImageUrl(fahrzeug["Bild"])}" style="max-width:250px;">
-    <div style="margin-top:10px; font-size:14px; color:#666;">
-        ${modell} ${generation}
-    </div>
-</div>
-` : "";
+<img src="${getImageUrl(fahrzeug["Bild"])}" style="max-width:250px;">
+</div>` : "";
+};
 
+/* 👉 WICHTIG: MOTOR EVENT IST JETZT HIER (NICHT MEHR VERSCHACHTELT!) */
 document.getElementById("motor").onchange=function(){
 
 let reihe=document.getElementById("reihe").value;
@@ -275,6 +276,7 @@ function render(results){
 let html=`<div class="layout"><div class="left">`;
 
 results.forEach(r=>{
+
 let lager = parseInt(r["Lager"]) || 0;
 
 let lagerText = "";
@@ -290,8 +292,9 @@ if (lager > 3) {
     lagerText = "Nicht verfügbar";
     lagerClass = "red";
 }
+
 let vp = parseFloat((r["VP"] || "").toString().replace(",", "."));
-let angebot = parseFloat((r["Angebotspreis"] || r["Preis"] || "").toString().replace(",", "."));
+let angebot = parseFloat((r["Angebotspreis"] || "").toString().replace(",", "."));
 
 let rabatt = (vp && angebot) ? Math.round((1 - angebot/vp) * 100) : null;
 
@@ -302,30 +305,23 @@ html+=`
 <img src="${getImageUrl(r["Bild"])}" onclick="openImg('${getImageUrl(r["Bild"])}')">
 
 <div class="product-info">
-
 <div class="product-title">${r["Bezeichnung"]||""}</div>
-
 <div>${r["Reifen"]||""}</div>
 <div>${r["Dimension"]||""}</div>
 
 ${r["Hinweistext"] ? `
 <div class="hinweis">
-${r["Hinweistext"]}
-</div>
-` : ""}
+${r["Hinweistext"].replace(/\n/g,"<br>")}
+</div>` : ""}
 
 </div>
-
 </div>
 
 <div class="product-right">
 
 <div>Pro Satz inkl. Montage</div>
-
 ${vp ? `<div class="old-price">${vp} CHF</div>` : ""}
-
 <div class="new-price">${angebot || "-"} CHF</div>
-
 ${rabatt ? `<div class="discount">-${rabatt}%</div>` : ""}
 
 <div class="available ${lagerClass}">${lagerText}</div>
@@ -338,7 +334,6 @@ ${rabatt ? `<div class="discount">-${rabatt}%</div>` : ""}
 });
 
 html+=`</div></div>`;
-
 document.getElementById("mainContent").innerHTML=html;
 }
 </script>
