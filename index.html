@@ -12,7 +12,7 @@ body {
 }
 
 .container {
-    max-width: 1000px;
+    max-width: 1100px;
     margin: 60px auto;
     background: white;
     padding: 30px;
@@ -39,44 +39,54 @@ select {
     min-width: 140px;
 }
 
-#fahrzeugBild {
+/* Layout */
+.layout {
+    display: flex;
+    gap: 20px;
+}
+
+.left {
+    flex: 2;
+}
+
+.right {
+    flex: 1;
     text-align: center;
-    margin-bottom: 20px;
 }
 
-#results {
-    margin-top: 20px;
-}
-
-.card {
-    border: 1px solid #eee;
-    padding: 20px;
+.right img {
+    max-width: 100%;
     border-radius: 10px;
-    margin-bottom: 20px;
+}
+
+/* Liste */
+.list-card {
+    display: flex;
+    gap: 15px;
+    border: 1px solid #eee;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
     background: #fafafa;
+    align-items: center;
 }
 
-.card img {
-    width: 220px;
-    display: block;
-    margin: 0 auto 15px;
+.list-card img {
+    width: 120px;
+    border-radius: 6px;
 }
 
-.card h3 {
-    text-align: center;
+.list-info {
+    flex: 1;
 }
 
 .price {
-    text-align: center;
-    font-size: 18px;
     font-weight: bold;
 }
 
 .hinweis {
     color: red;
     font-size: 12px;
-    margin-top: 10px;
-    text-align: center;
 }
 </style>
 </head>
@@ -94,8 +104,7 @@ select {
     <select id="motor"></select>
 </div>
 
-<div id="fahrzeugBild"></div>
-<div id="results"></div>
+<div id="mainContent"></div>
 
 </div>
 
@@ -113,16 +122,9 @@ function clean(v) {
     return (v || "").toString().trim();
 }
 
-// 👉 GOOGLE DRIVE FIX
 function getImageUrl(url) {
-    if (!url) return "";
-    if (url.includes("drive.google.com")) {
-        let match = url.match(/\/d\/(.*?)\//);
-        if (match && match[1]) {
-            return "https://drive.google.com/uc?export=view&id=" + match[1];
-        }
-    }
-    return url;
+    if (!url) return "https://via.placeholder.com/300?text=Kein+Bild";
+    return url.trim();
 }
 
 Promise.all([
@@ -146,8 +148,7 @@ function init() {
     reihen.forEach(r => el.add(new Option(r, r)));
 }
 
-
-// REIHE → MODELL
+/* REIHE → MODELL */
 document.getElementById("reihe").addEventListener("change", function() {
 
     let modelle = [...new Set(
@@ -161,8 +162,7 @@ document.getElementById("reihe").addEventListener("change", function() {
     modelle.forEach(m => el.add(new Option(m, m)));
 });
 
-
-// MODELL → GENERATION
+/* MODELL → GENERATION */
 document.getElementById("modell").addEventListener("change", function() {
 
     let reihe = document.getElementById("reihe").value;
@@ -180,8 +180,7 @@ document.getElementById("modell").addEventListener("change", function() {
     gens.forEach(g => el.add(new Option(g, g)));
 });
 
-
-// GENERATION → MOTOR + BILD
+/* GENERATION → MOTOR + grosses Bild */
 document.getElementById("generation").addEventListener("change", function() {
 
     let reihe = document.getElementById("reihe").value;
@@ -206,14 +205,15 @@ document.getElementById("generation").addEventListener("change", function() {
         clean(f["Generation"]) === this.value
     );
 
-    document.getElementById("fahrzeugBild").innerHTML =
+    document.getElementById("mainContent").innerHTML =
         fahrzeug && fahrzeug["Bild"]
-        ? `<img src="${getImageUrl(fahrzeug["Bild"])}" style="max-width:300px;">`
+        ? `<div style="text-align:center;">
+             <img src="${getImageUrl(fahrzeug["Bild"])}" style="max-width:400px;">
+           </div>`
         : "";
 });
 
-
-// MOTOR → RESULTATE
+/* MOTOR → LISTE + RECHTS BILD */
 document.getElementById("motor").addEventListener("change", function() {
 
     let reihe = document.getElementById("reihe").value;
@@ -235,10 +235,12 @@ document.getElementById("motor").addEventListener("change", function() {
     render(results);
 });
 
-
+/* RENDER */
 function render(results) {
 
-    let html = "";
+    let fahrzeugBild = document.querySelector("#mainContent img")?.src || "";
+
+    let html = `<div class="layout"><div class="left">`;
 
     results.forEach(r => {
 
@@ -250,26 +252,31 @@ function render(results) {
             "🔴 Nicht verfügbar";
 
         html += `
-        <div class="card">
+        <div class="list-card">
 
-            ${r["Bild"] ? `<img src="${getImageUrl(r["Bild"])}">` : ""}
+            <img src="${getImageUrl(r["Bild"])}"
+                 onerror="this.src='https://via.placeholder.com/120'">
 
-            <h3>${r["Bezeichnung"] || "-"}</h3>
-
-            <p style="text-align:center;"><strong>${r["Dimension"] || ""}</strong></p>
-
-            <p style="text-align:center;">${r["Reifen"] || ""}</p>
-
-            ${r["Hinweistext"] ? `<p class="hinweis">${r["Hinweistext"]}</p>` : ""}
-
-            <p style="text-align:center;">${lagerText}</p>
-
-            <p class="price">${r["Preis"] || "-"} CHF</p>
+            <div class="list-info">
+                <strong>${r["Bezeichnung"] || "-"}</strong><br>
+                ${r["Dimension"] || ""}<br>
+                ${r["Reifen"] || ""}<br>
+                ${lagerText}<br>
+                <span class="price">${r["Preis"] || "-"} CHF</span>
+            </div>
 
         </div>`;
     });
 
-    document.getElementById("results").innerHTML = html;
+    html += `</div><div class="right">`;
+
+    if (fahrzeugBild) {
+        html += `<img src="${fahrzeugBild}">`;
+    }
+
+    html += `</div></div>`;
+
+    document.getElementById("mainContent").innerHTML = html;
 }
 
 </script>
