@@ -101,10 +101,13 @@ select {
 }
 
 .available {
-    color: green;
-    font-weight: bold;
+    font-weight: bold;   /* KEIN color hier! */
 }
 
+.green { color: green; }
+.orange { color: orange; }
+.red { color: red; }
+    
 /* BUTTON */
 .button {
     background: #555;
@@ -305,7 +308,7 @@ ${vp ? `<div class="old-price">${vp} CHF</div>` : ""}
 
 ${rabatt ? `<div class="discount">-${rabatt}%</div>` : ""}
 
-<div class="available">Sofort verfügbar</div>
+<div class="available ${lagerClass}">${lagerText}</div>
 
 <button class="button">Auswählen</button>
 
