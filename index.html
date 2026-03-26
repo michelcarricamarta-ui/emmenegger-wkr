@@ -6,57 +6,49 @@
 
 <style>
 body {
-    font-family: Arial, sans-serif;
+    font-family: Arial;
     background: #f5f5f5;
     margin: 0;
 }
 
 .container {
     max-width: 1200px;
-    margin: 40px auto;
+    margin: 20px auto;
     background: white;
     padding: 30px;
     border-radius: 12px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
 }
 
 /* LOGO */
 .logo {
     text-align: center;
-    margin-bottom: 20px;
-}
-
-.logo img {
-    max-width: 250px;
-}
-
-h2 {
-    text-align: center;
     margin-bottom: 30px;
 }
 
+.logo img {
+    max-width: 500px; /* DEUTLICH GRÖSSER */
+}
+
+/* FILTER */
 .select-row {
     display: flex;
     gap: 10px;
     justify-content: center;
-    margin-bottom: 25px;
+    margin-bottom: 30px;
 }
 
 select {
     padding: 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    min-width: 140px;
 }
 
-/* Layout */
+/* LAYOUT */
 .layout {
     display: flex;
-    gap: 30px;
+    gap: 40px;
 }
 
 .left {
-    flex: 3; /* grösser */
+    flex: 3;
 }
 
 .right {
@@ -65,45 +57,61 @@ select {
 }
 
 .right img {
-    max-width: 220px; /* kleiner Fahrzeug */
-    border-radius: 10px;
+    max-width: 200px;
 }
 
-/* Liste */
-.list-card {
+/* PRODUKT */
+.product {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #ddd;
+    padding: 20px 0;
+}
+
+.product-left {
     display: flex;
     gap: 20px;
-    border: 1px solid #eee;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 15px;
-    background: #fafafa;
-    align-items: center;
 }
 
-.list-card img {
-    width: 160px;
-    border-radius: 8px;
+.product-left img {
+    width: 140px;
     cursor: pointer;
-    transition: 0.2s;
 }
 
-.list-card img:hover {
-    transform: scale(1.05);
+.product-info {
+    max-width: 400px;
 }
 
-.list-info {
-    flex: 1;
-}
-
-.price {
+.product-title {
     font-weight: bold;
     font-size: 18px;
 }
 
-.hinweis {
-    color: red;
-    font-size: 12px;
+.product-right {
+    text-align: right;
+}
+
+.price {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.available {
+    color: green;
+    font-weight: bold;
+}
+
+.button {
+    background: #555;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.button:hover {
+    background: black;
 }
 
 /* POPUP */
@@ -111,22 +119,15 @@ select {
     display: none;
     position: fixed;
     z-index: 999;
-    padding-top: 80px;
-    left: 0;
-    top: 0;
+    background: rgba(0,0,0,0.8);
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.8);
 }
 
 .modal img {
     display: block;
-    margin: auto;
-    max-width: 70%;
-}
-
-.modal:hover {
-    cursor: pointer;
+    margin: 100px auto;
+    max-width: 60%;
 }
 </style>
 </head>
@@ -139,22 +140,19 @@ select {
 <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png">
 </div>
 
-<h2>Winterräder Konfigurator</h2>
-
 <div class="select-row">
-    <select id="reihe"></select>
-    <select id="modell"></select>
-    <select id="generation"></select>
-    <select id="motor"></select>
+<select id="reihe"></select>
+<select id="modell"></select>
+<select id="generation"></select>
+<select id="motor"></select>
 </div>
 
 <div id="mainContent"></div>
 
 </div>
 
-<!-- POPUP -->
-<div id="imageModal" class="modal" onclick="closeModal()">
-    <img id="modalImg">
+<div id="modal" class="modal" onclick="this.style.display='none'">
+<img id="modalImg">
 </div>
 
 <script>
@@ -167,172 +165,103 @@ let produkte = [];
 let mapping = [];
 let fahrzeuge = [];
 
-function clean(v) {
-    return (v || "").toString().trim();
-}
+function clean(v){ return (v||"").toString().trim(); }
+function getImageUrl(url){ return url || "https://via.placeholder.com/150"; }
 
-function getImageUrl(url) {
-    if (!url) return "https://via.placeholder.com/300?text=Kein+Bild";
-    return url.trim();
-}
-
-function openModal(src) {
+function openImg(src){
     document.getElementById("modalImg").src = src;
-    document.getElementById("imageModal").style.display = "block";
-}
-
-function closeModal() {
-    document.getElementById("imageModal").style.display = "none";
+    document.getElementById("modal").style.display = "block";
 }
 
 Promise.all([
-    fetch(urlProdukte).then(r => r.json()),
-    fetch(urlMapping).then(r => r.json()),
-    fetch(urlFahrzeuge).then(r => r.json())
-])
-.then(([p, m, f]) => {
-    produkte = p;
-    mapping = m;
-    fahrzeuge = f;
-    init();
+fetch(urlProdukte).then(r=>r.json()),
+fetch(urlMapping).then(r=>r.json()),
+fetch(urlFahrzeuge).then(r=>r.json())
+]).then(([p,m,f])=>{
+produkte=p; mapping=m; fahrzeuge=f; init();
 });
 
-function init() {
-    let reihen = [...new Set(mapping.map(x => clean(x["Reihe"])).filter(x => x))];
-
-    let el = document.getElementById("reihe");
-    el.innerHTML = "<option value=''>Reihe wählen</option>";
-
-    reihen.forEach(r => el.add(new Option(r, r)));
+function init(){
+let reihen=[...new Set(mapping.map(x=>clean(x["Reihe"])))];
+let el=document.getElementById("reihe");
+el.innerHTML="<option>Reihe</option>";
+reihen.forEach(r=>el.add(new Option(r,r)));
 }
 
-document.getElementById("reihe").addEventListener("change", function() {
+document.getElementById("reihe").onchange=function(){
+let modelle=[...new Set(mapping.filter(x=>clean(x["Reihe"])===this.value).map(x=>clean(x["Modell"])))];
+let el=document.getElementById("modell");
+el.innerHTML="<option>Modell</option>";
+modelle.forEach(m=>el.add(new Option(m,m)));
+};
 
-    let modelle = [...new Set(
-        mapping.filter(x => clean(x["Reihe"]) === this.value)
-               .map(x => clean(x["Modell"]))
-    )];
+document.getElementById("modell").onchange=function(){
+let reihe=document.getElementById("reihe").value;
+let gens=[...new Set(mapping.filter(x=>clean(x["Reihe"])===reihe && clean(x["Modell"])===this.value).map(x=>clean(x["Generation"])))];
+let el=document.getElementById("generation");
+el.innerHTML="<option>Generation</option>";
+gens.forEach(g=>el.add(new Option(g,g)));
+};
 
-    let el = document.getElementById("modell");
-    el.innerHTML = "<option value=''>Modell wählen</option>";
+document.getElementById("generation").onchange=function(){
+let reihe=document.getElementById("reihe").value;
+let modell=document.getElementById("modell").value;
 
-    modelle.forEach(m => el.add(new Option(m, m)));
+let fahrzeug=fahrzeuge.find(f=>clean(f["Reihe"])===reihe && clean(f["Modell"])===modell && clean(f["Generation"])===this.value);
+
+document.getElementById("mainContent").innerHTML =
+fahrzeug ? `<div style="text-align:center;">
+<img src="${getImageUrl(fahrzeug["Bild"])}" style="max-width:350px;">
+</div>` : "";
+};
+
+document.getElementById("motor").onchange=function(){
+
+let reihe=document.getElementById("reihe").value;
+let modell=document.getElementById("modell").value;
+let gen=document.getElementById("generation").value;
+
+let tnList=mapping.filter(x=>clean(x["Reihe"])===reihe && clean(x["Modell"])===modell && clean(x["Generation"])===gen && clean(x["Motor"])===this.value).map(x=>clean(x["TN"]));
+
+let results=produkte.filter(p=>tnList.includes(clean(p["TN"])));
+
+render(results);
+};
+
+function render(results){
+
+let html=`<div class="layout"><div class="left">`;
+
+results.forEach(r=>{
+
+html+=`
+<div class="product">
+
+<div class="product-left">
+<img src="${getImageUrl(r["Bild"])}" onclick="openImg('${getImageUrl(r["Bild"])}')">
+
+<div class="product-info">
+<div class="product-title">${r["Bezeichnung"]||""}</div>
+<div>${r["Reifen"]||""}</div>
+<div>${r["Dimension"]||""}</div>
+</div>
+
+</div>
+
+<div class="product-right">
+<div>Pro Satz inkl. Montage</div>
+<div class="price">${r["Preis"]||"-"} CHF</div>
+<div class="available">Sofort verfügbar</div>
+<button class="button">Auswählen</button>
+</div>
+
+</div>`;
 });
 
-document.getElementById("modell").addEventListener("change", function() {
+html+=`</div></div>`;
 
-    let reihe = document.getElementById("reihe").value;
-
-    let gens = [...new Set(
-        mapping.filter(x =>
-            clean(x["Reihe"]) === reihe &&
-            clean(x["Modell"]) === this.value
-        ).map(x => clean(x["Generation"]))
-    )];
-
-    let el = document.getElementById("generation");
-    el.innerHTML = "<option value=''>Generation wählen</option>";
-
-    gens.forEach(g => el.add(new Option(g, g)));
-});
-
-document.getElementById("generation").addEventListener("change", function() {
-
-    let reihe = document.getElementById("reihe").value;
-    let modell = document.getElementById("modell").value;
-
-    let motors = [...new Set(
-        mapping.filter(x =>
-            clean(x["Reihe"]) === reihe &&
-            clean(x["Modell"]) === modell &&
-            clean(x["Generation"]) === this.value
-        ).map(x => clean(x["Motor"]))
-    )];
-
-    let el = document.getElementById("motor");
-    el.innerHTML = "<option value=''>Motor wählen</option>";
-
-    motors.forEach(m => el.add(new Option(m, m)));
-
-    let fahrzeug = fahrzeuge.find(f =>
-        clean(f["Reihe"]) === reihe &&
-        clean(f["Modell"]) === modell &&
-        clean(f["Generation"]) === this.value
-    );
-
-    document.getElementById("mainContent").innerHTML =
-        fahrzeug && fahrzeug["Bild"]
-        ? `<div style="text-align:center;">
-             <img src="${getImageUrl(fahrzeug["Bild"])}" style="max-width:350px;">
-           </div>`
-        : "";
-});
-
-document.getElementById("motor").addEventListener("change", function() {
-
-    let reihe = document.getElementById("reihe").value;
-    let modell = document.getElementById("modell").value;
-    let gen = document.getElementById("generation").value;
-    let motor = this.value;
-
-    let tnList = mapping
-        .filter(x =>
-            clean(x["Reihe"]) === reihe &&
-            clean(x["Modell"]) === modell &&
-            clean(x["Generation"]) === gen &&
-            clean(x["Motor"]) === motor
-        )
-        .map(x => clean(x["TN"]));
-
-    let results = produkte.filter(p => tnList.includes(clean(p["TN"])));
-
-    render(results);
-});
-
-function render(results) {
-
-    let fahrzeugBild = document.querySelector("#mainContent img")?.src || "";
-
-    let html = `<div class="layout"><div class="left">`;
-
-    results.forEach(r => {
-
-        let lager = parseInt(r["Lager"]) || 0;
-
-        let lagerText =
-            lager > 3 ? "🟢 Lager verfügbar" :
-            lager > 0 ? "🟠 Wenig Lager" :
-            "🔴 Nicht verfügbar";
-
-        html += `
-        <div class="list-card">
-
-            <img src="${getImageUrl(r["Bild"])}"
-                 onclick="openModal('${getImageUrl(r["Bild"])}')"
-                 onerror="this.src='https://via.placeholder.com/150'">
-
-            <div class="list-info">
-                <strong>${r["Bezeichnung"] || "-"}</strong><br>
-                ${r["Dimension"] || ""}<br>
-                ${r["Reifen"] || ""}<br>
-                ${lagerText}<br>
-                <span class="price">${r["Preis"] || "-"} CHF</span>
-            </div>
-
-        </div>`;
-    });
-
-    html += `</div><div class="right">`;
-
-    if (fahrzeugBild) {
-        html += `<img src="${fahrzeugBild}">`;
-    }
-
-    html += `</div></div>`;
-
-    document.getElementById("mainContent").innerHTML = html;
+document.getElementById("mainContent").innerHTML=html;
 }
-
 </script>
 
 </body>
