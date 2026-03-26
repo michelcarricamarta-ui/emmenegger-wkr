@@ -337,11 +337,23 @@ html+=`
 <div class="product-left">
 <img src="${clean(r["Bild"])}" onclick='showPreview(${JSON.stringify(r)})'>
 <div>
+
 <b>${r["Bezeichnung"]}</b><br>
-TN: ${r["TN"]}<br>
 ${r["Reifen"]}<br>
 ${r["Dimension"]}
-${r["Hinweistext"] ? `<div class="hinweis">${r["Hinweistext"].replace(/\n/g,"<br>")}</div>` : ""}
+
+${r["Hinweistext"] ? `
+    <div class="hinweis">
+        ${r["Hinweistext"].replace(/\n/g,"<br>")}
+        <br><br>
+        Teilenummer: ${r["TN"]}
+    </div>
+` : `
+    <div class="hinweis">
+        Teilenummer: ${r["TN"]}
+    </div>
+`}
+
 </div>
 </div>
 
