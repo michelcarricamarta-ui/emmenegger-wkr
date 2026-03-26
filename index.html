@@ -261,7 +261,21 @@ function render(results){
 let html=`<div class="layout"><div class="left">`;
 
 results.forEach(r=>{
+let lager = parseInt(r["Lager"]) || 0;
 
+let lagerText = "";
+let lagerClass = "";
+
+if (lager > 3) {
+    lagerText = "Sofort verfügbar";
+    lagerClass = "green";
+} else if (lager > 0) {
+    lagerText = "Wenig Lager";
+    lagerClass = "orange";
+} else {
+    lagerText = "Nicht verfügbar";
+    lagerClass = "red";
+}
 let vp = parseFloat(r["VP"]);
 let angebot = parseFloat(r["Angebotspreis"] || r["Preis"]);
 
