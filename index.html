@@ -10,9 +10,9 @@ body {
     background: #f5f5f5;
 }
 
-/* 👉 BREITER */
+/* CONTAINER */
 .container {
-    max-width: 1500px;
+    max-width: 1400px;
     margin: auto;
     background: white;
     padding: 40px;
@@ -28,7 +28,7 @@ body {
 
 h2 { text-align:center; }
 
-/* 👉 AUSWAHL BOX */
+/* AUSWAHL BOX */
 .summary-box {
     display: flex;
     justify-content: space-between;
@@ -39,21 +39,11 @@ h2 { text-align:center; }
     margin-bottom: 40px;
 }
 
-.summary-text {
-    font-size: 15px;
-    line-height: 1.6;
-}
-
-.summary-img img {
-    max-width: 140px;
-}
-
 /* GRID */
 .grid {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
-    margin-top: 15px;
 }
 
 /* CARD */
@@ -62,78 +52,76 @@ h2 { text-align:center; }
     padding: 15px;
     cursor: pointer;
     border-radius: 10px;
-    background: white;
     text-align: center;
-    min-width: 180px;
-    transition: 0.2s;
+    width: 180px;
 }
 
 .card:hover {
     border-color: #1c69d4;
-    transform: scale(1.04);
+    transform: scale(1.03);
 }
 
 .card img {
-    max-width: 160px;
-    margin-bottom: 10px;
+    max-width: 140px;
 }
 
-/* PRODUKT */
-.product-wrapper {
-    display: flex;
-    justify-content: center;
-}
-
+/* PRODUKT LISTE */
 .product {
-    width: 900px;
     display: flex;
     justify-content: space-between;
     border-bottom: 1px solid #ddd;
     padding: 25px 0;
 }
 
+/* LINKS */
 .product-left {
     display: flex;
-    gap: 25px;
+    gap: 20px;
 }
 
 .product-left img {
-    width: 240px;
-    border-radius: 8px;
+    width: 220px;
 }
 
-.product-title {
-    font-weight: bold;
-    font-size: 18px;
-}
-
+/* PREIS */
 .old-price {
     text-decoration: line-through;
-    color: #888;
+    color: #999;
 }
 
 .new-price {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: bold;
 }
 
+/* STATUS */
 .green { color: green; }
 .orange { color: orange; }
 .red { color: red; }
 
-.hinweis {
-    margin-top: 10px;
-    font-size: 12px;
-    color: #555;
-}
-
 /* BUTTON */
 .button {
-    background: #555;
+    background: #1c69d4;
     color: white;
-    padding: 10px;
+    padding: 10px 15px;
     border: none;
     cursor: pointer;
+    border-radius: 6px;
+    margin-top: 10px;
+}
+
+/* FORM */
+.form-box {
+    margin-top: 40px;
+    padding: 20px;
+    background: #f3f3f3;
+    border-radius: 10px;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
 }
 </style>
 </head>
@@ -159,7 +147,7 @@ const urlFahrzeuge = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqc
 
 let produkte=[], mapping=[], fahrzeuge=[];
 
-let state = { reihe:null, modell:null, motor:null };
+let state = { reihe:null, modell:null, motor:null, produkt:null };
 
 function clean(v){ return (v||"").toString().trim(); }
 
@@ -174,50 +162,28 @@ fahrzeuge=f;
 render();
 });
 
-/* RENDER */
 function render(){
 
 let html="";
 
-/* 👉 IHRE AUSWAHL */
+/* AUSWAHL BOX */
 if(state.motor){
-
-let fahrzeug = fahrzeuge.find(f =>
-clean(f["Reihe"])===state.reihe &&
-clean(f["Modell"])===state.modell
-);
-
 html += `
 <div class="summary-box">
-
-<div class="summary-text">
+<div>
 <b>Ihre Auswahl:</b><br>
-Reihe: ${state.reihe}<br>
-Modell: ${state.modell}<br>
-Motor: ${state.motor}
-
-<br><br>
-
-<button onclick="resetSelection()" class="button">
-Auswahl ändern
-</button>
-
+${state.reihe} / ${state.modell} / ${state.motor}<br><br>
+<button class="button" onclick="resetSelection()">Zurück</button>
 </div>
-
-<div class="summary-img">
-<img src="${clean(fahrzeug?.Bild) || 'https://via.placeholder.com/150'}">
-</div>
-
 </div>
 `;
 }
 
-if(!state.motor){
-
-/* 1. REIHE */
+/* REIHE */
+if(!state.reihe){
 let reihen=[...new Set(mapping.map(x=>clean(x["Reihe"])))];
 
-html+=`<div><b>1. Reihe wählen</b></div><div class="grid">`;
+html+=`<b>1. Reihe wählen</b><div class="grid">`;
 
 reihen.forEach(r=>{
 html+=`<div class="card" onclick="selectReihe('${r}')">${r}</div>`;
@@ -226,36 +192,24 @@ html+=`<div class="card" onclick="selectReihe('${r}')">${r}</div>`;
 html+=`</div>`;
 }
 
-/* 2. MODELL */
-if(state.reihe && !state.motor){
-
+/* MODELL */
+if(state.reihe && !state.modell){
 let modelle=[...new Set(mapping
 .filter(x=>clean(x["Reihe"])===state.reihe)
 .map(x=>clean(x["Modell"]))
 )];
 
-html+=`<div style="margin-top:30px;"><b>2. Modell wählen</b></div><div class="grid">`;
+html+=`<br><b>2. Modell wählen</b><div class="grid">`;
 
 modelle.forEach(m=>{
-
-let fahrzeug = fahrzeuge.find(f =>
-clean(f["Reihe"])===state.reihe &&
-clean(f["Modell"])===m
-);
-
-html+=`
-<div class="card" onclick="selectModell('${m}')">
-<img src="${clean(fahrzeug?.Bild) || 'https://via.placeholder.com/150'}">
-<div>${m}</div>
-</div>`;
+html+=`<div class="card" onclick="selectModell('${m}')">${m}</div>`;
 });
 
 html+=`</div>`;
 }
 
-/* 3. MOTOR */
+/* MOTOR */
 if(state.modell && !state.motor){
-
 let motors=[...new Set(mapping
 .filter(x=>
 clean(x["Reihe"])===state.reihe &&
@@ -264,7 +218,7 @@ clean(x["Modell"])===state.modell
 .map(x=>clean(x["Motor"]))
 )];
 
-html+=`<div style="margin-top:30px;"><b>3. Motor wählen</b></div><div class="grid">`;
+html+=`<br><b>3. Motor wählen</b><div class="grid">`;
 
 motors.forEach(m=>{
 html+=`<div class="card" onclick="selectMotor('${m}')">${m}</div>`;
@@ -274,7 +228,7 @@ html+=`</div>`;
 }
 
 /* PRODUKTE */
-if(state.motor){
+if(state.motor && !state.produkt){
 
 let tnList=mapping.filter(x=>
 clean(x["Reihe"])===state.reihe &&
@@ -283,8 +237,6 @@ clean(x["Motor"])===state.motor
 ).map(x=>clean(x["TN"]));
 
 let results=produkte.filter(p=>tnList.includes(clean(p["TN"])));
-
-html+=`<div class="product-wrapper">`;
 
 results.forEach(r=>{
 
@@ -298,25 +250,41 @@ html+=`
 <div class="product-left">
 <img src="${clean(r["Bild"])}">
 <div>
-<div class="product-title">${r["Bezeichnung"]}</div>
+<b>${r["Bezeichnung"]}</b><br>
 ${r["Reifen"]}<br>
 ${r["Dimension"]}
-
-${r["Hinweistext"] ? `<div class="hinweis">${r["Hinweistext"].replace(/\n/g,"<br>")}</div>` : ""}
 </div>
 </div>
 
 <div>
-${r["VP"] ? `<div class="old-price">${r["VP"]} CHF</div>` : ""}
 <div class="new-price">${r["Angebotspreis"]} CHF</div>
 <div class="${status}">${text}</div>
-<button class="button">Auswählen</button>
+<button class="button" onclick='selectProdukt(${JSON.stringify(r)})'>Auswählen</button>
 </div>
 
 </div>`;
 });
+}
 
-html+=`</div>`;
+/* FORMULAR */
+if(state.produkt){
+
+html+=`
+<div class="form-box">
+
+<h3>Ihre Anfrage</h3>
+
+<b>${state.produkt["Bezeichnung"]}</b><br>
+${state.produkt["Angebotspreis"]} CHF<br><br>
+
+<input id="name" placeholder="Name">
+<input id="email" placeholder="E-Mail">
+<textarea id="bemerkung" placeholder="Bemerkung"></textarea>
+
+<button class="button" onclick="sendMail()">Anfrage senden</button>
+
+</div>
+`;
 }
 
 document.getElementById("app").innerHTML=html;
@@ -327,27 +295,54 @@ function selectReihe(r){
 state.reihe=r;
 state.modell=null;
 state.motor=null;
+state.produkt=null;
 render();
 }
 
 function selectModell(m){
 state.modell=m;
 state.motor=null;
+state.produkt=null;
 render();
 }
 
 function selectMotor(m){
 state.motor=m;
+state.produkt=null;
 render();
 }
-    
-function resetSelection(){
-    state.reihe = null;
-    state.modell = null;
-    state.motor = null;
-    render();
+
+function selectProdukt(p){
+state.produkt=p;
+render();
 }
-    
+
+function resetSelection(){
+state = { reihe:null, modell:null, motor:null, produkt:null };
+render();
+}
+
+/* MAIL */
+function sendMail(){
+
+let name = document.getElementById("name").value;
+let email = document.getElementById("email").value;
+let bemerkung = document.getElementById("bemerkung").value;
+
+let text = `
+Name: ${name}
+Email: ${email}
+
+Produkt: ${state.produkt["Bezeichnung"]}
+Preis: ${state.produkt["Angebotspreis"]} CHF
+
+Bemerkung:
+${bemerkung}
+`;
+
+window.location.href = "mailto:tv-g-fp@emmeneggerag.ch?subject=WKR Anfrage&body=" + encodeURIComponent(text);
+}
+
 </script>
 
 </body>
