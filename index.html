@@ -25,13 +25,15 @@ body {
 }
 .logo img { max-width: 500px; }
 
-/* STEP TITLES */
+h2 { text-align:center; }
+
+/* STEP TITEL */
 .step-title {
     margin-top: 30px;
     font-weight: bold;
 }
 
-/* CARD GRID */
+/* GRID */
 .grid {
     display: flex;
     flex-wrap: wrap;
@@ -42,19 +44,26 @@ body {
 /* CARD */
 .card {
     border: 1px solid #ccc;
-    padding: 10px;
+    padding: 12px;
     cursor: pointer;
     border-radius: 8px;
     background: white;
-    min-width: 140px;
     text-align: center;
+    min-width: 160px;
+    transition: 0.2s;
 }
 
 .card:hover {
     border-color: #1c69d4;
+    transform: scale(1.03);
 }
 
-/* PRODUCT */
+.card img {
+    max-width: 140px;
+    margin-bottom: 8px;
+}
+
+/* PRODUKT */
 .product {
     display: flex;
     justify-content: space-between;
@@ -69,6 +78,7 @@ body {
 
 .product-left img {
     width: 200px;
+    border-radius: 8px;
 }
 
 .old-price {
@@ -117,10 +127,9 @@ const urlFahrzeuge = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqc
 let produkte=[], mapping=[], fahrzeuge=[];
 
 let state = {
-    reihe: null,
-    modell: null,
-    generation: null,
-    motor: null
+    reihe:null,
+    modell:null,
+    motor:null
 };
 
 function clean(v){ return (v||"").toString().trim(); }
@@ -130,70 +139,77 @@ fetch(urlProdukte).then(r=>r.json()),
 fetch(urlMapping).then(r=>r.json()),
 fetch(urlFahrzeuge).then(r=>r.json())
 ]).then(([p,m,f])=>{
-produkte=p; mapping=m; fahrzeuge=f;
+produkte=p;
+mapping=m;
+fahrzeuge=f;
 render();
 });
 
+/* RENDER */
 function render(){
 
-let html = "";
+let html="";
 
-/* REIHE */
+/* 1. REIHE */
 let reihen=[...new Set(mapping.map(x=>clean(x["Reihe"])))];
 
-html += `<div class="step-title">1. Reihe wählen</div><div class="grid">`;
+html+=`<div class="step-title">1. Reihe wählen</div><div class="grid">`;
+
 reihen.forEach(r=>{
-html += `<div class="card" onclick="selectReihe('${r}')">${r}</div>`;
+html+=`<div class="card" onclick="selectReihe('${r}')">${r}</div>`;
 });
-html += `</div>`;
 
-/* MODELL */
+html+=`</div>`;
+
+
+/* 2. MODELL (MIT BILD!) */
 if(state.reihe){
-let modelle=[...new Set(mapping.filter(x=>clean(x["Reihe"])===state.reihe).map(x=>clean(x["Modell"])))];
 
-html += `<div class="step-title">2. Modell wählen</div><div class="grid">`;
+let modelle=[...new Set(mapping
+.filter(x=>clean(x["Reihe"])===state.reihe)
+.map(x=>clean(x["Modell"]))
+)];
+
+html+=`<div class="step-title">2. Modell wählen</div><div class="grid">`;
+
 modelle.forEach(m=>{
-html += `<div class="card" onclick="selectModell('${m}')">${m}</div>`;
-});
-html += `</div>`;
-}
 
-/* GENERATION */
-if(state.modell){
-let gens=[...new Set(mapping.filter(x=>
-clean(x["Reihe"])===state.reihe &&
-clean(x["Modell"])===state.modell
-).map(x=>clean(x["Generation"])))];
+let fahrzeug = fahrzeuge.find(f =>
+clean(f["Reihe"])===state.reihe &&
+clean(f["Modell"])===m
+);
 
-html += `<div class="step-title">3. Generation wählen</div><div class="grid">`;
-
-gens.forEach(g=>{
-let f = fahrzeuge.find(x=>clean(x["Generation"])===g);
-
-html += `
-<div class="card" onclick="selectGen('${g}')">
-<img src="${f?.Bild || ''}" style="max-width:120px;"><br>
-${g}
+html+=`
+<div class="card" onclick="selectModell('${m}')">
+<img src="${fahrzeug?.Bild || ''}">
+<div>${m}</div>
 </div>`;
 });
 
-html += `</div>`;
+html+=`</div>`;
 }
 
-/* MOTOR */
-if(state.generation){
-let motors=[...new Set(mapping.filter(x=>
+
+/* 3. MOTOR */
+if(state.modell){
+
+let motors=[...new Set(mapping
+.filter(x=>
 clean(x["Reihe"])===state.reihe &&
-clean(x["Modell"])===state.modell &&
-clean(x["Generation"])===state.generation
-).map(x=>clean(x["Motor"])))];
+clean(x["Modell"])===state.modell
+)
+.map(x=>clean(x["Motor"]))
+)];
 
-html += `<div class="step-title">4. Motor wählen</div><div class="grid">`;
+html+=`<div class="step-title">3. Motor wählen</div><div class="grid">`;
+
 motors.forEach(m=>{
-html += `<div class="card" onclick="selectMotor('${m}')">${m}</div>`;
+html+=`<div class="card" onclick="selectMotor('${m}')">${m}</div>`;
 });
-html += `</div>`;
+
+html+=`</div>`;
 }
+
 
 /* PRODUKTE */
 if(state.motor){
@@ -201,7 +217,6 @@ if(state.motor){
 let tnList=mapping.filter(x=>
 clean(x["Reihe"])===state.reihe &&
 clean(x["Modell"])===state.modell &&
-clean(x["Generation"])===state.generation &&
 clean(x["Motor"])===state.motor
 ).map(x=>clean(x["TN"]));
 
@@ -213,15 +228,15 @@ let lager=parseInt(r["Lager"])||0;
 let status=lager>3?"green":lager>0?"orange":"red";
 let text=lager>3?"Sofort verfügbar":lager>0?"Wenig Lager":"Nicht verfügbar";
 
-html += `
+html+=`
 <div class="product">
 
 <div class="product-left">
 <img src="${r["Bild"]}">
 <div>
-<div><b>${r["Bezeichnung"]}</b></div>
-<div>${r["Reifen"]}</div>
-<div>${r["Dimension"]}</div>
+<b>${r["Bezeichnung"]}</b><br>
+${r["Reifen"]}<br>
+${r["Dimension"]}
 </div>
 </div>
 
@@ -237,14 +252,28 @@ ${r["VP"] ? `<div class="old-price">${r["VP"]} CHF</div>` : ""}
 
 }
 
-document.getElementById("app").innerHTML = html;
+document.getElementById("app").innerHTML=html;
 }
 
+
 /* ACTIONS */
-function selectReihe(r){ state.reihe=r; state.modell=null; state.generation=null; state.motor=null; render(); }
-function selectModell(m){ state.modell=m; state.generation=null; state.motor=null; render(); }
-function selectGen(g){ state.generation=g; state.motor=null; render(); }
-function selectMotor(m){ state.motor=m; render(); }
+function selectReihe(r){
+state.reihe=r;
+state.modell=null;
+state.motor=null;
+render();
+}
+
+function selectModell(m){
+state.modell=m;
+state.motor=null;
+render();
+}
+
+function selectMotor(m){
+state.motor=m;
+render();
+}
 
 </script>
 
