@@ -113,7 +113,8 @@ h2 {
 }
 
 .preview img {
-    width: 350px;
+    width: 550px;
+    max-width: 100%;
 }
 
 /* PRODUCT */
@@ -207,7 +208,13 @@ const urlMapping = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ
 const urlFahrzeuge = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Fahrzeuge";
 
 let produkte=[], mapping=[], fahrzeuge=[];
-let state = { reihe:null, modell:null, motor:null, produkt:null };
+let state = { 
+    reihe:null, 
+    modell:null, 
+    motor:null, 
+    produkt:null,
+    produktPreview:null
+};
 
 function clean(v){ return (v||"").toString().trim(); }
 
@@ -249,10 +256,10 @@ ${state.reihe} / ${state.modell} / ${state.motor}<br><br>
 }
 
 /* PREVIEW */
-if(state.produkt){
+if(state.produktPreview){
 html+=`
 <div class="preview">
-<img src="${state.produkt["Bild"]}">
+<img src="${state.produktPreview["Bild"]}">
 </div>`;
 }
 
@@ -328,9 +335,10 @@ html+=`
 <div class="product">
 
 <div class="product-left">
-<img src="${clean(r["Bild"])}" onclick='selectProdukt(${JSON.stringify(r)})'>
+<img src="${clean(r["Bild"])}" onclick='showPreview(${JSON.stringify(r)})'>
 <div>
 <b>${r["Bezeichnung"]}</b><br>
+TN: ${r["TN"]}<br>
 ${r["Reifen"]}<br>
 ${r["Dimension"]}
 ${r["Hinweistext"] ? `<div class="hinweis">${r["Hinweistext"].replace(/\n/g,"<br>")}</div>` : ""}
@@ -338,8 +346,8 @@ ${r["Hinweistext"] ? `<div class="hinweis">${r["Hinweistext"].replace(/\n/g,"<br
 </div>
 
 <div>
-${r["VP"] ? `<div class="old-price">${r["VP"]} CHF</div>` : ""}
-<div class="new-price">${r["Angebotspreis"]} CHF</div>
+${r["VP"] ? `<div class="old-price">VP: ${r["VP"]} CHF</div>` : ""}
+<div class="new-price">Angebotspreis: ${r["Angebotspreis"]} CHF</div>
 <div class="${status}">${text}</div>
 <button class="button" onclick='selectProdukt(${JSON.stringify(r)})'>Auswählen</button>
 </div>
@@ -380,6 +388,11 @@ state = { reihe:null, modell:null, motor:null, produkt:null };
 render();
 }
 
+    function showPreview(p){
+    state.produktPreview = p;
+    render();
+}
+    
 /* MAIL */
 function sendMail(){
 window.location.href = "mailto:tv-g-fp@emmeneggerag.ch";
