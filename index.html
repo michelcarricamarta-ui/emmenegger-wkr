@@ -29,10 +29,6 @@ body {
     max-width: 500px;
 }
 
-.title {
-    margin-top: 15px;
-}
-
 /* FILTER */
 .select-row {
     display: flex;
@@ -44,18 +40,32 @@ body {
 select {
     padding: 12px;
     min-width: 160px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
 }
 
-/* LAYOUT */
-.layout {
+/* GENERATION CARDS (BMW STYLE) */
+.gen-cards {
     display: flex;
-    gap: 40px;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 20px;
 }
 
-.left {
-    flex: 3;
+.gen-card {
+    border: 1px solid #ccc;
+    padding: 10px;
+    cursor: pointer;
+    width: 150px;
+    text-align: center;
+    border-radius: 8px;
+    background: white;
+}
+
+.gen-card:hover {
+    border-color: #1c69d4;
+}
+
+.gen-card img {
+    max-width: 120px;
 }
 
 /* PRODUKT */
@@ -73,7 +83,6 @@ select {
 
 .product-left img {
     width: 240px;
-    cursor: pointer;
     border-radius: 8px;
 }
 
@@ -83,35 +92,18 @@ select {
 
 .product-title {
     font-weight: bold;
-    font-size: 18px;
 }
 
-/* PREISE */
 .old-price {
     text-decoration: line-through;
     color: #888;
-    font-size: 14px;
 }
 
 .new-price {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: bold;
 }
 
-.discount {
-    color: red;
-    font-size: 13px;
-}
-
-/* HINWEIS */
-.hinweis {
-    margin-top: 10px;
-    font-size: 12px;
-    color: #555;
-    line-height: 1.5;
-}
-
-/* LAGER */
 .available {
     font-weight: bold;
 }
@@ -120,34 +112,12 @@ select {
 .orange { color: orange; }
 .red { color: red; }
 
-/* BUTTON */
 .button {
     background: #555;
     color: white;
     padding: 10px 20px;
     border: none;
     cursor: pointer;
-    margin-top: 10px;
-}
-
-.button:hover {
-    background: black;
-}
-
-/* POPUP */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 999;
-    background: rgba(0,0,0,0.8);
-    width: 100%;
-    height: 100%;
-}
-
-.modal img {
-    display: block;
-    margin: 100px auto;
-    max-width: 60%;
 }
 </style>
 </head>
@@ -157,31 +127,19 @@ select {
 <div class="container">
 
 <div class="logo">
-    <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png">
-    <h1 class="title">Winterkompletträder Konfigurator</h1>
+<img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png">
+<h1>Winterkompletträder Konfigurator</h1>
 </div>
 
 <div class="select-row">
 <select id="reihe"></select>
-<select id="modell">
-    <option>Modell wählen</option>
-</select>
-
-<select id="generation">
-    <option>Generation wählen</option>
-</select>
-
-<select id="motor">
-    <option>Motor wählen</option>
-</select>
+<select id="modell"></select>
+<select id="motor"></select>
 </div>
 
+<div id="generationCards"></div>
 <div id="mainContent"></div>
 
-</div>
-
-<div id="modal" class="modal" onclick="this.style.display='none'">
-<img id="modalImg">
 </div>
 
 <script>
@@ -190,24 +148,18 @@ const urlProdukte = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcy
 const urlMapping = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Zuordnung";
 const urlFahrzeuge = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Fahrzeuge";
 
-let produkte = [];
-let mapping = [];
-let fahrzeuge = [];
+let produkte=[], mapping=[], fahrzeuge=[];
+let selectedGeneration = "";
 
 function clean(v){ return (v||"").toString().trim(); }
-function getImageUrl(url){ return url || "https://via.placeholder.com/150"; }
-
-function openImg(src){
-    document.getElementById("modalImg").src = src;
-    document.getElementById("modal").style.display = "block";
-}
 
 Promise.all([
 fetch(urlProdukte).then(r=>r.json()),
 fetch(urlMapping).then(r=>r.json()),
 fetch(urlFahrzeuge).then(r=>r.json())
 ]).then(([p,m,f])=>{
-produkte=p; mapping=m; fahrzeuge=f; init();
+produkte=p; mapping=m; fahrzeuge=f;
+init();
 });
 
 function init(){
@@ -220,60 +172,60 @@ reihen.forEach(r=>el.add(new Option(r,r)));
 document.getElementById("reihe").onchange=function(){
 let modelle=[...new Set(mapping.filter(x=>clean(x["Reihe"])===this.value).map(x=>clean(x["Modell"])))];
 let el=document.getElementById("modell");
-el.innerHTML="<option value=''>Modell wählen</option>";
+el.innerHTML="<option>Modell wählen</option>";
 modelle.forEach(m=>el.add(new Option(m,m)));
 };
 
 document.getElementById("modell").onchange=function(){
 let reihe=document.getElementById("reihe").value;
+
 let gens=[...new Set(mapping.filter(x=>clean(x["Reihe"])===reihe && clean(x["Modell"])===this.value).map(x=>clean(x["Generation"])))];
-let el=document.getElementById("generation");
-el.innerHTML="<option value=''>Generation wählen</option>";
-gens.forEach(g=>el.add(new Option(g,g)));
+
+let html='<div class="gen-cards">';
+
+gens.forEach(g=>{
+let f = fahrzeuge.find(x=>clean(x["Generation"])===g);
+
+html+=`
+<div class="gen-card" onclick="selectGeneration('${g}')">
+<img src="${f?.Bild || ''}">
+<div>${g}</div>
+</div>`;
+});
+
+html+='</div>';
+
+document.getElementById("generationCards").innerHTML=html;
 };
 
-document.getElementById("generation").onchange=function(){
+function selectGeneration(gen){
+selectedGeneration = gen;
 
 let reihe=document.getElementById("reihe").value;
 let modell=document.getElementById("modell").value;
-let generation=this.value;
 
-/* MOTOR */
-let motors=[...new Set(
-mapping.filter(x =>
+let motors=[...new Set(mapping.filter(x=>
 clean(x["Reihe"])===reihe &&
 clean(x["Modell"])===modell &&
-clean(x["Generation"])===generation
-).map(x => clean(x["Motor"]))
-)];
+clean(x["Generation"])===gen
+).map(x=>clean(x["Motor"])))];
 
 let el=document.getElementById("motor");
-el.innerHTML="<option value=''>Motor wählen</option>";
+el.innerHTML="<option>Motor wählen</option>";
 motors.forEach(m=>el.add(new Option(m,m)));
+}
 
-/* Fahrzeugbild */
-let fahrzeug=fahrzeuge.find(f=>
-clean(f["Reihe"])===reihe &&
-clean(f["Modell"])===modell &&
-clean(f["Generation"])===generation
-);
-
-let bildHtml = fahrzeug ? `
-<div style="text-align:center; margin-top:10px;">
-<img src="${getImageUrl(fahrzeug["Bild"])}" style="max-width:120px;">
-</div>
-` : "";
-
-document.getElementById("mainContent").innerHTML = bildHtml;
-
-/* 👉 WICHTIG: MOTOR EVENT IST JETZT HIER (NICHT MEHR VERSCHACHTELT!) */
 document.getElementById("motor").onchange=function(){
 
 let reihe=document.getElementById("reihe").value;
 let modell=document.getElementById("modell").value;
-let gen=document.getElementById("generation").value;
 
-let tnList=mapping.filter(x=>clean(x["Reihe"])===reihe && clean(x["Modell"])===modell && clean(x["Generation"])===gen && clean(x["Motor"])===this.value).map(x=>clean(x["TN"]));
+let tnList=mapping.filter(x=>
+clean(x["Reihe"])===reihe &&
+clean(x["Modell"])===modell &&
+clean(x["Generation"])===selectedGeneration &&
+clean(x["Motor"])===this.value
+).map(x=>clean(x["TN"]));
 
 let results=produkte.filter(p=>tnList.includes(clean(p["TN"])));
 
@@ -282,69 +234,39 @@ render(results);
 
 function render(results){
 
-let html=`<div class="layout"><div class="left">`;
+let html="";
 
 results.forEach(r=>{
 
-let lager = parseInt(r["Lager"]) || 0;
-
-let lagerText = "";
-let lagerClass = "";
-
-if (lager > 3) {
-    lagerText = "Sofort verfügbar";
-    lagerClass = "green";
-} else if (lager > 0) {
-    lagerText = "Wenig Lager";
-    lagerClass = "orange";
-} else {
-    lagerText = "Nicht verfügbar";
-    lagerClass = "red";
-}
-
-let vp = parseFloat((r["VP"] || "").toString().replace(",", "."));
-let angebot = parseFloat((r["Angebotspreis"] || "").toString().replace(",", "."));
-
-let rabatt = (vp && angebot) ? Math.round((1 - angebot/vp) * 100) : null;
+let lager=parseInt(r["Lager"])||0;
+let status=lager>3?"green":lager>0?"orange":"red";
+let text=lager>3?"Sofort verfügbar":lager>0?"Wenig Lager":"Nicht verfügbar";
 
 html+=`
 <div class="product">
 
 <div class="product-left">
-<img src="${getImageUrl(r["Bild"])}" onclick="openImg('${getImageUrl(r["Bild"])}')">
-
+<img src="${r["Bild"]}">
 <div class="product-info">
-<div class="product-title">${r["Bezeichnung"]||""}</div>
-<div>${r["Reifen"]||""}</div>
-<div>${r["Dimension"]||""}</div>
-
-${r["Hinweistext"] ? `
-<div class="hinweis">
-${r["Hinweistext"].replace(/\n/g,"<br>")}
-</div>` : ""}
-
+<div class="product-title">${r["Bezeichnung"]}</div>
+<div>${r["Reifen"]}</div>
+<div>${r["Dimension"]}</div>
 </div>
 </div>
 
-<div class="product-right">
-
-<div>Pro Satz inkl. Montage</div>
-${vp ? `<div class="old-price">${vp} CHF</div>` : ""}
-<div class="new-price">${angebot || "-"} CHF</div>
-${rabatt ? `<div class="discount">-${rabatt}%</div>` : ""}
-
-<div class="available ${lagerClass}">${lagerText}</div>
-
+<div>
+<div>${r["VP"] ? `<span class="old-price">${r["VP"]} CHF</span>` : ""}</div>
+<div class="new-price">${r["Angebotspreis"]} CHF</div>
+<div class="${status}">${text}</div>
 <button class="button">Auswählen</button>
-
 </div>
 
 </div>`;
 });
 
-html+=`</div></div>`;
 document.getElementById("mainContent").innerHTML=html;
 }
+
 </script>
 
 </body>
