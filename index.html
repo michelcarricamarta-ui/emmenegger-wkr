@@ -23,9 +23,7 @@ body {
     text-align: center;
     margin-bottom: 20px;
 }
-.logo img {
-    max-width: 500px;
-}
+.logo img { max-width: 500px; }
 
 h2 { text-align:center; }
 
@@ -109,7 +107,7 @@ h2 { text-align:center; }
 }
 
 .new-price {
-    font-size: 22px;
+    font-size: 18px; /* 🔥 kleiner */
     font-weight: bold;
 }
 
@@ -127,6 +125,20 @@ h2 { text-align:center; }
     padding: 10px;
     border: none;
     cursor: pointer;
+    margin-top: 10px;
+}
+
+.form-box {
+    margin-top: 40px;
+    padding: 20px;
+    background: #f3f3f3;
+    border-radius: 10px;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
 }
 </style>
 </head>
@@ -195,35 +207,28 @@ html+=`<div class="preview"><img src="${state.produktPreview["Bild"]}"></div>`;
 /* REIHE */
 if(!state.reihe){
 let reihen=[...new Set(mapping.map(x=>clean(x["Reihe"])))];
-
 html+=`<div class="section-title">1. Reihe wählen</div><div class="grid">`;
-
 reihen.forEach(r=>{
 html+=`<div class="reihe-card" onclick="selectReihe('${r}')">${r}</div>`;
 });
-
 html+=`</div>`;
 }
 
 /* MODELL */
 if(state.reihe && !state.modell){
 let modelle=[...new Set(mapping.filter(x=>clean(x["Reihe"])===state.reihe).map(x=>clean(x["Modell"])))];
-
 html+=`<div class="section-title">2. Modell wählen</div><div class="grid">`;
-
 modelle.forEach(m=>{
 let fahrzeug = fahrzeuge.find(f =>
 clean(f["Reihe"])===state.reihe &&
 clean(f["Modell"])===m
 );
-
 html+=`
 <div class="card" onclick="selectModell('${m}')">
 <img src="${clean(fahrzeug?.Bild) || ''}">
 <div class="card-title">${m}</div>
 </div>`;
 });
-
 html+=`</div>`;
 }
 
@@ -233,13 +238,10 @@ let motors=[...new Set(mapping.filter(x=>
 clean(x["Reihe"])===state.reihe &&
 clean(x["Modell"])===state.modell
 ).map(x=>clean(x["Motor"])))];
-
 html+=`<div class="section-title">3. Motor wählen</div><div class="grid">`;
-
 motors.forEach(m=>{
 html+=`<div class="reihe-card" onclick="selectMotor('${m}')">${m}</div>`;
 });
-
 html+=`</div>`;
 }
 
@@ -287,9 +289,10 @@ Teilenummer: ${r["TN"]}
 
 <div>
 ${preisHTML}
+
 <div style="font-size:11px;">Preise inkl. MwST</div>
 
-<div class="${status}">${text}</div>
+<div class="${status}" style="margin-top:10px;">${text}</div>
 
 ${lager===0 ? `<div style="font-size:12px;">Lieferzeit ca. 5–10 Arbeitstage</div>` : ""}
 
@@ -298,6 +301,24 @@ ${lager===0 ? `<div style="font-size:12px;">Lieferzeit ca. 5–10 Arbeitstage</d
 
 </div>`;
 });
+}
+
+/* FORMULAR */
+if(state.produkt){
+html+=`
+<div class="form-box">
+
+<h3>Ihre Anfrage</h3>
+
+<b>${state.produkt["Bezeichnung"]}</b><br>
+
+<input placeholder="Name">
+<input placeholder="E-Mail">
+<textarea placeholder="Bemerkung"></textarea>
+
+<button class="button">Anfrage senden</button>
+
+</div>`;
 }
 
 document.getElementById("app").innerHTML=html;
