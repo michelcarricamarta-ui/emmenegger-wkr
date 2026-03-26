@@ -195,6 +195,19 @@ html += `
 Reihe: ${state.reihe}<br>
 Modell: ${state.modell}<br>
 Motor: ${state.motor}
+
+<br><br>
+
+<button onclick="resetSelection()" class="button">
+Auswahl ändern
+</button>
+
+</div>
+<div class="summary-text">
+<b>Ihre Auswahl:</b><br>
+Reihe: ${state.reihe}<br>
+Modell: ${state.modell}<br>
+Motor: ${state.motor}
 </div>
 
 <div class="summary-img">
@@ -333,7 +346,14 @@ function selectMotor(m){
 state.motor=m;
 render();
 }
-
+    
+function resetSelection(){
+    state.reihe = null;
+    state.modell = null;
+    state.motor = null;
+    render();
+}
+    
 </script>
 
 </body>
