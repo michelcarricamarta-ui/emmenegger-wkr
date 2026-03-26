@@ -163,9 +163,17 @@ select {
 
 <div class="select-row">
 <select id="reihe"></select>
-<select id="modell"></select>
-<select id="generation"></select>
-<select id="motor"></select>
+<select id="modell">
+    <option>Modell wählen</option>
+</select>
+
+<select id="generation">
+    <option>Generation wählen</option>
+</select>
+
+<select id="motor">
+    <option>Motor wählen</option>
+</select>
 </div>
 
 <div id="mainContent"></div>
@@ -205,7 +213,7 @@ produkte=p; mapping=m; fahrzeuge=f; init();
 function init(){
 let reihen=[...new Set(mapping.map(x=>clean(x["Reihe"])))];
 let el=document.getElementById("reihe");
-el.innerHTML="<option value=''>Reihe wählen (z.B. BMW 1er)</option>";
+el.innerHTML="<option value=''>Reihe wählen</option>";
 reihen.forEach(r=>el.add(new Option(r,r)));
 }
 
@@ -250,12 +258,13 @@ clean(f["Modell"])===modell &&
 clean(f["Generation"])===generation
 );
 
-document.getElementById("mainContent").innerHTML =
-fahrzeug ? `
-<div style="text-align:center; margin-top:20px;">
-<img src="${getImageUrl(fahrzeug["Bild"])}" style="max-width:250px;">
-</div>` : "";
-};
+let bildHtml = fahrzeug ? `
+<div style="text-align:center; margin-top:10px;">
+<img src="${getImageUrl(fahrzeug["Bild"])}" style="max-width:120px;">
+</div>
+` : "";
+
+document.getElementById("mainContent").innerHTML = bildHtml;
 
 /* 👉 WICHTIG: MOTOR EVENT IST JETZT HIER (NICHT MEHR VERSCHACHTELT!) */
 document.getElementById("motor").onchange=function(){
