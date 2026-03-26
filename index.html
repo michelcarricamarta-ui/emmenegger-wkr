@@ -205,17 +205,22 @@ Motor: ${state.motor}
 `;
 }
 
+if(!state.motor){
+
 /* 1. REIHE */
 let reihen=[...new Set(mapping.map(x=>clean(x["Reihe"])))];
 
 html+=`<div><b>1. Reihe wählen</b></div><div class="grid">`;
+
 reihen.forEach(r=>{
 html+=`<div class="card" onclick="selectReihe('${r}')">${r}</div>`;
 });
+
 html+=`</div>`;
+}
 
 /* 2. MODELL */
-if(state.reihe){
+if(state.reihe && !state.motor){
 
 let modelle=[...new Set(mapping
 .filter(x=>clean(x["Reihe"])===state.reihe)
@@ -242,7 +247,7 @@ html+=`</div>`;
 }
 
 /* 3. MOTOR */
-if(state.modell){
+if(state.modell && !state.motor){
 
 let motors=[...new Set(mapping
 .filter(x=>
