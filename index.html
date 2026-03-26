@@ -26,7 +26,7 @@ body {
 }
 
 .logo img {
-    max-width: 500px; /* DEUTLICH GRÖSSER */
+    max-width: 500px;
 }
 
 /* FILTER */
@@ -51,15 +51,6 @@ select {
     flex: 3;
 }
 
-.right {
-    flex: 1;
-    text-align: center;
-}
-
-.right img {
-    max-width: 200px;
-}
-
 /* PRODUKT */
 .product {
     display: flex;
@@ -70,16 +61,17 @@ select {
 
 .product-left {
     display: flex;
-    gap: 20px;
+    gap: 25px;
 }
 
 .product-left img {
-    width: 220px;
+    width: 240px;
     cursor: pointer;
+    border-radius: 8px;
 }
 
 .product-info {
-    max-width: 400px;
+    max-width: 450px;
 }
 
 .product-title {
@@ -91,9 +83,21 @@ select {
     text-align: right;
 }
 
-.price {
-    font-size: 22px;
+/* PREISE */
+.old-price {
+    text-decoration: line-through;
+    color: #888;
+    font-size: 14px;
+}
+
+.new-price {
+    font-size: 24px;
     font-weight: bold;
+}
+
+.discount {
+    color: red;
+    font-size: 13px;
 }
 
 .available {
@@ -101,6 +105,7 @@ select {
     font-weight: bold;
 }
 
+/* BUTTON */
 .button {
     background: #555;
     color: white;
@@ -209,7 +214,7 @@ let reihe=document.getElementById("reihe").value;
 let modell=document.getElementById("modell").value;
 let generation=this.value;
 
-/* 👉 MOTOR WIEDER FÜLLEN (DAS HAT GEFEHLT!) */
+/* MOTOR */
 let motors=[...new Set(
 mapping
 .filter(x =>
@@ -222,10 +227,9 @@ clean(x["Generation"])===generation
 
 let el=document.getElementById("motor");
 el.innerHTML="<option>Motor</option>";
-
 motors.forEach(m=>el.add(new Option(m,m)));
 
-/* 👉 Fahrzeug anzeigen */
+/* Fahrzeugbild */
 let fahrzeug=fahrzeuge.find(f=>
 clean(f["Reihe"])===reihe &&
 clean(f["Modell"])===modell &&
@@ -257,6 +261,11 @@ let html=`<div class="layout"><div class="left">`;
 
 results.forEach(r=>{
 
+let vp = parseFloat(r["VP"]);
+let angebot = parseFloat(r["Angebotspreis"] || r["Preis"]);
+
+let rabatt = (vp && angebot) ? Math.round((1 - angebot/vp) * 100) : null;
+
 html+=`
 <div class="product">
 
@@ -272,10 +281,19 @@ html+=`
 </div>
 
 <div class="product-right">
+
 <div>Pro Satz inkl. Montage</div>
-<div class="price">${r["Preis"]||"-"} CHF</div>
+
+${vp ? `<div class="old-price">${vp} CHF</div>` : ""}
+
+<div class="new-price">${angebot || "-"} CHF</div>
+
+${rabatt ? `<div class="discount">-${rabatt}%</div>` : ""}
+
 <div class="available">Sofort verfügbar</div>
+
 <button class="button">Auswählen</button>
+
 </div>
 
 </div>`;
