@@ -327,7 +327,17 @@ document.getElementById("app").innerHTML=html;
 function selectReihe(r){ state.reihe=r; render(); }
 function selectModell(m){ state.modell=m; render(); }
 function selectMotor(m){ state.motor=m; render(); }
-function showPreview(p){ state.produktPreview=p; render(); }
+function showPreview(p){ 
+
+    // Wenn das gleiche Bild schon offen ist → wieder schliessen
+    if(state.produktPreview && state.produktPreview.TN === p.TN){
+        state.produktPreview = null;
+    } else {
+        state.produktPreview = p;
+    }
+
+    render();
+}
 function selectProdukt(p){ state.produkt=p; render(); }
 
 </script>
