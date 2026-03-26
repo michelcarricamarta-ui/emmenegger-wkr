@@ -279,8 +279,8 @@ if (lager > 3) {
     lagerText = "Nicht verfügbar";
     lagerClass = "red";
 }
-let vp = parseFloat(r["VP"]);
-let angebot = parseFloat(r["Angebotspreis"] || r["Preis"]);
+let vp = parseFloat((r["VP"] || "").toString().replace(",", "."));
+let angebot = parseFloat((r["Angebotspreis"] || r["Preis"] || "").toString().replace(",", "."));
 
 let rabatt = (vp && angebot) ? Math.round((1 - angebot/vp) * 100) : null;
 
