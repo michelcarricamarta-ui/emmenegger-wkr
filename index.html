@@ -191,11 +191,23 @@ clean(f["Modell"])===state.modell
 
 html+=`
 <div class="summary-box">
+
 <div>
 <b>Ihre Auswahl:</b><br>
 ${state.reihe} / ${state.modell} / ${state.motor}
+
+<br><br>
+
+<button class="button" onclick="resetSelection()">
+Zurück zur Auswahl
+</button>
+
 </div>
-<img src="${clean(fahrzeug?.Bild) || ''}" style="max-width:120px;">
+
+<div class="summary-img">
+<img src="${clean(fahrzeug?.Bild) || ''}">
+</div>
+
 </div>`;
 }
 
