@@ -409,6 +409,49 @@ ${bemerkung}
 
 window.location.href = "mailto:tv-g-fp@emmeneggerag.ch?subject=WKR Anfrage&body=" + encodeURIComponent(text);
 }    
+
+function sendBestellung(){
+
+if(!validateForm()) return;
+
+let name = document.getElementById("name").value;
+let email = document.getElementById("email").value;
+let kennzeichen = document.getElementById("kennzeichen").value;
+
+let text = `
+BESTELLUNG
+
+Name: ${name}
+Email: ${email}
+Kontrollschild: ${kennzeichen}
+
+Produkt: ${state.produkt["Bezeichnung"]}
+Preis: ${state.produkt["Angebotspreis"]} CHF
+`;
+
+window.location.href = "mailto:tv-g-fp@emmeneggerag.ch?subject=WKR Bestellung&body=" + encodeURIComponent(text);
+}
+
+function printAngebot(){
+
+let content = `
+<h2>BMW Winterkompletträder Angebot</h2>
+
+<b>${state.produkt["Bezeichnung"]}</b><br>
+${state.produkt["Dimension"]}<br><br>
+
+Preis: ${state.produkt["Angebotspreis"]} CHF<br>
+Preise inkl. MwST<br><br>
+
+Teilenummer: ${state.produkt["TN"]}
+`;
+
+let win = window.open("", "", "width=800,height=600");
+win.document.write(content);
+win.document.close();
+win.print();
+}    
+    
     
 document.getElementById("app").innerHTML=html;
 }
