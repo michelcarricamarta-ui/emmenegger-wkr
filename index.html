@@ -15,7 +15,7 @@ body {
     max-width: 1500px;
     margin: auto;
     background: white;
-    padding: 80px 40px 40px 40px; /* 👉 mehr platz oben wegen logo */
+    padding: 80px 40px 40px 40px;
     border-radius: 12px;
     position: relative;
 }
@@ -26,9 +26,7 @@ body {
     top: 20px;
     right: 30px;
 }
-.logo-top img {
-    width: 260px;
-}
+.logo-top img { width: 260px; }
 
 /* HERO */
 .hero {
@@ -51,31 +49,44 @@ body {
     font-weight: bold;
 }
 
+/* GRID */
+.grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+/* CARD */
+.card {
+    border: 1px solid #ccc;
+    padding: 15px;
+    cursor: pointer;
+    border-radius: 10px;
+    min-width: 180px;
+}
+.card:hover {
+    border-color: #1c69d4;
+}
+
 /* PRODUKT */
 .product {
-    width: 1100px; /* 👉 breiter */
+    width: 1100px;
     margin: auto;
     display: flex;
     justify-content: space-between;
+    padding: 25px 0;
     border-bottom: 1px solid #ddd;
-    padding: 30px 0;
 }
 
 .product-left {
     display: flex;
-    gap: 25px;
+    gap: 20px;
 }
 
 .product-left img {
-    width: 260px;
+    width: 250px;
 }
 
-.product-title {
-    font-weight: bold;
-    font-size: 18px;
-}
-
-/* PREIS */
 .old-price {
     text-decoration: line-through;
     color: #888;
@@ -88,27 +99,22 @@ body {
 
 .small {
     font-size: 11px;
-    color: #777;
 }
 
-/* STATUS */
-.green { color: green; }
-.red { color: red; }
-
-/* BUTTON */
 .button {
     background: #1c69d4;
     color: white;
-    padding: 10px 15px;
+    padding: 10px;
     border: none;
     cursor: pointer;
-    margin-top: 10px;
+    margin-top:10px;
 }
 
 /* MODAL */
 .modal {
     position: fixed;
-    top:0; left:0;
+    top:0;
+    left:0;
     width:100%;
     height:100%;
     background: rgba(0,0,0,0.6);
@@ -119,17 +125,10 @@ body {
 
 .modal-content {
     background:white;
-    padding:25px;
+    padding:20px;
     border-radius:10px;
     width:400px;
 }
-
-.modal input, .modal textarea {
-    width:100%;
-    padding:8px;
-    margin-bottom:10px;
-}
-
 </style>
 </head>
 
@@ -142,9 +141,9 @@ body {
 </div>
 
 <div class="hero">
-    <div class="hero-text">
-        Original Winterkompletträder – perfekt auf Ihr Fahrzeug abgestimmt
-    </div>
+<div class="hero-text">
+Original Winterkompletträder – perfekt auf Ihr Fahrzeug abgestimmt
+</div>
 </div>
 
 <h2>Winterkompletträder Konfigurator</h2>
@@ -156,7 +155,6 @@ body {
 <!-- MODAL -->
 <div id="modal" class="modal">
 <div class="modal-content">
-<h3>Anfrage</h3>
 
 <input id="name" placeholder="Name *">
 <input id="email" placeholder="E-Mail *">
@@ -165,12 +163,12 @@ body {
 
 <button onclick="sendMail()" class="button">Anfrage senden</button>
 <button onclick="closeModal()">Schliessen</button>
+
 </div>
 </div>
 
 <script>
 
-/* 👉 DEIN ORIGINAL CODE UNVERÄNDERT */
 const urlProdukte = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Produkte";
 const urlMapping = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Zuordnung";
 const urlFahrzeuge = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Fahrzeuge";
@@ -195,23 +193,55 @@ function render(){
 
 let html="";
 
+/* AUSWAHL */
+if(!state.reihe){
+
+let reihen=[...new Set(mapping.map(x=>clean(x["Reihe"])))];
+
+html+=`<div><b>1. Reihe wählen</b></div><div class="grid">`;
+
+reihen.forEach(r=>{
+html+=`<div class="card" onclick="selectReihe('${r}')">${r}</div>`;
+});
+
+html+=`</div>`;
+}
+
+if(state.reihe && !state.modell){
+
+let modelle=[...new Set(mapping.filter(x=>clean(x["Reihe"])===state.reihe).map(x=>clean(x["Modell"])))];
+
+html+=`<div><b>2. Modell wählen</b></div><div class="grid">`;
+
+modelle.forEach(m=>{
+html+=`<div class="card" onclick="selectModell('${m}')">${m}</div>`;
+});
+
+html+=`</div>`;
+}
+
+if(state.modell && !state.motor){
+
+let motors=[...new Set(mapping.filter(x=>clean(x["Modell"])===state.modell).map(x=>clean(x["Motor"])))];
+
+html+=`<div><b>3. Motor wählen</b></div><div class="grid">`;
+
+motors.forEach(m=>{
+html+=`<div class="card" onclick="selectMotor('${m}')">${m}</div>`;
+});
+
+html+=`</div>`;
+}
+
+/* PRODUKTE */
 if(state.motor){
 
-let tnList=mapping.filter(x=>
-clean(x["Reihe"])===state.reihe &&
-clean(x["Modell"])===state.modell &&
-clean(x["Motor"])===state.motor
-).map(x=>clean(x["TN"]));
-
+let tnList=mapping.filter(x=>clean(x["Motor"])===state.motor).map(x=>clean(x["TN"]));
 let results=produkte.filter(p=>tnList.includes(clean(p["TN"])));
 
 results.forEach(r=>{
 
 let lager=parseInt(r["Lager"])||0;
-
-let status = lager>0 
-? `<div class="green">An Lager</div>` 
-: `<div class="red">Auf Bestellung<br><small>Lieferzeit 5-10 Arbeitstage</small></div>`;
 
 html+=`
 <div class="product">
@@ -219,23 +249,25 @@ html+=`
 <div class="product-left">
 <img src="${clean(r["Bild"])}">
 <div>
-<div class="product-title">${r["Bezeichnung"]}</div>
-${r["Reifen"]}<br>
+<b>${r["Bezeichnung"]}</b><br>
 ${r["Dimension"]}
 </div>
 </div>
 
 <div>
 <div class="small">inkl. Montage</div>
-${r["VP"] ? `<div class="old-price">${r["VP"]} CHF</div>` : ""}
+<div class="old-price">${r["VP"]} CHF</div>
 <div class="new-price">${r["Angebotspreis"]} CHF</div>
 <div class="small">alle Preise inkl. MwSt.</div>
 
-${status}
+${lager>0 
+? '<div style="color:green">An Lager</div>' 
+: '<div style="color:red">Auf Bestellung<br>Lieferzeit 5-10 Arbeitstage</div>'}
 
 <button class="button" onclick="openModal('${r["Bezeichnung"]}')">
 Auswählen
 </button>
+
 </div>
 
 </div>`;
@@ -245,6 +277,11 @@ Auswählen
 
 document.getElementById("app").innerHTML=html;
 }
+
+/* ACTIONS */
+function selectReihe(r){ state.reihe=r; render(); }
+function selectModell(m){ state.modell=m; render(); }
+function selectMotor(m){ state.motor=m; render(); }
 
 /* MODAL */
 let selectedProduct="";
@@ -268,9 +305,7 @@ alert("Bitte Pflichtfelder ausfüllen");
 return;
 }
 
-let body=`Produkt: ${selectedProduct}%0D%0AName: ${name}%0D%0AEmail: ${email}`;
-
-window.location.href=`mailto:tv-g-fp@emmeneggerag.ch?subject=Anfrage WKR&body=${body}`;
+window.location.href=`mailto:tv-g-fp@emmeneggerag.ch?subject=WKR Anfrage&body=Produkt: ${selectedProduct}`;
 }
 
 </script>
