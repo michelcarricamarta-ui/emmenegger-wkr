@@ -71,19 +71,37 @@ h2 { text-align:center; }
     text-align: center;
 }
 
+/* 🔥 FIX SUMMARY */
 .summary-box {
     display: flex;
     justify-content: space-between;
+    align-items: center; /* wichtig */
     background: #f3f3f3;
     padding: 20px;
     border-radius: 10px;
     margin-bottom: 20px;
 }
 
+/* 🔥 FIX BILD */
+.summary-img {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.summary-img img {
+    max-width: 140px;
+    height: auto;
+    border-radius: 8px;
+}
+
+/* PREVIEW */
 .preview img {
     width: 550px;
 }
 
+/* PRODUKT */
 .product {
     display: flex;
     justify-content: space-between;
@@ -99,6 +117,11 @@ h2 { text-align:center; }
 .product-left img {
     width: 220px;
     cursor: pointer;
+    transition: 0.3s;
+}
+
+.product-left img:hover {
+    transform: scale(1.1);
 }
 
 .old-price {
@@ -107,7 +130,7 @@ h2 { text-align:center; }
 }
 
 .new-price {
-    font-size: 18px; /* 🔥 kleiner */
+    font-size: 18px;
     font-weight: bold;
 }
 
@@ -339,18 +362,22 @@ document.getElementById("app").innerHTML=html;
 function selectReihe(r){ state.reihe=r; render(); }
 function selectModell(m){ state.modell=m; render(); }
 function selectMotor(m){ state.motor=m; render(); }
-function showPreview(p){ 
 
-    // Wenn das gleiche Bild schon offen ist → wieder schliessen
+function showPreview(p){ 
     if(state.produktPreview && state.produktPreview.TN === p.TN){
         state.produktPreview = null;
     } else {
         state.produktPreview = p;
     }
-
     render();
 }
+
 function selectProdukt(p){ state.produkt=p; render(); }
+
+function resetSelection(){
+state = { reihe:null, modell:null, motor:null, produkt:null, produktPreview:null };
+render();
+}
 
 </script>
 
