@@ -8,29 +8,29 @@
 body {
     font-family: Arial;
     background: #f5f5f5;
-    margin: 0;
 }
+
+/* 👉 BREITER */
+.container {
+    max-width: 1500px;
+    margin: auto;
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+}
+
+/* 👉 NEU: HERO BILD */
 .hero {
+    position: relative;
     background-image: url('https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/WINTER%20Ix3.jpg?raw=true');
     background-size: cover;
     background-position: center;
     height: 300px;
     border-radius: 12px;
-    overflow: hidden;
     margin-bottom: 30px;
-    position: relative;
 }
 
-.hero-overlay {
-    background: rgba(0,0,0,0.45);
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    padding-left: 40px;
-}
-
-/* 🔥 LOGO IM BILD */
+/* 👉 LOGO INS BILD */
 .hero-logo {
     position: absolute;
     top: 20px;
@@ -38,87 +38,19 @@ body {
 }
 
 .hero-logo img {
-    max-width: 260px;
-    height: auto;
-}
+    width: 320px;
 }
 
-.hero-text {
-    color: white;
-}
-
-.hero-text h1 {
-    margin: 0;
-    font-size: 32px;
-}
-
-.hero-text p {
-    margin-top: 10px;
-    font-size: 18px;
-}
-
-    
-.container {
-    max-width: 1400px;
-    margin: 40px auto;
-    background: white;
-    padding: 40px;
-    border-radius: 12px;
-}
-
+/* HEADER (alte logo klasse bleibt ungenutzt aber nicht gelöscht wie gewünscht) */
 .logo {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
 }
 .logo img { max-width: 500px; }
 
 h2 { text-align:center; }
 
-.section-title {
-    font-weight: bold;
-    font-size: 18px;
-    margin-top: 30px;
-}
-
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 25px;
-}
-
-.reihe-card {
-    padding: 30px;
-    text-align: center;
-    border: 2px solid #ddd;
-    border-radius: 12px;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.reihe-card:hover {
-    border-color: #1c69d4;
-}
-
-.card {
-    background: white;
-    border-radius: 14px;
-    overflow: hidden;
-    cursor: pointer;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-}
-
-.card img {
-    width: 100%;
-    height: 150px;
-    object-fit: contain;
-}
-
-.card-title {
-    padding: 15px;
-    text-align: center;
-}
-
-/* SUMMARY */
+/* 👉 AUSWAHL BOX */
 .summary-box {
     display: flex;
     justify-content: space-between;
@@ -126,47 +58,75 @@ h2 { text-align:center; }
     background: #f3f3f3;
     padding: 20px;
     border-radius: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 40px;
 }
 
-/* 🔥 FIX BILD */
-.summary-img {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+.summary-text {
+    font-size: 15px;
+    line-height: 1.6;
 }
 
 .summary-img img {
     max-width: 140px;
-    height: auto;
-    border-radius: 8px;
 }
 
-.preview img {
-    width: 550px;
+/* GRID */
+.grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 15px;
+}
+
+/* CARD */
+.card {
+    border: 1px solid #ccc;
+    padding: 15px;
+    cursor: pointer;
+    border-radius: 10px;
+    background: white;
+    text-align: center;
+    min-width: 180px;
+    transition: 0.2s;
+}
+
+.card:hover {
+    border-color: #1c69d4;
+    transform: scale(1.04);
+}
+
+.card img {
+    max-width: 160px;
+    margin-bottom: 10px;
+}
+
+/* PRODUKT */
+.product-wrapper {
+    display: flex;
+    justify-content: center;
 }
 
 .product {
+    width: 900px;
     display: flex;
     justify-content: space-between;
     border-bottom: 1px solid #ddd;
-    padding: 20px 0;
+    padding: 25px 0;
 }
 
 .product-left {
     display: flex;
-    gap: 20px;
+    gap: 25px;
 }
 
 .product-left img {
-    width: 220px;
-    cursor: pointer;
-    transition: 0.3s;
+    width: 240px;
+    border-radius: 8px;
 }
 
-.product-left img:hover {
-    transform: scale(1.1);
+.product-title {
+    font-weight: bold;
+    font-size: 18px;
 }
 
 .old-price {
@@ -175,38 +135,27 @@ h2 { text-align:center; }
 }
 
 .new-price {
-    font-size: 18px;
+    font-size: 24px;
     font-weight: bold;
 }
 
 .green { color: green; }
+.orange { color: orange; }
 .red { color: red; }
 
 .hinweis {
-    font-size: 12px;
     margin-top: 10px;
+    font-size: 12px;
+    color: #555;
 }
 
+/* BUTTON */
 .button {
-    background: #1c69d4;
+    background: #555;
     color: white;
     padding: 10px;
     border: none;
     cursor: pointer;
-    margin-top: 10px;
-}
-
-.form-box {
-    margin-top: 40px;
-    padding: 20px;
-    background: #f3f3f3;
-    border-radius: 10px;
-}
-
-input, textarea {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
 }
 </style>
 </head>
@@ -214,31 +163,15 @@ input, textarea {
 <body>
 
 <div class="container">
+
+<!-- 👉 NEU: HERO MIT LOGO -->
 <div class="hero">
-
-    <div class="hero-overlay">
-
-        <div class="hero-text">
-            <h1>Original BMW Winterkompletträder</h1>
-            <p>Perfekt abgestimmt für Ihr Fahrzeug</p>
-        </div>
-
-    </div>
-
-    <!-- 🔥 LOGO FIX OBEN RECHTS -->
     <div class="hero-logo">
         <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png">
     </div>
-
 </div>
 
-</div>
-
-    
-<div class="logo">
-<img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png">
 <h2>Winterkompletträder Konfigurator</h2>
-</div>
 
 <div id="app"></div>
 
@@ -251,7 +184,8 @@ const urlMapping = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ
 const urlFahrzeuge = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Fahrzeuge";
 
 let produkte=[], mapping=[], fahrzeuge=[];
-let state = { reihe:null, modell:null, motor:null, produkt:null, produktPreview:null };
+
+let state = { reihe:null, modell:null, motor:null };
 
 function clean(v){ return (v||"").toString().trim(); }
 
@@ -266,75 +200,102 @@ fahrzeuge=f;
 render();
 });
 
+/* RENDER */
 function render(){
 
 let html="";
 
-/* SUMMARY */
+/* 👉 IHRE AUSWAHL */
 if(state.motor){
+
 let fahrzeug = fahrzeuge.find(f =>
 clean(f["Reihe"])===state.reihe &&
 clean(f["Modell"])===state.modell
 );
 
-html+=`
+html += `
 <div class="summary-box">
-<div>
+
+<div class="summary-text">
 <b>Ihre Auswahl:</b><br>
-${state.reihe} / ${state.modell} / ${state.motor}
+Reihe: ${state.reihe}<br>
+Modell: ${state.modell}<br>
+Motor: ${state.motor}
+
 <br><br>
-<button class="button" onclick="resetSelection()">Zurück zur Auswahl</button>
+
+<button onclick="resetSelection()" class="button">
+Auswahl ändern
+</button>
+
 </div>
 
 <div class="summary-img">
-<img src="${clean(fahrzeug?.Bild) || ''}">
+<img src="${clean(fahrzeug?.Bild) || 'https://via.placeholder.com/150'}">
 </div>
-</div>`;
+
+</div>
+`;
 }
 
-/* PREVIEW */
-if(state.produktPreview){
-html+=`<div class="preview"><img src="${state.produktPreview["Bild"]}"></div>`;
-}
+if(!state.motor){
 
-/* REIHE */
-if(!state.reihe){
+/* 1. REIHE */
 let reihen=[...new Set(mapping.map(x=>clean(x["Reihe"])))];
-html+=`<div class="section-title">1. Reihe wählen</div><div class="grid">`;
+
+html+=`<div><b>1. Reihe wählen</b></div><div class="grid">`;
+
 reihen.forEach(r=>{
-html+=`<div class="reihe-card" onclick="selectReihe('${r}')">${r}</div>`;
+html+=`<div class="card" onclick="selectReihe('${r}')">${r}</div>`;
 });
+
 html+=`</div>`;
 }
 
-/* MODELL */
-if(state.reihe && !state.modell){
-let modelle=[...new Set(mapping.filter(x=>clean(x["Reihe"])===state.reihe).map(x=>clean(x["Modell"])))];
-html+=`<div class="section-title">2. Modell wählen</div><div class="grid">`;
+/* 2. MODELL */
+if(state.reihe && !state.motor){
+
+let modelle=[...new Set(mapping
+.filter(x=>clean(x["Reihe"])===state.reihe)
+.map(x=>clean(x["Modell"]))
+)];
+
+html+=`<div style="margin-top:30px;"><b>2. Modell wählen</b></div><div class="grid">`;
+
 modelle.forEach(m=>{
+
 let fahrzeug = fahrzeuge.find(f =>
 clean(f["Reihe"])===state.reihe &&
 clean(f["Modell"])===m
 );
+
 html+=`
 <div class="card" onclick="selectModell('${m}')">
-<img src="${clean(fahrzeug?.Bild) || ''}">
-<div class="card-title">${m}</div>
+<img src="${clean(fahrzeug?.Bild) || 'https://via.placeholder.com/150'}">
+<div>${m}</div>
 </div>`;
 });
+
 html+=`</div>`;
 }
 
-/* MOTOR */
+/* 3. MOTOR */
 if(state.modell && !state.motor){
-let motors=[...new Set(mapping.filter(x=>
+
+let motors=[...new Set(mapping
+.filter(x=>
 clean(x["Reihe"])===state.reihe &&
 clean(x["Modell"])===state.modell
-).map(x=>clean(x["Motor"])))];
-html+=`<div class="section-title">3. Motor wählen</div><div class="grid">`;
+)
+.map(x=>clean(x["Motor"]))
+)];
+
+html+=`<div style="margin-top:30px;"><b>3. Motor wählen</b></div><div class="grid">`;
+
 motors.forEach(m=>{
-html+=`<div class="reihe-card" onclick="selectMotor('${m}')">${m}</div>`;
+html+=`<div class="card" onclick="selectMotor('${m}')">${m}</div>`;
 });
+
 html+=`</div>`;
 }
 
@@ -349,165 +310,70 @@ clean(x["Motor"])===state.motor
 
 let results=produkte.filter(p=>tnList.includes(clean(p["TN"])));
 
+html+=`<div>`;
+
 results.forEach(r=>{
 
-let lager = parseInt(r["Lager"]) || 0;
-let status = lager > 0 ? "green" : "red";
-let text = lager > 0 ? "Verfügbar" : "Auf Bestellung";
-
-let vp = parseFloat(r["VP"]) || 0;
-let angebot = parseFloat(r["Angebotspreis"]) || 0;
-
-let preisHTML = angebot > 0 
-? `<div class="old-price">VP: ${vp} CHF</div><div class="new-price">Angebotspreis: ${angebot} CHF</div>`
-: `<div class="new-price">${vp} CHF</div>`;
+let lager=parseInt(r["Lager"])||0;
+let status=lager>3?"green":lager>0?"orange":"red";
+let text=lager>3?"Sofort verfügbar":lager>0?"Wenig Lager":"Nicht verfügbar";
 
 html+=`
 <div class="product">
 
 <div class="product-left">
-<img src="${clean(r["Bild"])}" onclick='showPreview(${JSON.stringify(r)})'>
+<img src="${clean(r["Bild"])}">
 <div>
-<b>${r["Bezeichnung"]}</b><br>
+<div class="product-title">${r["Bezeichnung"]}</div>
 ${r["Reifen"]}<br>
 ${r["Dimension"]}
 
-<div class="hinweis">
-${r["Hinweistext"] || ""}
-<br><br>
-Teilenummer: ${r["TN"]}
-</div>
+${r["Hinweistext"] ? `<div class="hinweis">${r["Hinweistext"].replace(/\n/g,"<br>")}</div>` : ""}
 </div>
 </div>
 
 <div>
-${preisHTML}
-<div style="font-size:11px;">Preise inkl. MwST</div>
-<div class="${status}" style="margin-top:10px;">${text}</div>
-${lager===0 ? `<div style="font-size:12px;">Lieferzeit ca. 5–10 Arbeitstage</div>` : ""}
-<button class="button" onclick='selectProdukt(${JSON.stringify(r)})'>Auswählen</button>
+${r["VP"] ? `<div class="old-price">${r["VP"]} CHF</div>` : ""}
+<div class="new-price">${r["Angebotspreis"]} CHF</div>
+<div class="${status}">${text}</div>
+<button class="button">Auswählen</button>
 </div>
 
 </div>`;
 });
-}
 
-/* FORMULAR */
-if(state.produkt){
-html+=`
-<div class="form-box">
-
-<h3>Ihre Anfrage</h3>
-
-<b>${state.produkt["Bezeichnung"]}</b><br><br>
-
-<input id="name" placeholder="Name *">
-<input id="email" placeholder="E-Mail *">
-<input id="kennzeichen" placeholder="Kontrollschild *">
-<textarea id="bemerkung" placeholder="Bemerkung"></textarea>
-
-<br>
-
-<button class="button" onclick="sendAnfrage()">Anfrage senden</button>
-<button class="button" onclick="sendBestellung()" style="background:#2e7d32;">Bestellung senden</button>
-<button class="button" onclick="printAngebot()" style="background:#444;">Angebot drucken</button>
-
-</div>`;
+html+=`</div>`;
 }
 
 document.getElementById("app").innerHTML=html;
 }
 
-/* FUNKTIONEN (JETZT GLOBAL → BUTTONS GEHEN) */
-
-function validateForm(){
-let name = document.getElementById("name")?.value.trim();
-let email = document.getElementById("email")?.value.trim();
-let kennzeichen = document.getElementById("kennzeichen")?.value.trim();
-
-if(!name){ alert("Bitte Name eingeben"); return false; }
-if(!email){ alert("Bitte E-Mail eingeben"); return false; }
-if(!kennzeichen){ alert("Bitte Kontrollschild eingeben"); return false; }
-
-return true;
-}
-
-function sendAnfrage(){
-if(!validateForm()) return;
-
-let name = document.getElementById("name").value;
-let email = document.getElementById("email").value;
-let kennzeichen = document.getElementById("kennzeichen").value;
-let bemerkung = document.getElementById("bemerkung").value;
-
-let text = `ANFRAGE
-
-Name: ${name}
-Email: ${email}
-Kontrollschild: ${kennzeichen}
-
-Produkt: ${state.produkt["Bezeichnung"]}
-Preis: ${state.produkt["Angebotspreis"]} CHF
-
-Bemerkung:
-${bemerkung}`;
-
-window.location.href = "mailto:tv-g-fp@emmeneggerag.ch?subject=WKR Anfrage&body=" + encodeURIComponent(text);
-}
-
-function sendBestellung(){
-if(!validateForm()) return;
-
-let name = document.getElementById("name").value;
-let email = document.getElementById("email").value;
-let kennzeichen = document.getElementById("kennzeichen").value;
-
-let text = `BESTELLUNG
-
-Name: ${name}
-Email: ${email}
-Kontrollschild: ${kennzeichen}
-
-Produkt: ${state.produkt["Bezeichnung"]}
-Preis: ${state.produkt["Angebotspreis"]} CHF`;
-
-window.location.href = "mailto:tv-g-fp@emmeneggerag.ch?subject=WKR Bestellung&body=" + encodeURIComponent(text);
-}
-
-function printAngebot(){
-let win = window.open("", "", "width=800,height=600");
-win.document.write(`
-<h2>BMW Winterkompletträder Angebot</h2>
-<b>${state.produkt["Bezeichnung"]}</b><br>
-${state.produkt["Dimension"]}<br><br>
-Preis: ${state.produkt["Angebotspreis"]} CHF<br>
-Preise inkl. MwST<br><br>
-Teilenummer: ${state.produkt["TN"]}
-`);
-win.document.close();
-win.print();
-}
-
-function selectReihe(r){ state.reihe=r; render(); }
-function selectModell(m){ state.modell=m; render(); }
-function selectMotor(m){ state.motor=m; render(); }
-
-function showPreview(p){
-if(state.produktPreview && state.produktPreview.TN === p.TN){
-state.produktPreview = null;
-} else {
-state.produktPreview = p;
-}
+/* ACTIONS */
+function selectReihe(r){
+state.reihe=r;
+state.modell=null;
+state.motor=null;
 render();
 }
 
-function selectProdukt(p){ state.produkt=p; render(); }
+function selectModell(m){
+state.modell=m;
+state.motor=null;
+render();
+}
 
+function selectMotor(m){
+state.motor=m;
+render();
+}
+    
 function resetSelection(){
-state = { reihe:null, modell:null, motor:null, produkt:null, produktPreview:null };
-render();
+    state.reihe = null;
+    state.modell = null;
+    state.motor = null;
+    render();
 }
-
+    
 </script>
 
 </body>
