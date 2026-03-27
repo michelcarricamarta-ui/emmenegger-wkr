@@ -21,41 +21,37 @@ body {
 }
 
 /* 👉 LOGO OBEN RECHTS */
-.top-logo {
+.logo-top {
     position: absolute;
     top: 20px;
-    right: 40px;
+    right: 30px;
 }
-
-.top-logo img {
+.logo-top img {
     width: 260px;
 }
 
-/* 👉 HERO (BILD + TEXT) */
+/* 👉 HERO (wie vorher länglich + text im bild) */
 .hero {
-    text-align: center;
-    margin-top: 40px;
+    position: relative;
+    height: 300px;
+    border-radius: 12px;
+    overflow: hidden;
     margin-bottom: 30px;
+    background-image: url('https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/WINTER%20Ix3.jpg?raw=true');
+    background-size: cover;
+    background-position: center;
 }
 
-.hero img {
-    max-width: 600px;
-    width: 100%;
-    border-radius: 10px;
-}
-
+/* 👉 TEXT IM BILD */
 .hero-text {
-    margin-top: 15px;
-    font-size: 16px;
-    color: #444;
+    position: absolute;
+    bottom: 30px;
+    left: 40px;
+    color: white;
+    font-size: 22px;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(0,0,0,0.6);
 }
-
-/* alte logo klasse bleibt unverändert */
-.logo {
-    text-align: center;
-    margin-bottom: 30px;
-}
-.logo img { max-width: 500px; }
 
 h2 { text-align:center; }
 
@@ -158,7 +154,7 @@ h2 { text-align:center; }
     color: #555;
 }
 
-/* BUTTON (UNVERÄNDERT) */
+/* BUTTON */
 .button {
     background: #555;
     color: white;
@@ -174,16 +170,15 @@ h2 { text-align:center; }
 <div class="container">
 
 <!-- 👉 LOGO -->
-<div class="top-logo">
+<div class="logo-top">
 <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png">
 </div>
 
 <!-- 👉 HERO -->
 <div class="hero">
-<img src="https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/WINTER%20Ix3.jpg?raw=true">
-<div class="hero-text">
-Original Winterkompletträder – perfekt auf Ihr Fahrzeug abgestimmt
-</div>
+    <div class="hero-text">
+        Original Winterkompletträder – perfekt auf Ihr Fahrzeug abgestimmt
+    </div>
 </div>
 
 <h2>Winterkompletträder Konfigurator</h2>
@@ -215,11 +210,12 @@ fahrzeuge=f;
 render();
 });
 
-/* ⚠️ AB HIER IST DEIN CODE 1:1 UNVERÄNDERT */
+/* RENDER */
 function render(){
 
 let html="";
 
+/* 👉 IHRE AUSWAHL */
 if(state.motor){
 
 let fahrzeug = fahrzeuge.find(f =>
