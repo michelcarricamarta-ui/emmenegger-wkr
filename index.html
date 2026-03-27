@@ -345,17 +345,71 @@ html+=`
 
 <h3>Ihre Anfrage</h3>
 
-<b>${state.produkt["Bezeichnung"]}</b><br>
+<b>${state.produkt["Bezeichnung"]}</b><br><br>
 
-<input placeholder="Name">
-<input placeholder="E-Mail">
-<textarea placeholder="Bemerkung"></textarea>
+<input id="name" placeholder="Name *">
+<input id="email" placeholder="E-Mail *">
+<input id="kennzeichen" placeholder="Kontrollschild * (z.B. AG 123456)">
+<textarea id="bemerkung" placeholder="Bemerkung"></textarea>
 
-<button class="button">Anfrage senden</button>
+<br>
+
+<button class="button" onclick="sendAnfrage()">Anfrage senden</button>
+<button class="button" onclick="sendBestellung()" style="background:#2e7d32;">Bestellung senden</button>
+<button class="button" onclick="printAngebot()" style="background:#444;">Angebot drucken</button>
 
 </div>`;
 }
+function validateForm(){
 
+let name = document.getElementById("name").value.trim();
+let email = document.getElementById("email").value.trim();
+let kennzeichen = document.getElementById("kennzeichen").value.trim();
+
+if(!name){
+    alert("Bitte Name eingeben");
+    return false;
+}
+
+if(!email){
+    alert("Bitte E-Mail eingeben");
+    return false;
+}
+
+if(!kennzeichen){
+    alert("Bitte Kontrollschild eingeben");
+    return false;
+}
+
+return true;
+}
+
+function sendAnfrage(){
+
+if(!validateForm()) return;
+
+let name = document.getElementById("name").value;
+let email = document.getElementById("email").value;
+let kennzeichen = document.getElementById("kennzeichen").value;
+let bemerkung = document.getElementById("bemerkung").value;
+
+let text = `
+ANFRAGE
+
+Name: ${name}
+Email: ${email}
+Kontrollschild: ${kennzeichen}
+
+Produkt: ${state.produkt["Bezeichnung"]}
+Preis: ${state.produkt["Angebotspreis"]} CHF
+
+Bemerkung:
+${bemerkung}
+`;
+
+window.location.href = "mailto:tv-g-fp@emmeneggerag.ch?subject=WKR Anfrage&body=" + encodeURIComponent(text);
+}    
+    
 document.getElementById("app").innerHTML=html;
 }
 
