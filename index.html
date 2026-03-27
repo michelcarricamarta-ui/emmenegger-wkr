@@ -17,31 +17,40 @@ body {
     background: white;
     padding: 40px;
     border-radius: 12px;
+    position: relative;
 }
 
-/* 👉 NEU: HERO BILD */
+/* 👉 LOGO OBEN RECHTS */
+.top-logo {
+    position: absolute;
+    top: 20px;
+    right: 40px;
+}
+
+.top-logo img {
+    width: 260px;
+}
+
+/* 👉 HERO (BILD + TEXT) */
 .hero {
-    position: relative;
-    background-image: url('https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/WINTER%20Ix3.jpg?raw=true');
-    background-size: cover;
-    background-position: center;
-    height: 300px;
-    border-radius: 12px;
+    text-align: center;
+    margin-top: 40px;
     margin-bottom: 30px;
 }
 
-/* 👉 LOGO INS BILD */
-.hero-logo {
-    position: absolute;
-    top: 20px;
-    right: 30px;
+.hero img {
+    max-width: 600px;
+    width: 100%;
+    border-radius: 10px;
 }
 
-.hero-logo img {
-    width: 320px;
+.hero-text {
+    margin-top: 15px;
+    font-size: 16px;
+    color: #444;
 }
 
-/* HEADER (alte logo klasse bleibt ungenutzt aber nicht gelöscht wie gewünscht) */
+/* alte logo klasse bleibt unverändert */
 .logo {
     text-align: center;
     margin-bottom: 30px;
@@ -149,7 +158,7 @@ h2 { text-align:center; }
     color: #555;
 }
 
-/* BUTTON */
+/* BUTTON (UNVERÄNDERT) */
 .button {
     background: #555;
     color: white;
@@ -164,11 +173,17 @@ h2 { text-align:center; }
 
 <div class="container">
 
-<!-- 👉 NEU: HERO MIT LOGO -->
+<!-- 👉 LOGO -->
+<div class="top-logo">
+<img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png">
+</div>
+
+<!-- 👉 HERO -->
 <div class="hero">
-    <div class="hero-logo">
-        <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png">
-    </div>
+<img src="https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/WINTER%20Ix3.jpg?raw=true">
+<div class="hero-text">
+Original Winterkompletträder – perfekt auf Ihr Fahrzeug abgestimmt
+</div>
 </div>
 
 <h2>Winterkompletträder Konfigurator</h2>
@@ -200,12 +215,11 @@ fahrzeuge=f;
 render();
 });
 
-/* RENDER */
+/* ⚠️ AB HIER IST DEIN CODE 1:1 UNVERÄNDERT */
 function render(){
 
 let html="";
 
-/* 👉 IHRE AUSWAHL */
 if(state.motor){
 
 let fahrzeug = fahrzeuge.find(f =>
@@ -240,7 +254,6 @@ Auswahl ändern
 
 if(!state.motor){
 
-/* 1. REIHE */
 let reihen=[...new Set(mapping.map(x=>clean(x["Reihe"])))];
 
 html+=`<div><b>1. Reihe wählen</b></div><div class="grid">`;
@@ -252,7 +265,6 @@ html+=`<div class="card" onclick="selectReihe('${r}')">${r}</div>`;
 html+=`</div>`;
 }
 
-/* 2. MODELL */
 if(state.reihe && !state.motor){
 
 let modelle=[...new Set(mapping
@@ -279,7 +291,6 @@ html+=`
 html+=`</div>`;
 }
 
-/* 3. MOTOR */
 if(state.modell && !state.motor){
 
 let motors=[...new Set(mapping
@@ -299,7 +310,6 @@ html+=`<div class="card" onclick="selectMotor('${m}')">${m}</div>`;
 html+=`</div>`;
 }
 
-/* PRODUKTE */
 if(state.motor){
 
 let tnList=mapping.filter(x=>
@@ -348,7 +358,6 @@ html+=`</div>`;
 document.getElementById("app").innerHTML=html;
 }
 
-/* ACTIONS */
 function selectReihe(r){
 state.reihe=r;
 state.modell=null;
