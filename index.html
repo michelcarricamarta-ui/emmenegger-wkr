@@ -31,11 +31,18 @@ body {
     padding: 0 40px;
 }
 
+..hero-logo {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+}
+
 .hero-logo img {
-    max-width: 220px;
+    max-width: 180px;
     height: auto;
-    filter: brightness(0) invert(1); /* 🔥 weiss machen */
-    opacity: 0.9;
+    background: rgba(255,255,255,0.95); /* 🔥 macht Logo sichtbar */
+    padding: 10px 15px;
+    border-radius: 8px;
 }
 
 .hero-text {
