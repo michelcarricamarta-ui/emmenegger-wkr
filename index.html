@@ -618,19 +618,20 @@ function render() {
         html += `<div class="grid">`;
 
         modelle.forEach(m => {
-            const fahrzeug = fahrzeuge.find(f =>
-                clean(f["Reihe"]) === state.reihe &&
-                clean(f["Modell"]) === m
-            );
+     const fahrzeug = fahrzeuge.find(f =>
+    clean(f["Reihe"]) === state.reihe &&
+    clean(f["Modell"]) === m
+);
 
-            const bild = clean(fahrzeug?.Bild) || "https://via.placeholder.com/260x140?text=BMW";
+const bild = clean(fahrzeug?.Bild) || "https://via.placeholder.com/260x140?text=BMW";
+const anzeige = clean(fahrzeug?.Anzeige) || m;
 
-            html += `
-                <div class="card model-card" onclick="selectModell('${jsSafe(m)}')">
-                    <img src="${escapeHtml(bild)}" alt="${escapeHtml(m)}">
-                    <div class="model-name">${escapeHtml(m)}</div>
-                </div>
-            `;
+html += `
+    <div class="card model-card" onclick="selectModell('${jsSafe(m)}')">
+        <img src="${escapeHtml(bild)}" alt="${escapeHtml(anzeige)}">
+        <div class="model-name">${escapeHtml(anzeige)}</div>
+    </div>
+`;
         });
 
         html += `</div>`;
