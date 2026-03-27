@@ -624,7 +624,7 @@ function render() {
 );
 
 const bild = clean(fahrzeug?.Bild) || "https://via.placeholder.com/260x140?text=BMW";
-const anzeige = clean(fahrzeug?.Anzeige) || m;
+const anzeige = clean(fahrzeug?.Code) || m;
 
 html += `
     <div class="card model-card" onclick="selectModell('${jsSafe(m)}')">
@@ -671,7 +671,7 @@ html += `
                 <div class="summary-text">
                     <b>Ihre Auswahl:</b><br>
                     Reihe: ${escapeHtml(state.reihe)}<br>
-                    Modell: ${escapeHtml(state.modell)}<br>
+                    Modell: ${escapeHtml(clean(fahrzeug?.Code) || state.modell)}<br>
                     Motor: ${escapeHtml(state.motor)}<br>
                     <button class="change-link" onclick="resetSelection()">Fahrzeug ändern</button>
                 </div>
@@ -695,7 +695,7 @@ html += `
         html += `
             <div class="products-wrap">
                 <div class="products-header">
-                    <h2 class="products-title">Unsere Winterkomplettradangebote für Ihren ${escapeHtml(state.modell)} ${escapeHtml(state.motor)}</h2>
+                    <h2 class="products-title">Unsere Winterkomplettradangebote für Ihren ${escapeHtml(clean(fahrzeug?.Marke) || "")} ${escapeHtml(state.reihe)} ${escapeHtml(state.motor)}</h2>
                     <div class="products-subline">
                         <div></div>
                         <div>Sortierung: Preis</div>
