@@ -27,7 +27,15 @@ body {
     height: 100%;
     display: flex;
     align-items: center;
-    padding-left: 40px;
+    justify-content: space-between; /* 🔥 wichtig */
+    padding: 0 40px;
+}
+
+.hero-logo img {
+    max-width: 220px;
+    height: auto;
+    filter: brightness(0) invert(1); /* 🔥 weiss machen */
+    opacity: 0.9;
 }
 
 .hero-text {
@@ -210,10 +218,14 @@ input, textarea {
             <p>Perfekt abgestimmt für Ihr Fahrzeug</p>
         </div>
 
+        <!-- 🔥 LOGO RECHTS -->
+        <div class="hero-logo">
+            <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/EMMENEGGER.png">
+        </div>
+
     </div>
 
 </div>
-
 
     
 <div class="logo">
