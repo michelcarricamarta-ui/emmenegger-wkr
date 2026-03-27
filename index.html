@@ -71,11 +71,11 @@ h2 { text-align:center; }
     text-align: center;
 }
 
-/* 🔥 FIX SUMMARY */
+/* SUMMARY */
 .summary-box {
     display: flex;
     justify-content: space-between;
-    align-items: center; /* wichtig */
+    align-items: center;
     background: #f3f3f3;
     padding: 20px;
     border-radius: 10px;
@@ -96,12 +96,10 @@ h2 { text-align:center; }
     border-radius: 8px;
 }
 
-/* PREVIEW */
 .preview img {
     width: 550px;
 }
 
-/* PRODUKT */
 .product {
     display: flex;
     justify-content: space-between;
@@ -214,23 +212,16 @@ clean(f["Modell"])===state.modell
 
 html+=`
 <div class="summary-box">
-
 <div>
 <b>Ihre Auswahl:</b><br>
 ${state.reihe} / ${state.modell} / ${state.motor}
-
 <br><br>
-
-<button class="button" onclick="resetSelection()">
-Zurück zur Auswahl
-</button>
-
+<button class="button" onclick="resetSelection()">Zurück zur Auswahl</button>
 </div>
 
 <div class="summary-img">
 <img src="${clean(fahrzeug?.Bild) || ''}">
 </div>
-
 </div>`;
 }
 
@@ -324,13 +315,9 @@ Teilenummer: ${r["TN"]}
 
 <div>
 ${preisHTML}
-
 <div style="font-size:11px;">Preise inkl. MwST</div>
-
 <div class="${status}" style="margin-top:10px;">${text}</div>
-
 ${lager===0 ? `<div style="font-size:12px;">Lieferzeit ca. 5–10 Arbeitstage</div>` : ""}
-
 <button class="button" onclick='selectProdukt(${JSON.stringify(r)})'>Auswählen</button>
 </div>
 
@@ -349,7 +336,7 @@ html+=`
 
 <input id="name" placeholder="Name *">
 <input id="email" placeholder="E-Mail *">
-<input id="kennzeichen" placeholder="Kontrollschild * (z.B. AG 123456)">
+<input id="kennzeichen" placeholder="Kontrollschild *">
 <textarea id="bemerkung" placeholder="Bemerkung"></textarea>
 
 <br>
@@ -360,32 +347,25 @@ html+=`
 
 </div>`;
 }
+
+document.getElementById("app").innerHTML=html;
+}
+
+/* FUNKTIONEN (JETZT GLOBAL → BUTTONS GEHEN) */
+
 function validateForm(){
+let name = document.getElementById("name")?.value.trim();
+let email = document.getElementById("email")?.value.trim();
+let kennzeichen = document.getElementById("kennzeichen")?.value.trim();
 
-let name = document.getElementById("name").value.trim();
-let email = document.getElementById("email").value.trim();
-let kennzeichen = document.getElementById("kennzeichen").value.trim();
-
-if(!name){
-    alert("Bitte Name eingeben");
-    return false;
-}
-
-if(!email){
-    alert("Bitte E-Mail eingeben");
-    return false;
-}
-
-if(!kennzeichen){
-    alert("Bitte Kontrollschild eingeben");
-    return false;
-}
+if(!name){ alert("Bitte Name eingeben"); return false; }
+if(!email){ alert("Bitte E-Mail eingeben"); return false; }
+if(!kennzeichen){ alert("Bitte Kontrollschild eingeben"); return false; }
 
 return true;
 }
 
 function sendAnfrage(){
-
 if(!validateForm()) return;
 
 let name = document.getElementById("name").value;
@@ -393,8 +373,7 @@ let email = document.getElementById("email").value;
 let kennzeichen = document.getElementById("kennzeichen").value;
 let bemerkung = document.getElementById("bemerkung").value;
 
-let text = `
-ANFRAGE
+let text = `ANFRAGE
 
 Name: ${name}
 Email: ${email}
@@ -404,69 +383,55 @@ Produkt: ${state.produkt["Bezeichnung"]}
 Preis: ${state.produkt["Angebotspreis"]} CHF
 
 Bemerkung:
-${bemerkung}
-`;
+${bemerkung}`;
 
 window.location.href = "mailto:tv-g-fp@emmeneggerag.ch?subject=WKR Anfrage&body=" + encodeURIComponent(text);
-}    
+}
 
 function sendBestellung(){
-
 if(!validateForm()) return;
 
 let name = document.getElementById("name").value;
 let email = document.getElementById("email").value;
 let kennzeichen = document.getElementById("kennzeichen").value;
 
-let text = `
-BESTELLUNG
+let text = `BESTELLUNG
 
 Name: ${name}
 Email: ${email}
 Kontrollschild: ${kennzeichen}
 
 Produkt: ${state.produkt["Bezeichnung"]}
-Preis: ${state.produkt["Angebotspreis"]} CHF
-`;
+Preis: ${state.produkt["Angebotspreis"]} CHF`;
 
 window.location.href = "mailto:tv-g-fp@emmeneggerag.ch?subject=WKR Bestellung&body=" + encodeURIComponent(text);
 }
 
 function printAngebot(){
-
-let content = `
+let win = window.open("", "", "width=800,height=600");
+win.document.write(`
 <h2>BMW Winterkompletträder Angebot</h2>
-
 <b>${state.produkt["Bezeichnung"]}</b><br>
 ${state.produkt["Dimension"]}<br><br>
-
 Preis: ${state.produkt["Angebotspreis"]} CHF<br>
 Preise inkl. MwST<br><br>
-
 Teilenummer: ${state.produkt["TN"]}
-`;
-
-let win = window.open("", "", "width=800,height=600");
-win.document.write(content);
+`);
 win.document.close();
 win.print();
-}    
-    
-    
-document.getElementById("app").innerHTML=html;
 }
 
 function selectReihe(r){ state.reihe=r; render(); }
 function selectModell(m){ state.modell=m; render(); }
 function selectMotor(m){ state.motor=m; render(); }
 
-function showPreview(p){ 
-    if(state.produktPreview && state.produktPreview.TN === p.TN){
-        state.produktPreview = null;
-    } else {
-        state.produktPreview = p;
-    }
-    render();
+function showPreview(p){
+if(state.produktPreview && state.produktPreview.TN === p.TN){
+state.produktPreview = null;
+} else {
+state.produktPreview = p;
+}
+render();
 }
 
 function selectProdukt(p){ state.produkt=p; render(); }
