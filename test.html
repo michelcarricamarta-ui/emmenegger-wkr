@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WKR Konfigurator</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    margin: 0;
+    color: #1f1f1f;
+}
+
+.container {
+    max-width: 1500px;
+    margin: auto;
+    background: white;
+    padding: 95px 40px 40px 40px;
+    border-radius: 12px;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.logo-top {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    z-index: 5;
+}
+.logo-top img {
+    width: 260px;
+    max-width: 100%;
+}
+
+.hero {
+    position: relative;
+    height: 320px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 35px;
+    background-image: url('https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/WINTER%20Ix3.jpg?raw=true');
+    background-size: cover;
+    background-position: center;
+}
+
+.hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, rgba(0,0,0,0.45), rgba(0,0,0,0.10));
+}
+
+.hero-text {
+    position: absolute;
+    left: 40px;
+    bottom: 35px;
+    z-index: 2;
+    color: white;
+    max-width: 650px;
+}
+
+.hero-text h1 {
+    margin: 0 0 10px 0;
+    font-size: 34px;
+    line-height: 1.15;
+    font-weight: 700;
+}
+
+.hero-text p {
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.4;
+}
+
+.section-title {
+    font-size: 22px;
+    margin: 10px 0 20px 0;
+    font-weight: 700;
+}
+
+.selection-label {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 25px 0 15px 0;
+}
+
+.grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.card {
+    border: 1px solid #d9d9d9;
+    padding: 16px;
+    cursor: pointer;
+    border-radius: 10px;
+    background: white;
+    text-align: center;
+    min-width: 180px;
+    transition: 0.2s ease;
+    box-sizing: border-box;
+}
+
+.card:hover {
+    border-color: #1c69d4;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
+
+.reihe-card {
+    min-width: 180px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.model-card {
+    width: 220px;
+    padding: 14px;
+}
+
+.model-card img {
+    width: 100%;
+    height: 125px;
+    object-fit: contain;
+    margin-bottom: 12px;
+    background: #fff;
+}
+
+.model-card .model-name {
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 1.3;
+}
+
+.motor-card {
+    min-width: 220px;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.summary-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f7f7f7;
+    padding: 22px;
+    border-radius: 10px;
+    margin-bottom: 35px;
+    gap: 20px;
+}
+
+.summary-text {
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.summary-text b {
+    font-size: 17px;
+}
+
+.summary-img img {
+    width: 180px;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+.change-link {
+    margin-top: 12px;
+    display: inline-block;
+    color: #1c69d4;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 0;
+    font-size: 15px;
+}
+
+.products-wrap {
+    margin-top: 25px;
+}
+
+.products-header {
+    border-bottom: 1px solid #cfcfcf;
+    padding-bottom: 16px;
+    margin-bottom: 10px;
+}
+
+.products-title {
+    font-size: 34px;
+    line-height: 1.2;
+    font-weight: 400;
+    margin: 0 0 12px 0;
+}
+
+.products-subline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #555;
+    font-size: 15px;
+}
+
+.product {
+    display: flex;
+    justify-content: space-between;
+    gap: 30px;
+    border-bottom: 1px solid #d8d8d8;
+    padding: 28px 0;
+    align-items: flex-start;
+}
+
+.product-left {
+    display: flex;
+    gap: 26px;
+    flex: 1;
+    min-width: 0;
+}
+
+.product-left img {
+    width: 210px;
+    height: 170px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+.clickable-image {
+    cursor: zoom-in;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.clickable-image.zoomed {
+    transform: scale(2.9);
+    z-index: 50;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    cursor: zoom-out;
+    background: white;
+}
+.product-info {
+    min-width: 0;
+    flex: 1;
+}
+
+.product-title {
+    font-weight: 700;
+    font-size: 20px;
+    margin-bottom: 4px;
+    line-height: 1.3;
+}
+
+.product-brand {
+    font-size: 15px;
+    color: #2d2d2d;
+    margin-bottom: 4px;
+}
+
+.product-dimension {
+    font-size: 15px;
+    color: #2d2d2d;
+    margin-bottom: 10px;
+}
+
+.product-detail {
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 6px;
+}
+
+.product-hinweis {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.5;
+    margin-top: 10px;
+    white-space: pre-line;
+}
+
+.product-partnr {
+    margin-top: 12px;
+    font-size: 14px;
+    color: #1f1f1f;
+}
+
+.product-right {
+    width: 235px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.price-caption {
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.new-price {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 4px;
+}
+
+.old-price {
+    font-size: 16px;
+    text-decoration: line-through;
+    color: #777;
+    margin-bottom: 4px;
+}
+
+.price-note {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 16px;
+}
+
+.status-green {
+    color: #2e7d32;
+    font-weight: 700;
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+
+.status-red {
+    color: #c62828;
+    font-weight: 700;
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+
+.delivery-note {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 18px;
+}
+
+.button {
+    background: #1c69d4;
+    color: white;
+    padding: 12px 22px;
+    border: none;
+    cursor: pointer;
+    border-radius: 0;
+    font-weight: 700;
+    font-size: 16px;
+    min-width: 150px;
+    transition: 0.2s ease;
+}
+
+.button:hover {
+    background: #1557b0;
+}
+
+.button-secondary {
+    background: #777;
+}
+
+.button-secondary:hover {
+    background: #5f5f5f;
+}
+
+.empty-note {
+    margin-top: 30px;
+    font-size: 16px;
+    color: #666;
+}
+
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.modal-content {
+    background: white;
+    padding: 28px;
+    border-radius: 10px;
+    width: 460px;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.modal-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 18px 0;
+}
+
+.modal-product {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 18px;
+    line-height: 1.5;
+}
+
+.modal label {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.modal input,
+.modal textarea,
+.modal select {
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    border: 1px solid #cfcfcf;
+    box-sizing: border-box;
+    font-size: 14px;
+    border-radius: 6px;
+    font-family: Arial, sans-serif;
+}
+
+.modal textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 6px;
+}
+
+.required-note {
+    font-size: 12px;
+    color: #666;
+    margin-top: -4px;
+    margin-bottom: 14px;
+}
+
+@media (max-width: 1100px) {
+    .product {
+        flex-direction: column;
+    }
+
+    .product-right {
+        width: 100%;
+        text-align: left;
+    }
+
+    .button {
+        min-width: 180px;
+    }
+}
+
+@media (max-width: 760px) {
+    .container {
+        padding: 110px 18px 25px 18px;
+    }
+
+    .logo-top {
+        right: 18px;
+        top: 18px;
+    }
+
+    .logo-top img {
+        width: 180px;
+    }
+
+    .hero {
+        height: 240px;
+    }
+
+    .hero-text {
+        left: 20px;
+        bottom: 22px;
+        right: 20px;
+    }
+
+    .hero-text h1 {
+        font-size: 24px;
+    }
+
+    .hero-text p {
+        font-size: 15px;
+    }
+
+    .product-left {
+        flex-direction: column;
+    }
+
+    .product-left img {
+        width: 100%;
+        max-width: 260px;
+        height: auto;
+    }
+
+    .summary-box {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="logo-top">
+        <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" alt="Emmenegger Logo">
+    </div>
+
+    <div class="hero">
+        <div class="hero-text">
+            <h1>Original Winterkompletträder</h1>
+            <p>Perfekt auf Ihr Fahrzeug abgestimmt.</p>
+        </div>
+    </div>
+
+    <div id="app"></div>
+</div>
+
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-title">Anfrage senden</div>
+        <div id="modalProduct" class="modal-product"></div>
+
+        <label for="kundeName">Name *</label>
+        <input id="kundeName" type="text" placeholder="Vorname und Nachname">
+
+        <label for="kundeEmail">E-Mail *</label>
+        <input id="kundeEmail" type="email" placeholder="E-Mail Adresse">
+
+        <label for="kundeKontrollschild">Kontrollschild *</label>
+        <input id="kundeKontrollschild" type="text" placeholder="z. B. AG 123456">
+
+        <label for="kundeArt">Art *</label>
+        <select id="kundeArt">
+            <option value="Anfrage">Anfrage</option>
+            <option value="Bestellung">Bestellung</option>
+        </select>
+
+        <label for="kundeBemerkung">Bemerkung</label>
+        <textarea id="kundeBemerkung" placeholder="Zusätzliche Angaben"></textarea>
+
+        <div class="required-note">* Pflichtfelder</div>
+
+        <div class="modal-actions">
+            <button class="button button-secondary" type="button" onclick="closeModal()">Schliessen</button>
+            <button id="sendBtn" class="button" type="button" onclick="sendMail()">Senden</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const urlProdukte = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Produkte";
+const urlMapping = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Zuordnung";
+const urlFahrzeuge = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Fahrzeuge";
+
+let produkte = [];
+let mapping = [];
+let fahrzeuge = [];
+
+let state = {
+    reihe: null,
+    modell: null,
+    motor: null
+};
+
+let selectedProduct = null;
+
+function clean(v) {
+    return (v || "").toString().trim();
+}
+function splitMotorList(value) {
+    return clean(value)
+        .split(",")
+        .map(x => x.trim())
+        .filter(Boolean);
+}
+
+function mappingMatchesMotor(mappingMotor, selectedMotor) {
+    return splitMotorList(mappingMotor).includes(clean(selectedMotor));
+}
+function escapeHtml(value) {
+    return clean(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function jsSafe(value) {
+    return clean(value)
+        .replace(/\\/g, "\\\\")
+        .replace(/'/g, "\\'");
+}
+    function parsePriceValue(value) {
+    const normalized = clean(value)
+        .replace(/\s/g, "")
+        .replace(/'/g, "")
+        .replace(/,/g, ".");
+    const numeric = parseFloat(normalized);
+    return Number.isFinite(numeric) ? numeric : null;
+}
+
+Promise.all([
+    fetch(urlProdukte).then(r => r.json()),
+    fetch(urlMapping).then(r => r.json()),
+    fetch(urlFahrzeuge).then(r => r.json())
+]).then(([p, m, f]) => {
+    produkte = p;
+    mapping = m;
+    fahrzeuge = f;
+    render();
+}).catch(() => {
+    document.getElementById("app").innerHTML = `<div class="empty-note">Die Daten konnten nicht geladen werden.</div>`;
+});
+
+function render() {
+    let html = "";
+
+    if (!state.reihe) {
+        const reihen = [...new Set(mapping.map(x => clean(x["Reihe"])).filter(Boolean))];
+
+        html += `<div class="selection-label">1. Reihe wählen</div>`;
+        html += `<div class="grid">`;
+
+        reihen.forEach(r => {
+            html += `<div class="card reihe-card" onclick="selectReihe('${jsSafe(r)}')">${escapeHtml(r)}</div>`;
+        });
+
+        html += `</div>`;
+    }
+
+    if (state.reihe && !state.modell) {
+        const modelle = [...new Set(
+            mapping
+                .filter(x => clean(x["Reihe"]) === state.reihe)
+                .map(x => clean(x["Modell"]))
+                .filter(Boolean)
+        )];
+
+        html += `<div class="selection-label">2. Modell wählen</div>`;
+        html += `<div class="grid">`;
+
+        modelle.forEach(m => {
+     const fahrzeug = fahrzeuge.find(f =>
+    clean(f["Reihe"]) === state.reihe &&
+    clean(f["Modell"]) === m
+);
+
+const bild = clean(fahrzeug?.Bild) || "https://via.placeholder.com/260x140?text=BMW";
+const anzeige = clean(fahrzeug?.Code) || m;
+
+html += `
+    <div class="card model-card" onclick="selectModell('${jsSafe(m)}')">
+        <img src="${escapeHtml(bild)}" alt="${escapeHtml(anzeige)}">
+        <div class="model-name">${escapeHtml(anzeige)}</div>
+    </div>
+`;
+        });
+
+        html += `</div>`;
+    }
+
+if (state.modell && !state.motor) {
+    const motors = [...new Set(
+        mapping
+            .filter(x =>
+                clean(x["Reihe"]) === state.reihe &&
+                clean(x["Modell"]) === state.modell
+            )
+            .flatMap(x => splitMotorList(x["Motor"]))
+    )];
+
+    html += `<div class="selection-label">3. Motor wählen</div>`;
+    html += `<div class="grid">`;
+
+    motors.forEach(m => {
+        html += `<div class="card motor-card" onclick="selectMotor('${jsSafe(m)}')">${escapeHtml(m)}</div>`;
+    });
+
+    html += `</div>`;
+}
+
+    if (state.motor) {
+        const fahrzeug = fahrzeuge.find(f =>
+            clean(f["Reihe"]) === state.reihe &&
+            clean(f["Modell"]) === state.modell
+        );
+
+        const fahrzeugBild = clean(fahrzeug?.Bild) || "https://via.placeholder.com/220x130?text=BMW";
+
+        html += `
+            <div class="summary-box">
+                <div class="summary-text">
+                    <b>Ihre Auswahl:</b><br>
+                    Reihe: ${escapeHtml(state.reihe)}<br>
+                    Modell: ${escapeHtml(clean(fahrzeug?.Code) || state.modell)}<br>
+                    Motor: ${escapeHtml(state.motor)}<br>
+                    <button class="change-link" onclick="resetSelection()">Fahrzeug ändern</button>
+                </div>
+                <div class="summary-img">
+                    <img src="${escapeHtml(fahrzeugBild)}" alt="${escapeHtml(state.modell)}">
+                </div>
+            </div>
+        `;
+
+        const tnList = [...new Set(
+    mapping
+        .filter(x =>
+            clean(x["Reihe"]) === state.reihe &&
+            clean(x["Modell"]) === state.modell &&
+            mappingMatchesMotor(x["Motor"], state.motor)
+        )
+        .map(x => clean(x["TN"]))
+        .filter(Boolean)
+)];
+
+        const results = produkte.filter(p => tnList.includes(clean(p["TN"])));
+
+        html += `
+            <div class="products-wrap">
+                <div class="products-header">
+                    <h2 class="products-title">Unsere Winterkomplettradangebote für Ihren ${escapeHtml(clean(fahrzeug?.Marke) || "")} ${escapeHtml(state.reihe)} ${escapeHtml(state.motor)}</h2>
+                    <div class="products-subline">
+                        <div></div>
+                        <div>Sortierung: Preis</div>
+                    </div>
+                </div>
+        `;
+
+        if (results.length === 0) {
+            html += `<div class="empty-note">Für diese Auswahl wurden keine Produkte gefunden.</div>`;
+        }
+
+        results.forEach(r => {
+            const lager = parseInt(r["Lager"]) || 0;
+            const bild = clean(r["Bild"]) || "https://via.placeholder.com/220x140?text=Rad";
+            const bezeichnung = clean(r["Bezeichnung"]);
+            const marke = clean(r["Reifen"]);
+            const dimension = clean(r["Dimension"]);
+            const hinweistext = clean(r["Hinweistext"]);
+            const teilenummer = clean(r["TN"]);
+            const vp = clean(r["VP"]);
+const angebot = clean(r["Angebotspreis"]);
+
+const vpNum = parsePriceValue(vp);
+const angebotNum = parsePriceValue(angebot);
+
+const hasRealDiscount =
+    vpNum !== null &&
+    angebotNum !== null &&
+    angebotNum < vpNum;
+
+const displayPrice = hasRealDiscount ? angebot : vp;
+
+            const statusHtml = lager > 0
+                ? `<div class="status-green">An Lager</div><div class="delivery-note">Sofort verfügbar</div>`
+                : `<div class="status-red">Auf Bestellung</div><div class="delivery-note">Lieferzeit 5-10 Arbeitstage</div>`;
+
+            html += `
+                <div class="product">
+                    <div class="product-left">
+                        <img src="${escapeHtml(bild)}" alt="${escapeHtml(bezeichnung)}" class="clickable-image" onclick="toggleImageZoom(this)">
+                        <div class="product-info">
+                            <div class="product-title">${escapeHtml(bezeichnung)}</div>
+                            <div class="product-brand">${escapeHtml(marke)}</div>
+                            <div class="product-dimension">${escapeHtml(dimension)}</div>
+                            ${hinweistext ? `<div class="product-hinweis">${escapeHtml(hinweistext)}</div>` : ``}
+                            ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
+                        </div>
+                    </div>
+
+                    <div class="product-right">
+                       <div class="price-caption">Pro Satz inkl. Montage</div>
+${displayPrice ? `<div class="new-price">${escapeHtml(displayPrice)} CHF</div>` : ``}
+${hasRealDiscount ? `<div class="old-price">UPE: ${escapeHtml(vp)} CHF</div>` : ``}
+<div class="price-note">Preise inkl. MwSt.</div>
+                        ${statusHtml}
+                        <button class="button" onclick="openModal('${jsSafe(bezeichnung)}', '${jsSafe(marke)}', '${jsSafe(dimension)}', '${jsSafe(displayPrice)}')">Auswählen</button>
+                    </div>
+                </div>
+            `;
+        });
+
+        html += `</div>`;
+    }
+
+    document.getElementById("app").innerHTML = html;
+}
+
+function selectReihe(r) {
+    state.reihe = r;
+    state.modell = null;
+    state.motor = null;
+    render();
+}
+
+function selectModell(m) {
+    state.modell = m;
+    state.motor = null;
+    render();
+}
+
+function selectMotor(m) {
+    state.motor = m;
+    render();
+}
+
+function resetSelection() {
+    state.reihe = null;
+    state.modell = null;
+    state.motor = null;
+    render();
+}
+
+function openModal(bezeichnung, marke, dimension, preis) {
+    selectedProduct = {
+        bezeichnung: bezeichnung,
+        marke: marke,
+        dimension: dimension,
+        preis: preis
+    };
+
+    document.getElementById("modalProduct").innerHTML =
+        `<b>Produkt:</b> ${escapeHtml(bezeichnung)}<br>` +
+        `${escapeHtml(marke)} ${escapeHtml(dimension)}<br>` +
+        (preis ? `<b>Preis:</b> ${escapeHtml(preis)} CHF` : "");
+
+    document.getElementById("modal").style.display = "flex";
+}
+
+function closeModal() {
+    document.getElementById("modal").style.display = "none";
+}
+
+async function sendMail() {
+    const name = clean(document.getElementById("kundeName").value);
+    const email = clean(document.getElementById("kundeEmail").value);
+    const kontrollschild = clean(document.getElementById("kundeKontrollschild").value);
+    const art = clean(document.getElementById("kundeArt").value);
+    const bemerkung = clean(document.getElementById("kundeBemerkung").value);
+    const sendBtn = document.getElementById("sendBtn");
+
+    if (!name || !email || !kontrollschild) {
+    alert("Bitte alle Pflichtfelder ausfüllen.");
+    return;
+}
+
+const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,}$/i;
+if (!emailPattern.test(email)) {
+    alert("Bitte eine gültige E-Mail Adresse eingeben.");
+    return;
+}
+
+    const originalText = sendBtn.textContent;
+    sendBtn.textContent = "Wird gesendet...";
+    sendBtn.disabled = true;
+
+    const formData = new FormData();
+    formData.append("access_key", "29788c4e-2b0a-47ba-a817-eb729a965e38");
+    formData.append("subject", `${art} Winterkompletträder - ${selectedProduct?.bezeichnung || ""}`);
+    formData.append("from_name", "WKR Konfigurator");
+    formData.append("to", "tv-g-fp@emmeneggerag.ch");
+
+    formData.append("Name", name);
+    formData.append("E-Mail", email);
+    formData.append("Kontrollschild", kontrollschild);
+    formData.append("Art", art);
+    formData.append("Reihe", state.reihe || "");
+    formData.append("Modell", state.modell || "");
+    formData.append("Motor", state.motor || "");
+    formData.append("Produkt", selectedProduct?.bezeichnung || "");
+    formData.append("Reifen", `${selectedProduct?.marke || ""} ${selectedProduct?.dimension || ""}`.trim());
+    formData.append("Preis", selectedProduct?.preis ? `${selectedProduct.preis} CHF` : "");
+    formData.append("Bemerkung", bemerkung);
+
+    const message =
+`Es wurde eine ${art.toLowerCase()} über den WKR Konfigurator erfasst.
+
+Fahrzeug:
+Reihe: ${state.reihe || ""}
+Modell: ${state.modell || ""}
+Motor: ${state.motor || ""}
+
+Produkt:
+${selectedProduct?.bezeichnung || ""}
+${selectedProduct?.marke || ""} ${selectedProduct?.dimension || ""}
+Preis: ${selectedProduct?.preis || ""} CHF
+
+Kundendaten:
+Name: ${name}
+E-Mail: ${email}
+Kontrollschild: ${kontrollschild}
+
+Bemerkung:
+${bemerkung}`;
+
+    formData.append("message", message);
+
+    try {
+        const response = await fetch("https://api.web3forms.com/submit", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert("Vielen Dank. Ihre Anfrage wurde erfolgreich gesendet.");
+            document.getElementById("kundeName").value = "";
+            document.getElementById("kundeEmail").value = "";
+            document.getElementById("kundeKontrollschild").value = "";
+            document.getElementById("kundeArt").value = "Anfrage";
+            document.getElementById("kundeBemerkung").value = "";
+            closeModal();
+        } else {
+            alert("Fehler: " + (data.message || "Die Anfrage konnte nicht gesendet werden."));
+        }
+    } catch (error) {
+        alert("Es ist ein Fehler aufgetreten. Bitte erneut versuchen.");
+    } finally {
+        sendBtn.textContent = originalText;
+        sendBtn.disabled = false;
+    }
+}
+function toggleImageZoom(img) {
+    document.querySelectorAll('.clickable-image.zoomed').forEach(el => {
+        if (el !== img) {
+            el.classList.remove('zoomed');
+        }
+    });
+
+    img.classList.toggle("zoomed");
+}
+window.onclick = function(event) {
+    const modal = document.getElementById("modal");
+    if (event.target === modal) {
+        closeModal();
+    }
+};
+</script>
+</body>
+</html>
