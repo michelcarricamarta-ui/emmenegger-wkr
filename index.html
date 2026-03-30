@@ -573,7 +573,16 @@ let selectedProduct = null;
 function clean(v) {
     return (v || "").toString().trim();
 }
+function splitMotorList(value) {
+    return clean(value)
+        .split(",")
+        .map(x => x.trim())
+        .filter(Boolean);
+}
 
+function mappingMatchesMotor(mappingMotor, selectedMotor) {
+    return splitMotorList(mappingMotor).includes(clean(selectedMotor));
+}
 function escapeHtml(value) {
     return clean(value)
         .replace(/&/g, "&amp;")
@@ -649,26 +658,25 @@ html += `
         html += `</div>`;
     }
 
-    if (state.modell && !state.motor) {
-        const motors = [...new Set(
-            mapping
-                .filter(x =>
-                    clean(x["Reihe"]) === state.reihe &&
-                    clean(x["Modell"]) === state.modell
-                )
-                .map(x => clean(x["Motor"]))
-                .filter(Boolean)
-        )];
+if (state.modell && !state.motor) {
+    const motors = [...new Set(
+        mapping
+            .filter(x =>
+                clean(x["Reihe"]) === state.reihe &&
+                clean(x["Modell"]) === state.modell
+            )
+            .flatMap(x => splitMotorList(x["Motor"]))
+    )];
 
-        html += `<div class="selection-label">3. Motor wählen</div>`;
-        html += `<div class="grid">`;
+    html += `<div class="selection-label">3. Motor wählen</div>`;
+    html += `<div class="grid">`;
 
-        motors.forEach(m => {
-            html += `<div class="card motor-card" onclick="selectMotor('${jsSafe(m)}')">${escapeHtml(m)}</div>`;
-        });
+    motors.forEach(m => {
+        html += `<div class="card motor-card" onclick="selectMotor('${jsSafe(m)}')">${escapeHtml(m)}</div>`;
+    });
 
-        html += `</div>`;
-    }
+    html += `</div>`;
+}
 
     if (state.motor) {
         const fahrzeug = fahrzeuge.find(f =>
@@ -693,14 +701,16 @@ html += `
             </div>
         `;
 
-        const tnList = mapping
-            .filter(x =>
-                clean(x["Reihe"]) === state.reihe &&
-                clean(x["Modell"]) === state.modell &&
-                clean(x["Motor"]) === state.motor
-            )
-            .map(x => clean(x["TN"]))
-            .filter(Boolean);
+        const tnList = [...new Set(
+    mapping
+        .filter(x =>
+            clean(x["Reihe"]) === state.reihe &&
+            clean(x["Modell"]) === state.modell &&
+            mappingMatchesMotor(x["Motor"], state.motor)
+        )
+        .map(x => clean(x["TN"]))
+        .filter(Boolean)
+)];
 
         const results = produkte.filter(p => tnList.includes(clean(p["TN"])));
 
