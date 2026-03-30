@@ -548,7 +548,7 @@ body {
 
         <div class="modal-actions">
             <button class="button button-secondary" type="button" onclick="closeModal()">Schliessen</button>
-            <button class="button" type="button" onclick="sendMail()">Senden</button>
+            <button id="sendBtn" class="button" type="button" onclick="sendMail()">Senden</button>
         </div>
     </div>
 </div>
@@ -810,29 +810,54 @@ function closeModal() {
     document.getElementById("modal").style.display = "none";
 }
 
-function sendMail() {
+async function sendMail() {
     const name = clean(document.getElementById("kundeName").value);
     const email = clean(document.getElementById("kundeEmail").value);
     const kontrollschild = clean(document.getElementById("kundeKontrollschild").value);
     const art = clean(document.getElementById("kundeArt").value);
     const bemerkung = clean(document.getElementById("kundeBemerkung").value);
+    const sendBtn = document.getElementById("sendBtn");
 
     if (!name || !email || !kontrollschild) {
-        alert("Bitte alle Pflichtfelder ausfüllen.");
-        return;
-    }
+    alert("Bitte alle Pflichtfelder ausfüllen.");
+    return;
+}
 
-    const subject = `${art} Winterkompletträder - ${selectedProduct?.bezeichnung || ""}`;
+const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,}$/i;
+if (!emailPattern.test(email)) {
+    alert("Bitte eine gültige E-Mail Adresse eingeben.");
+    return;
+}
 
-    const body =
-`Guten Tag
+    const originalText = sendBtn.textContent;
+    sendBtn.textContent = "Wird gesendet...";
+    sendBtn.disabled = true;
 
-Es wurde eine ${art.toLowerCase()} über den WKR Konfigurator erfasst.
+    const formData = new FormData();
+    formData.append("access_key", "29788c4e-2b0a-47ba-a817-eb729a965e38");
+    formData.append("subject", `${art} Winterkompletträder - ${selectedProduct?.bezeichnung || ""}`);
+    formData.append("from_name", "WKR Konfigurator");
+    formData.append("to", "tv-g-fp@emmeneggerag.ch");
+
+    formData.append("Name", name);
+    formData.append("E-Mail", email);
+    formData.append("Kontrollschild", kontrollschild);
+    formData.append("Art", art);
+    formData.append("Reihe", state.reihe || "");
+    formData.append("Modell", state.modell || "");
+    formData.append("Motor", state.motor || "");
+    formData.append("Produkt", selectedProduct?.bezeichnung || "");
+    formData.append("Reifen", `${selectedProduct?.marke || ""} ${selectedProduct?.dimension || ""}`.trim());
+    formData.append("Preis", selectedProduct?.preis ? `${selectedProduct.preis} CHF` : "");
+    formData.append("Bemerkung", bemerkung);
+
+    const message =
+`Es wurde eine ${art.toLowerCase()} über den WKR Konfigurator erfasst.
 
 Fahrzeug:
-Reihe: ${state.reihe}
-Modell: ${state.modell}
-Motor: ${state.motor}
+Reihe: ${state.reihe || ""}
+Modell: ${state.modell || ""}
+Motor: ${state.motor || ""}
 
 Produkt:
 ${selectedProduct?.bezeichnung || ""}
@@ -845,12 +870,35 @@ E-Mail: ${email}
 Kontrollschild: ${kontrollschild}
 
 Bemerkung:
-${bemerkung}
+${bemerkung}`;
 
-Freundliche Grüsse`;
+    formData.append("message", message);
 
-    window.location.href =
-        `mailto:tv-g-fp@emmeneggerag.ch?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    try {
+        const response = await fetch("https://api.web3forms.com/submit", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert("Vielen Dank. Ihre Anfrage wurde erfolgreich gesendet.");
+            document.getElementById("kundeName").value = "";
+            document.getElementById("kundeEmail").value = "";
+            document.getElementById("kundeKontrollschild").value = "";
+            document.getElementById("kundeArt").value = "Anfrage";
+            document.getElementById("kundeBemerkung").value = "";
+            closeModal();
+        } else {
+            alert("Fehler: " + (data.message || "Die Anfrage konnte nicht gesendet werden."));
+        }
+    } catch (error) {
+        alert("Es ist ein Fehler aufgetreten. Bitte erneut versuchen.");
+    } finally {
+        sendBtn.textContent = originalText;
+        sendBtn.disabled = false;
+    }
 }
 function toggleImageZoom(img) {
     document.querySelectorAll('.clickable-image.zoomed').forEach(el => {
