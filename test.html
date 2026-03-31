@@ -120,12 +120,6 @@ body {
     box-shadow: 0 10px 26px rgba(28,105,212,0.18);
 }
 
-.card:hover {
-    border-color: #1c69d4;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-}
-
 .reihe-card {
     min-width: 240px;
     min-height: 92px;
@@ -162,13 +156,6 @@ body {
     line-height: 1.35;
     color: #1f1f1f;
 }
-
-.motor-card {
-    min-width: 220px;
-    font-size: 15px;
-    font-weight: 700;
-}
-
 .summary-box {
     display: flex;
     justify-content: space-between;
@@ -576,7 +563,7 @@ body {
         <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" alt="Emmenegger Logo">
     </div>
 
-    <div class="hero">
+   <div class="hero" id="heroBanner">
         <div class="hero-text">
             <h1>Original Winterkompletträder</h1>
             <p>Perfekt auf Ihr Fahrzeug abgestimmt.</p>
@@ -622,6 +609,8 @@ body {
 const urlProdukte = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Produkte";
 const urlMapping = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Zuordnung";
 const urlFahrzeuge = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Fahrzeuge";
+const heroImageBMW = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/WINTER%20Ix3.jpg?raw=true";
+const heroImageMINI = "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/MINI%20Countrymann.jpg";
 
 let produkte = [];
 let mapping = [];
@@ -938,6 +927,14 @@ function render() {
     }
 
     document.getElementById("app").innerHTML = html;
+updateHeroImage();
+}
+    function updateHeroImage() {
+    const hero = document.getElementById("heroBanner");
+    if (!hero) return;
+
+    const heroImage = state.marke === "MINI" ? heroImageMINI : heroImageBMW;
+    hero.style.backgroundImage = `url('${heroImage}')`;
 }
 function selectStandort(s) {
     state.standort = s;
