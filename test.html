@@ -844,14 +844,13 @@ const buttonHtml = isSoldOut
         </div>
     </div>
 `;
-
+        });
 
         html += `</div>`;
     }
 
     document.getElementById("app").innerHTML = html;
 }
-
 function selectReihe(r) {
     state.reihe = r;
     state.modell = null;
