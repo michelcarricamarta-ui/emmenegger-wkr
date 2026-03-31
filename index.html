@@ -212,7 +212,44 @@ body {
     padding: 28px 0;
     align-items: flex-start;
 }
+.product.sold-out {
+    opacity: 0.55;
+    filter: grayscale(100%);
+}
 
+.product.sold-out .product-title,
+.product.sold-out .product-brand,
+.product.sold-out .product-dimension,
+.product.sold-out .product-hinweis,
+.product.sold-out .product-partnr,
+.product.sold-out .price-caption,
+.product.sold-out .price-note,
+.product.sold-out .delivery-note {
+    color: #7a7a7a;
+}
+
+.status-grey {
+    color: #777;
+    font-weight: 700;
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+
+.button-disabled {
+    background: #bdbdbd;
+    color: white;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.sold-out-price {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 4px;
+    color: #777;
+    text-decoration: line-through;
+}
 .product-left {
     display: flex;
     gap: 26px;
@@ -751,40 +788,62 @@ const angebot = clean(r["Angebotspreis"]);
 const vpNum = parsePriceValue(vp);
 const angebotNum = parsePriceValue(angebot);
 
+const isVpZero = vpNum === 0;
+const isAngebotZero = angebotNum === 0;
+const isSoldOut = isVpZero && isAngebotZero;
+
 const hasRealDiscount =
+    !isSoldOut &&
     vpNum !== null &&
     angebotNum !== null &&
+    angebotNum > 0 &&
     angebotNum < vpNum;
 
-const displayPrice = hasRealDiscount ? angebot : vp;
+const displayPrice = isSoldOut
+    ? "0.00"
+    : hasRealDiscount
+        ? angebot
+        : (vpNum !== null && vpNum > 0 ? vp : angebot);
 
-            const statusHtml = lager > 0
-                ? `<div class="status-green">An Lager</div><div class="delivery-note">Sofort verfügbar</div>`
-                : `<div class="status-red">Auf Bestellung</div><div class="delivery-note">Lieferzeit 5-10 Arbeitstage</div>`;
+const statusHtml = isSoldOut
+    ? `<div class="status-grey">Ausverkauft</div><div class="delivery-note">Zurzeit nicht verfügbar</div>`
+    : lager > 0
+        ? `<div class="status-green">An Lager</div><div class="delivery-note">Sofort verfügbar</div>`
+        : `<div class="status-red">Auf Bestellung</div><div class="delivery-note">Lieferzeit 5-10 Arbeitstage</div>`;
+
+const buttonHtml = isSoldOut
+    ? `<button class="button button-disabled" type="button">Nicht verfügbar</button>`
+    : `<button class="button" onclick="openModal('${jsSafe(bezeichnung)}', '${jsSafe(marke)}', '${jsSafe(dimension)}', '${jsSafe(displayPrice)}')">Auswählen</button>`;
 
             html += `
-                <div class="product">
-                    <div class="product-left">
-                        <img src="${escapeHtml(bild)}" alt="${escapeHtml(bezeichnung)}" class="clickable-image" onclick="toggleImageZoom(this)">
-                        <div class="product-info">
-                            <div class="product-title">${escapeHtml(bezeichnung)}</div>
-                            <div class="product-brand">${escapeHtml(marke)}</div>
-                            <div class="product-dimension">${escapeHtml(dimension)}</div>
-                            ${hinweistext ? `<div class="product-hinweis">${escapeHtml(hinweistext)}</div>` : ``}
-                            ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
-                        </div>
-                    </div>
+    <div class="product ${isSoldOut ? "sold-out" : ""}">
+        <div class="product-left">
+            <img src="${escapeHtml(bild)}" alt="${escapeHtml(bezeichnung)}" class="clickable-image" onclick="toggleImageZoom(this)">
+            <div class="product-info">
+                <div class="product-title">${escapeHtml(bezeichnung)}</div>
+                <div class="product-brand">${escapeHtml(marke)}</div>
+                <div class="product-dimension">${escapeHtml(dimension)}</div>
+                ${hinweistext ? `<div class="product-hinweis">${escapeHtml(hinweistext)}</div>` : ``}
+                ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
+            </div>
+        </div>
 
-                    <div class="product-right">
-                       <div class="price-caption">Pro Satz inkl. Montage</div>
-${displayPrice ? `<div class="new-price">${escapeHtml(displayPrice)} CHF</div>` : ``}
-${hasRealDiscount ? `<div class="old-price">UPE: ${escapeHtml(vp)} CHF</div>` : ``}
-<div class="price-note">Preise inkl. MwSt.</div>
-                        ${statusHtml}
-                        <button class="button" onclick="openModal('${jsSafe(bezeichnung)}', '${jsSafe(marke)}', '${jsSafe(dimension)}', '${jsSafe(displayPrice)}')">Auswählen</button>
-                    </div>
-                </div>
-            `;
+        <div class="product-right">
+            <div class="price-caption">Pro Satz inkl. Montage</div>
+            ${
+                isSoldOut
+                    ? `<div class="sold-out-price">0.00 CHF</div>`
+                    : displayPrice
+                        ? `<div class="new-price">${escapeHtml(displayPrice)} CHF</div>`
+                        : ``
+            }
+            ${hasRealDiscount ? `<div class="old-price">UPE: ${escapeHtml(vp)} CHF</div>` : ``}
+            <div class="price-note">Preise inkl. MwSt.</div>
+            ${statusHtml}
+                       ${buttonHtml}
+        </div>
+    </div>
+`;
         });
 
         html += `</div>`;
@@ -792,7 +851,6 @@ ${hasRealDiscount ? `<div class="old-price">UPE: ${escapeHtml(vp)} CHF</div>` : 
 
     document.getElementById("app").innerHTML = html;
 }
-
 function selectReihe(r) {
     state.reihe = r;
     state.modell = null;
