@@ -646,8 +646,8 @@ body {
         <div class="modal-title">Anfrage senden</div>
         <div id="modalProduct" class="modal-product"></div>
 
-        <label for="kundeName">Name *</label>
-        <input id="kundeName" type="text" placeholder="Vorname und Nachname">
+<label for="internerKundenname">Kundenname *</label>
+<input id="internerKundenname" type="text" placeholder="Name Kunde">
 
         <label for="kundeEmail">E-Mail *</label>
         <input id="kundeEmail" type="email" placeholder="E-Mail Adresse">
@@ -662,8 +662,6 @@ body {
 </select>
 
 <div id="internalFields" style="display:none;">
-    <label for="internerVerkaeufer">Verkäufername *</label>
-    <input id="internerVerkaeufer" type="text" placeholder="Name Verkäufer">
 
     <label for="interneAuftragsnummer">Auftragsnummer *</label>
     <input id="interneAuftragsnummer" type="text" placeholder="z. B. 123456">
@@ -1136,7 +1134,6 @@ const email = clean(document.getElementById("kundeEmail").value);
 const kontrollschild = clean(document.getElementById("kundeKontrollschild").value);
 const art = clean(document.getElementById("kundeArt").value);
 const bemerkung = clean(document.getElementById("kundeBemerkung").value);
-const internerVerkaeufer = clean(document.getElementById("internerVerkaeufer")?.value);
 const interneAuftragsnummer = clean(document.getElementById("interneAuftragsnummer")?.value);
 const internerKundenname = clean(document.getElementById("internerKundenname")?.value);
 const interneOrderOderFIN = clean(document.getElementById("interneOrderOderFIN")?.value);
@@ -1148,8 +1145,8 @@ const sendBtn = document.getElementById("sendBtn");
     return;
 }
 
-if (internalMode && (!internerVerkaeufer || !interneAuftragsnummer)) {
-    alert("Bitte Verkäufername und Auftragsnummer ausfüllen.");
+if (internalMode && (!internerKundenname || !interneAuftragsnummer)) {
+    alert("Bitte Kundenname und Auftragsnummer ausfüllen.");
     return;
 }
 
@@ -1186,8 +1183,7 @@ if (!emailPattern.test(email)) {
     formData.append("Produkt", selectedProduct?.bezeichnung || "");
     formData.append("Reifen", `${selectedProduct?.marke || ""} ${selectedProduct?.dimension || ""}`.trim());
     formData.append("Preis", selectedProduct?.preis ? `${selectedProduct.preis} CHF` : "");
-    formData.append("InternerModus", internalMode ? "Ja" : "Nein");
-formData.append("Verkäufername", internerVerkaeufer || "");
+   formData.append("InternerModus", internalMode ? "Ja" : "Nein");
 formData.append("Auftragsnummer", interneAuftragsnummer || "");
 formData.append("Kundenname intern", internerKundenname || "");
 formData.append("Ordernummer / Fahrgestellnummer", interneOrderOderFIN || "");
@@ -1214,7 +1210,6 @@ E-Mail: ${email}
 Kontrollschild: ${kontrollschild}
 
 ${internalMode ? `Interne Angaben:
-Verkäufername: ${internerVerkaeufer || ""}
 Auftragsnummer: ${interneAuftragsnummer || ""}
 Kundenname: ${internerKundenname || ""}
 Ordernummer / Fahrgestellnummer: ${interneOrderOderFIN || ""}
@@ -1241,9 +1236,6 @@ document.getElementById("kundeKontrollschild").value = "";
 document.getElementById("kundeArt").value = "Anfrage";
 document.getElementById("kundeBemerkung").value = "";
 
-if (document.getElementById("internerVerkaeufer")) {
-    document.getElementById("internerVerkaeufer").value = "";
-}
 if (document.getElementById("interneAuftragsnummer")) {
     document.getElementById("interneAuftragsnummer").value = "";
 }
