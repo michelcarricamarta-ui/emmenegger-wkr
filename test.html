@@ -738,6 +738,7 @@ function jsSafe(value) {
     return clean(value)
         .replace(/\\/g, "\\\\")
         .replace(/'/g, "\\'")
+        .replace(/"/g, "&quot;")
         .replace(/\r?\n/g, "\\n");
 }
     function parsePriceValue(value) {
