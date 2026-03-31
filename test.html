@@ -991,17 +991,7 @@ const hasRealDiscount =
 
 const buttonHtml = isSoldOut
     ? `<button class="button button-disabled" type="button">Nicht verfügbar</button>`
-    : `<button class="button" onclick="openModal(
-        '${jsSafe(bezeichnung)}',
-        '${jsSafe(markeReifen)}',
-        '${jsSafe(dimension)}',
-        '${jsSafe(angebot || vp)}',
-        '${jsSafe(empfaengerMail)}',
-        '${jsSafe(bild)}',
-        '${jsSafe(teilenummer)}',
-        '${jsSafe(hinweistext)}',
-        '${jsSafe(verkaufshinweis)}'
-    )">Auswählen</button>`;
+    : `<button class="button" type="button" onclick="openModal('${jsSafe(bezeichnung)}','${jsSafe(markeReifen)}','${jsSafe(dimension)}','${jsSafe(angebot || vp)}','${jsSafe(empfaengerMail)}','${jsSafe(bild)}','${jsSafe(teilenummer)}','${jsSafe(hinweistext)}','${jsSafe(verkaufshinweis)}')">Auswählen</button>`;
 
             html += `
                 <div class="product ${isSoldOut ? "sold-out" : ""}">
