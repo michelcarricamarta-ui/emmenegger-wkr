@@ -682,9 +682,10 @@ body {
         <div class="required-note">* Pflichtfelder</div>
 
         <div class="modal-actions">
-            <button class="button button-secondary" type="button" onclick="closeModal()">Schliessen</button>
-            <button id="sendBtn" class="button" type="button" onclick="sendMail()">Senden</button>
-        </div>
+    <button class="button button-secondary" type="button" onclick="closeModal()">Schliessen</button>
+    <button class="button button-secondary" type="button" onclick="showOfferPreview()">Offerte als PDF</button>
+    <button id="sendBtn" class="button" type="button" onclick="sendMail()">Senden</button>
+</div>
     </div>
 </div>
 
@@ -990,7 +991,17 @@ const hasRealDiscount =
 
 const buttonHtml = isSoldOut
     ? `<button class="button button-disabled" type="button">Nicht verfügbar</button>`
-    : `<button class="button" onclick="openModal('${jsSafe(bezeichnung)}', '${jsSafe(markeReifen)}', '${jsSafe(dimension)}', '${jsSafe(angebot || vp)}', '${jsSafe(empfaengerMail)}')">Auswählen</button>`;
+    : `<button class="button" onclick="openModal(
+        '${jsSafe(bezeichnung)}',
+        '${jsSafe(markeReifen)}',
+        '${jsSafe(dimension)}',
+        '${jsSafe(angebot || vp)}',
+        '${jsSafe(empfaengerMail)}',
+        '${jsSafe(bild)}',
+        '${jsSafe(teilenummer)}',
+        '${jsSafe(hinweistext)}',
+        '${jsSafe(verkaufshinweis)}'
+    )">Auswählen</button>`;
 
             html += `
                 <div class="product ${isSoldOut ? "sold-out" : ""}">
@@ -1102,13 +1113,17 @@ function resetSelection() {
     render();
 }
 
-function openModal(bezeichnung, marke, dimension, preis, empfaengerMail) {
+function openModal(bezeichnung, marke, dimension, preis, empfaengerMail, bild, teilenummer, hinweistext, verkaufshinweis) {
     selectedProduct = {
         bezeichnung: bezeichnung,
         marke: marke,
         dimension: dimension,
         preis: preis,
-        empfaengerMail: empfaengerMail
+        empfaengerMail: empfaengerMail,
+        bild: bild,
+        teilenummer: teilenummer,
+        hinweistext: hinweistext,
+        verkaufshinweis: verkaufshinweis
     };
 
     document.getElementById("modalProduct").innerHTML =
@@ -1127,7 +1142,255 @@ function openModal(bezeichnung, marke, dimension, preis, empfaengerMail) {
 function closeModal() {
     document.getElementById("modal").style.display = "none";
 }
+function showOfferPreview() {
+    if (!selectedProduct) {
+        alert("Bitte zuerst ein Produkt auswählen.");
+        return;
+    }
 
+    const name = clean(document.getElementById("kundeName").value);
+    const email = clean(document.getElementById("kundeEmail").value);
+    const kontrollschild = clean(document.getElementById("kundeKontrollschild").value);
+    const art = clean(document.getElementById("kundeArt").value);
+    const bemerkung = clean(document.getElementById("kundeBemerkung").value);
+
+    const internerKundenname = clean(document.getElementById("internerKundenname")?.value);
+    const interneAuftragsnummer = clean(document.getElementById("interneAuftragsnummer")?.value);
+    const interneOrderOderFIN = clean(document.getElementById("interneOrderOderFIN")?.value);
+    const internesAblieferdatum = clean(document.getElementById("internesAblieferdatum")?.value);
+
+    const today = new Date().toLocaleDateString("de-CH");
+
+    const standortLabel =
+        state.standort === "GEB" ? "Gebenstorf" :
+        state.standort === "HET" ? "Hettenschwil" :
+        state.standort;
+
+    const fahrzeug = fahrzeuge.find(f =>
+        clean(f["Marke"]) === state.marke &&
+        clean(f["Reihe"]) === state.reihe &&
+        clean(f["Modell"]) === state.modell
+    );
+
+    const modellAnzeige = clean(fahrzeug?.Code) || state.modell;
+
+    const offerWindow = window.open("", "_blank");
+    if (!offerWindow) {
+        alert("Die Offert-Vorschau konnte nicht geöffnet werden. Bitte Popups erlauben.");
+        return;
+    }
+
+    const html = `
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Offerte Winterkompletträder</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    color: #1f1f1f;
+    margin: 0;
+    padding: 40px;
+    background: white;
+}
+.offer-wrap {
+    max-width: 980px;
+    margin: 0 auto;
+}
+.offer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid #1c69d4;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+}
+.offer-logo img {
+    width: 220px;
+}
+.offer-title {
+    text-align: right;
+}
+.offer-title h1 {
+    margin: 0 0 8px 0;
+    font-size: 30px;
+}
+.offer-title .meta {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.6;
+}
+.offer-section {
+    margin-bottom: 28px;
+}
+.offer-section h2 {
+    font-size: 18px;
+    margin: 0 0 12px 0;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #d9d9d9;
+}
+.offer-grid {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 24px;
+    align-items: start;
+}
+.offer-image img {
+    width: 100%;
+    max-width: 220px;
+    object-fit: contain;
+    border: 1px solid #ddd;
+    padding: 10px;
+    box-sizing: border-box;
+}
+.offer-details table,
+.vehicle-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.offer-details td,
+.vehicle-table td {
+    padding: 7px 0;
+    vertical-align: top;
+    font-size: 14px;
+}
+.offer-details td:first-child,
+.vehicle-table td:first-child {
+    width: 230px;
+    font-weight: 700;
+}
+.price-box {
+    margin-top: 14px;
+    padding: 14px 16px;
+    background: #f7f9fc;
+    border-left: 4px solid #1c69d4;
+}
+.price-box .price-label {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 4px;
+}
+.price-box .price-value {
+    font-size: 28px;
+    font-weight: 700;
+}
+.offer-note {
+    font-size: 13px;
+    color: #555;
+    line-height: 1.6;
+    margin-top: 10px;
+    white-space: pre-line;
+}
+.footer-note {
+    margin-top: 35px;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.6;
+}
+.print-actions {
+    margin-top: 30px;
+    display: flex;
+    gap: 12px;
+}
+.print-actions button {
+    background: #1c69d4;
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    font-size: 14px;
+    cursor: pointer;
+}
+.print-actions button.secondary {
+    background: #666;
+}
+@media print {
+    body {
+        padding: 0;
+    }
+    .print-actions {
+        display: none;
+    }
+}
+</style>
+</head>
+<body>
+<div class="offer-wrap">
+
+    <div class="offer-header">
+        <div class="offer-logo">
+            <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" alt="Emmenegger Logo">
+        </div>
+        <div class="offer-title">
+            <h1>Offerte Winterkompletträder</h1>
+            <div class="meta">
+                Datum: ${escapeHtml(today)}<br>
+                Art: ${escapeHtml(art || "Anfrage")}<br>
+                Standort: ${escapeHtml(standortLabel || "")}
+            </div>
+        </div>
+    </div>
+
+    <div class="offer-section">
+        <h2>Fahrzeugangaben</h2>
+        <table class="vehicle-table">
+            <tr><td>Marke</td><td>${escapeHtml(state.marke || "")}</td></tr>
+            <tr><td>Reihe</td><td>${escapeHtml(state.reihe || "")}</td></tr>
+            <tr><td>Modell</td><td>${escapeHtml(modellAnzeige || "")}</td></tr>
+            <tr><td>Motor</td><td>${escapeHtml(state.motor || "")}</td></tr>
+            <tr><td>Kontrollschild</td><td>${escapeHtml(kontrollschild || "")}</td></tr>
+            ${internalMode ? `<tr><td>Kundenname</td><td>${escapeHtml(internerKundenname || "")}</td></tr>` : `<tr><td>Name</td><td>${escapeHtml(name || "")}</td></tr>`}
+            ${internalMode ? `<tr><td>Auftragsnummer</td><td>${escapeHtml(interneAuftragsnummer || "")}</td></tr>` : ``}
+            ${internalMode ? `<tr><td>Ordernummer / Fahrgestellnummer</td><td>${escapeHtml(interneOrderOderFIN || "")}</td></tr>` : ``}
+            ${internalMode ? `<tr><td>Ablieferungsdatum</td><td>${escapeHtml(internesAblieferdatum || "")}</td></tr>` : ``}
+            ${!internalMode ? `<tr><td>E-Mail</td><td>${escapeHtml(email || "")}</td></tr>` : ``}
+        </table>
+    </div>
+
+    <div class="offer-section">
+        <h2>Angebotenes Produkt</h2>
+        <div class="offer-grid">
+            <div class="offer-image">
+                <img src="${escapeHtml(selectedProduct.bild || "")}" alt="${escapeHtml(selectedProduct.bezeichnung || "")}">
+            </div>
+            <div class="offer-details">
+                <table>
+                    <tr><td>Bezeichnung</td><td>${escapeHtml(selectedProduct.bezeichnung || "")}</td></tr>
+                    <tr><td>Reifen</td><td>${escapeHtml(selectedProduct.marke || "")}</td></tr>
+                    <tr><td>Dimension</td><td>${escapeHtml(selectedProduct.dimension || "")}</td></tr>
+                    <tr><td>Teilenummer</td><td>${escapeHtml(selectedProduct.teilenummer || "")}</td></tr>
+                </table>
+
+                <div class="price-box">
+                    <div class="price-label">Preis pro Satz inkl. Montage / Preise inkl. MwSt.</div>
+                    <div class="price-value">${escapeHtml(selectedProduct.preis || "")} CHF</div>
+                </div>
+
+                ${selectedProduct.verkaufshinweis ? `<div class="offer-note"><b>Hinweis:</b> ${escapeHtml(selectedProduct.verkaufshinweis)}</div>` : ``}
+                ${selectedProduct.hinweistext ? `<div class="offer-note">${escapeHtml(selectedProduct.hinweistext)}</div>` : ``}
+                ${bemerkung ? `<div class="offer-note"><b>Bemerkung:</b><br>${escapeHtml(bemerkung)}</div>` : ``}
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-note">
+        Diese Offerte wurde über den Emmenegger Winterkomplettrad-Konfigurator erstellt. Änderungen und Zwischenverkauf bleiben vorbehalten.
+    </div>
+
+    <div class="print-actions">
+        <button onclick="window.print()">Drucken / Als PDF speichern</button>
+        <button class="secondary" onclick="window.close()">Schliessen</button>
+    </div>
+
+</div>
+</body>
+</html>
+`;
+
+    offerWindow.document.open();
+    offerWindow.document.write(html);
+    offerWindow.document.close();
+}
 async function sendMail() {
     const name = clean(document.getElementById("kundeName").value);
 const email = clean(document.getElementById("kundeEmail").value);
