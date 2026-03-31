@@ -35,19 +35,20 @@ body {
 }
 .internal-login-wrap {
     position: absolute;
-    top: 78px;
+    top: 58px;
     right: 30px;
     z-index: 6;
 }
 
 .internal-login-btn {
-    background: transparent;
+    background: rgba(255,255,255,0.92);
     border: 1px solid #c7c7c7;
-    color: #666;
+    color: #555;
     font-size: 12px;
-    padding: 6px 10px;
-    border-radius: 6px;
+    padding: 7px 12px;
+    border-radius: 7px;
     cursor: pointer;
+    font-weight: 600;
 }
 
 .internal-login-btn:hover {
@@ -616,11 +617,11 @@ body {
     <div class="logo-top">
         <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" alt="Emmenegger Logo">
     </div>
-    <div class="internal-login-wrap">
-    <button class="internal-login-btn" type="button" onclick="activateInternalMode()">Intern</button>
+   <div class="internal-login-wrap">
+    <button class="internal-login-btn" type="button" onclick="activateInternalMode()">Interner Login</button>
 </div>
 <div id="internalBanner" class="internal-banner" style="display:none;">
-    Interner Modus aktiv
+    Interner Bestellmodus aktiv
 </div>
    <div class="hero" id="heroBanner">
         <div class="hero-text">
@@ -655,13 +656,30 @@ body {
         <input id="kundeKontrollschild" type="text" placeholder="z. B. AG 123456">
 
         <label for="kundeArt">Art *</label>
-        <select id="kundeArt">
-            <option value="Anfrage">Anfrage</option>
-            <option value="Bestellung">Bestellung</option>
-        </select>
+<select id="kundeArt">
+    <option value="Anfrage">Anfrage</option>
+    <option value="Bestellung">Bestellung</option>
+</select>
 
-        <label for="kundeBemerkung">Bemerkung</label>
-        <textarea id="kundeBemerkung" placeholder="Zusätzliche Angaben"></textarea>
+<div id="internalFields" style="display:none;">
+    <label for="internerVerkaeufer">Verkäufername *</label>
+    <input id="internerVerkaeufer" type="text" placeholder="Name Verkäufer">
+
+    <label for="interneAuftragsnummer">Auftragsnummer *</label>
+    <input id="interneAuftragsnummer" type="text" placeholder="z. B. 123456">
+
+    <label for="internerKundenname">Kundenname</label>
+    <input id="internerKundenname" type="text" placeholder="Name Kunde">
+
+    <label for="interneOrderOderFIN">Ordernummer / Fahrgestellnummer</label>
+    <input id="interneOrderOderFIN" type="text" placeholder="Ordernummer oder Fahrgestellnummer">
+
+    <label for="internesAblieferdatum">Ablieferungsdatum</label>
+    <input id="internesAblieferdatum" type="date">
+</div>
+
+<label for="kundeBemerkung">Bemerkung</label>
+<textarea id="kundeBemerkung" placeholder="Zusätzliche Angaben"></textarea>
 
         <div class="required-note">* Pflichtfelder</div>
 
@@ -1007,7 +1025,7 @@ const buttonHtml = isSoldOut
     document.getElementById("app").innerHTML = html;
 updateHeroImage();
 }
-    function activateInternalMode() {
+   function activateInternalMode() {
     if (internalMode) {
         alert("Der interne Modus ist bereits aktiv.");
         return;
@@ -1018,10 +1036,17 @@ updateHeroImage();
 
     if (enteredPassword === internalPassword) {
         internalMode = true;
+
         const banner = document.getElementById("internalBanner");
         if (banner) {
             banner.style.display = "block";
         }
+
+        const internalFields = document.getElementById("internalFields");
+        if (internalFields) {
+            internalFields.style.display = "block";
+        }
+
         alert("Interner Modus wurde aktiviert.");
         render();
     } else {
@@ -1093,6 +1118,11 @@ function openModal(bezeichnung, marke, dimension, preis, empfaengerMail) {
         `${escapeHtml(marke)} ${escapeHtml(dimension)}<br>` +
         (preis ? `<b>Preis:</b> ${escapeHtml(preis)} CHF` : "");
 
+    const internalFields = document.getElementById("internalFields");
+    if (internalFields) {
+        internalFields.style.display = internalMode ? "block" : "none";
+    }
+
     document.getElementById("modal").style.display = "flex";
 }
 
@@ -1102,14 +1132,24 @@ function closeModal() {
 
 async function sendMail() {
     const name = clean(document.getElementById("kundeName").value);
-    const email = clean(document.getElementById("kundeEmail").value);
-    const kontrollschild = clean(document.getElementById("kundeKontrollschild").value);
-    const art = clean(document.getElementById("kundeArt").value);
-    const bemerkung = clean(document.getElementById("kundeBemerkung").value);
-    const sendBtn = document.getElementById("sendBtn");
+const email = clean(document.getElementById("kundeEmail").value);
+const kontrollschild = clean(document.getElementById("kundeKontrollschild").value);
+const art = clean(document.getElementById("kundeArt").value);
+const bemerkung = clean(document.getElementById("kundeBemerkung").value);
+const internerVerkaeufer = clean(document.getElementById("internerVerkaeufer")?.value);
+const interneAuftragsnummer = clean(document.getElementById("interneAuftragsnummer")?.value);
+const internerKundenname = clean(document.getElementById("internerKundenname")?.value);
+const interneOrderOderFIN = clean(document.getElementById("interneOrderOderFIN")?.value);
+const internesAblieferdatum = clean(document.getElementById("internesAblieferdatum")?.value);
+const sendBtn = document.getElementById("sendBtn");
 
-    if (!name || !email || !kontrollschild) {
+   if (!name || !email || !kontrollschild) {
     alert("Bitte alle Pflichtfelder ausfüllen.");
+    return;
+}
+
+if (internalMode && (!internerVerkaeufer || !interneAuftragsnummer)) {
+    alert("Bitte Verkäufername und Auftragsnummer ausfüllen.");
     return;
 }
 
@@ -1125,7 +1165,12 @@ if (!emailPattern.test(email)) {
 
     const formData = new FormData();
     formData.append("access_key", "29788c4e-2b0a-47ba-a817-eb729a965e38");
-    formData.append("subject", `${art} Winterkompletträder - ${selectedProduct?.bezeichnung || ""}`);
+    formData.append(
+    "subject",
+    internalMode
+        ? `Interne ${art} Winterkompletträder - ${interneAuftragsnummer || ""} - ${selectedProduct?.bezeichnung || ""}`
+        : `${art} Winterkompletträder - ${selectedProduct?.bezeichnung || ""}`
+);
     formData.append("from_name", "WKR Konfigurator");
     formData.append("to", selectedProduct?.empfaengerMail || "");
 
@@ -1141,10 +1186,15 @@ if (!emailPattern.test(email)) {
     formData.append("Produkt", selectedProduct?.bezeichnung || "");
     formData.append("Reifen", `${selectedProduct?.marke || ""} ${selectedProduct?.dimension || ""}`.trim());
     formData.append("Preis", selectedProduct?.preis ? `${selectedProduct.preis} CHF` : "");
-    formData.append("Bemerkung", bemerkung);
-
-    const message =
-`Es wurde eine ${art.toLowerCase()} über den WKR Konfigurator erfasst.
+    formData.append("InternerModus", internalMode ? "Ja" : "Nein");
+formData.append("Verkäufername", internerVerkaeufer || "");
+formData.append("Auftragsnummer", interneAuftragsnummer || "");
+formData.append("Kundenname intern", internerKundenname || "");
+formData.append("Ordernummer / Fahrgestellnummer", interneOrderOderFIN || "");
+formData.append("Ablieferungsdatum", internesAblieferdatum || "");
+formData.append("Bemerkung", bemerkung);
+const message =
+`${internalMode ? "Es wurde eine interne " : "Es wurde eine "} ${art.toLowerCase()} über den WKR Konfigurator erfasst.
 
 Fahrzeug:
 Standort: ${state.standort || ""}
@@ -1163,7 +1213,14 @@ Name: ${name}
 E-Mail: ${email}
 Kontrollschild: ${kontrollschild}
 
-Bemerkung:
+${internalMode ? `Interne Angaben:
+Verkäufername: ${internerVerkaeufer || ""}
+Auftragsnummer: ${interneAuftragsnummer || ""}
+Kundenname: ${internerKundenname || ""}
+Ordernummer / Fahrgestellnummer: ${interneOrderOderFIN || ""}
+Ablieferungsdatum: ${internesAblieferdatum || ""}
+
+` : ""}Bemerkung:
 ${bemerkung}`;
 
     formData.append("message", message);
@@ -1179,11 +1236,28 @@ ${bemerkung}`;
         if (response.ok) {
             alert("Vielen Dank. Ihre Anfrage wurde erfolgreich gesendet.");
             document.getElementById("kundeName").value = "";
-            document.getElementById("kundeEmail").value = "";
-            document.getElementById("kundeKontrollschild").value = "";
-            document.getElementById("kundeArt").value = "Anfrage";
-            document.getElementById("kundeBemerkung").value = "";
-            closeModal();
+document.getElementById("kundeEmail").value = "";
+document.getElementById("kundeKontrollschild").value = "";
+document.getElementById("kundeArt").value = "Anfrage";
+document.getElementById("kundeBemerkung").value = "";
+
+if (document.getElementById("internerVerkaeufer")) {
+    document.getElementById("internerVerkaeufer").value = "";
+}
+if (document.getElementById("interneAuftragsnummer")) {
+    document.getElementById("interneAuftragsnummer").value = "";
+}
+if (document.getElementById("internerKundenname")) {
+    document.getElementById("internerKundenname").value = "";
+}
+if (document.getElementById("interneOrderOderFIN")) {
+    document.getElementById("interneOrderOderFIN").value = "";
+}
+if (document.getElementById("internesAblieferdatum")) {
+    document.getElementById("internesAblieferdatum").value = "";
+}
+
+closeModal();
         } else {
             alert("Fehler: " + (data.message || "Die Anfrage konnte nicht gesendet werden."));
         }
