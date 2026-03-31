@@ -845,17 +845,6 @@ const buttonHtml = isSoldOut
     </div>
 `;
 
-                    <div class="product-right">
-                       <div class="price-caption">Pro Satz inkl. Montage</div>
-${displayPrice ? `<div class="new-price">${escapeHtml(displayPrice)} CHF</div>` : ``}
-${hasRealDiscount ? `<div class="old-price">UPE: ${escapeHtml(vp)} CHF</div>` : ``}
-<div class="price-note">Preise inkl. MwSt.</div>
-                        ${statusHtml}
-                        <button class="button" onclick="openModal('${jsSafe(bezeichnung)}', '${jsSafe(marke)}', '${jsSafe(dimension)}', '${jsSafe(displayPrice)}')">Auswählen</button>
-                    </div>
-                </div>
-            `;
-        });
 
         html += `</div>`;
     }
