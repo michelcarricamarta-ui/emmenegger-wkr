@@ -840,18 +840,17 @@ const buttonHtml = isSoldOut
             ${hasRealDiscount ? `<div class="old-price">UPE: ${escapeHtml(vp)} CHF</div>` : ``}
             <div class="price-note">Preise inkl. MwSt.</div>
             ${statusHtml}
-            ${buttonHtml}
+                       ${buttonHtml}
         </div>
     </div>
 `;
-
+        });
 
         html += `</div>`;
     }
 
     document.getElementById("app").innerHTML = html;
 }
-
 function selectReihe(r) {
     state.reihe = r;
     state.modell = null;
