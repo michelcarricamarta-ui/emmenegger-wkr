@@ -489,7 +489,7 @@ body {
     background: white;
     padding: 28px;
     border-radius: 10px;
-    width: 460px;
+    width: 560px;
     max-width: 100%;
     box-sizing: border-box;
 }
@@ -535,8 +535,15 @@ body {
 .modal-actions {
     display: flex;
     gap: 10px;
-    justify-content: flex-end;
-    margin-top: 6px;
+    justify-content: stretch;
+    margin-top: 10px;
+}
+
+.modal-actions .button {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 10px;
+    text-align: center;
 }
 
 .required-note {
@@ -682,7 +689,7 @@ body {
 
         <div class="modal-actions">
     <button class="button button-secondary" type="button" onclick="closeModal()">Schliessen</button>
-    <button class="button button-secondary" type="button" onclick="showOfferPreview()">Offerte als PDF</button>
+    <button class="button button-secondary" type="button" onclick="showOfferPreview()">PDF Offerte</button>
     <button id="sendBtn" class="button" type="button" onclick="sendMail()">Senden</button>
 </div>
     </div>
