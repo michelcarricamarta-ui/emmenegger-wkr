@@ -600,6 +600,8 @@ let mapping = [];
 let fahrzeuge = [];
 
 let state = {
+    standort: null,
+    marke: null,
     reihe: null,
     modell: null,
     motor: null
@@ -659,10 +661,51 @@ Promise.all([
 function render() {
     let html = "";
 
-    if (!state.reihe) {
-        const reihen = [...new Set(mapping.map(x => clean(x["Reihe"])).filter(Boolean))];
+    if (!state.standort) {
+        const standorte = [...new Set(produkte.map(x => clean(x["Standort"])).filter(Boolean))];
 
-        html += `<div class="selection-label">1. Reihe wählen</div>`;
+        html += `<div class="selection-label">1. Standort wählen</div>`;
+        html += `<div class="grid">`;
+
+        standorte.forEach(s => {
+            const label =
+                s === "GEB" ? "Gebenstorf" :
+                s === "HET" ? "Hettenschwil" :
+                s;
+
+            html += `<div class="card reihe-card" onclick="selectStandort('${jsSafe(s)}')">${escapeHtml(label)}</div>`;
+        });
+
+        html += `</div>`;
+    }
+
+    if (state.standort && !state.marke) {
+        const marken = [...new Set(
+            produkte
+                .filter(x => clean(x["Standort"]) === state.standort)
+                .map(x => clean(x["Marke"]))
+                .filter(Boolean)
+        )];
+
+        html += `<div class="selection-label">2. Marke wählen</div>`;
+        html += `<div class="grid">`;
+
+        marken.forEach(m => {
+            html += `<div class="card reihe-card" onclick="selectMarke('${jsSafe(m)}')">${escapeHtml(m)}</div>`;
+        });
+
+        html += `</div>`;
+    }
+
+    if (state.standort && state.marke && !state.reihe) {
+        const reihen = [...new Set(
+            mapping
+                .filter(x => clean(x["Marke"]) === state.marke)
+                .map(x => clean(x["Reihe"]))
+                .filter(Boolean)
+        )];
+
+        html += `<div class="selection-label">3. Reihe wählen</div>`;
         html += `<div class="grid">`;
 
         reihen.forEach(r => {
@@ -675,70 +718,83 @@ function render() {
     if (state.reihe && !state.modell) {
         const modelle = [...new Set(
             mapping
-                .filter(x => clean(x["Reihe"]) === state.reihe)
+                .filter(x =>
+                    clean(x["Marke"]) === state.marke &&
+                    clean(x["Reihe"]) === state.reihe
+                )
                 .map(x => clean(x["Modell"]))
                 .filter(Boolean)
         )];
 
-        html += `<div class="selection-label">2. Modell wählen</div>`;
+        html += `<div class="selection-label">4. Modell wählen</div>`;
         html += `<div class="grid">`;
 
         modelle.forEach(m => {
-     const fahrzeug = fahrzeuge.find(f =>
-    clean(f["Reihe"]) === state.reihe &&
-    clean(f["Modell"]) === m
-);
+            const fahrzeug = fahrzeuge.find(f =>
+                clean(f["Marke"]) === state.marke &&
+                clean(f["Reihe"]) === state.reihe &&
+                clean(f["Modell"]) === m
+            );
 
-const bild = clean(fahrzeug?.Bild) || "https://via.placeholder.com/260x140?text=BMW";
-const anzeige = clean(fahrzeug?.Code) || m;
+            const bild = clean(fahrzeug?.Bild) || "https://via.placeholder.com/260x140?text=Fahrzeug";
+            const anzeige = clean(fahrzeug?.Code) || m;
 
-html += `
-    <div class="card model-card" onclick="selectModell('${jsSafe(m)}')">
-        <img src="${escapeHtml(bild)}" alt="${escapeHtml(anzeige)}">
-        <div class="model-name">${escapeHtml(anzeige)}</div>
-    </div>
-`;
+            html += `
+                <div class="card model-card" onclick="selectModell('${jsSafe(m)}')">
+                    <img src="${escapeHtml(bild)}" alt="${escapeHtml(anzeige)}">
+                    <div class="model-name">${escapeHtml(anzeige)}</div>
+                </div>
+            `;
         });
 
         html += `</div>`;
     }
 
-if (state.modell && !state.motor) {
-    const motors = [...new Set(
-        mapping
-            .filter(x =>
-                clean(x["Reihe"]) === state.reihe &&
-                clean(x["Modell"]) === state.modell
-            )
-            .flatMap(x => splitMotorList(x["Motor"]))
-    )];
+    if (state.modell && !state.motor) {
+        const motors = [...new Set(
+            mapping
+                .filter(x =>
+                    clean(x["Marke"]) === state.marke &&
+                    clean(x["Reihe"]) === state.reihe &&
+                    clean(x["Modell"]) === state.modell
+                )
+                .flatMap(x => splitMotorList(x["Motor"]))
+        )];
 
-    html += `<div class="selection-label">3. Motor wählen</div>`;
-    html += `<div class="grid">`;
+        html += `<div class="selection-label">5. Motor wählen</div>`;
+        html += `<div class="grid">`;
 
-    motors.forEach(m => {
-        html += `<div class="card motor-card" onclick="selectMotor('${jsSafe(m)}')">${escapeHtml(m)}</div>`;
-    });
+        motors.forEach(m => {
+            html += `<div class="card motor-card" onclick="selectMotor('${jsSafe(m)}')">${escapeHtml(m)}</div>`;
+        });
 
-    html += `</div>`;
-}
+        html += `</div>`;
+    }
 
     if (state.motor) {
         const fahrzeug = fahrzeuge.find(f =>
+            clean(f["Marke"]) === state.marke &&
             clean(f["Reihe"]) === state.reihe &&
             clean(f["Modell"]) === state.modell
         );
 
-        const fahrzeugBild = clean(fahrzeug?.Bild) || "https://via.placeholder.com/220x130?text=BMW";
+        const fahrzeugBild = clean(fahrzeug?.Bild) || "https://via.placeholder.com/220x130?text=Fahrzeug";
+
+        const standortLabel =
+            state.standort === "GEB" ? "Gebenstorf" :
+            state.standort === "HET" ? "Hettenschwil" :
+            state.standort;
 
         html += `
             <div class="summary-box">
                 <div class="summary-text">
                     <b>Ihre Auswahl:</b><br>
+                    Standort: ${escapeHtml(standortLabel)}<br>
+                    Marke: ${escapeHtml(state.marke)}<br>
                     Reihe: ${escapeHtml(state.reihe)}<br>
                     Modell: ${escapeHtml(clean(fahrzeug?.Code) || state.modell)}<br>
                     Motor: ${escapeHtml(state.motor)}<br>
-                    <button class="change-link" onclick="resetSelection()">Fahrzeug ändern</button>
+                    <button class="change-link" onclick="resetSelection()">Auswahl ändern</button>
                 </div>
                 <div class="summary-img">
                     <img src="${escapeHtml(fahrzeugBild)}" alt="${escapeHtml(state.modell)}">
@@ -747,24 +803,29 @@ if (state.modell && !state.motor) {
         `;
 
         const tnList = [...new Set(
-    mapping
-        .filter(x =>
-            clean(x["Reihe"]) === state.reihe &&
-            clean(x["Modell"]) === state.modell &&
-            mappingMatchesMotor(x["Motor"], state.motor)
-        )
-        .map(x => clean(x["TN"]))
-        .filter(Boolean)
-)];
+            mapping
+                .filter(x =>
+                    clean(x["Marke"]) === state.marke &&
+                    clean(x["Reihe"]) === state.reihe &&
+                    clean(x["Modell"]) === state.modell &&
+                    mappingMatchesMotor(x["Motor"], state.motor)
+                )
+                .map(x => clean(x["TN"]))
+                .filter(Boolean)
+        )];
 
-        const results = produkte.filter(p => tnList.includes(clean(p["TN"])));
+        const results = produkte.filter(p =>
+            clean(p["Standort"]) === state.standort &&
+            clean(p["Marke"]) === state.marke &&
+            tnList.includes(clean(p["TN"]))
+        );
 
         html += `
             <div class="products-wrap">
                 <div class="products-header">
-                    <h2 class="products-title">Unsere Winterkomplettradangebote für Ihren ${escapeHtml(clean(fahrzeug?.Marke) || "")} ${escapeHtml(state.reihe)} ${escapeHtml(state.motor)}</h2>
+                    <h2 class="products-title">Unsere Winterkomplettradangebote für Ihren ${escapeHtml(state.marke)} ${escapeHtml(clean(fahrzeug?.Code) || state.modell)}</h2>
                     <div class="products-subline">
-                        <div></div>
+                        <div>Standort: ${escapeHtml(standortLabel)}</div>
                         <div>Sortierung: Preis</div>
                     </div>
                 </div>
@@ -775,75 +836,74 @@ if (state.modell && !state.motor) {
         }
 
         results.forEach(r => {
-            const lager = parseInt(r["Lager"]) || 0;
+            const lager = parseInt(clean(r["Lager"])) || 0;
             const bild = clean(r["Bild"]) || "https://via.placeholder.com/220x140?text=Rad";
             const bezeichnung = clean(r["Bezeichnung"]);
-            const marke = clean(r["Reifen"]);
+            const markeReifen = clean(r["Reifen"]);
             const dimension = clean(r["Dimension"]);
             const hinweistext = clean(r["Hinweistext"]);
+            const verkaufshinweis = clean(r["Verkaufshinweis"]);
             const teilenummer = clean(r["TN"]);
             const vp = clean(r["VP"]);
-const angebot = clean(r["Angebotspreis"]);
+            const angebot = clean(r["Angebotspreis"]);
+            const empfaengerMail = clean(r["EmpfängerMail"]);
 
-const vpNum = parsePriceValue(vp);
-const angebotNum = parsePriceValue(angebot);
+            const vpNum = parsePriceValue(vp);
+            const angebotNum = parsePriceValue(angebot);
 
-const isVpZero = vpNum === 0;
-const isAngebotZero = angebotNum === 0;
-const isSoldOut = isVpZero && isAngebotZero;
+            const isSoldOut = lager <= 0;
 
-const hasRealDiscount =
-    !isSoldOut &&
-    vpNum !== null &&
-    angebotNum !== null &&
-    angebotNum > 0 &&
-    angebotNum < vpNum;
+            const hasRealDiscount =
+                angebotNum !== null &&
+                angebotNum > 0 &&
+                vpNum !== null &&
+                vpNum > 0 &&
+                angebotNum < vpNum;
 
-const displayPrice = isSoldOut
-    ? "0.00"
-    : hasRealDiscount
-        ? angebot
-        : (vpNum !== null && vpNum > 0 ? vp : angebot);
+            let priceHtml = ``;
 
-const statusHtml = isSoldOut
-    ? `<div class="status-grey">Ausverkauft</div><div class="delivery-note">Zurzeit nicht verfügbar</div>`
-    : lager > 0
-        ? `<div class="status-green">An Lager</div><div class="delivery-note">Sofort verfügbar</div>`
-        : `<div class="status-red">Auf Bestellung</div><div class="delivery-note">Lieferzeit 5-10 Arbeitstage</div>`;
+            if (hasRealDiscount) {
+                priceHtml = `
+                    <div class="new-price">${escapeHtml(angebot)} CHF</div>
+                    <div class="old-price">UPE: ${escapeHtml(vp)} CHF</div>
+                `;
+            } else if (angebotNum !== null && angebotNum > 0) {
+                priceHtml = `<div class="new-price">${escapeHtml(angebot)} CHF</div>`;
+            } else if (vpNum !== null && vpNum > 0) {
+                priceHtml = `<div class="new-price">${escapeHtml(vp)} CHF</div>`;
+            }
 
-const buttonHtml = isSoldOut
-    ? `<button class="button button-disabled" type="button">Nicht verfügbar</button>`
-    : `<button class="button" onclick="openModal('${jsSafe(bezeichnung)}', '${jsSafe(marke)}', '${jsSafe(dimension)}', '${jsSafe(displayPrice)}')">Auswählen</button>`;
+            const statusHtml = isSoldOut
+                ? `<div class="status-grey">Ausverkauft</div><div class="delivery-note">Zurzeit nicht verfügbar</div>`
+                : `<div class="status-green">An Lager</div><div class="delivery-note">Sofort verfügbar</div>`;
+
+            const buttonHtml = isSoldOut
+                ? `<button class="button button-disabled" type="button">Nicht verfügbar</button>`
+                : `<button class="button" onclick="openModal('${jsSafe(bezeichnung)}', '${jsSafe(markeReifen)}', '${jsSafe(dimension)}', '${jsSafe(angebot || vp)}', '${jsSafe(empfaengerMail)}')">Auswählen</button>`;
 
             html += `
-    <div class="product ${isSoldOut ? "sold-out" : ""}">
-        <div class="product-left">
-            <img src="${escapeHtml(bild)}" alt="${escapeHtml(bezeichnung)}" class="clickable-image" onclick="toggleImageZoom(this)">
-            <div class="product-info">
-                <div class="product-title">${escapeHtml(bezeichnung)}</div>
-                <div class="product-brand">${escapeHtml(marke)}</div>
-                <div class="product-dimension">${escapeHtml(dimension)}</div>
-                ${hinweistext ? `<div class="product-hinweis">${escapeHtml(hinweistext)}</div>` : ``}
-                ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
-            </div>
-        </div>
+                <div class="product ${isSoldOut ? "sold-out" : ""}">
+                    <div class="product-left">
+                        <img src="${escapeHtml(bild)}" alt="${escapeHtml(bezeichnung)}" class="clickable-image" onclick="toggleImageZoom(this)">
+                        <div class="product-info">
+                            <div class="product-title">${escapeHtml(bezeichnung)}</div>
+                            <div class="product-brand">${escapeHtml(markeReifen)}</div>
+                            <div class="product-dimension">${escapeHtml(dimension)}</div>
+                            ${hinweistext ? `<div class="product-hinweis">${escapeHtml(hinweistext)}</div>` : ``}
+                            ${verkaufshinweis ? `<div class="product-detail"><b>Hinweis:</b> ${escapeHtml(verkaufshinweis)}</div>` : ``}
+                            ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
+                        </div>
+                    </div>
 
-        <div class="product-right">
-            <div class="price-caption">Pro Satz inkl. Montage</div>
-            ${
-                isSoldOut
-                    ? `<div class="sold-out-price">0.00 CHF</div>`
-                    : displayPrice
-                        ? `<div class="new-price">${escapeHtml(displayPrice)} CHF</div>`
-                        : ``
-            }
-            ${hasRealDiscount ? `<div class="old-price">UPE: ${escapeHtml(vp)} CHF</div>` : ``}
-            <div class="price-note">Preise inkl. MwSt.</div>
-            ${statusHtml}
-                       ${buttonHtml}
-        </div>
-    </div>
-`;
+                    <div class="product-right">
+                        <div class="price-caption">Pro Satz inkl. Montage</div>
+                        ${priceHtml}
+                        <div class="price-note">Preise inkl. MwSt.</div>
+                        ${statusHtml}
+                        ${buttonHtml}
+                    </div>
+                </div>
+            `;
         });
 
         html += `</div>`;
@@ -851,6 +911,23 @@ const buttonHtml = isSoldOut
 
     document.getElementById("app").innerHTML = html;
 }
+function selectStandort(s) {
+    state.standort = s;
+    state.marke = null;
+    state.reihe = null;
+    state.modell = null;
+    state.motor = null;
+    render();
+}
+
+function selectMarke(m) {
+    state.marke = m;
+    state.reihe = null;
+    state.modell = null;
+    state.motor = null;
+    render();
+}
+    
 function selectReihe(r) {
     state.reihe = r;
     state.modell = null;
@@ -870,18 +947,21 @@ function selectMotor(m) {
 }
 
 function resetSelection() {
+    state.standort = null;
+    state.marke = null;
     state.reihe = null;
     state.modell = null;
     state.motor = null;
     render();
 }
 
-function openModal(bezeichnung, marke, dimension, preis) {
+function openModal(bezeichnung, marke, dimension, preis, empfaengerMail) {
     selectedProduct = {
         bezeichnung: bezeichnung,
         marke: marke,
         dimension: dimension,
-        preis: preis
+        preis: preis,
+        empfaengerMail: empfaengerMail
     };
 
     document.getElementById("modalProduct").innerHTML =
@@ -923,12 +1003,14 @@ if (!emailPattern.test(email)) {
     formData.append("access_key", "29788c4e-2b0a-47ba-a817-eb729a965e38");
     formData.append("subject", `${art} Winterkompletträder - ${selectedProduct?.bezeichnung || ""}`);
     formData.append("from_name", "WKR Konfigurator");
-    formData.append("to", "tv-g-fp@emmeneggerag.ch");
+    formData.append("to", selectedProduct?.empfaengerMail || "");
 
     formData.append("Name", name);
     formData.append("E-Mail", email);
     formData.append("Kontrollschild", kontrollschild);
     formData.append("Art", art);
+    formData.append("Standort", state.standort || "");
+    formData.append("Marke", state.marke || "");
     formData.append("Reihe", state.reihe || "");
     formData.append("Modell", state.modell || "");
     formData.append("Motor", state.motor || "");
@@ -941,6 +1023,8 @@ if (!emailPattern.test(email)) {
 `Es wurde eine ${art.toLowerCase()} über den WKR Konfigurator erfasst.
 
 Fahrzeug:
+Standort: ${state.standort || ""}
+Marke: ${state.marke || ""}
 Reihe: ${state.reihe || ""}
 Modell: ${state.modell || ""}
 Motor: ${state.motor || ""}
