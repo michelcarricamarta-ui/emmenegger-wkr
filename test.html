@@ -15,10 +15,10 @@ body {
 
 .container {
     max-width: 1500px;
-    margin: auto;
+    margin: 18px auto;
     background: white;
-    padding: 95px 40px 40px 40px;
-    border-radius: 12px;
+    padding: 95px 40px 55px 40px;
+    border-radius: 16px;
     position: relative;
     box-sizing: border-box;
 }
@@ -33,7 +33,29 @@ body {
     width: 260px;
     max-width: 100%;
 }
+.internal-login-wrap {
+    position: absolute;
+    top: 58px;
+    right: 30px;
+    z-index: 6;
+}
 
+.internal-login-btn {
+    background: rgba(255,255,255,0.92);
+    border: 1px solid #c7c7c7;
+    color: #555;
+    font-size: 12px;
+    padding: 7px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.internal-login-btn:hover {
+    border-color: #1c69d4;
+    color: #1c69d4;
+    background: #f8fbff;
+}
 .hero {
     position: relative;
     height: 320px;
@@ -73,7 +95,17 @@ body {
     font-size: 18px;
     line-height: 1.4;
 }
-
+.internal-banner {
+    background: #c62828;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 0.2px;
+}
 .section-title {
     font-size: 22px;
     margin: 10px 0 20px 0;
@@ -81,66 +113,81 @@ body {
 }
 
 .selection-label {
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 700;
-    margin: 25px 0 15px 0;
+    margin: 35px 0 40px 0;
+    text-align: center;
+    color: #1f1f1f;
 }
 
 .grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
-}
+    gap: 24px;
+    justify-content: center;
+    align-items: stretch;
+ }
 
 .card {
-    border: 1px solid #d9d9d9;
-    padding: 16px;
+    border: 1px solid #d6dbe3;
+    padding: 22px 24px;
     cursor: pointer;
-    border-radius: 10px;
-    background: white;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8f9fb 100%);
     text-align: center;
-    min-width: 180px;
-    transition: 0.2s ease;
+    min-width: 230px;
+    min-height: 88px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+    border-top: 4px solid #1c69d4;
 }
 
 .card:hover {
     border-color: #1c69d4;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 26px rgba(28,105,212,0.18);
 }
 
 .reihe-card {
-    min-width: 180px;
-    font-size: 16px;
+    min-width: 240px;
+    min-height: 92px;
+    font-size: 20px;
     font-weight: 700;
+    letter-spacing: 0.2px;
 }
 
 .model-card {
-    width: 220px;
-    padding: 14px;
+    width: 260px;
+    min-height: 240px;
+    padding: 20px 18px;
+    flex-direction: column;
+}
+    .model-card img {
+    width: 100%;
+    height: 145px;
+    object-fit: contain;
+    margin-bottom: 14px;
+    background: #fff;
 }
 
-.model-card img {
-    width: 100%;
-    height: 125px;
-    object-fit: contain;
-    margin-bottom: 12px;
-    background: #fff;
+.motor-card {
+    min-width: 240px;
+    min-height: 92px;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
 }
 
 .model-card .model-name {
     font-weight: 700;
-    font-size: 16px;
-    line-height: 1.3;
+    font-size: 18px;
+    line-height: 1.35;
+    color: #1f1f1f;
 }
-
-.motor-card {
-    min-width: 220px;
-    font-size: 15px;
-    font-weight: 700;
-}
-
 .summary-box {
     display: flex;
     justify-content: space-between;
@@ -212,7 +259,44 @@ body {
     padding: 28px 0;
     align-items: flex-start;
 }
+.product.sold-out {
+    opacity: 0.55;
+    filter: grayscale(100%);
+}
 
+.product.sold-out .product-title,
+.product.sold-out .product-brand,
+.product.sold-out .product-dimension,
+.product.sold-out .product-hinweis,
+.product.sold-out .product-partnr,
+.product.sold-out .price-caption,
+.product.sold-out .price-note,
+.product.sold-out .delivery-note {
+    color: #7a7a7a;
+}
+
+.status-grey {
+    color: #777;
+    font-weight: 700;
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+
+.button-disabled {
+    background: #bdbdbd;
+    color: white;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.sold-out-price {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 4px;
+    color: #777;
+    text-decoration: line-through;
+}
 .product-left {
     display: flex;
     gap: 26px;
@@ -365,6 +449,29 @@ body {
     font-size: 16px;
     color: #666;
 }
+    .info-section {
+    margin-top: 220px;
+    padding-top: 10px;
+    max-width: 980px;
+}
+
+.info-title {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.35;
+    margin: 0 0 12px 0;
+    color: #1f1f1f;
+}
+
+.info-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #555;
+}
+
+.info-text p {
+    margin: 0 0 12px 0;
+}
 
 .modal {
     position: fixed;
@@ -382,7 +489,7 @@ body {
     background: white;
     padding: 28px;
     border-radius: 10px;
-    width: 460px;
+    width: 560px;
     max-width: 100%;
     box-sizing: border-box;
 }
@@ -428,8 +535,15 @@ body {
 .modal-actions {
     display: flex;
     gap: 10px;
-    justify-content: flex-end;
-    margin-top: 6px;
+    justify-content: stretch;
+    margin-top: 10px;
+}
+
+.modal-actions .button {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 10px;
+    text-align: center;
 }
 
 .required-note {
@@ -510,15 +624,28 @@ body {
     <div class="logo-top">
         <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" alt="Emmenegger Logo">
     </div>
-
-    <div class="hero">
+   <div class="internal-login-wrap">
+    <button class="internal-login-btn" type="button" onclick="activateInternalMode()">Interner Login</button>
+</div>
+<div id="internalBanner" class="internal-banner" style="display:none;">
+    Interner Bestellmodus aktiv
+</div>
+   <div class="hero" id="heroBanner">
         <div class="hero-text">
             <h1>Original Winterkompletträder</h1>
             <p>Perfekt auf Ihr Fahrzeug abgestimmt.</p>
         </div>
     </div>
 
-    <div id="app"></div>
+       <div id="app"></div>
+
+    <div class="info-section">
+        <h2 class="info-title">Eiskalte Fahrfreude mit maximalem Grip</h2>
+        <div class="info-text">
+            <p>Ob im Alltag, auf dem Weg in die Berge oder unterwegs zur Skipiste: Mit Original BMW Winterkompletträdern bleiben Sie auch bei Schnee, Regen und tiefen Temperaturen sicher unterwegs. Die Räder sind optimal auf die winterlichen Strassenverhältnisse abgestimmt und perfekt auf die elektronischen Regelsysteme Ihres BMW ausgelegt.</p>
+            <p>Entdecken Sie jetzt über unseren Konfigurator die verfügbaren Angebote von Emmenegger und finden Sie die passenden Winterkompletträder für Ihr Fahrzeug.</p>
+        </div>
+    </div>
 </div>
 
 <div id="modal" class="modal">
@@ -526,30 +653,45 @@ body {
         <div class="modal-title">Anfrage senden</div>
         <div id="modalProduct" class="modal-product"></div>
 
-        <label for="kundeName">Name *</label>
-        <input id="kundeName" type="text" placeholder="Vorname und Nachname">
+<label for="kundeName">Name *</label>
+<input id="kundeName" type="text" placeholder="Vorname und Nachname">
 
-        <label for="kundeEmail">E-Mail *</label>
-        <input id="kundeEmail" type="email" placeholder="E-Mail Adresse">
+<label for="kundeEmail">E-Mail *</label>
+<input id="kundeEmail" type="email" placeholder="E-Mail Adresse">
 
-        <label for="kundeKontrollschild">Kontrollschild *</label>
-        <input id="kundeKontrollschild" type="text" placeholder="z. B. AG 123456">
+<label for="kundeKontrollschild">Kontrollschild *</label>
+<input id="kundeKontrollschild" type="text" placeholder="z. B. AG 123456">
 
-        <label for="kundeArt">Art *</label>
-        <select id="kundeArt">
-            <option value="Anfrage">Anfrage</option>
-            <option value="Bestellung">Bestellung</option>
-        </select>
+<label for="kundeArt">Art *</label>
+<select id="kundeArt">
+    <option value="Anfrage">Anfrage</option>
+    <option value="Bestellung">Bestellung</option>
+</select>
 
-        <label for="kundeBemerkung">Bemerkung</label>
-        <textarea id="kundeBemerkung" placeholder="Zusätzliche Angaben"></textarea>
+<div id="internalFields" style="display:none;">
+    <label for="internerKundenname">Kundenname *</label>
+    <input id="internerKundenname" type="text" placeholder="Name Kunde">
+
+    <label for="interneAuftragsnummer">Auftragsnummer *</label>
+    <input id="interneAuftragsnummer" type="text" placeholder="z. B. 123456">
+
+    <label for="interneOrderOderFIN">Ordernummer / Fahrgestellnummer</label>
+    <input id="interneOrderOderFIN" type="text" placeholder="Ordernummer oder Fahrgestellnummer">
+
+    <label for="internesAblieferdatum">Ablieferungsdatum</label>
+    <input id="internesAblieferdatum" type="date">
+</div>
+
+<label for="kundeBemerkung">Bemerkung</label>
+<textarea id="kundeBemerkung" placeholder="Zusätzliche Angaben"></textarea>
 
         <div class="required-note">* Pflichtfelder</div>
 
         <div class="modal-actions">
-            <button class="button button-secondary" type="button" onclick="closeModal()">Schliessen</button>
-            <button id="sendBtn" class="button" type="button" onclick="sendMail()">Senden</button>
-        </div>
+    <button class="button button-secondary" type="button" onclick="closeModal()">Schliessen</button>
+    <button class="button button-secondary" type="button" onclick="showOfferPreview()">PDF Offerte</button>
+    <button id="sendBtn" class="button" type="button" onclick="sendMail()">Senden</button>
+</div>
     </div>
 </div>
 
@@ -557,12 +699,19 @@ body {
 const urlProdukte = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Produkte";
 const urlMapping = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Zuordnung";
 const urlFahrzeuge = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Fahrzeuge";
+const heroImageBMW = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/WINTER%20Ix3.jpg?raw=true";
+const heroImageMINI = "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/MINI%20Countrymann.jpg";
 
 let produkte = [];
 let mapping = [];
 let fahrzeuge = [];
+    
+let internalMode = false;
+const internalPassword = "28010";
 
 let state = {
+    standort: null,
+    marke: null,
     reihe: null,
     modell: null,
     motor: null
@@ -595,7 +744,9 @@ function escapeHtml(value) {
 function jsSafe(value) {
     return clean(value)
         .replace(/\\/g, "\\\\")
-        .replace(/'/g, "\\'");
+        .replace(/'/g, "\\'")
+        .replace(/"/g, "&quot;")
+        .replace(/\r?\n/g, "\\n");
 }
     function parsePriceValue(value) {
     const normalized = clean(value)
@@ -622,10 +773,51 @@ Promise.all([
 function render() {
     let html = "";
 
-    if (!state.reihe) {
-        const reihen = [...new Set(mapping.map(x => clean(x["Reihe"])).filter(Boolean))];
+    if (!state.standort) {
+        const standorte = [...new Set(produkte.map(x => clean(x["Standort"])).filter(Boolean))];
 
-        html += `<div class="selection-label">1. Reihe wählen</div>`;
+        html += `<div class="selection-label">1. Standort wählen</div>`;
+        html += `<div class="grid">`;
+
+        standorte.forEach(s => {
+            const label =
+                s === "GEB" ? "Gebenstorf" :
+                s === "HET" ? "Hettenschwil" :
+                s;
+
+            html += `<div class="card reihe-card" onclick="selectStandort('${jsSafe(s)}')">${escapeHtml(label)}</div>`;
+        });
+
+        html += `</div>`;
+    }
+
+    if (state.standort && !state.marke) {
+        const marken = [...new Set(
+            produkte
+                .filter(x => clean(x["Standort"]) === state.standort)
+                .map(x => clean(x["Marke"]))
+                .filter(Boolean)
+        )];
+
+        html += `<div class="selection-label">2. Marke wählen</div>`;
+        html += `<div class="grid">`;
+
+        marken.forEach(m => {
+            html += `<div class="card reihe-card" onclick="selectMarke('${jsSafe(m)}')">${escapeHtml(m)}</div>`;
+        });
+
+        html += `</div>`;
+    }
+
+    if (state.standort && state.marke && !state.reihe) {
+        const reihen = [...new Set(
+            mapping
+                .filter(x => clean(x["Marke"]) === state.marke)
+                .map(x => clean(x["Reihe"]))
+                .filter(Boolean)
+        )];
+
+        html += `<div class="selection-label">3. Reihe wählen</div>`;
         html += `<div class="grid">`;
 
         reihen.forEach(r => {
@@ -638,70 +830,83 @@ function render() {
     if (state.reihe && !state.modell) {
         const modelle = [...new Set(
             mapping
-                .filter(x => clean(x["Reihe"]) === state.reihe)
+                .filter(x =>
+                    clean(x["Marke"]) === state.marke &&
+                    clean(x["Reihe"]) === state.reihe
+                )
                 .map(x => clean(x["Modell"]))
                 .filter(Boolean)
         )];
 
-        html += `<div class="selection-label">2. Modell wählen</div>`;
+        html += `<div class="selection-label">4. Modell wählen</div>`;
         html += `<div class="grid">`;
 
         modelle.forEach(m => {
-     const fahrzeug = fahrzeuge.find(f =>
-    clean(f["Reihe"]) === state.reihe &&
-    clean(f["Modell"]) === m
-);
+            const fahrzeug = fahrzeuge.find(f =>
+                clean(f["Marke"]) === state.marke &&
+                clean(f["Reihe"]) === state.reihe &&
+                clean(f["Modell"]) === m
+            );
 
-const bild = clean(fahrzeug?.Bild) || "https://via.placeholder.com/260x140?text=BMW";
-const anzeige = clean(fahrzeug?.Code) || m;
+            const bild = clean(fahrzeug?.Bild) || "https://via.placeholder.com/260x140?text=Fahrzeug";
+            const anzeige = clean(fahrzeug?.Code) || m;
 
-html += `
-    <div class="card model-card" onclick="selectModell('${jsSafe(m)}')">
-        <img src="${escapeHtml(bild)}" alt="${escapeHtml(anzeige)}">
-        <div class="model-name">${escapeHtml(anzeige)}</div>
-    </div>
-`;
+            html += `
+                <div class="card model-card" onclick="selectModell('${jsSafe(m)}')">
+                    <img src="${escapeHtml(bild)}" alt="${escapeHtml(anzeige)}">
+                    <div class="model-name">${escapeHtml(anzeige)}</div>
+                </div>
+            `;
         });
 
         html += `</div>`;
     }
 
-if (state.modell && !state.motor) {
-    const motors = [...new Set(
-        mapping
-            .filter(x =>
-                clean(x["Reihe"]) === state.reihe &&
-                clean(x["Modell"]) === state.modell
-            )
-            .flatMap(x => splitMotorList(x["Motor"]))
-    )];
+    if (state.modell && !state.motor) {
+        const motors = [...new Set(
+            mapping
+                .filter(x =>
+                    clean(x["Marke"]) === state.marke &&
+                    clean(x["Reihe"]) === state.reihe &&
+                    clean(x["Modell"]) === state.modell
+                )
+                .flatMap(x => splitMotorList(x["Motor"]))
+        )];
 
-    html += `<div class="selection-label">3. Motor wählen</div>`;
-    html += `<div class="grid">`;
+        html += `<div class="selection-label">5. Motor wählen</div>`;
+        html += `<div class="grid">`;
 
-    motors.forEach(m => {
-        html += `<div class="card motor-card" onclick="selectMotor('${jsSafe(m)}')">${escapeHtml(m)}</div>`;
-    });
+        motors.forEach(m => {
+            html += `<div class="card motor-card" onclick="selectMotor('${jsSafe(m)}')">${escapeHtml(m)}</div>`;
+        });
 
-    html += `</div>`;
-}
+        html += `</div>`;
+    }
 
     if (state.motor) {
         const fahrzeug = fahrzeuge.find(f =>
+            clean(f["Marke"]) === state.marke &&
             clean(f["Reihe"]) === state.reihe &&
             clean(f["Modell"]) === state.modell
         );
 
-        const fahrzeugBild = clean(fahrzeug?.Bild) || "https://via.placeholder.com/220x130?text=BMW";
+        const fahrzeugBild = clean(fahrzeug?.Bild) || "https://via.placeholder.com/220x130?text=Fahrzeug";
+
+        const standortLabel =
+            state.standort === "GEB" ? "Gebenstorf" :
+            state.standort === "HET" ? "Hettenschwil" :
+            state.standort;
 
         html += `
             <div class="summary-box">
                 <div class="summary-text">
                     <b>Ihre Auswahl:</b><br>
+                    Standort: ${escapeHtml(standortLabel)}<br>
+                    Marke: ${escapeHtml(state.marke)}<br>
                     Reihe: ${escapeHtml(state.reihe)}<br>
                     Modell: ${escapeHtml(clean(fahrzeug?.Code) || state.modell)}<br>
                     Motor: ${escapeHtml(state.motor)}<br>
-                    <button class="change-link" onclick="resetSelection()">Fahrzeug ändern</button>
+                    <button class="change-link" onclick="resetSelection()">Auswahl ändern</button>
                 </div>
                 <div class="summary-img">
                     <img src="${escapeHtml(fahrzeugBild)}" alt="${escapeHtml(state.modell)}">
@@ -710,24 +915,29 @@ if (state.modell && !state.motor) {
         `;
 
         const tnList = [...new Set(
-    mapping
-        .filter(x =>
-            clean(x["Reihe"]) === state.reihe &&
-            clean(x["Modell"]) === state.modell &&
-            mappingMatchesMotor(x["Motor"], state.motor)
-        )
-        .map(x => clean(x["TN"]))
-        .filter(Boolean)
-)];
+            mapping
+                .filter(x =>
+                    clean(x["Marke"]) === state.marke &&
+                    clean(x["Reihe"]) === state.reihe &&
+                    clean(x["Modell"]) === state.modell &&
+                    mappingMatchesMotor(x["Motor"], state.motor)
+                )
+                .map(x => clean(x["TN"]))
+                .filter(Boolean)
+        )];
 
-        const results = produkte.filter(p => tnList.includes(clean(p["TN"])));
+        const results = produkte.filter(p =>
+            clean(p["Standort"]) === state.standort &&
+            clean(p["Marke"]) === state.marke &&
+            tnList.includes(clean(p["TN"]))
+        );
 
         html += `
             <div class="products-wrap">
                 <div class="products-header">
-                    <h2 class="products-title">Unsere Winterkomplettradangebote für Ihren ${escapeHtml(clean(fahrzeug?.Marke) || "")} ${escapeHtml(state.reihe)} ${escapeHtml(state.motor)}</h2>
+                    <h2 class="products-title">Unsere Winterkomplettradangebote für Ihren ${escapeHtml(state.marke)} ${escapeHtml(clean(fahrzeug?.Code) || state.modell)}</h2>
                     <div class="products-subline">
-                        <div></div>
+                        <div>Standort: ${escapeHtml(standortLabel)}</div>
                         <div>Sortierung: Preis</div>
                     </div>
                 </div>
@@ -738,50 +948,79 @@ if (state.modell && !state.motor) {
         }
 
         results.forEach(r => {
-            const lager = parseInt(r["Lager"]) || 0;
+            const lager = parseInt(clean(r["Lager"])) || 0;
             const bild = clean(r["Bild"]) || "https://via.placeholder.com/220x140?text=Rad";
             const bezeichnung = clean(r["Bezeichnung"]);
-            const marke = clean(r["Reifen"]);
+            const markeReifen = clean(r["Reifen"]);
             const dimension = clean(r["Dimension"]);
             const hinweistext = clean(r["Hinweistext"]);
+            const verkaufshinweis = clean(r["Verkaufshinweis"]);
             const teilenummer = clean(r["TN"]);
             const vp = clean(r["VP"]);
-const angebot = clean(r["Angebotspreis"]);
+            const angebot = clean(r["Angebotspreis"]);
+            const empfaengerMail = clean(r["EmpfängerMail"]);
 
-const vpNum = parsePriceValue(vp);
+            const vpNum = parsePriceValue(vp);
 const angebotNum = parsePriceValue(angebot);
 
+const hasPrice =
+    (angebotNum !== null && angebotNum > 0) ||
+    (vpNum !== null && vpNum > 0);
+
+const isInStock = lager > 0;
+const isOrderable = lager <= 0 && hasPrice;
+const isSoldOut = lager <= 0 && !hasPrice;
+
 const hasRealDiscount =
-    vpNum !== null &&
     angebotNum !== null &&
+    angebotNum > 0 &&
+    vpNum !== null &&
+    vpNum > 0 &&
     angebotNum < vpNum;
 
-const displayPrice = hasRealDiscount ? angebot : vp;
+            let priceHtml = ``;
 
-            const statusHtml = lager > 0
-                ? `<div class="status-green">An Lager</div><div class="delivery-note">Sofort verfügbar</div>`
-                : `<div class="status-red">Auf Bestellung</div><div class="delivery-note">Lieferzeit 5-10 Arbeitstage</div>`;
+            if (hasRealDiscount) {
+                priceHtml = `
+                    <div class="new-price">${escapeHtml(angebot)} CHF</div>
+                    <div class="old-price">UPE: ${escapeHtml(vp)} CHF</div>
+                `;
+            } else if (angebotNum !== null && angebotNum > 0) {
+                priceHtml = `<div class="new-price">${escapeHtml(angebot)} CHF</div>`;
+            } else if (vpNum !== null && vpNum > 0) {
+                priceHtml = `<div class="new-price">${escapeHtml(vp)} CHF</div>`;
+            }
+
+            const statusHtml = isSoldOut
+    ? `<div class="status-grey">Ausverkauft</div><div class="delivery-note">Zurzeit nicht verfügbar</div>`
+    : isOrderable
+        ? `<div class="status-red">Auf Bestellung</div><div class="delivery-note">Lieferzeit 5-10 Arbeitstage</div>`
+        : `<div class="status-green">An Lager</div><div class="delivery-note">Sofort verfügbar</div>`;
+
+const buttonHtml = isSoldOut
+    ? `<button class="button button-disabled" type="button">Nicht verfügbar</button>`
+    : `<button class="button" type="button" onclick="openModal('${jsSafe(bezeichnung)}','${jsSafe(markeReifen)}','${jsSafe(dimension)}','${jsSafe(angebot || vp)}','${jsSafe(empfaengerMail)}','${jsSafe(bild)}','${jsSafe(teilenummer)}','${jsSafe(hinweistext)}','${jsSafe(verkaufshinweis)}')">Auswählen</button>`;
 
             html += `
-                <div class="product">
+                <div class="product ${isSoldOut ? "sold-out" : ""}">
                     <div class="product-left">
                         <img src="${escapeHtml(bild)}" alt="${escapeHtml(bezeichnung)}" class="clickable-image" onclick="toggleImageZoom(this)">
                         <div class="product-info">
                             <div class="product-title">${escapeHtml(bezeichnung)}</div>
-                            <div class="product-brand">${escapeHtml(marke)}</div>
+                            <div class="product-brand">${escapeHtml(markeReifen)}</div>
                             <div class="product-dimension">${escapeHtml(dimension)}</div>
                             ${hinweistext ? `<div class="product-hinweis">${escapeHtml(hinweistext)}</div>` : ``}
+                            ${verkaufshinweis ? `<div class="product-detail"><b>Hinweis:</b> ${escapeHtml(verkaufshinweis)}</div>` : ``}
                             ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
                         </div>
                     </div>
 
                     <div class="product-right">
-                       <div class="price-caption">Pro Satz inkl. Montage</div>
-${displayPrice ? `<div class="new-price">${escapeHtml(displayPrice)} CHF</div>` : ``}
-${hasRealDiscount ? `<div class="old-price">UPE: ${escapeHtml(vp)} CHF</div>` : ``}
-<div class="price-note">Preise inkl. MwSt.</div>
+                        <div class="price-caption">Pro Satz inkl. Montage</div>
+                        ${priceHtml}
+                        <div class="price-note">Preise inkl. MwSt.</div>
                         ${statusHtml}
-                        <button class="button" onclick="openModal('${jsSafe(bezeichnung)}', '${jsSafe(marke)}', '${jsSafe(dimension)}', '${jsSafe(displayPrice)}')">Auswählen</button>
+                        ${buttonHtml}
                     </div>
                 </div>
             `;
@@ -791,8 +1030,60 @@ ${hasRealDiscount ? `<div class="old-price">UPE: ${escapeHtml(vp)} CHF</div>` : 
     }
 
     document.getElementById("app").innerHTML = html;
+updateHeroImage();
+}
+   function activateInternalMode() {
+    if (internalMode) {
+        alert("Der interne Modus ist bereits aktiv.");
+        return;
+    }
+
+    const enteredPassword = prompt("Bitte Passwort für den internen Modus eingeben:");
+    if (enteredPassword === null) return;
+
+    if (enteredPassword === internalPassword) {
+        internalMode = true;
+
+        const banner = document.getElementById("internalBanner");
+        if (banner) {
+            banner.style.display = "block";
+        }
+
+        const internalFields = document.getElementById("internalFields");
+        if (internalFields) {
+            internalFields.style.display = "block";
+        }
+
+        alert("Interner Modus wurde aktiviert.");
+        render();
+    } else {
+        alert("Falsches Passwort.");
+    }
+}
+    function updateHeroImage() {
+    const hero = document.getElementById("heroBanner");
+    if (!hero) return;
+
+    const heroImage = state.marke === "MINI" ? heroImageMINI : heroImageBMW;
+    hero.style.backgroundImage = `url('${heroImage}')`;
+}
+function selectStandort(s) {
+    state.standort = s;
+    state.marke = null;
+    state.reihe = null;
+    state.modell = null;
+    state.motor = null;
+    render();
 }
 
+function selectMarke(m) {
+    state.marke = m;
+    state.reihe = null;
+    state.modell = null;
+    state.motor = null;
+    render();
+}
+    
 function selectReihe(r) {
     state.reihe = r;
     state.modell = null;
@@ -812,18 +1103,25 @@ function selectMotor(m) {
 }
 
 function resetSelection() {
+    state.standort = null;
+    state.marke = null;
     state.reihe = null;
     state.modell = null;
     state.motor = null;
     render();
 }
 
-function openModal(bezeichnung, marke, dimension, preis) {
+function openModal(bezeichnung, marke, dimension, preis, empfaengerMail, bild, teilenummer, hinweistext, verkaufshinweis) {
     selectedProduct = {
         bezeichnung: bezeichnung,
         marke: marke,
         dimension: dimension,
-        preis: preis
+        preis: preis,
+        empfaengerMail: empfaengerMail,
+        bild: bild,
+        teilenummer: teilenummer,
+        hinweistext: hinweistext,
+        verkaufshinweis: verkaufshinweis
     };
 
     document.getElementById("modalProduct").innerHTML =
@@ -831,23 +1129,285 @@ function openModal(bezeichnung, marke, dimension, preis) {
         `${escapeHtml(marke)} ${escapeHtml(dimension)}<br>` +
         (preis ? `<b>Preis:</b> ${escapeHtml(preis)} CHF` : "");
 
+    const internalFields = document.getElementById("internalFields");
+    if (internalFields) {
+        internalFields.style.display = internalMode ? "block" : "none";
+    }
+
     document.getElementById("modal").style.display = "flex";
 }
 
 function closeModal() {
     document.getElementById("modal").style.display = "none";
 }
+function showOfferPreview() {
+    if (!selectedProduct) {
+        alert("Bitte zuerst ein Produkt auswählen.");
+        return;
+    }
 
-async function sendMail() {
     const name = clean(document.getElementById("kundeName").value);
     const email = clean(document.getElementById("kundeEmail").value);
     const kontrollschild = clean(document.getElementById("kundeKontrollschild").value);
     const art = clean(document.getElementById("kundeArt").value);
     const bemerkung = clean(document.getElementById("kundeBemerkung").value);
-    const sendBtn = document.getElementById("sendBtn");
 
-    if (!name || !email || !kontrollschild) {
+    const internerKundenname = clean(document.getElementById("internerKundenname")?.value);
+    const interneAuftragsnummer = clean(document.getElementById("interneAuftragsnummer")?.value);
+    const interneOrderOderFIN = clean(document.getElementById("interneOrderOderFIN")?.value);
+    const internesAblieferdatum = clean(document.getElementById("internesAblieferdatum")?.value);
+
+    const today = new Date().toLocaleDateString("de-CH");
+
+    const standortLabel =
+        state.standort === "GEB" ? "Gebenstorf" :
+        state.standort === "HET" ? "Hettenschwil" :
+        state.standort;
+
+    const fahrzeug = fahrzeuge.find(f =>
+        clean(f["Marke"]) === state.marke &&
+        clean(f["Reihe"]) === state.reihe &&
+        clean(f["Modell"]) === state.modell
+    );
+
+    const modellAnzeige = clean(fahrzeug?.Code) || state.modell;
+
+    const offerWindow = window.open("", "_blank");
+    if (!offerWindow) {
+        alert("Die Offert-Vorschau konnte nicht geöffnet werden. Bitte Popups erlauben.");
+        return;
+    }
+
+    const html = `
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Offerte Winterkompletträder</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    color: #1f1f1f;
+    margin: 0;
+    padding: 40px;
+    background: white;
+}
+.offer-wrap {
+    max-width: 980px;
+    margin: 0 auto;
+}
+.offer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid #1c69d4;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+}
+.offer-logo img {
+    width: 220px;
+}
+.offer-title {
+    text-align: right;
+}
+.offer-title h1 {
+    margin: 0 0 8px 0;
+    font-size: 30px;
+}
+.offer-title .meta {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.6;
+}
+.offer-section {
+    margin-bottom: 28px;
+}
+.offer-section h2 {
+    font-size: 18px;
+    margin: 0 0 12px 0;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #d9d9d9;
+}
+.offer-grid {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 24px;
+    align-items: start;
+}
+.offer-image img {
+    width: 100%;
+    max-width: 220px;
+    object-fit: contain;
+    border: 1px solid #ddd;
+    padding: 10px;
+    box-sizing: border-box;
+}
+.offer-details table,
+.vehicle-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.offer-details td,
+.vehicle-table td {
+    padding: 7px 0;
+    vertical-align: top;
+    font-size: 14px;
+}
+.offer-details td:first-child,
+.vehicle-table td:first-child {
+    width: 230px;
+    font-weight: 700;
+}
+.price-box {
+    margin-top: 14px;
+    padding: 14px 16px;
+    background: #f7f9fc;
+    border-left: 4px solid #1c69d4;
+}
+.price-box .price-label {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 4px;
+}
+.price-box .price-value {
+    font-size: 28px;
+    font-weight: 700;
+}
+.offer-note {
+    font-size: 13px;
+    color: #555;
+    line-height: 1.6;
+    margin-top: 10px;
+    white-space: pre-line;
+}
+.footer-note {
+    margin-top: 35px;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.6;
+}
+.print-actions {
+    margin-top: 30px;
+    display: flex;
+    gap: 12px;
+}
+.print-actions button {
+    background: #1c69d4;
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    font-size: 14px;
+    cursor: pointer;
+}
+.print-actions button.secondary {
+    background: #666;
+}
+@media print {
+    body {
+        padding: 0;
+    }
+    .print-actions {
+        display: none;
+    }
+}
+</style>
+</head>
+<body>
+<div class="offer-wrap">
+
+    <div class="offer-header">
+        <div class="offer-logo">
+            <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" alt="Emmenegger Logo">
+        </div>
+        <div class="offer-title">
+            <h1>Offerte Winterkompletträder</h1>
+            <div class="meta">
+                Datum: ${escapeHtml(today)}<br>
+                Art: ${escapeHtml(art || "Anfrage")}<br>
+                Standort: ${escapeHtml(standortLabel || "")}
+            </div>
+        </div>
+    </div>
+
+    <div class="offer-section">
+        <h2>Fahrzeugangaben</h2>
+        <table class="vehicle-table">
+            <tr><td>Marke</td><td>${escapeHtml(state.marke || "")}</td></tr>
+            <tr><td>Reihe</td><td>${escapeHtml(state.reihe || "")}</td></tr>
+            <tr><td>Modell</td><td>${escapeHtml(modellAnzeige || "")}</td></tr>
+            <tr><td>Motor</td><td>${escapeHtml(state.motor || "")}</td></tr>
+            <tr><td>Kontrollschild</td><td>${escapeHtml(kontrollschild || "")}</td></tr>
+            ${internalMode ? `<tr><td>Kundenname</td><td>${escapeHtml(internerKundenname || "")}</td></tr>` : `<tr><td>Name</td><td>${escapeHtml(name || "")}</td></tr>`}
+            ${internalMode ? `<tr><td>Auftragsnummer</td><td>${escapeHtml(interneAuftragsnummer || "")}</td></tr>` : ``}
+            ${internalMode ? `<tr><td>Ordernummer / Fahrgestellnummer</td><td>${escapeHtml(interneOrderOderFIN || "")}</td></tr>` : ``}
+            ${internalMode ? `<tr><td>Ablieferungsdatum</td><td>${escapeHtml(internesAblieferdatum || "")}</td></tr>` : ``}
+            ${!internalMode ? `<tr><td>E-Mail</td><td>${escapeHtml(email || "")}</td></tr>` : ``}
+        </table>
+    </div>
+
+    <div class="offer-section">
+        <h2>Angebotenes Produkt</h2>
+        <div class="offer-grid">
+            <div class="offer-image">
+                <img src="${escapeHtml(selectedProduct.bild || "")}" alt="${escapeHtml(selectedProduct.bezeichnung || "")}">
+            </div>
+            <div class="offer-details">
+                <table>
+                    <tr><td>Bezeichnung</td><td>${escapeHtml(selectedProduct.bezeichnung || "")}</td></tr>
+                    <tr><td>Reifen</td><td>${escapeHtml(selectedProduct.marke || "")}</td></tr>
+                    <tr><td>Dimension</td><td>${escapeHtml(selectedProduct.dimension || "")}</td></tr>
+                    <tr><td>Teilenummer</td><td>${escapeHtml(selectedProduct.teilenummer || "")}</td></tr>
+                </table>
+
+                <div class="price-box">
+                    <div class="price-label">Preis pro Satz inkl. Montage / Preise inkl. MwSt.</div>
+                    <div class="price-value">${escapeHtml(selectedProduct.preis || "")} CHF</div>
+                </div>
+
+                ${selectedProduct.verkaufshinweis ? `<div class="offer-note"><b>Hinweis:</b> ${escapeHtml(selectedProduct.verkaufshinweis)}</div>` : ``}
+                ${selectedProduct.hinweistext ? `<div class="offer-note">${escapeHtml(selectedProduct.hinweistext)}</div>` : ``}
+                ${bemerkung ? `<div class="offer-note"><b>Bemerkung:</b><br>${escapeHtml(bemerkung)}</div>` : ``}
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-note">
+        Diese Offerte wurde über den Emmenegger Winterkomplettrad-Konfigurator erstellt. Änderungen und Zwischenverkauf bleiben vorbehalten.
+    </div>
+
+    <div class="print-actions">
+        <button onclick="window.print()">Drucken / Als PDF speichern</button>
+        <button class="secondary" onclick="window.close()">Schliessen</button>
+    </div>
+
+</div>
+</body>
+</html>
+`;
+
+    offerWindow.document.open();
+    offerWindow.document.write(html);
+    offerWindow.document.close();
+}
+async function sendMail() {
+    const name = clean(document.getElementById("kundeName").value);
+const email = clean(document.getElementById("kundeEmail").value);
+const kontrollschild = clean(document.getElementById("kundeKontrollschild").value);
+const art = clean(document.getElementById("kundeArt").value);
+const bemerkung = clean(document.getElementById("kundeBemerkung").value);
+const interneAuftragsnummer = clean(document.getElementById("interneAuftragsnummer")?.value);
+const internerKundenname = clean(document.getElementById("internerKundenname")?.value);
+const interneOrderOderFIN = clean(document.getElementById("interneOrderOderFIN")?.value);
+const internesAblieferdatum = clean(document.getElementById("internesAblieferdatum")?.value);
+const sendBtn = document.getElementById("sendBtn");
+
+   if (!name || !email || !kontrollschild) {
     alert("Bitte alle Pflichtfelder ausfüllen.");
+    return;
+}
+
+if (internalMode && (!internerKundenname || !interneAuftragsnummer)) {
+    alert("Bitte Kundenname und Auftragsnummer ausfüllen.");
     return;
 }
 
@@ -863,26 +1423,39 @@ if (!emailPattern.test(email)) {
 
     const formData = new FormData();
     formData.append("access_key", "29788c4e-2b0a-47ba-a817-eb729a965e38");
-    formData.append("subject", `${art} Winterkompletträder - ${selectedProduct?.bezeichnung || ""}`);
+    formData.append(
+    "subject",
+    internalMode
+        ? `Interne ${art} Winterkompletträder - ${interneAuftragsnummer || ""} - ${selectedProduct?.bezeichnung || ""}`
+        : `${art} Winterkompletträder - ${selectedProduct?.bezeichnung || ""}`
+);
     formData.append("from_name", "WKR Konfigurator");
-    formData.append("to", "tv-g-fp@emmeneggerag.ch");
+    formData.append("to", selectedProduct?.empfaengerMail || "");
 
     formData.append("Name", name);
     formData.append("E-Mail", email);
     formData.append("Kontrollschild", kontrollschild);
     formData.append("Art", art);
+    formData.append("Standort", state.standort || "");
+    formData.append("Marke", state.marke || "");
     formData.append("Reihe", state.reihe || "");
     formData.append("Modell", state.modell || "");
     formData.append("Motor", state.motor || "");
     formData.append("Produkt", selectedProduct?.bezeichnung || "");
     formData.append("Reifen", `${selectedProduct?.marke || ""} ${selectedProduct?.dimension || ""}`.trim());
     formData.append("Preis", selectedProduct?.preis ? `${selectedProduct.preis} CHF` : "");
-    formData.append("Bemerkung", bemerkung);
-
-    const message =
-`Es wurde eine ${art.toLowerCase()} über den WKR Konfigurator erfasst.
+   formData.append("InternerModus", internalMode ? "Ja" : "Nein");
+formData.append("Auftragsnummer", interneAuftragsnummer || "");
+formData.append("Kundenname intern", internerKundenname || "");
+formData.append("Ordernummer / Fahrgestellnummer", interneOrderOderFIN || "");
+formData.append("Ablieferungsdatum", internesAblieferdatum || "");
+formData.append("Bemerkung", bemerkung);
+const message =
+`${internalMode ? "Es wurde eine interne " : "Es wurde eine "} ${art.toLowerCase()} über den WKR Konfigurator erfasst.
 
 Fahrzeug:
+Standort: ${state.standort || ""}
+Marke: ${state.marke || ""}
 Reihe: ${state.reihe || ""}
 Modell: ${state.modell || ""}
 Motor: ${state.motor || ""}
@@ -897,7 +1470,13 @@ Name: ${name}
 E-Mail: ${email}
 Kontrollschild: ${kontrollschild}
 
-Bemerkung:
+${internalMode ? `Interne Angaben:
+Auftragsnummer: ${interneAuftragsnummer || ""}
+Kundenname: ${internerKundenname || ""}
+Ordernummer / Fahrgestellnummer: ${interneOrderOderFIN || ""}
+Ablieferungsdatum: ${internesAblieferdatum || ""}
+
+` : ""}Bemerkung:
 ${bemerkung}`;
 
     formData.append("message", message);
@@ -913,11 +1492,25 @@ ${bemerkung}`;
         if (response.ok) {
             alert("Vielen Dank. Ihre Anfrage wurde erfolgreich gesendet.");
             document.getElementById("kundeName").value = "";
-            document.getElementById("kundeEmail").value = "";
-            document.getElementById("kundeKontrollschild").value = "";
-            document.getElementById("kundeArt").value = "Anfrage";
-            document.getElementById("kundeBemerkung").value = "";
-            closeModal();
+document.getElementById("kundeEmail").value = "";
+document.getElementById("kundeKontrollschild").value = "";
+document.getElementById("kundeArt").value = "Anfrage";
+document.getElementById("kundeBemerkung").value = "";
+
+if (document.getElementById("interneAuftragsnummer")) {
+    document.getElementById("interneAuftragsnummer").value = "";
+}
+if (document.getElementById("internerKundenname")) {
+    document.getElementById("internerKundenname").value = "";
+}
+if (document.getElementById("interneOrderOderFIN")) {
+    document.getElementById("interneOrderOderFIN").value = "";
+}
+if (document.getElementById("internesAblieferdatum")) {
+    document.getElementById("internesAblieferdatum").value = "";
+}
+
+closeModal();
         } else {
             alert("Fehler: " + (data.message || "Die Anfrage konnte nicht gesendet werden."));
         }
