@@ -1085,29 +1085,30 @@ if (internalMode && nettoNum !== null && nettoNum > 0) {
                 : `<button class="button" type="button" onclick="openModal('${jsSafe(bezeichnung)}','${jsSafe(markeReifen)}','${jsSafe(dimension)}','${jsSafe(angebot || vp)}','${jsSafe(empfaengerMail)}','${jsSafe(bild)}','${jsSafe(teilenummer)}','${jsSafe(hinweistext)}','${jsSafe(verkaufshinweis)}')">Auswählen</button>`;
 
             html += `
-                <div class="product ${isSoldOut ? "sold-out" : ""}">
-                    <div class="product-left">
-                        <img src="${escapeHtml(bild)}" alt="${escapeHtml(bezeichnung)}" class="clickable-image" onclick="toggleImageZoom(this)">
-                        <div class="product-info">
-                            <div class="product-title">${escapeHtml(bezeichnung)}</div>
-                            <div class="product-brand">${escapeHtml(markeReifen)}</div>
-                            <div class="product-dimension">${escapeHtml(dimension)}</div>
-                           ${hinweistext ? `<div class="product-hinweis">${escapeHtml(hinweistext)}</div>` : ``}
-${verkaufshinweis ? `<div class="product-detail"><b>Hinweis:</b> ${escapeHtml(verkaufshinweis)}</div>` : ``}
-${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
-${internalMode ? `<div class="internal-note"><b>Anzahl effektiv:</b> ${escapeHtml(String(lager))}</div>` : ``}
-${internalMode && bemerkungIntern ? `<div class="internal-note"><b>Bemerkung intern:</b> ${escapeHtml(bemerkungIntern)}</div>` : ``}
-                    </div>
+    <div class="product ${isSoldOut ? "sold-out" : ""}">
+        <div class="product-left">
+            <img src="${escapeHtml(bild)}" alt="${escapeHtml(bezeichnung)}" class="clickable-image" onclick="toggleImageZoom(this)">
+            <div class="product-info">
+                <div class="product-title">${escapeHtml(bezeichnung)}</div>
+                <div class="product-brand">${escapeHtml(markeReifen)}</div>
+                <div class="product-dimension">${escapeHtml(dimension)}</div>
+                ${hinweistext ? `<div class="product-hinweis">${escapeHtml(hinweistext)}</div>` : ``}
+                ${verkaufshinweis ? `<div class="product-detail"><b>Hinweis:</b> ${escapeHtml(verkaufshinweis)}</div>` : ``}
+                ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
+                ${internalMode ? `<div class="internal-note"><b>Anzahl effektiv:</b> ${escapeHtml(String(lager))}</div>` : ``}
+                ${internalMode && bemerkungIntern ? `<div class="internal-note"><b>Bemerkung intern:</b> ${escapeHtml(bemerkungIntern)}</div>` : ``}
+            </div>
+        </div>
 
-                    <div class="product-right">
-                        <div class="price-caption">Pro Satz inkl. Montage</div>
-                        ${priceHtml}
-                        <div class="price-note">${internalMode ? "Angebotspreis / UPE inkl. MwSt." : "Preise inkl. MwSt."}</div>
-                        ${statusHtml}
-                        ${buttonHtml}
-                    </div>
-                </div>
-            `;
+        <div class="product-right">
+            <div class="price-caption">Pro Satz inkl. Montage</div>
+            ${priceHtml}
+            <div class="price-note">${internalMode ? "Angebotspreis / UPE inkl. MwSt." : "Preise inkl. MwSt."}</div>
+            ${statusHtml}
+            ${buttonHtml}
+        </div>
+    </div>
+`;
         });
 
         html += `</div>`;
