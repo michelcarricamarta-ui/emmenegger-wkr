@@ -443,7 +443,58 @@ body {
 .button-secondary:hover {
     background: #5f5f5f;
 }
+body.mini-mode .card {
+    border-top: 4px solid #111;
+}
 
+body.mini-mode .card:hover {
+    border-color: #111;
+    box-shadow: 0 10px 26px rgba(0,0,0,0.18);
+}
+
+body.mini-mode .change-link {
+    color: #111;
+}
+
+body.mini-mode .button {
+    background: #111;
+    color: white;
+}
+
+body.mini-mode .button:hover {
+    background: #000;
+}
+
+body.mini-mode .button-secondary {
+    background: #555;
+}
+
+body.mini-mode .button-secondary:hover {
+    background: #333;
+}
+
+body.mini-mode .status-green {
+    color: #111;
+}
+
+body.mini-mode .status-red {
+    color: #444;
+}
+
+body.mini-mode .products-title,
+body.mini-mode .selection-label,
+body.mini-mode .product-title,
+body.mini-mode .model-card .model-name,
+body.mini-mode .summary-text b,
+body.mini-mode .info-title {
+    color: #111;
+}
+
+body.mini-mode .internal-login-btn:hover {
+    border-color: #111;
+    color: #111;
+    background: #f3f3f3;
+}
 .empty-note {
     margin-top: 30px;
     font-size: 16px;
@@ -1025,7 +1076,15 @@ function render() {
     }
 
     document.getElementById("app").innerHTML = html;
-    updateHeroImage();
+updateHeroImage();
+updateBrandTheme();
+}
+    function updateBrandTheme() {
+    document.body.classList.remove("mini-mode");
+
+    if (state.marke === "MINI") {
+        document.body.classList.add("mini-mode");
+    }
 }
    function activateInternalMode() {
     if (internalMode) {
