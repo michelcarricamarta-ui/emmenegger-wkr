@@ -773,10 +773,23 @@ Promise.all([
 function render() {
     let html = "";
 
-    if (!state.standort) {
-        const standorte = [...new Set(produkte.map(x => clean(x["Standort"])).filter(Boolean))];
+    if (!state.marke) {
+        html += `<div class="selection-label">1. Marke wählen</div>`;
+        html += `<div class="grid">`;
+        html += `<div class="card reihe-card" onclick="selectMarke('BMW')">BMW Winterkompletträder</div>`;
+        html += `<div class="card reihe-card" onclick="selectMarke('MINI')">MINI Winterkompletträder</div>`;
+        html += `</div>`;
+    }
 
-        html += `<div class="selection-label">1. Standort wählen</div>`;
+    if (state.marke && !state.standort) {
+        const standorte = [...new Set(
+            produkte
+                .filter(x => clean(x["Marke"]) === state.marke)
+                .map(x => clean(x["Standort"]))
+                .filter(Boolean)
+        )];
+
+        html += `<div class="selection-label">2. Standort wählen</div>`;
         html += `<div class="grid">`;
 
         standorte.forEach(s => {
@@ -791,25 +804,7 @@ function render() {
         html += `</div>`;
     }
 
-    if (state.standort && !state.marke) {
-        const marken = [...new Set(
-            produkte
-                .filter(x => clean(x["Standort"]) === state.standort)
-                .map(x => clean(x["Marke"]))
-                .filter(Boolean)
-        )];
-
-        html += `<div class="selection-label">2. Marke wählen</div>`;
-        html += `<div class="grid">`;
-
-        marken.forEach(m => {
-            html += `<div class="card reihe-card" onclick="selectMarke('${jsSafe(m)}')">${escapeHtml(m)}</div>`;
-        });
-
-        html += `</div>`;
-    }
-
-    if (state.standort && state.marke && !state.reihe) {
+    if (state.marke && state.standort && !state.reihe) {
         const reihen = [...new Set(
             mapping
                 .filter(x => clean(x["Marke"]) === state.marke)
@@ -827,7 +822,7 @@ function render() {
         html += `</div>`;
     }
 
-    if (state.reihe && !state.modell) {
+    if (state.marke && state.standort && state.reihe && !state.modell) {
         const modelle = [...new Set(
             mapping
                 .filter(x =>
@@ -862,7 +857,7 @@ function render() {
         html += `</div>`;
     }
 
-    if (state.modell && !state.motor) {
+    if (state.marke && state.standort && state.reihe && state.modell && !state.motor) {
         const motors = [...new Set(
             mapping
                 .filter(x =>
@@ -901,8 +896,8 @@ function render() {
             <div class="summary-box">
                 <div class="summary-text">
                     <b>Ihre Auswahl:</b><br>
-                    Standort: ${escapeHtml(standortLabel)}<br>
                     Marke: ${escapeHtml(state.marke)}<br>
+                    Standort: ${escapeHtml(standortLabel)}<br>
                     Reihe: ${escapeHtml(state.reihe)}<br>
                     Modell: ${escapeHtml(clean(fahrzeug?.Code) || state.modell)}<br>
                     Motor: ${escapeHtml(state.motor)}<br>
@@ -961,22 +956,21 @@ function render() {
             const empfaengerMail = clean(r["EmpfängerMail"]);
 
             const vpNum = parsePriceValue(vp);
-const angebotNum = parsePriceValue(angebot);
+            const angebotNum = parsePriceValue(angebot);
 
-const hasPrice =
-    (angebotNum !== null && angebotNum > 0) ||
-    (vpNum !== null && vpNum > 0);
+            const hasPrice =
+                (angebotNum !== null && angebotNum > 0) ||
+                (vpNum !== null && vpNum > 0);
 
-const isInStock = lager > 0;
-const isOrderable = lager <= 0 && hasPrice;
-const isSoldOut = lager <= 0 && !hasPrice;
+            const isSoldOut = lager <= 0 && !hasPrice;
+            const isOrderable = lager <= 0 && hasPrice;
 
-const hasRealDiscount =
-    angebotNum !== null &&
-    angebotNum > 0 &&
-    vpNum !== null &&
-    vpNum > 0 &&
-    angebotNum < vpNum;
+            const hasRealDiscount =
+                angebotNum !== null &&
+                angebotNum > 0 &&
+                vpNum !== null &&
+                vpNum > 0 &&
+                angebotNum < vpNum;
 
             let priceHtml = ``;
 
@@ -992,14 +986,14 @@ const hasRealDiscount =
             }
 
             const statusHtml = isSoldOut
-    ? `<div class="status-grey">Ausverkauft</div><div class="delivery-note">Zurzeit nicht verfügbar</div>`
-    : isOrderable
-        ? `<div class="status-red">Auf Bestellung</div><div class="delivery-note">Lieferzeit 5-10 Arbeitstage</div>`
-        : `<div class="status-green">An Lager</div><div class="delivery-note">Sofort verfügbar</div>`;
+                ? `<div class="status-grey">Ausverkauft</div><div class="delivery-note">Zurzeit nicht verfügbar</div>`
+                : isOrderable
+                    ? `<div class="status-red">Auf Bestellung</div><div class="delivery-note">Lieferzeit 5-10 Arbeitstage</div>`
+                    : `<div class="status-green">An Lager</div><div class="delivery-note">Sofort verfügbar</div>`;
 
-const buttonHtml = isSoldOut
-    ? `<button class="button button-disabled" type="button">Nicht verfügbar</button>`
-    : `<button class="button" type="button" onclick="openModal('${jsSafe(bezeichnung)}','${jsSafe(markeReifen)}','${jsSafe(dimension)}','${jsSafe(angebot || vp)}','${jsSafe(empfaengerMail)}','${jsSafe(bild)}','${jsSafe(teilenummer)}','${jsSafe(hinweistext)}','${jsSafe(verkaufshinweis)}')">Auswählen</button>`;
+            const buttonHtml = isSoldOut
+                ? `<button class="button button-disabled" type="button">Nicht verfügbar</button>`
+                : `<button class="button" type="button" onclick="openModal('${jsSafe(bezeichnung)}','${jsSafe(markeReifen)}','${jsSafe(dimension)}','${jsSafe(angebot || vp)}','${jsSafe(empfaengerMail)}','${jsSafe(bild)}','${jsSafe(teilenummer)}','${jsSafe(hinweistext)}','${jsSafe(verkaufshinweis)}')">Auswählen</button>`;
 
             html += `
                 <div class="product ${isSoldOut ? "sold-out" : ""}">
@@ -1030,7 +1024,7 @@ const buttonHtml = isSoldOut
     }
 
     document.getElementById("app").innerHTML = html;
-updateHeroImage();
+    updateHeroImage();
 }
    function activateInternalMode() {
     if (internalMode) {
@@ -1078,6 +1072,7 @@ function selectStandort(s) {
 
 function selectMarke(m) {
     state.marke = m;
+    state.standort = null;
     state.reihe = null;
     state.modell = null;
     state.motor = null;
