@@ -39,7 +39,36 @@ body {
     right: 30px;
     z-index: 6;
 }
+.back-home-wrap {
+    position: absolute;
+    top: 58px;
+    left: 30px;
+    z-index: 6;
+}
 
+.back-home-link {
+    border: none;
+    background: none;
+    padding: 0;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1c69d4;
+    cursor: pointer;
+}
+
+.back-home-link:hover {
+    color: #1557b0;
+    text-decoration: underline;
+}
+
+body.mini-mode .back-home-link {
+    color: #111;
+}
+
+body.mini-mode .back-home-link:hover {
+    color: #000;
+}
 .internal-login-btn {
     background: rgba(255,255,255,0.92);
     border: 1px solid #c7c7c7;
@@ -696,9 +725,14 @@ body.mini-mode .internal-login-btn:hover {
     <div class="logo-top">
         <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" alt="Emmenegger Logo">
     </div>
-   <div class="internal-login-wrap">
-    <button class="internal-login-btn" type="button" onclick="activateInternalMode()">Interner Login</button>
-</div>
+
+    <div class="back-home-wrap">
+ <button class="back-home-link" type="button" onclick="goToHome()">← Zurück zur Startseite</button>
+    </div>
+
+    <div class="internal-login-wrap">
+        <button class="internal-login-btn" type="button" onclick="activateInternalMode()">Interner Login</button>
+    </div>
 <div id="internalBanner" class="internal-banner" style="display:none;">
     Interner Bestellmodus aktiv
 </div>
@@ -1237,7 +1271,9 @@ function resetSelection() {
     state.motor = null;
     render();
 }
-
+function goToHome() {
+    window.location.href = window.location.pathname;
+}
 function openModal(bezeichnung, marke, dimension, preis, empfaengerMail, bild, teilenummer, hinweistext, verkaufshinweis) {
     selectedProduct = {
         bezeichnung: bezeichnung,
