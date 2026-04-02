@@ -835,7 +835,7 @@ function render() {
     let html = "";
 
     if (!state.marke) {
-        html += `<div class="selection-label">1. Marke wählen</div>`;
+        html += `<div class="selection-label">Marke wählen</div>`;
         html += `<div class="grid">`;
         html += `<div class="card reihe-card" onclick="selectMarke('BMW')">BMW Winterkompletträder</div>`;
 html += `<div class="card reihe-card mini-start-card" onclick="selectMarke('MINI')">MINI Winterkompletträder</div>`;
@@ -850,7 +850,7 @@ html += `<div class="card reihe-card mini-start-card" onclick="selectMarke('MINI
                 .filter(Boolean)
         )];
 
-        html += `<div class="selection-label">2. Standort wählen</div>`;
+        html += `<div class="selection-label">Standort wählen</div>`;
         html += `<div class="grid">`;
 
         standorte.forEach(s => {
@@ -873,7 +873,7 @@ html += `<div class="card reihe-card mini-start-card" onclick="selectMarke('MINI
                 .filter(Boolean)
         )];
 
-        html += `<div class="selection-label">3. Reihe wählen</div>`;
+        html += `<div class="selection-label">Reihe wählen</div>`;
         html += `<div class="grid">`;
 
         reihen.forEach(r => {
@@ -894,7 +894,7 @@ html += `<div class="card reihe-card mini-start-card" onclick="selectMarke('MINI
                 .filter(Boolean)
         )];
 
-        html += `<div class="selection-label">4. Modell wählen</div>`;
+        html += `<div class="selection-label">Modell wählen</div>`;
         html += `<div class="grid">`;
 
         modelle.forEach(m => {
@@ -929,7 +929,7 @@ html += `<div class="card reihe-card mini-start-card" onclick="selectMarke('MINI
                 .flatMap(x => splitMotorList(x["Motor"]))
         )];
 
-        html += `<div class="selection-label">5. Motor wählen</div>`;
+        html += `<div class="selection-label">Motor wählen</div>`;
         html += `<div class="grid">`;
 
         motors.forEach(m => {
