@@ -828,6 +828,75 @@ body.mini-mode .internal-login-btn:hover {
 </div>
 
 <script>
+
+let selectedProduct = null;
+
+let internalMode = false;
+
+const state = {
+    standort: null,
+    marke: null,
+    reihe: null,
+    modell: null,
+    motor: null
+};
+
+let fahrzeuge = [];
+
+function clean(v) {
+    return (v || "").toString().trim();
+}
+
+function escapeHtml(value) {
+    return (value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
+
+function closeModal() {
+    document.getElementById("modal").style.display = "none";
+}
+
+function closeLoginModal() {
+    document.getElementById("loginModal").style.display = "none";
+}
+
+function activateInternalMode() {
+    document.getElementById("loginModal").style.display = "flex";
+}
+
+function submitInternalLogin() {
+
+    const name = document.getElementById("loginName").value;
+    const pw = document.getElementById("loginPassword").value;
+
+    if (!name) {
+        alert("Bitte Name eingeben");
+        return;
+    }
+
+    if (pw !== "28010") {
+        alert("Passwort falsch");
+        return;
+    }
+
+    internalMode = true;
+
+    document.getElementById("internerMitarbeiter").value = name;
+
+    document.getElementById("internalFields").style.display = "block";
+    document.getElementById("externalFields").style.display = "none";
+
+    document.getElementById("internalBanner").style.display = "block";
+
+    closeLoginModal();
+}
+
+function goToHome() {
+    location.reload();
+}
 function showOfferPreview() {
     if (!selectedProduct) {
         alert("Bitte zuerst ein Produkt auswählen.");
