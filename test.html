@@ -151,7 +151,15 @@ body {
     transform: translateY(-3px);
     box-shadow: 0 10px 26px rgba(28,105,212,0.18);
 }
+.mini-start-card {
+    border-top: 4px solid #111;
+    color: #111;
+}
 
+.mini-start-card:hover {
+    border-color: #111;
+    box-shadow: 0 10px 26px rgba(0,0,0,0.18);
+}
 .reihe-card {
     min-width: 240px;
     min-height: 92px;
@@ -830,7 +838,7 @@ function render() {
         html += `<div class="selection-label">1. Marke wählen</div>`;
         html += `<div class="grid">`;
         html += `<div class="card reihe-card" onclick="selectMarke('BMW')">BMW Winterkompletträder</div>`;
-        html += `<div class="card reihe-card" onclick="selectMarke('MINI')">MINI Winterkompletträder</div>`;
+html += `<div class="card reihe-card mini-start-card" onclick="selectMarke('MINI')">MINI Winterkompletträder</div>`;
         html += `</div>`;
     }
 
