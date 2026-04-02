@@ -106,6 +106,9 @@ body {
     text-align: center;
     letter-spacing: 0.2px;
 }
+    .container.internal-mode-active {
+    box-shadow: 0 0 0 3px rgba(198, 40, 40, 0.18);
+}
 .section-title {
     font-size: 22px;
     margin: 10px 0 20px 0;
@@ -370,7 +373,8 @@ body {
 }
 
 .product-partnr {
-    margin-top: 12px;
+    margin-top: 18px;
+    margin-bottom: 12px;
     font-size: 14px;
     color: #1f1f1f;
 }
@@ -1118,6 +1122,11 @@ if (internalMode && nettoNum !== null && nettoNum > 0) {
 updateHeroImage();
 updateBrandTheme();
 updateUrlFromState();
+    
+const container = document.querySelector(".container");
+if (container) {
+    container.classList.toggle("internal-mode-active", internalMode);
+}
 }
     function updateBrandTheme() {
     document.body.classList.remove("mini-mode");
@@ -1126,7 +1135,7 @@ updateUrlFromState();
         document.body.classList.add("mini-mode");
     }
 }
-   function activateInternalMode() {
+  function activateInternalMode() {
     if (internalMode) {
         alert("Der interne Modus ist bereits aktiv.");
         return;
@@ -1146,6 +1155,11 @@ updateUrlFromState();
         const internalFields = document.getElementById("internalFields");
         if (internalFields) {
             internalFields.style.display = "block";
+        }
+
+        const container = document.querySelector(".container");
+        if (container) {
+            container.classList.add("internal-mode-active");
         }
 
         alert("Interner Modus wurde aktiviert.");
