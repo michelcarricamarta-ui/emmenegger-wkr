@@ -378,6 +378,14 @@ body {
     font-size: 14px;
     color: #1f1f1f;
 }
+    .internal-note {
+    background: #f3f3f3;
+    border-left: 4px solid #111;
+    padding: 8px 10px;
+    margin-top: 8px;
+    font-size: 13px;
+    color: #222;
+}
 
 .product-right {
     width: 235px;
@@ -1031,7 +1039,9 @@ html += `<div class="card reihe-card mini-start-card" onclick="selectMarke('MINI
         }
 
         results.forEach(r => {
-            const lager = parseInt(clean(r["Lager"])) || 0;
+           const lagerRaw = clean(r["Lager"]);
+const lagerNum = parseInt(lagerRaw, 10);
+const lager = Number.isNaN(lagerNum) ? lagerRaw : lagerNum;
             const bild = clean(r["Bild"]) || "https://via.placeholder.com/220x140?text=Rad";
             const bezeichnung = clean(r["Bezeichnung"]);
             const markeReifen = clean(r["Reifen"]);
@@ -1049,12 +1059,14 @@ const empfaengerMail = clean(r["EmpfängerMail"]);
 const angebotNum = parsePriceValue(angebot);
 const nettoNum = parsePriceValue(netto);
 
-            const hasPrice =
-                (angebotNum !== null && angebotNum > 0) ||
-                (vpNum !== null && vpNum > 0);
+            cconst lagerForCheck = Number.isFinite(Number(lager)) ? Number(lager) : 0;
 
-            const isSoldOut = lager <= 0 && !hasPrice;
-            const isOrderable = lager <= 0 && hasPrice;
+const hasPrice =
+    (angebotNum !== null && angebotNum > 0) ||
+    (vpNum !== null && vpNum > 0);
+
+const isSoldOut = lagerForCheck <= 0 && !hasPrice;
+const isOrderable = lagerForCheck <= 0 && hasPrice;
 
             const hasRealDiscount =
                 angebotNum !== null &&
