@@ -824,10 +824,11 @@ body.mini-mode .internal-login-btn:hover {
     <button class="button button-secondary" type="button" onclick="closeModal()">Schliessen</button>
     <button class="button button-secondary" type="button" onclick="showOfferPreview()">PDF Offerte</button>
     <button id="sendBtn" class="button" type="button" onclick="sendMail()">Senden</button>
-</div>
     </div>
 </div>
 
+<script>
+function showOfferPreview() {
     if (!selectedProduct) {
         alert("Bitte zuerst ein Produkt auswählen.");
         return;
