@@ -699,8 +699,9 @@ body {
 const urlProdukte = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Produkte";
 const urlMapping = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Zuordnung";
 const urlFahrzeuge = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Fahrzeuge";
+const heroImageStart = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/WINTER%20Ix3.jpg?raw=true";
 const heroImageBMW = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/2026-bmw-ix3-snow-driving-04.jpg?raw=true";
-const heroImageMINI = "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/MINI%20Countrymann.jpg";
+const heroImageMINI = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/MINI%20Countrymann.jpg?raw=true";
 
 let produkte = [];
 let mapping = [];
@@ -1058,7 +1059,14 @@ function render() {
     const hero = document.getElementById("heroBanner");
     if (!hero) return;
 
-    const heroImage = state.marke === "MINI" ? heroImageMINI : heroImageBMW;
+    let heroImage = heroImageStart;
+
+    if (state.marke === "BMW") {
+        heroImage = heroImageBMW;
+    } else if (state.marke === "MINI") {
+        heroImage = heroImageMINI;
+    }
+
     hero.style.backgroundImage = `url('${heroImage}')`;
 }
 function selectStandort(s) {
