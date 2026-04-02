@@ -753,7 +753,26 @@ body.mini-mode .internal-login-btn:hover {
         </div>
     </div>
 </div>
+<div id="loginModal" class="modal">
+    <div class="modal-content" style="max-width: 420px;">
+        <div class="modal-title" style="text-align:center;">Internen Bestellmodus aktivieren</div>
 
+        <label for="loginName">Name</label>
+        <input id="loginName" type="text" placeholder="">
+
+        <div style="font-size:12px; font-weight:700; color:#666; margin-top:-8px; margin-bottom:14px; text-align:center;">
+            Bitte trage dein Name ein, bsp. "Hans.Muster"
+        </div>
+
+        <label for="loginPassword">Passwort</label>
+        <input id="loginPassword" type="password" placeholder="">
+
+        <div class="modal-actions">
+            <button class="button button-secondary" type="button" onclick="closeLoginModal()">Schliessen</button>
+            <button class="button" type="button" onclick="submitInternalLogin()">Login</button>
+        </div>
+    </div>
+</div>
 <div id="modal" class="modal">
     <div class="modal-content">
         <div class="modal-title">Anfrage senden</div>
@@ -777,7 +796,7 @@ body.mini-mode .internal-login-btn:hover {
 </select>
 
 <div id="internalFields" style="display:none;">
-    <label for="internerMitarbeiter">Mitarbeiter *</label>
+    <label for="internerMitarbeiter">Verkäufer *</label>
     <input id="internerMitarbeiter" type="text" placeholder="z. B. michel.marta" readonly>
 
     <label for="internerKundenname">Kundenname *</label>
@@ -1194,22 +1213,48 @@ if (container) {
         alert("Der interne Modus ist bereits aktiv.");
         return;
     }
+function closeLoginModal() {
+    document.getElementById("loginModal").style.display = "none";
+}
 
-    const enteredUser = prompt("Bitte trage deinen Namen ein wie michel.marta");
-    if (enteredUser === null) return;
+function submitInternalLogin() {
+    const enteredUser = clean(document.getElementById("loginName").value);
+    const enteredPassword = clean(document.getElementById("loginPassword").value);
 
-    const cleanedUser = clean(enteredUser);
-    if (!cleanedUser) {
+    if (!enteredUser) {
         alert("Bitte einen Namen eingeben.");
         return;
     }
 
-    const enteredPassword = prompt("Bitte Passwort für den internen Modus eingeben:");
-    if (enteredPassword === null) return;
+    if (!enteredPassword) {
+        alert("Bitte ein Passwort eingeben.");
+        return;
+    }
 
     if (enteredPassword === internalPassword) {
         internalMode = true;
-        internalUser = cleanedUser;
+        internalUser = enteredUser;
+
+        const banner = document.getElementById("internalBanner");
+        if (banner) {
+            banner.style.display = "block";
+        }
+
+        const container = document.querySelector(".container");
+        if (container) {
+            container.classList.add("internal-mode-active");
+        }
+
+        closeLoginModal();
+        render();
+    } else {
+        alert("Falsches Passwort.");
+    }
+}
+    document.getElementById("loginModal").style.display = "flex";
+    document.getElementById("loginName").value = "";
+    document.getElementById("loginPassword").value = "";
+}
 
         const banner = document.getElementById("internalBanner");
         if (banner) {
@@ -1654,7 +1699,7 @@ if (!internalMode) {
     formData.append("Reifen", `${selectedProduct?.marke || ""} ${selectedProduct?.dimension || ""}`.trim());
     formData.append("Preis", selectedProduct?.preis ? `${selectedProduct.preis} CHF` : "");
    formData.append("InternerModus", internalMode ? "Ja" : "Nein");
-formData.append("Mitarbeiter", internerMitarbeiter || "");
+formData.append("Verkäufer", internerMitarbeiter || "");
 formData.append("Kundenname intern", internerKundenname || "");
 formData.append("Lieferdatum Fahrzeug", internesLieferdatum || "");
 formData.append("Adressnummer Rechnungsempfänger", interneAdressnummer || "");
@@ -1677,7 +1722,7 @@ ${selectedProduct?.marke || ""} ${selectedProduct?.dimension || ""}
 Preis: ${selectedProduct?.preis || ""} CHF
 
 ${internalMode ? `Interne Angaben:
-Mitarbeiter: ${internerMitarbeiter || ""}
+Verkäufer: ${internerMitarbeiter || ""}
 Kundenname: ${internerKundenname || ""}
 Lieferdatum Fahrzeug: ${internesLieferdatum || ""}
 Adressnummer Rechnungsempfänger: ${interneAdressnummer || ""}
@@ -1749,8 +1794,14 @@ function toggleImageZoom(img) {
 }
 window.onclick = function(event) {
     const modal = document.getElementById("modal");
+    const loginModal = document.getElementById("loginModal");
+
     if (event.target === modal) {
         closeModal();
+    }
+
+    if (event.target === loginModal) {
+        closeLoginModal();
     }
 };
 </script>
