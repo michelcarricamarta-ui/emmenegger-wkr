@@ -797,7 +797,7 @@ body.mini-mode .internal-login-btn:hover {
 
 <div id="internalFields" style="display:none;">
     <label for="internerMitarbeiter">Verkäufer *</label>
-    <input id="internerMitarbeiter" type="text" placeholder="z. B. michel.marta" readonly>
+   <input id="internerMitarbeiter" type="text" readonly>
 
     <label for="internerKundenname">Kundenname *</label>
     <input id="internerKundenname" type="text" placeholder="Name Kunde">
@@ -1213,6 +1213,12 @@ if (container) {
         alert("Der interne Modus ist bereits aktiv.");
         return;
     }
+
+    document.getElementById("loginModal").style.display = "flex";
+    document.getElementById("loginName").value = "";
+    document.getElementById("loginPassword").value = "";
+}
+
 function closeLoginModal() {
     document.getElementById("loginModal").style.display = "none";
 }
@@ -1251,11 +1257,6 @@ function submitInternalLogin() {
         alert("Falsches Passwort.");
     }
 }
-    document.getElementById("loginModal").style.display = "flex";
-    document.getElementById("loginName").value = "";
-    document.getElementById("loginPassword").value = "";
-}
-
         const banner = document.getElementById("internalBanner");
         if (banner) {
             banner.style.display = "block";
@@ -1582,14 +1583,14 @@ body {
             <tr><td>Modell</td><td>${escapeHtml(modellAnzeige || "")}</td></tr>
             <tr><td>Motor</td><td>${escapeHtml(state.motor || "")}</td></tr>
             ${!internalMode ? `<tr><td>Kontrollschild</td><td>${escapeHtml(kontrollschild || "")}</td></tr>` : ``}
-           ${internalMode ? `<tr><td>Mitarbeiter</td><td>${escapeHtml(internerMitarbeiter || "")}</td></tr>` : `<tr><td>Name</td><td>${escapeHtml(name || "")}</td></tr>`}
+           ${internalMode ? `<tr><td>Verkäufer</td><td>${escapeHtml(internerMitarbeiter || "")}</td></tr>` : `<tr><td>Name</td><td>${escapeHtml(name || "")}</td></tr>`}
 ${internalMode ? `<tr><td>Kundenname</td><td>${escapeHtml(internerKundenname || "")}</td></tr>` : ``}
 ${internalMode ? `<tr><td>Lieferdatum Fahrzeug</td><td>${escapeHtml(internesLieferdatum || "")}</td></tr>` : ``}
 ${internalMode ? `<tr><td>Adressnummer Rechnungsempfänger</td><td>${escapeHtml(interneAdressnummer || "")}</td></tr>` : ``}
 ${internalMode ? `<tr><td>Ordernummer</td><td>${escapeHtml(interneOrdernummer || "")}</td></tr>` : ``}
 ${internalMode ? `<tr><td>Chassisnr.</td><td>${escapeHtml(interneChassisnr || "")}</td></tr>` : ``}
 ${!internalMode ? `<tr><td>E-Mail</td><td>${escapeHtml(email || "")}</td></tr>` : ``}
-${!internalMode ? `<tr><td>Kontrollschild</td><td>${escapeHtml(kontrollschild || "")}</td></tr>` : ``}
+
         </table>
     </div>
 
@@ -1638,7 +1639,7 @@ ${!internalMode ? `<tr><td>Kontrollschild</td><td>${escapeHtml(kontrollschild ||
     offerWindow.document.close();
 }
 async function sendMail() {
-    const name = clean(document.getElementById("kundeName")?.value);
+    cconst name = clean(document.getElementById("kundeName")?.value);
 const email = clean(document.getElementById("kundeEmail")?.value);
 const kontrollschild = clean(document.getElementById("kundeKontrollschild")?.value);
 const art = clean(document.getElementById("kundeArt").value);
