@@ -768,11 +768,14 @@ body.mini-mode .internal-login-btn:hover {
         <input id="loginPassword" type="password" placeholder="">
 
         <div class="modal-actions">
-            <button class="button button-secondary" type="button" onclick="closeLoginModal()">Schliessen</button>
-            <button class="button" type="button" onclick="submitInternalLogin()">Login</button>
+            <button class="button button-secondary" type="button" onclick="closeModal()">Schliessen</button>
+            <button class="button button-secondary" type="button" onclick="showOfferPreview()">PDF Offerte</button>
+            <button id="sendBtn" class="button" type="button" onclick="sendMail()">Senden</button>
         </div>
     </div>
 </div>
+
+<script>
 <div id="modal" class="modal">
     <div class="modal-content">
         <div class="modal-title">Anfrage senden</div>
