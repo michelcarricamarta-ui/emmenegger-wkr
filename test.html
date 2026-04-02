@@ -817,7 +817,29 @@ function jsSafe(value) {
     const numeric = parseFloat(normalized);
     return Number.isFinite(numeric) ? numeric : null;
 }
+function updateUrlFromState() {
+    const params = new URLSearchParams();
 
+    if (state.marke) params.set("marke", state.marke);
+    if (state.standort) params.set("standort", state.standort);
+    if (state.reihe) params.set("reihe", state.reihe);
+    if (state.modell) params.set("modell", state.modell);
+    if (state.motor) params.set("motor", state.motor);
+
+    const query = params.toString();
+    const newUrl = query ? `${window.location.pathname}?${query}` : window.location.pathname;
+    window.history.replaceState({}, "", newUrl);
+}
+
+function loadStateFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+
+    state.marke = params.get("marke") || null;
+    state.standort = params.get("standort") || null;
+    state.reihe = params.get("reihe") || null;
+    state.modell = params.get("modell") || null;
+    state.motor = params.get("motor") || null;
+}
 Promise.all([
     fetch(urlProdukte).then(r => r.json()),
     fetch(urlMapping).then(r => r.json()),
@@ -826,6 +848,7 @@ Promise.all([
     produkte = p;
     mapping = m;
     fahrzeuge = f;
+    loadStateFromUrl();
     render();
 }).catch(() => {
     document.getElementById("app").innerHTML = `<div class="empty-note">Die Daten konnten nicht geladen werden.</div>`;
@@ -1091,6 +1114,7 @@ if (internalMode && nettoNum !== null && nettoNum > 0) {
     document.getElementById("app").innerHTML = html;
 updateHeroImage();
 updateBrandTheme();
+updateUrlFromState();
 }
     function updateBrandTheme() {
     document.body.classList.remove("mini-mode");
