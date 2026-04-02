@@ -1093,7 +1093,7 @@ const empfaengerMail = clean(r["EmpfängerMail"]);
 const angebotNum = parsePriceValue(angebot);
 const nettoNum = parsePriceValue(netto);
 
-            cconst lagerForCheck = Number.isFinite(Number(lager)) ? Number(lager) : 0;
+            const lagerForCheck = Number.isFinite(Number(lager)) ? Number(lager) : 0;
 
 const hasPrice =
     (angebotNum !== null && angebotNum > 0) ||
@@ -1167,7 +1167,6 @@ if (internalMode && nettoNum !== null && nettoNum > 0) {
     document.getElementById("app").innerHTML = html;
 updateHeroImage();
 updateBrandTheme();
-updateUrlFromState();
     
 const container = document.querySelector(".container");
 if (container) {
