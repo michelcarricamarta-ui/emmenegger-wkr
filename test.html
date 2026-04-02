@@ -1013,11 +1013,13 @@ html += `<div class="card reihe-card mini-start-card" onclick="selectMarke('MINI
             const verkaufshinweis = clean(r["Verkaufshinweis"]);
             const teilenummer = clean(r["TN"]);
             const vp = clean(r["VP"]);
-            const angebot = clean(r["Angebotspreis"]);
-            const empfaengerMail = clean(r["EmpfängerMail"]);
+const angebot = clean(r["Angebotspreis"]);
+const netto = clean(r["Nettopreis"]);
+const empfaengerMail = clean(r["EmpfängerMail"]);
 
             const vpNum = parsePriceValue(vp);
-            const angebotNum = parsePriceValue(angebot);
+const angebotNum = parsePriceValue(angebot);
+const nettoNum = parsePriceValue(netto);
 
             const hasPrice =
                 (angebotNum !== null && angebotNum > 0) ||
@@ -1045,7 +1047,9 @@ html += `<div class="card reihe-card mini-start-card" onclick="selectMarke('MINI
             } else if (vpNum !== null && vpNum > 0) {
                 priceHtml = `<div class="new-price">${escapeHtml(vp)} CHF</div>`;
             }
-
+if (internalMode && nettoNum !== null && nettoNum > 0) {
+    priceHtml += `<div class="price-note"><b>Nettopreis:</b> ${escapeHtml(netto)} CHF</div>`;
+}
             const statusHtml = isSoldOut
                 ? `<div class="status-grey">Ausverkauft</div><div class="delivery-note">Zurzeit nicht verfügbar</div>`
                 : isOrderable
@@ -1073,7 +1077,7 @@ html += `<div class="card reihe-card mini-start-card" onclick="selectMarke('MINI
                     <div class="product-right">
                         <div class="price-caption">Pro Satz inkl. Montage</div>
                         ${priceHtml}
-                        <div class="price-note">Preise inkl. MwSt.</div>
+                        <div class="price-note">${internalMode ? "Angebotspreis / UPE inkl. MwSt." : "Preise inkl. MwSt."}</div>
                         ${statusHtml}
                         ${buttonHtml}
                     </div>
