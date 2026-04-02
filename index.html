@@ -151,7 +151,15 @@ body {
     transform: translateY(-3px);
     box-shadow: 0 10px 26px rgba(28,105,212,0.18);
 }
+.mini-start-card {
+    border-top: 4px solid #111;
+    color: #111;
+}
 
+.mini-start-card:hover {
+    border-color: #111;
+    box-shadow: 0 10px 26px rgba(0,0,0,0.18);
+}
 .reihe-card {
     min-width: 240px;
     min-height: 92px;
@@ -444,6 +452,58 @@ body {
     background: #5f5f5f;
 }
 
+body.mini-mode .card {
+    border-top: 4px solid #111;
+}
+
+body.mini-mode .card:hover {
+    border-color: #111;
+    box-shadow: 0 10px 26px rgba(0,0,0,0.18);
+}
+
+body.mini-mode .change-link {
+    color: #111;
+}
+
+body.mini-mode .button {
+    background: #111;
+    color: white;
+}
+
+body.mini-mode .button:hover {
+    background: #000;
+}
+
+body.mini-mode .button-secondary {
+    background: #555;
+}
+
+body.mini-mode .button-secondary:hover {
+    background: #333;
+}
+
+body.mini-mode .status-green {
+    color: #111;
+}
+
+body.mini-mode .status-red {
+    color: #444;
+}
+
+body.mini-mode .products-title,
+body.mini-mode .selection-label,
+body.mini-mode .product-title,
+body.mini-mode .model-card .model-name,
+body.mini-mode .summary-text b,
+body.mini-mode .info-title {
+    color: #111;
+}
+
+body.mini-mode .internal-login-btn:hover {
+    border-color: #111;
+    color: #111;
+    background: #f3f3f3;
+}
 .empty-note {
     margin-top: 30px;
     font-size: 16px;
@@ -642,7 +702,7 @@ body {
     <div class="info-section">
         <h2 class="info-title">Eiskalte Fahrfreude mit maximalem Grip</h2>
         <div class="info-text">
-            <p>Ob im Alltag, auf dem Weg in die Berge oder unterwegs zur Skipiste: Mit Original BMW Winterkompletträdern bleiben Sie auch bei Schnee, Regen und tiefen Temperaturen sicher unterwegs. Die Räder sind optimal auf die winterlichen Strassenverhältnisse abgestimmt und perfekt auf die elektronischen Regelsysteme Ihres BMW ausgelegt.</p>
+           <p>Ob im Alltag, auf dem Weg in die Berge oder unterwegs zur Skipiste: Mit Original Winterkompletträdern bleiben Sie auch bei Schnee, Regen und tiefen Temperaturen sicher unterwegs. Die Räder sind optimal auf die winterlichen Strassenverhältnisse abgestimmt und perfekt auf Ihr Fahrzeug ausgelegt.</p>
             <p>Entdecken Sie jetzt über unseren Konfigurator die verfügbaren Angebote von Emmenegger und finden Sie die passenden Winterkompletträder für Ihr Fahrzeug.</p>
         </div>
     </div>
@@ -699,8 +759,9 @@ body {
 const urlProdukte = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Produkte";
 const urlMapping = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Zuordnung";
 const urlFahrzeuge = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Fahrzeuge";
-const heroImageBMW = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/WINTER%20Ix3.jpg?raw=true";
-const heroImageMINI = "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/MINI%20Countrymann.jpg";
+const heroImageStart = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/WINTER%20Ix3.jpg?raw=true";
+const heroImageBMW = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/2026-bmw-ix3-snow-driving-04.jpg?raw=true";
+const heroImageMINI = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/MINI%20Countrymann.jpg?raw=true";
 
 let produkte = [];
 let mapping = [];
@@ -773,10 +834,23 @@ Promise.all([
 function render() {
     let html = "";
 
-    if (!state.standort) {
-        const standorte = [...new Set(produkte.map(x => clean(x["Standort"])).filter(Boolean))];
+    if (!state.marke) {
+        html += `<div class="selection-label">Marke wählen</div>`;
+        html += `<div class="grid">`;
+        html += `<div class="card reihe-card" onclick="selectMarke('BMW')">BMW Winterkompletträder</div>`;
+html += `<div class="card reihe-card mini-start-card" onclick="selectMarke('MINI')">MINI Winterkompletträder</div>`;
+        html += `</div>`;
+    }
 
-        html += `<div class="selection-label">1. Standort wählen</div>`;
+    if (state.marke && !state.standort) {
+        const standorte = [...new Set(
+            produkte
+                .filter(x => clean(x["Marke"]) === state.marke)
+                .map(x => clean(x["Standort"]))
+                .filter(Boolean)
+        )];
+
+        html += `<div class="selection-label">Standort wählen</div>`;
         html += `<div class="grid">`;
 
         standorte.forEach(s => {
@@ -791,25 +865,7 @@ function render() {
         html += `</div>`;
     }
 
-    if (state.standort && !state.marke) {
-        const marken = [...new Set(
-            produkte
-                .filter(x => clean(x["Standort"]) === state.standort)
-                .map(x => clean(x["Marke"]))
-                .filter(Boolean)
-        )];
-
-        html += `<div class="selection-label">2. Marke wählen</div>`;
-        html += `<div class="grid">`;
-
-        marken.forEach(m => {
-            html += `<div class="card reihe-card" onclick="selectMarke('${jsSafe(m)}')">${escapeHtml(m)}</div>`;
-        });
-
-        html += `</div>`;
-    }
-
-    if (state.standort && state.marke && !state.reihe) {
+    if (state.marke && state.standort && !state.reihe) {
         const reihen = [...new Set(
             mapping
                 .filter(x => clean(x["Marke"]) === state.marke)
@@ -817,7 +873,7 @@ function render() {
                 .filter(Boolean)
         )];
 
-        html += `<div class="selection-label">3. Reihe wählen</div>`;
+        html += `<div class="selection-label">Reihe wählen</div>`;
         html += `<div class="grid">`;
 
         reihen.forEach(r => {
@@ -827,7 +883,7 @@ function render() {
         html += `</div>`;
     }
 
-    if (state.reihe && !state.modell) {
+    if (state.marke && state.standort && state.reihe && !state.modell) {
         const modelle = [...new Set(
             mapping
                 .filter(x =>
@@ -838,7 +894,7 @@ function render() {
                 .filter(Boolean)
         )];
 
-        html += `<div class="selection-label">4. Modell wählen</div>`;
+        html += `<div class="selection-label">Modell wählen</div>`;
         html += `<div class="grid">`;
 
         modelle.forEach(m => {
@@ -862,7 +918,7 @@ function render() {
         html += `</div>`;
     }
 
-    if (state.modell && !state.motor) {
+    if (state.marke && state.standort && state.reihe && state.modell && !state.motor) {
         const motors = [...new Set(
             mapping
                 .filter(x =>
@@ -873,7 +929,7 @@ function render() {
                 .flatMap(x => splitMotorList(x["Motor"]))
         )];
 
-        html += `<div class="selection-label">5. Motor wählen</div>`;
+        html += `<div class="selection-label">Motor wählen</div>`;
         html += `<div class="grid">`;
 
         motors.forEach(m => {
@@ -901,8 +957,8 @@ function render() {
             <div class="summary-box">
                 <div class="summary-text">
                     <b>Ihre Auswahl:</b><br>
-                    Standort: ${escapeHtml(standortLabel)}<br>
                     Marke: ${escapeHtml(state.marke)}<br>
+                    Standort: ${escapeHtml(standortLabel)}<br>
                     Reihe: ${escapeHtml(state.reihe)}<br>
                     Modell: ${escapeHtml(clean(fahrzeug?.Code) || state.modell)}<br>
                     Motor: ${escapeHtml(state.motor)}<br>
@@ -961,22 +1017,21 @@ function render() {
             const empfaengerMail = clean(r["EmpfängerMail"]);
 
             const vpNum = parsePriceValue(vp);
-const angebotNum = parsePriceValue(angebot);
+            const angebotNum = parsePriceValue(angebot);
 
-const hasPrice =
-    (angebotNum !== null && angebotNum > 0) ||
-    (vpNum !== null && vpNum > 0);
+            const hasPrice =
+                (angebotNum !== null && angebotNum > 0) ||
+                (vpNum !== null && vpNum > 0);
 
-const isInStock = lager > 0;
-const isOrderable = lager <= 0 && hasPrice;
-const isSoldOut = lager <= 0 && !hasPrice;
+            const isSoldOut = lager <= 0 && !hasPrice;
+            const isOrderable = lager <= 0 && hasPrice;
 
-const hasRealDiscount =
-    angebotNum !== null &&
-    angebotNum > 0 &&
-    vpNum !== null &&
-    vpNum > 0 &&
-    angebotNum < vpNum;
+            const hasRealDiscount =
+                angebotNum !== null &&
+                angebotNum > 0 &&
+                vpNum !== null &&
+                vpNum > 0 &&
+                angebotNum < vpNum;
 
             let priceHtml = ``;
 
@@ -992,14 +1047,14 @@ const hasRealDiscount =
             }
 
             const statusHtml = isSoldOut
-    ? `<div class="status-grey">Ausverkauft</div><div class="delivery-note">Zurzeit nicht verfügbar</div>`
-    : isOrderable
-        ? `<div class="status-red">Auf Bestellung</div><div class="delivery-note">Lieferzeit 5-10 Arbeitstage</div>`
-        : `<div class="status-green">An Lager</div><div class="delivery-note">Sofort verfügbar</div>`;
+                ? `<div class="status-grey">Ausverkauft</div><div class="delivery-note">Zurzeit nicht verfügbar</div>`
+                : isOrderable
+                    ? `<div class="status-red">Auf Bestellung</div><div class="delivery-note">Lieferzeit 5-10 Arbeitstage</div>`
+                    : `<div class="status-green">An Lager</div><div class="delivery-note">Sofort verfügbar</div>`;
 
-const buttonHtml = isSoldOut
-    ? `<button class="button button-disabled" type="button">Nicht verfügbar</button>`
-    : `<button class="button" type="button" onclick="openModal('${jsSafe(bezeichnung)}','${jsSafe(markeReifen)}','${jsSafe(dimension)}','${jsSafe(angebot || vp)}','${jsSafe(empfaengerMail)}','${jsSafe(bild)}','${jsSafe(teilenummer)}','${jsSafe(hinweistext)}','${jsSafe(verkaufshinweis)}')">Auswählen</button>`;
+            const buttonHtml = isSoldOut
+                ? `<button class="button button-disabled" type="button">Nicht verfügbar</button>`
+                : `<button class="button" type="button" onclick="openModal('${jsSafe(bezeichnung)}','${jsSafe(markeReifen)}','${jsSafe(dimension)}','${jsSafe(angebot || vp)}','${jsSafe(empfaengerMail)}','${jsSafe(bild)}','${jsSafe(teilenummer)}','${jsSafe(hinweistext)}','${jsSafe(verkaufshinweis)}')">Auswählen</button>`;
 
             html += `
                 <div class="product ${isSoldOut ? "sold-out" : ""}">
@@ -1031,6 +1086,14 @@ const buttonHtml = isSoldOut
 
     document.getElementById("app").innerHTML = html;
 updateHeroImage();
+updateBrandTheme();
+}
+    function updateBrandTheme() {
+    document.body.classList.remove("mini-mode");
+
+    if (state.marke === "MINI") {
+        document.body.classList.add("mini-mode");
+    }
 }
    function activateInternalMode() {
     if (internalMode) {
@@ -1064,12 +1127,18 @@ updateHeroImage();
     const hero = document.getElementById("heroBanner");
     if (!hero) return;
 
-    const heroImage = state.marke === "MINI" ? heroImageMINI : heroImageBMW;
+    let heroImage = heroImageStart;
+
+    if (state.marke === "BMW") {
+        heroImage = heroImageBMW;
+    } else if (state.marke === "MINI") {
+        heroImage = heroImageMINI;
+    }
+
     hero.style.backgroundImage = `url('${heroImage}')`;
 }
 function selectStandort(s) {
     state.standort = s;
-    state.marke = null;
     state.reihe = null;
     state.modell = null;
     state.motor = null;
@@ -1078,6 +1147,7 @@ function selectStandort(s) {
 
 function selectMarke(m) {
     state.marke = m;
+    state.standort = null;
     state.reihe = null;
     state.modell = null;
     state.motor = null;
