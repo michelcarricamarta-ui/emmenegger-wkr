@@ -771,64 +771,63 @@ body.mini-mode .internal-login-btn:hover {
             <button class="button button-secondary" type="button" onclick="closeModal()">Schliessen</button>
             <button class="button button-secondary" type="button" onclick="showOfferPreview()">PDF Offerte</button>
             <button id="sendBtn" class="button" type="button" onclick="sendMail()">Senden</button>
-        </div>
-    </div>
+            </div>
+</div>
 </div>
 
-<script>
 <div id="modal" class="modal">
     <div class="modal-content">
         <div class="modal-title">Anfrage senden</div>
         <div id="modalProduct" class="modal-product"></div>
 
-<div id="externalFields">
-    <label for="kundeName">Name *</label>
-    <input id="kundeName" type="text" placeholder="Vorname und Nachname">
+        <div id="externalFields">
+            <label for="kundeName">Name *</label>
+            <input id="kundeName" type="text" placeholder="Vorname und Nachname">
 
-    <label for="kundeEmail">E-Mail *</label>
-    <input id="kundeEmail" type="email" placeholder="E-Mail Adresse">
+            <label for="kundeEmail">E-Mail *</label>
+            <input id="kundeEmail" type="email" placeholder="E-Mail Adresse">
 
-    <label for="kundeKontrollschild">Kontrollschild *</label>
-    <input id="kundeKontrollschild" type="text" placeholder="z. B. AG 123456">
-</div>
+            <label for="kundeKontrollschild">Kontrollschild *</label>
+            <input id="kundeKontrollschild" type="text" placeholder="z. B. AG 123456">
+        </div>
 
-<label for="kundeArt">Art *</label>
-<select id="kundeArt">
-    <option value="Anfrage">Anfrage</option>
-    <option value="Bestellung">Bestellung</option>
-</select>
+        <label for="kundeArt">Art *</label>
+        <select id="kundeArt">
+            <option value="Anfrage">Anfrage</option>
+            <option value="Bestellung">Bestellung</option>
+        </select>
 
-<div id="internalFields" style="display:none;">
-    <label for="internerMitarbeiter">Verkäufer *</label>
-   <input id="internerMitarbeiter" type="text" readonly>
+        <div id="internalFields" style="display:none;">
+            <label for="internerMitarbeiter">Verkäufer *</label>
+            <input id="internerMitarbeiter" type="text" readonly>
 
-    <label for="internerKundenname">Kundenname *</label>
-    <input id="internerKundenname" type="text" placeholder="Name Kunde">
+            <label for="internerKundenname">Kundenname *</label>
+            <input id="internerKundenname" type="text" placeholder="Name Kunde">
 
-    <label for="internesLieferdatum">Lieferdatum Fahrzeug *</label>
-    <input id="internesLieferdatum" type="date">
+            <label for="internesLieferdatum">Lieferdatum Fahrzeug *</label>
+            <input id="internesLieferdatum" type="date">
 
-    <label for="interneAdressnummer">Adressnummer Rechnungsempfänger *</label>
-    <input id="interneAdressnummer" type="text" placeholder="z. B. 123456">
+            <label for="interneAdressnummer">Adressnummer Rechnungsempfänger *</label>
+            <input id="interneAdressnummer" type="text" placeholder="z. B. 123456">
 
-    <label for="interneOrdernummer">Ordernummer *</label>
-    <input id="interneOrdernummer" type="text" placeholder="z. B. 987654">
+            <label for="interneOrdernummer">Ordernummer *</label>
+            <input id="interneOrdernummer" type="text" placeholder="z. B. 987654">
 
-    <label for="interneChassisnr">Chassisnr. (falls vorhanden)</label>
-    <input id="interneChassisnr" type="text" placeholder="Chassisnr.">
-</div>
+            <label for="interneChassisnr">Chassisnr. (falls vorhanden)</label>
+            <input id="interneChassisnr" type="text" placeholder="Chassisnr.">
+        </div>
 
-<label for="kundeBemerkung">Bemerkung</label>
-<textarea id="kundeBemerkung" placeholder="Zusätzliche Angaben"></textarea>
+        <label for="kundeBemerkung">Bemerkung</label>
+        <textarea id="kundeBemerkung" placeholder="Zusätzliche Angaben"></textarea>
 
         <div class="required-note">* Pflichtfelder</div>
 
         <div class="modal-actions">
-    <button class="button button-secondary" type="button" onclick="closeModal()">Schliessen</button>
-    <button class="button button-secondary" type="button" onclick="showOfferPreview()">PDF Offerte</button>
-    <button id="sendBtn" class="button" type="button" onclick="sendMail()">Senden</button>
+            <button class="button button-secondary" type="button" onclick="closeModal()">Schliessen</button>
+            <button class="button button-secondary" type="button" onclick="showOfferPreview()">PDF Offerte</button>
+            <button id="sendBtn" class="button" type="button" onclick="sendMail()">Senden</button>
+        </div>
     </div>
-</div>
 
 <script>
 
