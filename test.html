@@ -759,14 +759,16 @@ body.mini-mode .internal-login-btn:hover {
         <div class="modal-title">Anfrage senden</div>
         <div id="modalProduct" class="modal-product"></div>
 
-<label for="kundeName">Name *</label>
-<input id="kundeName" type="text" placeholder="Vorname und Nachname">
+<div id="externalFields">
+    <label for="kundeName">Name *</label>
+    <input id="kundeName" type="text" placeholder="Vorname und Nachname">
 
-<label for="kundeEmail">E-Mail *</label>
-<input id="kundeEmail" type="email" placeholder="E-Mail Adresse">
+    <label for="kundeEmail">E-Mail *</label>
+    <input id="kundeEmail" type="email" placeholder="E-Mail Adresse">
 
-<label for="kundeKontrollschild">Kontrollschild *</label>
-<input id="kundeKontrollschild" type="text" placeholder="z. B. AG 123456">
+    <label for="kundeKontrollschild">Kontrollschild *</label>
+    <input id="kundeKontrollschild" type="text" placeholder="z. B. AG 123456">
+</div>
 
 <label for="kundeArt">Art *</label>
 <select id="kundeArt">
@@ -775,17 +777,23 @@ body.mini-mode .internal-login-btn:hover {
 </select>
 
 <div id="internalFields" style="display:none;">
+    <label for="internerMitarbeiter">Mitarbeiter *</label>
+    <input id="internerMitarbeiter" type="text" placeholder="z. B. michel.marta" readonly>
+
     <label for="internerKundenname">Kundenname *</label>
     <input id="internerKundenname" type="text" placeholder="Name Kunde">
 
-    <label for="interneAuftragsnummer">Auftragsnummer *</label>
-    <input id="interneAuftragsnummer" type="text" placeholder="z. B. 123456">
+    <label for="internesLieferdatum">Lieferdatum Fahrzeug *</label>
+    <input id="internesLieferdatum" type="date">
 
-    <label for="interneOrderOderFIN">Ordernummer / Fahrgestellnummer</label>
-    <input id="interneOrderOderFIN" type="text" placeholder="Ordernummer oder Fahrgestellnummer">
+    <label for="interneAdressnummer">Adressnummer Rechnungsempfänger *</label>
+    <input id="interneAdressnummer" type="text" placeholder="z. B. 123456">
 
-    <label for="internesAblieferdatum">Ablieferungsdatum</label>
-    <input id="internesAblieferdatum" type="date">
+    <label for="interneOrdernummer">Ordernummer *</label>
+    <input id="interneOrdernummer" type="text" placeholder="z. B. 987654">
+
+    <label for="interneChassisnr">Chassisnr. (falls vorhanden)</label>
+    <input id="interneChassisnr" type="text" placeholder="Chassisnr.">
 </div>
 
 <label for="kundeBemerkung">Bemerkung</label>
@@ -814,8 +822,9 @@ let mapping = [];
 let fahrzeuge = [];
     
 let internalMode = false;
+let internalUser = "";
 const internalPassword = "28010";
-
+    
 let state = {
     standort: null,
     marke: null,
@@ -1186,11 +1195,21 @@ if (container) {
         return;
     }
 
+    const enteredUser = prompt("Bitte trage deinen Namen ein wie michel.marta");
+    if (enteredUser === null) return;
+
+    const cleanedUser = clean(enteredUser);
+    if (!cleanedUser) {
+        alert("Bitte einen Namen eingeben.");
+        return;
+    }
+
     const enteredPassword = prompt("Bitte Passwort für den internen Modus eingeben:");
     if (enteredPassword === null) return;
 
     if (enteredPassword === internalPassword) {
         internalMode = true;
+        internalUser = cleanedUser;
 
         const banner = document.getElementById("internalBanner");
         if (banner) {
@@ -1292,16 +1311,25 @@ function openModal(bezeichnung, marke, dimension, preis, empfaengerMail, bild, t
         (preis ? `<b>Preis:</b> ${escapeHtml(preis)} CHF` : "");
 
     const internalFields = document.getElementById("internalFields");
+    const externalFields = document.getElementById("externalFields");
+    const internerMitarbeiter = document.getElementById("internerMitarbeiter");
+
     if (internalFields) {
         internalFields.style.display = internalMode ? "block" : "none";
+    }
+    if (externalFields) {
+        externalFields.style.display = internalMode ? "none" : "block";
+    }
+    if (internerMitarbeiter) {
+        internerMitarbeiter.value = internalUser || "";
     }
 
     document.getElementById("modal").style.display = "flex";
 }
-
-function closeModal() {
+    function closeModal() {
     document.getElementById("modal").style.display = "none";
 }
+
 function showOfferPreview() {
     if (!selectedProduct) {
         alert("Bitte zuerst ein Produkt auswählen.");
@@ -1314,10 +1342,12 @@ function showOfferPreview() {
     const art = clean(document.getElementById("kundeArt").value);
     const bemerkung = clean(document.getElementById("kundeBemerkung").value);
 
-    const internerKundenname = clean(document.getElementById("internerKundenname")?.value);
-    const interneAuftragsnummer = clean(document.getElementById("interneAuftragsnummer")?.value);
-    const interneOrderOderFIN = clean(document.getElementById("interneOrderOderFIN")?.value);
-    const internesAblieferdatum = clean(document.getElementById("internesAblieferdatum")?.value);
+   const internerMitarbeiter = clean(document.getElementById("internerMitarbeiter")?.value);
+const internerKundenname = clean(document.getElementById("internerKundenname")?.value);
+const internesLieferdatum = clean(document.getElementById("internesLieferdatum")?.value);
+const interneAdressnummer = clean(document.getElementById("interneAdressnummer")?.value);
+const interneOrdernummer = clean(document.getElementById("interneOrdernummer")?.value);
+const interneChassisnr = clean(document.getElementById("interneChassisnr")?.value);
 
     const today = new Date().toLocaleDateString("de-CH");
 
@@ -1506,12 +1536,15 @@ body {
             <tr><td>Reihe</td><td>${escapeHtml(state.reihe || "")}</td></tr>
             <tr><td>Modell</td><td>${escapeHtml(modellAnzeige || "")}</td></tr>
             <tr><td>Motor</td><td>${escapeHtml(state.motor || "")}</td></tr>
-            <tr><td>Kontrollschild</td><td>${escapeHtml(kontrollschild || "")}</td></tr>
-            ${internalMode ? `<tr><td>Kundenname</td><td>${escapeHtml(internerKundenname || "")}</td></tr>` : `<tr><td>Name</td><td>${escapeHtml(name || "")}</td></tr>`}
-            ${internalMode ? `<tr><td>Auftragsnummer</td><td>${escapeHtml(interneAuftragsnummer || "")}</td></tr>` : ``}
-            ${internalMode ? `<tr><td>Ordernummer / Fahrgestellnummer</td><td>${escapeHtml(interneOrderOderFIN || "")}</td></tr>` : ``}
-            ${internalMode ? `<tr><td>Ablieferungsdatum</td><td>${escapeHtml(internesAblieferdatum || "")}</td></tr>` : ``}
-            ${!internalMode ? `<tr><td>E-Mail</td><td>${escapeHtml(email || "")}</td></tr>` : ``}
+            ${!internalMode ? `<tr><td>Kontrollschild</td><td>${escapeHtml(kontrollschild || "")}</td></tr>` : ``}
+           ${internalMode ? `<tr><td>Mitarbeiter</td><td>${escapeHtml(internerMitarbeiter || "")}</td></tr>` : `<tr><td>Name</td><td>${escapeHtml(name || "")}</td></tr>`}
+${internalMode ? `<tr><td>Kundenname</td><td>${escapeHtml(internerKundenname || "")}</td></tr>` : ``}
+${internalMode ? `<tr><td>Lieferdatum Fahrzeug</td><td>${escapeHtml(internesLieferdatum || "")}</td></tr>` : ``}
+${internalMode ? `<tr><td>Adressnummer Rechnungsempfänger</td><td>${escapeHtml(interneAdressnummer || "")}</td></tr>` : ``}
+${internalMode ? `<tr><td>Ordernummer</td><td>${escapeHtml(interneOrdernummer || "")}</td></tr>` : ``}
+${internalMode ? `<tr><td>Chassisnr.</td><td>${escapeHtml(interneChassisnr || "")}</td></tr>` : ``}
+${!internalMode ? `<tr><td>E-Mail</td><td>${escapeHtml(email || "")}</td></tr>` : ``}
+${!internalMode ? `<tr><td>Kontrollschild</td><td>${escapeHtml(kontrollschild || "")}</td></tr>` : ``}
         </table>
     </div>
 
@@ -1560,31 +1593,37 @@ body {
     offerWindow.document.close();
 }
 async function sendMail() {
-    const name = clean(document.getElementById("kundeName").value);
-const email = clean(document.getElementById("kundeEmail").value);
-const kontrollschild = clean(document.getElementById("kundeKontrollschild").value);
+    const name = clean(document.getElementById("kundeName")?.value);
+const email = clean(document.getElementById("kundeEmail")?.value);
+const kontrollschild = clean(document.getElementById("kundeKontrollschild")?.value);
 const art = clean(document.getElementById("kundeArt").value);
 const bemerkung = clean(document.getElementById("kundeBemerkung").value);
-const interneAuftragsnummer = clean(document.getElementById("interneAuftragsnummer")?.value);
+
+const internerMitarbeiter = clean(document.getElementById("internerMitarbeiter")?.value);
 const internerKundenname = clean(document.getElementById("internerKundenname")?.value);
-const interneOrderOderFIN = clean(document.getElementById("interneOrderOderFIN")?.value);
-const internesAblieferdatum = clean(document.getElementById("internesAblieferdatum")?.value);
+const internesLieferdatum = clean(document.getElementById("internesLieferdatum")?.value);
+const interneAdressnummer = clean(document.getElementById("interneAdressnummer")?.value);
+const interneOrdernummer = clean(document.getElementById("interneOrdernummer")?.value);
+const interneChassisnr = clean(document.getElementById("interneChassisnr")?.value);
+
 const sendBtn = document.getElementById("sendBtn");
 
-   if (!name || !email || !kontrollschild) {
+   if (!internalMode && (!name || !email || !kontrollschild)) {
     alert("Bitte alle Pflichtfelder ausfüllen.");
     return;
 }
 
-if (internalMode && (!internerKundenname || !interneAuftragsnummer)) {
-    alert("Bitte Kundenname und Auftragsnummer ausfüllen.");
+if (internalMode && (!internerMitarbeiter || !internerKundenname || !internesLieferdatum || !interneAdressnummer || !interneOrdernummer)) {
+    alert("Bitte alle internen Pflichtfelder ausfüllen.");
     return;
 }
 
-const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,}$/i;
-if (!emailPattern.test(email)) {
-    alert("Bitte eine gültige E-Mail Adresse eingeben.");
-    return;
+if (!internalMode) {
+    const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,}$/i;
+    if (!emailPattern.test(email)) {
+        alert("Bitte eine gültige E-Mail Adresse eingeben.");
+        return;
+    }
 }
 
     const originalText = sendBtn.textContent;
@@ -1595,8 +1634,8 @@ if (!emailPattern.test(email)) {
     formData.append("access_key", "29788c4e-2b0a-47ba-a817-eb729a965e38");
     formData.append(
     "subject",
-    internalMode
-        ? `Interne ${art} Winterkompletträder - ${interneAuftragsnummer || ""} - ${selectedProduct?.bezeichnung || ""}`
+   internalMode
+    ? `Interne ${art} Winterkompletträder - ${interneOrdernummer || ""} - ${selectedProduct?.bezeichnung || ""}`
         : `${art} Winterkompletträder - ${selectedProduct?.bezeichnung || ""}`
 );
     formData.append("from_name", "WKR Konfigurator");
@@ -1615,10 +1654,12 @@ if (!emailPattern.test(email)) {
     formData.append("Reifen", `${selectedProduct?.marke || ""} ${selectedProduct?.dimension || ""}`.trim());
     formData.append("Preis", selectedProduct?.preis ? `${selectedProduct.preis} CHF` : "");
    formData.append("InternerModus", internalMode ? "Ja" : "Nein");
-formData.append("Auftragsnummer", interneAuftragsnummer || "");
+formData.append("Mitarbeiter", internerMitarbeiter || "");
 formData.append("Kundenname intern", internerKundenname || "");
-formData.append("Ordernummer / Fahrgestellnummer", interneOrderOderFIN || "");
-formData.append("Ablieferungsdatum", internesAblieferdatum || "");
+formData.append("Lieferdatum Fahrzeug", internesLieferdatum || "");
+formData.append("Adressnummer Rechnungsempfänger", interneAdressnummer || "");
+formData.append("Ordernummer", interneOrdernummer || "");
+formData.append("Chassisnr", interneChassisnr || "");
 formData.append("Bemerkung", bemerkung);
 const message =
 `${internalMode ? "Es wurde eine interne " : "Es wurde eine "} ${art.toLowerCase()} über den WKR Konfigurator erfasst.
@@ -1635,18 +1676,20 @@ ${selectedProduct?.bezeichnung || ""}
 ${selectedProduct?.marke || ""} ${selectedProduct?.dimension || ""}
 Preis: ${selectedProduct?.preis || ""} CHF
 
-Kundendaten:
+${internalMode ? `Interne Angaben:
+Mitarbeiter: ${internerMitarbeiter || ""}
+Kundenname: ${internerKundenname || ""}
+Lieferdatum Fahrzeug: ${internesLieferdatum || ""}
+Adressnummer Rechnungsempfänger: ${interneAdressnummer || ""}
+Ordernummer: ${interneOrdernummer || ""}
+Chassisnr: ${interneChassisnr || ""}
+
+` : `Kundendaten:
 Name: ${name}
 E-Mail: ${email}
 Kontrollschild: ${kontrollschild}
 
-${internalMode ? `Interne Angaben:
-Auftragsnummer: ${interneAuftragsnummer || ""}
-Kundenname: ${internerKundenname || ""}
-Ordernummer / Fahrgestellnummer: ${interneOrderOderFIN || ""}
-Ablieferungsdatum: ${internesAblieferdatum || ""}
-
-` : ""}Bemerkung:
+`}Bemerkung:
 ${bemerkung}`;
 
     formData.append("message", message);
@@ -1667,21 +1710,25 @@ document.getElementById("kundeKontrollschild").value = "";
 document.getElementById("kundeArt").value = "Anfrage";
 document.getElementById("kundeBemerkung").value = "";
 
-if (document.getElementById("interneAuftragsnummer")) {
-    document.getElementById("interneAuftragsnummer").value = "";
-}
 if (document.getElementById("internerKundenname")) {
     document.getElementById("internerKundenname").value = "";
 }
-if (document.getElementById("interneOrderOderFIN")) {
-    document.getElementById("interneOrderOderFIN").value = "";
+if (document.getElementById("internesLieferdatum")) {
+    document.getElementById("internesLieferdatum").value = "";
 }
-if (document.getElementById("internesAblieferdatum")) {
-    document.getElementById("internesAblieferdatum").value = "";
+if (document.getElementById("interneAdressnummer")) {
+    document.getElementById("interneAdressnummer").value = "";
+}
+if (document.getElementById("interneOrdernummer")) {
+    document.getElementById("interneOrdernummer").value = "";
+}
+if (document.getElementById("interneChassisnr")) {
+    document.getElementById("interneChassisnr").value = "";
 }
 
 closeModal();
-        } else {
+
+         } else {
             alert("Fehler: " + (data.message || "Die Anfrage konnte nicht gesendet werden."));
         }
     } catch (error) {
