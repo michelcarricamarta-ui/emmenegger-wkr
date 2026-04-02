@@ -1035,6 +1035,7 @@ html += `<div class="card reihe-card mini-start-card" onclick="selectMarke('MINI
             const hinweistext = clean(r["Hinweistext"]);
             const verkaufshinweis = clean(r["Verkaufshinweis"]);
             const teilenummer = clean(r["TN"]);
+            const bemerkungIntern = clean(r["Bemerkung Intern"]);
             const vp = clean(r["VP"]);
 const angebot = clean(r["Angebotspreis"]);
 const netto = clean(r["Nettopreis"]);
@@ -1091,10 +1092,11 @@ if (internalMode && nettoNum !== null && nettoNum > 0) {
                             <div class="product-title">${escapeHtml(bezeichnung)}</div>
                             <div class="product-brand">${escapeHtml(markeReifen)}</div>
                             <div class="product-dimension">${escapeHtml(dimension)}</div>
-                            ${hinweistext ? `<div class="product-hinweis">${escapeHtml(hinweistext)}</div>` : ``}
-                            ${verkaufshinweis ? `<div class="product-detail"><b>Hinweis:</b> ${escapeHtml(verkaufshinweis)}</div>` : ``}
-                            ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
-                        </div>
+                           ${hinweistext ? `<div class="product-hinweis">${escapeHtml(hinweistext)}</div>` : ``}
+${verkaufshinweis ? `<div class="product-detail"><b>Hinweis:</b> ${escapeHtml(verkaufshinweis)}</div>` : ``}
+${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
+${internalMode ? `<div class="internal-note"><b>Anzahl effektiv:</b> ${escapeHtml(String(lager))}</div>` : ``}
+${internalMode && bemerkungIntern ? `<div class="internal-note"><b>Bemerkung intern:</b> ${escapeHtml(bemerkungIntern)}</div>` : ``}
                     </div>
 
                     <div class="product-right">
@@ -1283,6 +1285,14 @@ function showOfferPreview() {
 <meta charset="UTF-8">
 <title>Offerte Winterkompletträder</title>
 <style>
+.internal-note {
+    background: #f3f3f3;
+    border-left: 4px solid #111;
+    padding: 8px 10px;
+    margin-top: 8px;
+    font-size: 13px;
+    color: #222;
+}
 body {
     font-family: Arial, sans-serif;
     color: #1f1f1f;
