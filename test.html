@@ -1589,7 +1589,8 @@ async function sendMail() {
     formData.append("Produkt", selectedProduct?.bezeichnung || "");
     formData.append("Reifen", `${selectedProduct?.marke || ""} ${selectedProduct?.dimension || ""}`.trim());
     formData.append("Preis", selectedProduct?.preis ? `${selectedProduct.preis} CHF` : "");
-    formData.append("InternerModus", internalMode ? "Ja" : "Nein");
+formData.append("Netto Preis", selectedProduct?.nettopreis ? `${selectedProduct.nettopreis} CHF` : "");
+formData.append("InternerModus", internalMode ? "Ja" : "Nein");
     formData.append("Auftragsnummer", interneAuftragsnummer || "");
     formData.append("Kundenname intern", internerKundenname || "");
     formData.append("Ordernummer / Fahrgestellnummer", interneOrderOderFIN || "");
@@ -1610,6 +1611,7 @@ Produkt:
 ${selectedProduct?.bezeichnung || ""}
 ${selectedProduct?.marke || ""} ${selectedProduct?.dimension || ""}
 Preis: ${selectedProduct?.preis || ""} CHF
+${internalMode && selectedProduct?.nettopreis ? `Netto Preis: ${selectedProduct.nettopreis} CHF` : ""}
 
 Kundendaten:
 Name: ${name}
