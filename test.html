@@ -1109,12 +1109,13 @@ const empfaengerMail = clean(r["EmpfängerMail"] || r["EmpfaengerMail"]);
                 priceHtml = `<div class="new-price">${escapeHtml(vp)} CHF</div>`;
             }
 
-            const statusHtml = isSoldOut
-                ? `<div class="status-grey">Ausverkauft</div><div class="delivery-note">Zurzeit nicht verfügbar</div>`
-                : isOrderable
-                    ? `<div class="status-red">Auf Bestellung</div><div class="delivery-note">Lieferzeit 5-10 Arbeitstage</div>`
-                    : `<div class="status-green">An Lager</div><div class="delivery-note">Sofort verfügbar</div>`;
-
+          const statusHtml = internalMode
+    ? `<div class="${lager > 0 ? "status-green" : "status-grey"}">Lagerbestand: ${lager}</div>`
+    : isSoldOut
+        ? `<div class="status-grey">Ausverkauft</div><div class="delivery-note">Zurzeit nicht verfügbar</div>`
+        : isOrderable
+            ? `<div class="status-red">Auf Bestellung</div><div class="delivery-note">Lieferzeit 5-10 Arbeitstage</div>`
+            : `<div class="status-green">An Lager</div><div class="delivery-note">Sofort verfügbar</div>`;
             const buttonHtml = isSoldOut
                 ? `<button class="button button-disabled" type="button">Nicht verfügbar</button>`
                : `<button class="button" type="button" onclick="openModal('${jsSafe(bezeichnung)}','${jsSafe(markeReifen)}','${jsSafe(dimension)}','${jsSafe(angebot || vp)}','${jsSafe(empfaengerMail)}','${jsSafe(bild)}','${jsSafe(teilenummer)}','${jsSafe(hinweistext)}','${jsSafe(verkaufshinweis)}','${jsSafe(nettopreis)}')">Auswählen</button>`;
