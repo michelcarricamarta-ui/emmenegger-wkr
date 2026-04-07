@@ -33,12 +33,14 @@ body {
     width: 260px;
     max-width: 100%;
 }
+
 .internal-login-wrap {
     position: absolute;
     top: 58px;
     right: 30px;
     z-index: 6;
 }
+
 .back-home-wrap {
     position: absolute;
     top: 58px;
@@ -93,7 +95,7 @@ body.mini-mode .back-home-link:hover {
     border-radius: 12px;
     overflow: hidden;
     margin-bottom: 35px;
-    background-image: url('https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/WINTER%20Ix3.jpg?raw=true');
+    background-image: url('https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/WINTER%20Ix3.jpg');
     background-size: cover;
     background-position: center;
 }
@@ -141,12 +143,6 @@ body.mini-mode .back-home-link:hover {
 
 .container.internal-mode-active {
     box-shadow: 0 0 0 3px rgba(198, 40, 40, 0.18);
-}
-
-.section-title {
-    font-size: 22px;
-    margin: 10px 0 20px 0;
-    font-weight: 700;
 }
 
 .selection-label {
@@ -298,6 +294,8 @@ body.mini-mode .back-home-link:hover {
     align-items: center;
     color: #555;
     font-size: 15px;
+    gap: 16px;
+    flex-wrap: wrap;
 }
 
 .product {
@@ -333,9 +331,9 @@ body.mini-mode .back-home-link:hover {
 }
 
 .button-disabled {
-    background: #bdbdbd;
+    background: #bdbdbd !important;
     color: white;
-    cursor: not-allowed;
+    cursor: not-allowed !important;
     pointer-events: none;
 }
 
@@ -368,7 +366,7 @@ body.mini-mode .back-home-link:hover {
 }
 
 .clickable-image.zoomed {
-    transform: scale(2.9);
+    transform: scale(2.3);
     z-index: 50;
     position: relative;
     box-shadow: 0 10px 30px rgba(0,0,0,0.25);
@@ -560,10 +558,17 @@ body.mini-mode .internal-login-btn:hover {
     background: #f3f3f3;
 }
 
-.empty-note {
+.empty-note,
+.loading-note,
+.error-note {
     margin-top: 30px;
     font-size: 16px;
     color: #666;
+    text-align: center;
+}
+
+.error-note {
+    color: #c62828;
 }
 
 .info-section {
@@ -761,7 +766,9 @@ body.mini-mode .internal-login-btn:hover {
         </div>
     </div>
 
-    <div id="app"></div>
+    <div id="app">
+        <div class="loading-note">Daten werden geladen...</div>
+    </div>
 
     <div class="info-section">
         <h2 class="info-title">Eiskalte Fahrfreude mit maximalem Grip</h2>
@@ -849,6 +856,22 @@ body.mini-mode .internal-login-btn:hover {
 </div>
 
 <script>
+/* =========================================================
+   WICHTIG:
+   HIER DEINE EIGENEN URLS EINTRAGEN
+   ========================================================= */
+const PRODUKTE_URL  = "HIER_DEINE_PRODUKTE_URL";
+const ZUORDNUNG_URL = "HIER_DEINE_ZUORDNUNG_URL";
+const FAHRZEUGE_URL = "HIER_DEINE_FAHRZEUGE_URL";
+
+/* Beispiel:
+const PRODUKTE_URL  = "https://opensheet.elk.sh/DEINE_ID/Produkte";
+const ZUORDNUNG_URL = "https://opensheet.elk.sh/DEINE_ID/Zuordnung";
+const FAHRZEUGE_URL = "https://opensheet.elk.sh/DEINE_ID/Fahrzeuge";
+*/
+
+const WEB3FORMS_ACCESS_KEY = "29788c4e-2b0a-47ba-a817-eb729a965e38";
+
 let selectedProduct = null;
 let internalMode = false;
 
@@ -860,10 +883,17 @@ const state = {
     motor: null
 };
 
+let produkte = [];
+let zuordnung = [];
 let fahrzeuge = [];
+let dataLoaded = false;
 
 function clean(v) {
     return (v || "").toString().trim();
+}
+
+function lower(v) {
+    return clean(v).toLowerCase();
 }
 
 function escapeHtml(value) {
@@ -873,6 +903,129 @@ function escapeHtml(value) {
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;");
+}
+
+function unique(arr) {
+    return [...new Set(arr.filter(Boolean))];
+}
+
+function normalizeStandort(value) {
+    const v = lower(value);
+    if (v === "geb" || v === "gebenstorf") return "GEB";
+    if (v === "het" || v === "hettenschwil") return "HET";
+    return clean(value);
+}
+
+function standortLabel(code) {
+    if (code === "GEB") return "Gebenstorf";
+    if (code === "HET") return "Hettenschwil";
+    return code || "";
+}
+
+function parsePrice(v) {
+    const value = clean(v).replace(/'/g, "").replace(/\s/g, "").replace(",", ".");
+    const n = parseFloat(value);
+    return isNaN(n) ? 0 : n;
+}
+
+function isSoldOut(product) {
+    const vp = parsePrice(product.VP);
+    const angebot = parsePrice(product.Angebotspreis);
+    return vp === 0 && angebot === 0;
+}
+
+function getDisplayPrice(product) {
+    const angebot = parsePrice(product.Angebotspreis);
+    const vp = parsePrice(product.VP);
+
+    if (angebot > 0) return angebot.toFixed(2);
+    if (vp > 0) return vp.toFixed(2);
+    return "0.00";
+}
+
+function getFahrzeugImage(fahrzeug) {
+    return clean(fahrzeug?.Bild);
+}
+
+function getModellAnzeige(fahrzeug) {
+    return clean(fahrzeug?.Code) || clean(fahrzeug?.Modell);
+}
+
+function splitMotors(value) {
+    return clean(value)
+        .split(",")
+        .map(v => clean(v))
+        .filter(Boolean);
+}
+
+function resetFrom(level) {
+    if (level === "standort") {
+        state.standort = null;
+        state.marke = null;
+        state.reihe = null;
+        state.modell = null;
+        state.motor = null;
+    }
+    if (level === "marke") {
+        state.marke = null;
+        state.reihe = null;
+        state.modell = null;
+        state.motor = null;
+    }
+    if (level === "reihe") {
+        state.reihe = null;
+        state.modell = null;
+        state.motor = null;
+    }
+    if (level === "modell") {
+        state.modell = null;
+        state.motor = null;
+    }
+    if (level === "motor") {
+        state.motor = null;
+    }
+    selectedProduct = null;
+    renderApp();
+}
+
+function setStandort(value) {
+    state.standort = value;
+    state.marke = null;
+    state.reihe = null;
+    state.modell = null;
+    state.motor = null;
+    selectedProduct = null;
+    renderApp();
+}
+
+function setMarke(value) {
+    state.marke = value;
+    state.reihe = null;
+    state.modell = null;
+    state.motor = null;
+    selectedProduct = null;
+    renderApp();
+}
+
+function setReihe(value) {
+    state.reihe = value;
+    state.modell = null;
+    state.motor = null;
+    selectedProduct = null;
+    renderApp();
+}
+
+function setModell(value) {
+    state.modell = value;
+    state.motor = null;
+    selectedProduct = null;
+    renderApp();
+}
+
+function setMotor(value) {
+    state.motor = value;
+    selectedProduct = null;
+    renderApp();
 }
 
 function closeModal() {
@@ -920,6 +1073,368 @@ function goToHome() {
     location.reload();
 }
 
+function setHeroByMarke() {
+    const hero = document.getElementById("heroBanner");
+    if (!hero) return;
+
+    if (state.marke === "MINI") {
+        document.body.classList.add("mini-mode");
+        hero.style.backgroundImage = "url('https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/WINTER%20Ix3.jpg')";
+    } else {
+        document.body.classList.remove("mini-mode");
+        hero.style.backgroundImage = "url('https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/WINTER%20Ix3.jpg')";
+    }
+}
+
+function getMarken() {
+    return unique(fahrzeuge.map(f => clean(f.Marke))).sort((a, b) => a.localeCompare(b, "de"));
+}
+
+function getReihenByMarke(marke) {
+    return unique(
+        fahrzeuge
+            .filter(f => clean(f.Marke) === marke)
+            .map(f => clean(f.Reihe))
+    ).sort((a, b) => a.localeCompare(b, "de"));
+}
+
+function getModelleByMarkeUndReihe(marke, reihe) {
+    return fahrzeuge
+        .filter(f => clean(f.Marke) === marke && clean(f.Reihe) === reihe)
+        .sort((a, b) => getModellAnzeige(a).localeCompare(getModellAnzeige(b), "de"));
+}
+
+function getMotoren(marke, reihe, modell) {
+    const relevant = zuordnung.filter(z =>
+        clean(z.Marke) === marke &&
+        clean(z.Reihe) === reihe &&
+        clean(z.Modell) === modell
+    );
+
+    const motors = [];
+    relevant.forEach(z => {
+        splitMotors(z.Motor).forEach(m => motors.push(m));
+    });
+
+    return unique(motors).sort((a, b) => a.localeCompare(b, "de"));
+}
+
+function getZuordnungen(marke, reihe, modell, motor) {
+    return zuordnung.filter(z => {
+        const markeOk = clean(z.Marke) === marke;
+        const reiheOk = clean(z.Reihe) === reihe;
+        const modellOk = clean(z.Modell) === modell;
+        const motorOk = splitMotors(z.Motor).includes(motor);
+        return markeOk && reiheOk && modellOk && motorOk;
+    });
+}
+
+function getProductsForSelection() {
+    if (!state.marke || !state.reihe || !state.modell || !state.motor) return [];
+
+    const links = getZuordnungen(state.marke, state.reihe, state.modell, state.motor);
+    const teileNummern = unique(links.map(z => clean(z.TN)));
+
+    let result = produkte.filter(p => teileNummern.includes(clean(p.TN)));
+
+    if (state.standort) {
+        result = result.filter(p => {
+            const standort = normalizeStandort(p.Standort);
+            return !clean(p.Standort) || standort === state.standort;
+        });
+    }
+
+    return result.map(p => ({
+        ...p,
+        teilenummer: clean(p.TN),
+        bezeichnung: clean(p.Bezeichnung),
+        marke: clean(p.Reifen),
+        dimension: clean(p.Dimension),
+        hinweistext: clean(p.Hinweistext),
+        verkaufshinweis: clean(p.Verkaufshinweis),
+        bild: clean(p.Bild),
+        standort: normalizeStandort(p.Standort),
+        empfaengerMail: clean(p.EmpfaengerMail) || "tv-g-fp@emmeneggerag.ch",
+        preis: getDisplayPrice(p),
+        vp: parsePrice(p.VP),
+        angebotspreis: parsePrice(p.Angebotspreis),
+        lager: parseFloat(clean(p.Lager).replace(",", ".")) || 0,
+        soldOut: isSoldOut(p)
+    }));
+}
+
+function getSelectedFahrzeug() {
+    return fahrzeuge.find(f =>
+        clean(f.Marke) === state.marke &&
+        clean(f.Reihe) === state.reihe &&
+        clean(f.Modell) === state.modell
+    );
+}
+
+function openRequestModal(index) {
+    const products = getProductsForSelection();
+    selectedProduct = products[index];
+
+    if (!selectedProduct || selectedProduct.soldOut) return;
+
+    const modalProduct = document.getElementById("modalProduct");
+    modalProduct.innerHTML = `
+        <b>${escapeHtml(selectedProduct.bezeichnung)}</b><br>
+        ${escapeHtml(selectedProduct.marke)} ${escapeHtml(selectedProduct.dimension)}<br>
+        Teilenummer: ${escapeHtml(selectedProduct.teilenummer)}<br>
+        Preis: ${escapeHtml(selectedProduct.preis)} CHF
+    `;
+
+    document.getElementById("modal").style.display = "flex";
+}
+
+function toggleImageZoom(img) {
+    document.querySelectorAll(".clickable-image.zoomed").forEach(el => {
+        if (el !== img) {
+            el.classList.remove("zoomed");
+        }
+    });
+    img.classList.toggle("zoomed");
+}
+
+function renderStandortSelection() {
+    return `
+        <div class="selection-label">Bitte wählen Sie Ihren Standort</div>
+        <div class="grid">
+            <div class="card reihe-card" onclick="setStandort('GEB')">Gebenstorf</div>
+            <div class="card reihe-card" onclick="setStandort('HET')">Hettenschwil</div>
+        </div>
+    `;
+}
+
+function renderMarkenSelection() {
+    const marken = getMarken();
+
+    if (!marken.length) {
+        return `<div class="empty-note">Keine Marken gefunden.</div>`;
+    }
+
+    return `
+        <div class="selection-label">Bitte wählen Sie die Marke</div>
+        <div class="grid">
+            ${marken.map(m => `
+                <div class="card reihe-card ${m === 'MINI' ? 'mini-start-card' : ''}" onclick="setMarke('${escapeHtml(m)}')">
+                    ${escapeHtml(m)}
+                </div>
+            `).join("")}
+        </div>
+    `;
+}
+
+function renderReihenSelection() {
+    const reihen = getReihenByMarke(state.marke);
+
+    if (!reihen.length) {
+        return `<div class="empty-note">Keine Reihen gefunden.</div>`;
+    }
+
+    return `
+        <div class="selection-label">Bitte wählen Sie die Reihe</div>
+        <div class="grid">
+            ${reihen.map(r => `
+                <div class="card reihe-card" onclick="setReihe('${escapeHtml(r)}')">${escapeHtml(r)}</div>
+            `).join("")}
+        </div>
+    `;
+}
+
+function renderModelSelection() {
+    const modelle = getModelleByMarkeUndReihe(state.marke, state.reihe);
+
+    if (!modelle.length) {
+        return `<div class="empty-note">Keine Modelle gefunden.</div>`;
+    }
+
+    return `
+        <div class="selection-label">Bitte wählen Sie das Modell</div>
+        <div class="grid">
+            ${modelle.map(f => `
+                <div class="card model-card" onclick="setModell('${escapeHtml(clean(f.Modell))}')">
+                    ${getFahrzeugImage(f) ? `<img src="${escapeHtml(getFahrzeugImage(f))}" alt="${escapeHtml(getModellAnzeige(f))}">` : ``}
+                    <div class="model-name">${escapeHtml(getModellAnzeige(f))}</div>
+                </div>
+            `).join("")}
+        </div>
+    `;
+}
+
+function renderMotorSelection() {
+    const motors = getMotoren(state.marke, state.reihe, state.modell);
+
+    if (!motors.length) {
+        return `<div class="empty-note">Keine Motoren gefunden.</div>`;
+    }
+
+    return `
+        <div class="selection-label">Bitte wählen Sie den Motor</div>
+        <div class="grid">
+            ${motors.map(m => `
+                <div class="card motor-card" onclick="setMotor('${escapeHtml(m)}')">${escapeHtml(m)}</div>
+            `).join("")}
+        </div>
+    `;
+}
+
+function renderSummaryAndProducts() {
+    const fahrzeug = getSelectedFahrzeug();
+    const products = getProductsForSelection();
+    const modellAnzeige = getModellAnzeige(fahrzeug);
+
+    return `
+        <div class="summary-box">
+            <div class="summary-text">
+                <b>Ihre Auswahl</b><br>
+                Standort: ${escapeHtml(standortLabel(state.standort))}<br>
+                Marke: ${escapeHtml(state.marke)}<br>
+                Reihe: ${escapeHtml(state.reihe)}<br>
+                Modell: ${escapeHtml(modellAnzeige)}<br>
+                Motor: ${escapeHtml(state.motor)}<br>
+                <button class="change-link" type="button" onclick="resetFrom('modell')">Fahrzeug ändern</button>
+            </div>
+            <div class="summary-img">
+                ${fahrzeug && getFahrzeugImage(fahrzeug) ? `<img src="${escapeHtml(getFahrzeugImage(fahrzeug))}" alt="${escapeHtml(modellAnzeige)}">` : ``}
+            </div>
+        </div>
+
+        <div class="products-wrap">
+            <div class="products-header">
+                <h2 class="products-title">Passende Winterkompletträder</h2>
+                <div class="products-subline">
+                    <span>Angebotssuche über Modellauswahl</span>
+                    <span>Standort: ${escapeHtml(standortLabel(state.standort))}</span>
+                </div>
+            </div>
+
+            ${products.length ? products.map((p, index) => {
+                const lagerVorhanden = p.lager > 0;
+                const statusHtml = p.soldOut
+                    ? `<div class="status-grey">Ausverkauft</div><div class="delivery-note">Aktuell nicht verfügbar</div>`
+                    : lagerVorhanden
+                        ? `<div class="status-green">An Lager</div><div class="delivery-note">Sofort verfügbar</div>`
+                        : `<div class="status-red">Auf Bestellung</div><div class="delivery-note">Lieferzeit 5–10 Arbeitstage</div>`;
+
+                const priceHtml = p.soldOut
+                    ? `<div class="sold-out-price">${escapeHtml(p.preis)} CHF</div>`
+                    : p.angebotspreis > 0 && p.vp > 0
+                        ? `<div class="new-price">${escapeHtml(p.preis)} CHF</div>
+                           <div class="old-price">UPE: ${escapeHtml(p.vp.toFixed(2))} CHF</div>`
+                        : `<div class="new-price">${escapeHtml(p.preis)} CHF</div>`;
+
+                return `
+                    <div class="product ${p.soldOut ? "sold-out" : ""}">
+                        <div class="product-left">
+                            ${p.bild ? `<img class="clickable-image" src="${escapeHtml(p.bild)}" alt="${escapeHtml(p.bezeichnung)}" onclick="toggleImageZoom(this)">` : ``}
+                            <div class="product-info">
+                                <div class="product-title">${escapeHtml(p.bezeichnung)}</div>
+                                <div class="product-brand">${escapeHtml(p.marke)}</div>
+                                <div class="product-dimension">${escapeHtml(p.dimension)}</div>
+
+                                ${p.verkaufshinweis ? `<div class="product-detail">${escapeHtml(p.verkaufshinweis)}</div>` : ``}
+                                ${p.hinweistext ? `<div class="product-hinweis">${escapeHtml(p.hinweistext)}</div>` : ``}
+                                ${internalMode ? `<div class="internal-note">Standort intern: ${escapeHtml(standortLabel(p.standort || state.standort))}</div>` : ``}
+
+                                <div class="product-partnr">Teilenummer: ${escapeHtml(p.teilenummer)}</div>
+                            </div>
+                        </div>
+
+                        <div class="product-right">
+                            <div class="price-caption">Pro Satz inkl. Montage</div>
+                            ${priceHtml}
+                            <div class="price-note">Preise inkl. MwSt.</div>
+                            ${statusHtml}
+                            <button class="button ${p.soldOut ? "button-disabled" : ""}" type="button" onclick="openRequestModal(${index})">
+                                ${p.soldOut ? "Nicht verfügbar" : "Auswählen"}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join("") : `<div class="empty-note">Für diese Auswahl wurden keine Produkte gefunden.</div>`}
+        </div>
+    `;
+}
+
+function renderApp() {
+    setHeroByMarke();
+
+    const app = document.getElementById("app");
+
+    if (!dataLoaded) {
+        app.innerHTML = `<div class="loading-note">Daten werden geladen...</div>`;
+        return;
+    }
+
+    if (!state.standort) {
+        app.innerHTML = renderStandortSelection();
+        return;
+    }
+
+    if (!state.marke) {
+        app.innerHTML = renderMarkenSelection();
+        return;
+    }
+
+    if (!state.reihe) {
+        app.innerHTML = renderReihenSelection();
+        return;
+    }
+
+    if (!state.modell) {
+        app.innerHTML = renderModelSelection();
+        return;
+    }
+
+    if (!state.motor) {
+        app.innerHTML = renderMotorSelection();
+        return;
+    }
+
+    app.innerHTML = renderSummaryAndProducts();
+}
+
+async function fetchJson(url) {
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`Fehler beim Laden: ${url}`);
+    }
+    return await response.json();
+}
+
+async function loadData() {
+    try {
+        if (
+            PRODUKTE_URL === "HIER_DEINE_PRODUKTE_URL" ||
+            ZUORDNUNG_URL === "HIER_DEINE_ZUORDNUNG_URL" ||
+            FAHRZEUGE_URL === "HIER_DEINE_FAHRZEUGE_URL"
+        ) {
+            throw new Error("Bitte zuerst die drei Daten-URLs im Code eintragen.");
+        }
+
+        const [produkteData, zuordnungData, fahrzeugeData] = await Promise.all([
+            fetchJson(PRODUKTE_URL),
+            fetchJson(ZUORDNUNG_URL),
+            fetchJson(FAHRZEUGE_URL)
+        ]);
+
+        produkte = Array.isArray(produkteData) ? produkteData : [];
+        zuordnung = Array.isArray(zuordnungData) ? zuordnungData : [];
+        fahrzeuge = Array.isArray(fahrzeugeData) ? fahrzeugeData : [];
+
+        dataLoaded = true;
+        renderApp();
+    } catch (error) {
+        document.getElementById("app").innerHTML = `
+            <div class="error-note">
+                ${escapeHtml(error.message || "Die Daten konnten nicht geladen werden.")}
+            </div>
+        `;
+    }
+}
+
 function showOfferPreview() {
     if (!selectedProduct) {
         alert("Bitte zuerst ein Produkt auswählen.");
@@ -940,19 +1455,8 @@ function showOfferPreview() {
     const interneChassisnr = clean(document.getElementById("interneChassisnr")?.value);
 
     const today = new Date().toLocaleDateString("de-CH");
-
-    const standortLabel =
-        state.standort === "GEB" ? "Gebenstorf" :
-        state.standort === "HET" ? "Hettenschwil" :
-        state.standort;
-
-    const fahrzeug = fahrzeuge.find(f =>
-        clean(f["Marke"]) === state.marke &&
-        clean(f["Reihe"]) === state.reihe &&
-        clean(f["Modell"]) === state.modell
-    );
-
-    const modellAnzeige = clean(fahrzeug?.Code) || state.modell;
+    const fahrzeug = getSelectedFahrzeug();
+    const modellAnzeige = getModellAnzeige(fahrzeug);
 
     const offerWindow = window.open("", "_blank");
     if (!offerWindow) {
@@ -967,14 +1471,6 @@ function showOfferPreview() {
 <meta charset="UTF-8">
 <title>Offerte Winterkompletträder</title>
 <style>
-.internal-note {
-    background: #f3f3f3;
-    border-left: 4px solid #111;
-    padding: 8px 10px;
-    margin-top: 8px;
-    font-size: 13px;
-    color: #222;
-}
 body {
     font-family: Arial, sans-serif;
     color: #1f1f1f;
@@ -1093,12 +1589,8 @@ body {
     background: #666;
 }
 @media print {
-    body {
-        padding: 0;
-    }
-    .print-actions {
-        display: none;
-    }
+    body { padding: 0; }
+    .print-actions { display: none; }
 }
 </style>
 </head>
@@ -1114,7 +1606,7 @@ body {
             <div class="meta">
                 Datum: ${escapeHtml(today)}<br>
                 Art: ${escapeHtml(art || "Anfrage")}<br>
-                Standort: ${escapeHtml(standortLabel || "")}
+                Standort: ${escapeHtml(standortLabel(state.standort))}
             </div>
         </div>
     </div>
@@ -1122,6 +1614,7 @@ body {
     <div class="offer-section">
         <h2>Fahrzeugangaben</h2>
         <table class="vehicle-table">
+            <tr><td>Standort</td><td>${escapeHtml(standortLabel(state.standort))}</td></tr>
             <tr><td>Marke</td><td>${escapeHtml(state.marke || "")}</td></tr>
             <tr><td>Reihe</td><td>${escapeHtml(state.reihe || "")}</td></tr>
             <tr><td>Modell</td><td>${escapeHtml(modellAnzeige || "")}</td></tr>
@@ -1141,7 +1634,7 @@ body {
         <h2>Angebotenes Produkt</h2>
         <div class="offer-grid">
             <div class="offer-image">
-                <img src="${escapeHtml(selectedProduct.bild || "")}" alt="${escapeHtml(selectedProduct.bezeichnung || "")}">
+                ${selectedProduct.bild ? `<img src="${escapeHtml(selectedProduct.bild)}" alt="${escapeHtml(selectedProduct.bezeichnung)}">` : ``}
             </div>
             <div class="offer-details">
                 <table>
@@ -1226,7 +1719,7 @@ async function sendMail() {
     sendBtn.disabled = true;
 
     const formData = new FormData();
-    formData.append("access_key", "29788c4e-2b0a-47ba-a817-eb729a965e38");
+    formData.append("access_key", WEB3FORMS_ACCESS_KEY);
     formData.append(
         "subject",
         internalMode
@@ -1234,13 +1727,13 @@ async function sendMail() {
             : `${art} Winterkompletträder - ${selectedProduct?.bezeichnung || ""}`
     );
     formData.append("from_name", "WKR Konfigurator");
-    formData.append("to", selectedProduct?.empfaengerMail || "");
+    formData.append("to", selectedProduct?.empfaengerMail || "tv-g-fp@emmeneggerag.ch");
 
     formData.append("Name", name);
     formData.append("E-Mail", email);
     formData.append("Kontrollschild", kontrollschild);
     formData.append("Art", art);
-    formData.append("Standort", state.standort || "");
+    formData.append("Standort", standortLabel(state.standort) || "");
     formData.append("Marke", state.marke || "");
     formData.append("Reihe", state.reihe || "");
     formData.append("Modell", state.modell || "");
@@ -1261,7 +1754,7 @@ async function sendMail() {
 `${internalMode ? "Es wurde eine interne " : "Es wurde eine "} ${art.toLowerCase()} über den WKR Konfigurator erfasst.
 
 Fahrzeug:
-Standort: ${state.standort || ""}
+Standort: ${standortLabel(state.standort) || ""}
 Marke: ${state.marke || ""}
 Reihe: ${state.reihe || ""}
 Modell: ${state.modell || ""}
@@ -1335,16 +1828,6 @@ ${bemerkung}`;
     }
 }
 
-function toggleImageZoom(img) {
-    document.querySelectorAll(".clickable-image.zoomed").forEach(el => {
-        if (el !== img) {
-            el.classList.remove("zoomed");
-        }
-    });
-
-    img.classList.toggle("zoomed");
-}
-
 window.onclick = function(event) {
     const modal = document.getElementById("modal");
     const loginModal = document.getElementById("loginModal");
@@ -1369,6 +1852,8 @@ document.getElementById("loginName").addEventListener("keydown", function(event)
         submitInternalLogin();
     }
 });
+
+loadData();
 </script>
 </body>
 </html>
