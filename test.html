@@ -4,402 +4,264 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WKR Konfigurator | Emmenegger</title>
-
     <style>
         :root {
-            --primary-color: #1c69d4;
-            --primary-hover: #1557b0;
-            --bg-color: #f5f5f5;
-            --text-dark: #1f1f1f;
-            --border-color: #d6dbe3;
-            --mini-color: #111;
+            --primary: #1c69d4;
+            --primary-dark: #1557b0;
+            --bg: #f5f5f5;
+            --text: #1f1f1f;
+            --border: #d6dbe3;
         }
 
-        body {
-            font-family: Arial, sans-serif;
-            background: var(--bg-color);
-            margin: 0;
-            color: var(--text-dark);
-        }
-
-        .container {
-            max-width: 1500px;
-            margin: 18px auto;
-            background: white;
-            padding: 95px 40px 55px 40px;
-            border-radius: 16px;
-            position: relative;
-            box-sizing: border-box;
-            min-height: 90vh;
-        }
-
-        /* Header & Navigation */
-        .logo-top {
-            position: absolute;
-            top: 20px;
-            right: 30px;
-            z-index: 5;
-        }
-        .logo-top img {
-            width: 260px;
-            max-width: 100%;
-        }
-        .nav-wrap {
-            position: absolute;
-            top: 58px;
-            left: 30px;
-            display: flex;
-            gap: 20px;
-            z-index: 6;
-        }
-        .internal-login-wrap {
-            position: absolute;
-            top: 58px;
-            right: 30px;
-            z-index: 6;
-        }
-
-        .btn-link {
-            border: none;
-            background: none;
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--primary-color);
-            cursor: pointer;
-            padding: 0;
-        }
-        .btn-link:hover { text-decoration: underline; }
-
-        .internal-login-btn {
-            background: rgba(255,255,255,0.92);
-            border: 1px solid #c7c7c7;
-            color: #555;
-            font-size: 12px;
-            padding: 7px 12px;
-            border-radius: 7px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        /* Hero Bereich */
-        .hero {
-            position: relative;
-            height: 320px;
-            border-radius: 12px;
-            overflow: hidden;
-            margin-bottom: 35px;
-            background: url('https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/WINTER%20Ix3.jpg?raw=true') center/cover;
-        }
-        .hero::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to right, rgba(0,0,0,0.45), rgba(0,0,0,0.1));
-        }
-        .hero-text {
-            position: absolute;
-            left: 40px;
-            bottom: 35px;
-            z-index: 2;
-            color: white;
-        }
-
-        /* Status Banner */
-        .internal-banner {
-            background: #c62828;
-            color: white;
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 16px;
-            font-weight: 700;
-            text-align: center;
-            display: none;
-        }
-
-        /* Grid & Cards */
-        .selection-label {
-            font-size: 24px;
-            font-weight: 700;
-            margin: 35px 0;
-            text-align: center;
-        }
-        .grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 24px;
-            justify-content: center;
-        }
-        .card {
-            border: 1px solid var(--border-color);
-            padding: 22px;
-            cursor: pointer;
-            border-radius: 14px;
-            background: white;
-            text-align: center;
-            min-width: 230px;
-            transition: all 0.2s ease;
-            border-top: 4px solid var(--primary-color);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 26px rgba(28,105,212,0.15);
-        }
-
-        /* Produktliste */
-        .product {
-            display: flex;
-            justify-content: space-between;
-            gap: 30px;
-            border-bottom: 1px solid #d8d8d8;
-            padding: 28px 0;
-        }
-        .product img { width: 210px; height: 170px; object-fit: contain; cursor: zoom-in; }
-        .product-info { flex: 1; }
-        .price-value { font-size: 22px; font-weight: 700; color: var(--text-dark); }
+        body { font-family: Arial, sans-serif; background: var(--bg); margin: 0; color: var(--text); }
+        .container { max-width: 1500px; margin: 18px auto; background: white; padding: 95px 40px 55px; border-radius: 16px; position: relative; min-height: 80vh; box-sizing: border-box; }
         
+        /* Header & Nav */
+        .logo-top { position: absolute; top: 20px; right: 30px; }
+        .logo-top img { width: 260px; }
+        .nav-left { position: absolute; top: 58px; left: 30px; display: flex; gap: 15px; }
+        .nav-right { position: absolute; top: 58px; right: 30px; }
+        
+        .btn-link { background: none; border: none; color: var(--primary); font-weight: 700; cursor: pointer; font-size: 14px; }
+        .internal-btn { background: #fff; border: 1px solid #ccc; padding: 7px 12px; border-radius: 7px; cursor: pointer; font-size: 12px; }
+
+        /* Banner */
+        .internal-banner { background: #c62828; color: white; padding: 12px; border-radius: 10px; margin-bottom: 16px; text-align: center; font-weight: 700; display: none; }
+        
+        /* Hero */
+        .hero { height: 280px; border-radius: 12px; background: url('https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/WINTER%20Ix3.jpg?raw=true') center/cover; position: relative; margin-bottom: 30px; display: flex; align-items: flex-end; padding: 30px; overflow: hidden; }
+        .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent, rgba(0,0,0,0.6)); }
+        .hero-text { position: relative; z-index: 2; color: white; }
+
+        /* Grid System */
+        .selection-label { font-size: 24px; font-weight: 700; text-align: center; margin: 40px 0; }
+        .grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+        .card { width: 240px; min-height: 100px; border: 1px solid var(--border); border-top: 4px solid var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; padding: 20px; cursor: pointer; transition: 0.2s; background: #fff; font-weight: 700; text-align: center; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); border-color: var(--primary); }
+
+        /* Summary Box */
+        .summary-box { background: #f9f9f9; padding: 20px; border-radius: 12px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; }
+
+        /* Product List */
+        .product { display: flex; gap: 30px; padding: 25px 0; border-bottom: 1px solid #eee; align-items: center; }
+        .product img { width: 200px; height: 160px; object-fit: contain; }
+        .product-info { flex: 1; }
+        .price-tag { font-size: 22px; font-weight: 700; color: var(--primary); }
+
         /* Modals */
-        .modal {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.6);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            padding: 20px;
-        }
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 550px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        .modal input, .modal select, .modal textarea {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box;
-        }
-
-        .button {
-            background: var(--primary-color);
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            cursor: pointer;
-            font-weight: 700;
-            transition: background 0.2s;
-        }
-        .button:hover { background: var(--primary-hover); }
-        .button-secondary { background: #777; }
-
-        /* Responsive */
-        @media (max-width: 760px) {
-            .container { padding-top: 120px; }
-            .product { flex-direction: column; }
-            .hero { height: 200px; }
-        }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+        .modal-content { background: white; padding: 30px; border-radius: 15px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        .btn-main { background: var(--primary); color: white; border: none; padding: 12px 20px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; }
+        
+        @media (max-width: 768px) { .product { flex-direction: column; text-align: center; } .container { padding: 120px 20px 40px; } }
     </style>
 </head>
 <body>
 
-<div class="container" id="mainContainer">
-    <div class="logo-top">
-        <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" alt="Logo">
+<div class="container">
+    <div class="logo-top"><img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" alt="Logo"></div>
+    
+    <div class="nav-left">
+        <button class="btn-link" onclick="resetConfig()">← Neustart</button>
+        <button class="btn-link" id="backStepBtn" style="display:none;" onclick="goBackOneStep()">← Zurück</button>
     </div>
 
-    <div class="nav-wrap">
-        <button class="btn-link" onclick="location.reload()">← Neustart</button>
+    <div class="nav-right" id="loginArea">
+        <button class="internal-btn" onclick="openModal('loginModal')">Interner Login</button>
     </div>
 
-    <div class="internal-login-wrap" id="loginArea">
-        <button class="internal-login-btn" onclick="toggleModal('loginModal', true)">Interner Login</button>
-    </div>
-
-    <div id="internalBanner" class="internal-banner">INTERNER BESTELLMODUS AKTIV</div>
+    <div id="internalBanner" class="internal-banner">INTERNER MODUS AKTIV</div>
 
     <div class="hero">
         <div class="hero-text">
-            <h1>Original Winterkompletträder</h1>
-            <p>Sicherheit und Stil für die kalte Jahreszeit.</p>
+            <h1 id="heroTitle">Original Winterkompletträder</h1>
+            <p>Finden Sie den perfekten Radsatz für Ihren BMW oder MINI.</p>
         </div>
     </div>
 
-    <div id="app">
-        <div class="selection-label">Wählen Sie Ihren Standort</div>
-        <div class="grid">
-            <div class="card" onclick="selectStep('standort', 'GEB')"><h3>Gebenstorf</h3></div>
-            <div class="card" onclick="selectStep('standort', 'HET')"><h3>Hettenschwil</h3></div>
-        </div>
-    </div>
+    <div id="app"></div>
 </div>
 
 <div id="loginModal" class="modal">
     <div class="modal-content" style="max-width: 350px;">
-        <h3>Interner Login</h3>
-        <input type="text" id="loginName" placeholder="Name (z.B. M.Muster)">
-        <input type="password" id="loginPassword" placeholder="Passwort">
-        <button class="button" style="width:100%" onclick="handleLogin()">Login</button>
-        <button class="btn-link" style="margin-top:10px; width:100%" onclick="toggleModal('loginModal', false)">Abbrechen</button>
+        <h3>Login</h3>
+        <input type="text" id="loginUser" placeholder="Name (z.B. Hans.Muster)">
+        <input type="password" id="loginPass" placeholder="Passwort">
+        <button class="btn-main" onclick="doLogin()">Anmelden</button>
+        <button class="btn-link" style="width:100%; margin-top:10px;" onclick="closeModal('loginModal')">Schliessen</button>
     </div>
 </div>
 
 <div id="requestModal" class="modal">
     <div class="modal-content">
-        <h3 id="modalTitle">Anfrage senden</h3>
-        <p id="modalProductSummary" style="font-weight:700; color:var(--primary-color);"></p>
+        <h3>Anfrage / Bestellung</h3>
+        <p id="selectedProdName" style="font-weight:700; color:var(--primary);"></p>
         
-        <div id="publicFields">
-            <label>Ihr Name *</label>
-            <input type="text" id="formName" placeholder="Vor- und Nachname">
-            <label>E-Mail *</label>
-            <input type="email" id="formEmail" placeholder="beispiel@mail.ch">
-            <label>Kontrollschild *</label>
-            <input type="text" id="formPlate" placeholder="z.B. AG 123456">
+        <div id="extFields">
+            <input type="text" id="custName" placeholder="Name, Vorname *">
+            <input type="email" id="custMail" placeholder="E-Mail *">
+            <input type="text" id="custPlate" placeholder="Kontrollschild *">
         </div>
 
-        <div id="internalFields" style="display:none;">
-            <label>Verkäufer (angemeldet)</label>
-            <input type="text" id="formSeller" readonly>
-            <label>Kundenname *</label>
-            <input type="text" id="formCustomer" placeholder="Name des Kunden">
-            <label>Adressnummer Rechnungsempfänger *</label>
-            <input type="text" id="formAddr" placeholder="z.B. 100234">
-            <label>Ordernummer *</label>
-            <input type="text" id="formOrder" placeholder="z.B. 887766">
+        <div id="intFields" style="display:none;">
+            <input type="text" id="intSeller" readonly>
+            <input type="text" id="intCustName" placeholder="Kundenname *">
+            <input type="text" id="intAddr" placeholder="Adressnummer *">
+            <input type="text" id="intOrder" placeholder="Ordernummer *">
         </div>
 
-        <label>Anliegen *</label>
-        <select id="formType">
-            <option value="Anfrage">Unverbindliche Anfrage</option>
-            <option value="Bestellung">Verbindliche Bestellung</option>
-        </select>
-
-        <label>Bemerkung</label>
-        <textarea id="formNote" placeholder="Zusätzliche Infos..."></textarea>
-
-        <div style="display:flex; gap:10px;">
-            <button class="button" id="sendBtn" onclick="handleSubmission()">Senden</button>
-            <button class="button button-secondary" onclick="generatePDF()">PDF Offerte</button>
-            <button class="button button-secondary" onclick="toggleModal('requestModal', false)">Schliessen</button>
-        </div>
+        <select id="reqType"><option value="Anfrage">Anfrage</option><option value="Bestellung">Bestellung</option></select>
+        <textarea id="reqNote" placeholder="Zusätzliche Bemerkungen..."></textarea>
+        
+        <button class="btn-main" id="sendMailBtn" onclick="submitFinalForm()">Absenden</button>
+        <button class="btn-main" style="background:#666;" onclick="generateOfferPDF()">PDF Offerte</button>
+        <button class="btn-link" style="width:100%; margin-top:10px;" onclick="closeModal('requestModal')">Abbrechen</button>
     </div>
 </div>
 
 <script>
-    // --- STATE & DATEN ---
-    let isInternal = false;
-    let selectedProduct = null;
-    const configState = { standort: null, marke: null, reihe: null, modell: null };
-
-    // Beispiel Datenstruktur (Normalerweise von API/Datenbank)
-    const mockData = [
-        { id: 1, marke: "BMW", reihe: "3er", modell: "G20/G21", bezeichnung: "V-Speiche 780", markeReifen: "Pirelli", dimension: "225/50 R18", preis: 2450, bild: "https://via.placeholder.com/200", mail: "verkauf@emmenegger.ch" }
+    // --- DATEN ---
+    // Hier fügst du dein fahrzeuge-Array ein. Zur Demo lasse ich ein paar drin:
+    let fahrzeuge = [
+        { "Standort": "GEB", "Marke": "BMW", "Reihe": "3er", "Modell": "G20/G21", "Motor": "Alle Motoren", "Bezeichnung": "V-Speiche 780", "Preis": "2450", "Teilenummer": "1234567", "Dimension": "18 Zoll", "Bild": "https://via.placeholder.com/200", "Empfänger": "info@test.ch" },
+        { "Standort": "HET", "Marke": "MINI", "Reihe": "Hatch", "Modell": "F56", "Motor": "Cooper S", "Bezeichnung": "Cosmos Spoke", "Preis": "1950", "Teilenummer": "7654321", "Dimension": "17 Zoll", "Bild": "https://via.placeholder.com/200", "Empfänger": "info@test.ch" }
     ];
 
-    // --- NAVIGATION & LOGIK ---
-    function selectStep(key, value) {
-        configState[key] = value;
-        renderApp();
+    let state = { standort: null, marke: null, reihe: null, modell: null, motor: null };
+    let isInternal = false;
+    let selectedWheel = null;
+
+    // --- LOGIK ---
+    function init() {
+        renderStep('standort');
     }
 
-    function renderApp() {
+    function renderStep(step) {
         const app = document.getElementById("app");
-        // Hier würde die Logik folgen, um basierend auf configState die nächsten Karten zu zeigen.
-        // Zur Demo zeigen wir direkt ein Produkt, wenn der Standort gewählt wurde.
-        if(configState.standort) {
-            showProducts();
+        const backBtn = document.getElementById("backStepBtn");
+        app.innerHTML = "";
+        backBtn.style.display = step === 'standort' ? 'none' : 'inline-block';
+
+        let options = [];
+        let label = "";
+
+        if (step === 'standort') {
+            label = "Wählen Sie Ihren Standort";
+            options = [...new Set(fahrzeuge.map(f => f.Standort))];
+        } else if (step === 'marke') {
+            label = "Wählen Sie die Marke";
+            options = [...new Set(fahrzeuge.filter(f => f.Standort === state.standort).map(f => f.Marke))];
+        } else if (step === 'reihe') {
+            label = "Wählen Sie die Baureihe";
+            options = [...new Set(fahrzeuge.filter(f => f.Standort === state.standort && f.Marke === state.marke).map(f => f.Reihe))];
+        } else if (step === 'modell') {
+            label = "Wählen Sie das Modell";
+            options = [...new Set(fahrzeuge.filter(f => f.Standort === state.standort && f.Marke === state.marke && f.Reihe === state.reihe).map(f => f.Modell))];
+        } else if (step === 'motor') {
+            label = "Wählen Sie die Motorisierung";
+            options = [...new Set(fahrzeuge.filter(f => f.Standort === state.standort && f.Marke === state.marke && f.Reihe === state.reihe && f.Modell === state.modell).map(f => f.Motor))];
+        }
+
+        app.innerHTML = `<div class="selection-label">${label}</div>`;
+        const grid = document.createElement("div");
+        grid.className = "grid";
+
+        options.forEach(opt => {
+            const card = document.createElement("div");
+            card.className = "card";
+            card.innerText = opt === "GEB" ? "Gebenstorf" : (opt === "HET" ? "Hettenschwil" : opt);
+            card.onclick = () => selectOption(step, opt);
+            grid.appendChild(card);
+        });
+
+        app.appendChild(grid);
+        
+        // Falls Motor gewählt wurde -> Produkte zeigen
+        if (state.motor) {
+            showFinalProducts();
         }
     }
 
-    function showProducts() {
+    function selectOption(step, val) {
+        state[step] = val;
+        const workflow = ['standort', 'marke', 'reihe', 'modell', 'motor', 'finish'];
+        const nextStep = workflow[workflow.indexOf(step) + 1];
+        renderStep(nextStep);
+    }
+
+    function showFinalProducts() {
         const app = document.getElementById("app");
+        const matches = fahrzeuge.filter(f => 
+            f.Standort === state.standort && 
+            f.Marke === state.marke && 
+            f.Reihe === state.reihe && 
+            f.Modell === state.modell && 
+            f.Motor === state.motor
+        );
+
         app.innerHTML = `
-            <div class="selection-label">Verfügbare Winterkompletträder</div>
-            <div class="product">
-                <img src="${mockData[0].bild}" alt="Rad">
-                <div class="product-info">
-                    <div class="price-value">${mockData[0].preis} CHF</div>
-                    <h3>${mockData[0].bezeichnung}</h3>
-                    <p>${mockData[0].markeReifen} | ${mockData[0].dimension}</p>
-                </div>
-                <button class="button" onclick="openRequest(${mockData[0].id})">Auswählen</button>
+            <div class="summary-box">
+                <div><strong>Ihre Auswahl:</strong> ${state.marke} ${state.reihe} (${state.modell})</div>
+                <button class="btn-link" onclick="resetConfig()">Ändern</button>
             </div>
+            <div class="selection-label">Verfügbare Radsätze</div>
         `;
+
+        matches.forEach(w => {
+            app.innerHTML += `
+                <div class="product">
+                    <img src="${w.Bild}" alt="Rad">
+                    <div class="product-info">
+                        <h3>${w.Bezeichnung}</h3>
+                        <p>Dimension: ${w.Dimension} | Teilenummer: ${w.Teilenummer}</p>
+                        <div class="price-tag">${w.Preis} CHF</div>
+                    </div>
+                    <button class="btn-main" style="width:auto;" onclick="openRequestModal('${w.Teilenummer}')">Auswählen</button>
+                </div>
+            `;
+        });
     }
 
-    // --- MODAL CONTROLS ---
-    function toggleModal(id, show) {
-        document.getElementById(id).style.display = show ? 'flex' : 'none';
-    }
+    // --- FUNKTIONEN ---
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-    function handleLogin() {
-        const pw = document.getElementById("loginPassword").value;
-        const name = document.getElementById("loginName").value;
-        if(pw === "28010" && name.trim() !== "") {
+    function doLogin() {
+        const user = document.getElementById("loginUser").value;
+        const pass = document.getElementById("loginPass").value;
+        if(pass === "28010") {
             isInternal = true;
             document.getElementById("internalBanner").style.display = "block";
             document.getElementById("loginArea").style.display = "none";
-            document.getElementById("formSeller").value = name;
-            toggleModal('loginModal', false);
-            alert("Erfolgreich als " + name + " angemeldet.");
-        } else {
-            alert("Login fehlgeschlagen.");
-        }
+            document.getElementById("intSeller").value = user;
+            closeModal('loginModal');
+        } else { alert("Falsches Passwort"); }
     }
 
-    function openRequest(productId) {
-        selectedProduct = mockData.find(p => p.id === productId);
-        document.getElementById("modalProductSummary").innerText = selectedProduct.bezeichnung + " (" + selectedProduct.preis + " CHF)";
-        
+    function openRequestModal(tnr) {
+        selectedWheel = fahrzeuge.find(f => f.Teilenummer === tnr);
+        document.getElementById("selectedProdName").innerText = selectedWheel.Bezeichnung;
         if(isInternal) {
-            document.getElementById("internalFields").style.display = "block";
-            document.getElementById("publicFields").style.display = "none";
+            document.getElementById("intFields").style.display = "block";
+            document.getElementById("extFields").style.display = "none";
         }
-        toggleModal('requestModal', true);
+        openModal('requestModal');
     }
 
-    // --- PDF GENERIERUNG ---
-    function generatePDF() {
-        const win = window.open("", "_blank");
-        const content = `
-            <html><body style="font-family:sans-serif; padding:50px;">
-                <h1>Offerte: ${selectedProduct.bezeichnung}</h1>
-                <hr>
-                <p>Preis: ${selectedProduct.preis} CHF</p>
-                <p>Dimension: ${selectedProduct.dimension}</p>
-                <p>Erstellt am: ${new Date().toLocaleDateString()}</p>
-                <button onclick="window.print()">Drucken / PDF Speichern</button>
-            </body></html>
-        `;
-        win.document.write(content);
-        win.document.close();
+    function resetConfig() {
+        state = { standort: null, marke: null, reihe: null, modell: null, motor: null };
+        init();
     }
 
-    // --- FORMULAR VERSAND ---
-    async function handleSubmission() {
-        const btn = document.getElementById("sendBtn");
-        btn.innerText = "Sende...";
-        btn.disabled = true;
-
-        // Hier Web3Forms Logik einbauen (wie in deinem Original)
-        setTimeout(() => {
-            alert("Vielen Dank! Ihre Anfrage wurde erfolgreich übermittelt.");
-            toggleModal('requestModal', false);
-            btn.innerText = "Senden";
-            btn.disabled = false;
-        }, 1500);
+    function goBackOneStep() {
+        const workflow = ['standort', 'marke', 'reihe', 'modell', 'motor'];
+        let lastFilled = workflow.reverse().find(s => state[s] !== null);
+        if(lastFilled) state[lastFilled] = null;
+        renderStep(lastFilled || 'standort');
     }
+
+    init();
 </script>
-
 </body>
 </html>
