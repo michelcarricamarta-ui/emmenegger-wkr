@@ -95,7 +95,7 @@ body.mini-mode .back-home-link:hover {
     border-radius: 12px;
     overflow: hidden;
     margin-bottom: 35px;
-    background-image: url('https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/WINTER%20Ix3.jpg');
+    background-image: url('https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/WINTER%20Ix3.jpg?raw=true');
     background-size: cover;
     background-position: center;
 }
@@ -141,8 +141,10 @@ body.mini-mode .back-home-link:hover {
     letter-spacing: 0.2px;
 }
 
-.container.internal-mode-active {
-    box-shadow: 0 0 0 3px rgba(198, 40, 40, 0.18);
+.section-title {
+    font-size: 22px;
+    margin: 10px 0 20px 0;
+    font-weight: 700;
 }
 
 .selection-label {
@@ -294,7 +296,7 @@ body.mini-mode .back-home-link:hover {
     align-items: center;
     color: #555;
     font-size: 15px;
-    gap: 16px;
+    gap: 14px;
     flex-wrap: wrap;
 }
 
@@ -331,9 +333,9 @@ body.mini-mode .back-home-link:hover {
 }
 
 .button-disabled {
-    background: #bdbdbd !important;
+    background: #bdbdbd;
     color: white;
-    cursor: not-allowed !important;
+    cursor: not-allowed;
     pointer-events: none;
 }
 
@@ -366,7 +368,7 @@ body.mini-mode .back-home-link:hover {
 }
 
 .clickable-image.zoomed {
-    transform: scale(2.3);
+    transform: scale(2.9);
     z-index: 50;
     position: relative;
     box-shadow: 0 10px 30px rgba(0,0,0,0.25);
@@ -413,19 +415,9 @@ body.mini-mode .back-home-link:hover {
 }
 
 .product-partnr {
-    margin-top: 18px;
-    margin-bottom: 12px;
+    margin-top: 12px;
     font-size: 14px;
     color: #1f1f1f;
-}
-
-.internal-note {
-    background: #f3f3f3;
-    border-left: 4px solid #111;
-    padding: 8px 10px;
-    margin-top: 8px;
-    font-size: 13px;
-    color: #222;
 }
 
 .product-right {
@@ -558,17 +550,10 @@ body.mini-mode .internal-login-btn:hover {
     background: #f3f3f3;
 }
 
-.empty-note,
-.loading-note,
-.error-note {
+.empty-note {
     margin-top: 30px;
     font-size: 16px;
     color: #666;
-    text-align: center;
-}
-
-.error-note {
-    color: #c62828;
 }
 
 .info-section {
@@ -766,9 +751,7 @@ body.mini-mode .internal-login-btn:hover {
         </div>
     </div>
 
-    <div id="app">
-        <div class="loading-note">Daten werden geladen...</div>
-    </div>
+    <div id="app"></div>
 
     <div class="info-section">
         <h2 class="info-title">Eiskalte Fahrfreude mit maximalem Grip</h2>
@@ -779,42 +762,19 @@ body.mini-mode .internal-login-btn:hover {
     </div>
 </div>
 
-<div id="loginModal" class="modal">
-    <div class="modal-content" style="max-width: 420px;">
-        <div class="modal-title" style="text-align:center;">Internen Bestellmodus aktivieren</div>
-
-        <label for="loginName">Name</label>
-        <input id="loginName" type="text" placeholder="">
-
-        <div style="font-size:12px; font-weight:700; color:#666; margin-top:-8px; margin-bottom:14px; text-align:center;">
-            Bitte trage dein Name ein, bsp. "Hans.Muster"
-        </div>
-
-        <label for="loginPassword">Passwort</label>
-        <input id="loginPassword" type="password" placeholder="">
-
-        <div class="modal-actions">
-            <button class="button button-secondary" type="button" onclick="closeLoginModal()">Schliessen</button>
-            <button class="button" type="button" onclick="submitInternalLogin()">Login</button>
-        </div>
-    </div>
-</div>
-
 <div id="modal" class="modal">
     <div class="modal-content">
         <div class="modal-title">Anfrage senden</div>
         <div id="modalProduct" class="modal-product"></div>
 
-        <div id="externalFields">
-            <label for="kundeName">Name *</label>
-            <input id="kundeName" type="text" placeholder="Vorname und Nachname">
+        <label for="kundeName">Name *</label>
+        <input id="kundeName" type="text" placeholder="Vorname und Nachname">
 
-            <label for="kundeEmail">E-Mail *</label>
-            <input id="kundeEmail" type="email" placeholder="E-Mail Adresse">
+        <label for="kundeEmail">E-Mail *</label>
+        <input id="kundeEmail" type="email" placeholder="E-Mail Adresse">
 
-            <label for="kundeKontrollschild">Kontrollschild *</label>
-            <input id="kundeKontrollschild" type="text" placeholder="z. B. AG 123456">
-        </div>
+        <label for="kundeKontrollschild">Kontrollschild *</label>
+        <input id="kundeKontrollschild" type="text" placeholder="z. B. AG 123456">
 
         <label for="kundeArt">Art *</label>
         <select id="kundeArt">
@@ -823,23 +783,17 @@ body.mini-mode .internal-login-btn:hover {
         </select>
 
         <div id="internalFields" style="display:none;">
-            <label for="internerMitarbeiter">Verkäufer *</label>
-            <input id="internerMitarbeiter" type="text" readonly>
-
             <label for="internerKundenname">Kundenname *</label>
             <input id="internerKundenname" type="text" placeholder="Name Kunde">
 
-            <label for="internesLieferdatum">Lieferdatum Fahrzeug *</label>
-            <input id="internesLieferdatum" type="date">
+            <label for="interneAuftragsnummer">Auftragsnummer *</label>
+            <input id="interneAuftragsnummer" type="text" placeholder="z. B. 123456">
 
-            <label for="interneAdressnummer">Adressnummer Rechnungsempfänger *</label>
-            <input id="interneAdressnummer" type="text" placeholder="z. B. 123456">
+            <label for="interneOrderOderFIN">Ordernummer / Fahrgestellnummer</label>
+            <input id="interneOrderOderFIN" type="text" placeholder="Ordernummer oder Fahrgestellnummer">
 
-            <label for="interneOrdernummer">Ordernummer *</label>
-            <input id="interneOrdernummer" type="text" placeholder="z. B. 987654">
-
-            <label for="interneChassisnr">Chassisnr. (falls vorhanden)</label>
-            <input id="interneChassisnr" type="text" placeholder="Chassisnr.">
+            <label for="internesAblieferdatum">Ablieferungsdatum</label>
+            <input id="internesAblieferdatum" type="date">
         </div>
 
         <label for="kundeBemerkung">Bemerkung</label>
@@ -850,32 +804,28 @@ body.mini-mode .internal-login-btn:hover {
         <div class="modal-actions">
             <button class="button button-secondary" type="button" onclick="closeModal()">Schliessen</button>
             <button class="button button-secondary" type="button" onclick="showOfferPreview()">PDF Offerte</button>
-            <button id="mainSendBtn" class="button" type="button" onclick="sendMail()">Senden</button>
+            <button id="sendBtn" class="button" type="button" onclick="sendMail()">Senden</button>
         </div>
     </div>
 </div>
 
 <script>
-/* =========================================================
-   WICHTIG:
-   HIER DEINE EIGENEN URLS EINTRAGEN
-   ========================================================= */
-const PRODUKTE_URL  = "HIER_DEINE_PRODUKTE_URL";
-const ZUORDNUNG_URL = "HIER_DEINE_ZUORDNUNG_URL";
-const FAHRZEUGE_URL = "HIER_DEINE_FAHRZEUGE_URL";
+const urlProdukte = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Produkte";
+const urlMapping = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Zuordnung";
+const urlFahrzeuge = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Fahrzeuge";
 
-/* Beispiel:
-const PRODUKTE_URL  = "https://opensheet.elk.sh/DEINE_ID/Produkte";
-const ZUORDNUNG_URL = "https://opensheet.elk.sh/DEINE_ID/Zuordnung";
-const FAHRZEUGE_URL = "https://opensheet.elk.sh/DEINE_ID/Fahrzeuge";
-*/
+const heroImageStart = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/WINTER%20Ix3.jpg?raw=true";
+const heroImageBMW = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/2026-bmw-ix3-snow-driving-04.jpg?raw=true";
+const heroImageMINI = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/MINI%20Countrymann.jpg?raw=true";
 
-const WEB3FORMS_ACCESS_KEY = "29788c4e-2b0a-47ba-a817-eb729a965e38";
+let produkte = [];
+let mapping = [];
+let fahrzeuge = [];
 
-let selectedProduct = null;
 let internalMode = false;
+const internalPassword = "28010";
 
-const state = {
+let state = {
     standort: null,
     marke: null,
     reihe: null,
@@ -883,556 +833,449 @@ const state = {
     motor: null
 };
 
-let produkte = [];
-let zuordnung = [];
-let fahrzeuge = [];
-let dataLoaded = false;
+let selectedProduct = null;
 
 function clean(v) {
     return (v || "").toString().trim();
 }
 
-function lower(v) {
-    return clean(v).toLowerCase();
-}
-
-function escapeHtml(value) {
-    return (value || "")
-        .toString()
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
-}
-
-function unique(arr) {
-    return [...new Set(arr.filter(Boolean))];
-}
-
-function normalizeStandort(value) {
-    const v = lower(value);
-    if (v === "geb" || v === "gebenstorf") return "GEB";
-    if (v === "het" || v === "hettenschwil") return "HET";
-    return clean(value);
-}
-
-function standortLabel(code) {
-    if (code === "GEB") return "Gebenstorf";
-    if (code === "HET") return "Hettenschwil";
-    return code || "";
-}
-
-function parsePrice(v) {
-    const value = clean(v).replace(/'/g, "").replace(/\s/g, "").replace(",", ".");
-    const n = parseFloat(value);
-    return isNaN(n) ? 0 : n;
-}
-
-function isSoldOut(product) {
-    const vp = parsePrice(product.VP);
-    const angebot = parsePrice(product.Angebotspreis);
-    return vp === 0 && angebot === 0;
-}
-
-function getDisplayPrice(product) {
-    const angebot = parsePrice(product.Angebotspreis);
-    const vp = parsePrice(product.VP);
-
-    if (angebot > 0) return angebot.toFixed(2);
-    if (vp > 0) return vp.toFixed(2);
-    return "0.00";
-}
-
-function getFahrzeugImage(fahrzeug) {
-    return clean(fahrzeug?.Bild);
-}
-
-function getModellAnzeige(fahrzeug) {
-    return clean(fahrzeug?.Code) || clean(fahrzeug?.Modell);
-}
-
-function splitMotors(value) {
+function splitMotorList(value) {
     return clean(value)
         .split(",")
-        .map(v => clean(v))
+        .map(x => x.trim())
         .filter(Boolean);
 }
 
-function resetFrom(level) {
-    if (level === "standort") {
-        state.standort = null;
-        state.marke = null;
-        state.reihe = null;
-        state.modell = null;
-        state.motor = null;
-    }
-    if (level === "marke") {
-        state.marke = null;
-        state.reihe = null;
-        state.modell = null;
-        state.motor = null;
-    }
-    if (level === "reihe") {
-        state.reihe = null;
-        state.modell = null;
-        state.motor = null;
-    }
-    if (level === "modell") {
-        state.modell = null;
-        state.motor = null;
-    }
-    if (level === "motor") {
-        state.motor = null;
-    }
-    selectedProduct = null;
-    renderApp();
+function mappingMatchesMotor(mappingMotor, selectedMotor) {
+    return splitMotorList(mappingMotor).includes(clean(selectedMotor));
 }
 
-function setStandort(value) {
-    state.standort = value;
-    state.marke = null;
-    state.reihe = null;
-    state.modell = null;
-    state.motor = null;
-    selectedProduct = null;
-    renderApp();
+function escapeHtml(value) {
+    return clean(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
-function setMarke(value) {
-    state.marke = value;
-    state.reihe = null;
-    state.modell = null;
-    state.motor = null;
-    selectedProduct = null;
-    renderApp();
+function jsSafe(value) {
+    return clean(value)
+        .replace(/\\/g, "\\\\")
+        .replace(/'/g, "\\'")
+        .replace(/"/g, "&quot;")
+        .replace(/\r?\n/g, "\\n");
 }
 
-function setReihe(value) {
-    state.reihe = value;
-    state.modell = null;
-    state.motor = null;
-    selectedProduct = null;
-    renderApp();
+function parsePriceValue(value) {
+    const normalized = clean(value)
+        .replace(/\s/g, "")
+        .replace(/'/g, "")
+        .replace(/,/g, ".");
+    const numeric = parseFloat(normalized);
+    return Number.isFinite(numeric) ? numeric : null;
 }
 
-function setModell(value) {
-    state.modell = value;
-    state.motor = null;
-    selectedProduct = null;
-    renderApp();
-}
-
-function setMotor(value) {
-    state.motor = value;
-    selectedProduct = null;
-    renderApp();
-}
-
-function closeModal() {
-    document.getElementById("modal").style.display = "none";
-}
-
-function closeLoginModal() {
-    document.getElementById("loginModal").style.display = "none";
-}
-
-function activateInternalMode() {
-    document.getElementById("loginModal").style.display = "flex";
-}
-
-function submitInternalLogin() {
-    const name = clean(document.getElementById("loginName").value);
-    const pw = clean(document.getElementById("loginPassword").value);
-
-    if (!name) {
-        alert("Bitte Name eingeben");
-        return;
-    }
-
-    if (pw !== "28010") {
-        alert("Passwort falsch");
-        return;
-    }
-
-    internalMode = true;
-
-    const internerMitarbeiterField = document.getElementById("internerMitarbeiter");
-    if (internerMitarbeiterField) {
-        internerMitarbeiterField.value = name;
-    }
-
-    document.getElementById("internalFields").style.display = "block";
-    document.getElementById("externalFields").style.display = "none";
-    document.getElementById("internalBanner").style.display = "block";
-    document.querySelector(".container").classList.add("internal-mode-active");
-
-    closeLoginModal();
+function standortToLabel(value) {
+    return value === "GEB"
+        ? "Gebenstorf"
+        : value === "HET"
+            ? "Hettenschwil"
+            : value;
 }
 
 function goToHome() {
     location.reload();
 }
 
-function setHeroByMarke() {
+Promise.all([
+    fetch(urlProdukte).then(r => r.json()),
+    fetch(urlMapping).then(r => r.json()),
+    fetch(urlFahrzeuge).then(r => r.json())
+]).then(([p, m, f]) => {
+    produkte = Array.isArray(p) ? p : [];
+    mapping = Array.isArray(m) ? m : [];
+    fahrzeuge = Array.isArray(f) ? f : [];
+    render();
+}).catch(() => {
+    document.getElementById("app").innerHTML = `<div class="empty-note">Die Daten konnten nicht geladen werden.</div>`;
+});
+
+function render() {
+    let html = "";
+
+    if (!state.marke) {
+        html += `<div class="selection-label">Marke wählen</div>`;
+        html += `<div class="grid">`;
+        html += `<div class="card reihe-card" onclick="selectMarke('BMW')">BMW Winterkompletträder</div>`;
+        html += `<div class="card reihe-card mini-start-card" onclick="selectMarke('MINI')">MINI Winterkompletträder</div>`;
+        html += `</div>`;
+    }
+
+    if (state.marke && !state.standort) {
+        const standorte = [...new Set(
+            produkte
+                .filter(x => clean(x["Marke"]) === state.marke)
+                .map(x => clean(x["Standort"]))
+                .filter(Boolean)
+        )];
+
+        html += `<div class="selection-label">Standort wählen</div>`;
+        html += `<div class="grid">`;
+
+        standorte.forEach(s => {
+            const label = standortToLabel(s);
+            html += `<div class="card reihe-card" onclick="selectStandort('${jsSafe(s)}')">${escapeHtml(label)}</div>`;
+        });
+
+        html += `</div>`;
+    }
+
+    if (state.marke && state.standort && !state.reihe) {
+        const reihen = [...new Set(
+            mapping
+                .filter(x => clean(x["Marke"]) === state.marke)
+                .map(x => clean(x["Reihe"]))
+                .filter(Boolean)
+        )];
+
+        html += `<div class="selection-label">Reihe wählen</div>`;
+        html += `<div class="grid">`;
+
+        reihen.forEach(r => {
+            html += `<div class="card reihe-card" onclick="selectReihe('${jsSafe(r)}')">${escapeHtml(r)}</div>`;
+        });
+
+        html += `</div>`;
+    }
+
+    if (state.marke && state.standort && state.reihe && !state.modell) {
+        const modelle = [...new Set(
+            mapping
+                .filter(x =>
+                    clean(x["Marke"]) === state.marke &&
+                    clean(x["Reihe"]) === state.reihe
+                )
+                .map(x => clean(x["Modell"]))
+                .filter(Boolean)
+        )];
+
+        html += `<div class="selection-label">Modell wählen</div>`;
+        html += `<div class="grid">`;
+
+        modelle.forEach(m => {
+            const fahrzeug = fahrzeuge.find(f =>
+                clean(f["Marke"]) === state.marke &&
+                clean(f["Reihe"]) === state.reihe &&
+                clean(f["Modell"]) === m
+            );
+
+            const bild = clean(fahrzeug?.Bild) || "https://via.placeholder.com/260x140?text=Fahrzeug";
+            const anzeige = clean(fahrzeug?.Code) || m;
+
+            html += `
+                <div class="card model-card" onclick="selectModell('${jsSafe(m)}')">
+                    <img src="${escapeHtml(bild)}" alt="${escapeHtml(anzeige)}">
+                    <div class="model-name">${escapeHtml(anzeige)}</div>
+                </div>
+            `;
+        });
+
+        html += `</div>`;
+    }
+
+    if (state.marke && state.standort && state.reihe && state.modell && !state.motor) {
+        const motors = [...new Set(
+            mapping
+                .filter(x =>
+                    clean(x["Marke"]) === state.marke &&
+                    clean(x["Reihe"]) === state.reihe &&
+                    clean(x["Modell"]) === state.modell
+                )
+                .flatMap(x => splitMotorList(x["Motor"]))
+        )];
+
+        html += `<div class="selection-label">Motor wählen</div>`;
+        html += `<div class="grid">`;
+
+        motors.forEach(m => {
+            html += `<div class="card motor-card" onclick="selectMotor('${jsSafe(m)}')">${escapeHtml(m)}</div>`;
+        });
+
+        html += `</div>`;
+    }
+
+    if (state.motor) {
+        const fahrzeug = fahrzeuge.find(f =>
+            clean(f["Marke"]) === state.marke &&
+            clean(f["Reihe"]) === state.reihe &&
+            clean(f["Modell"]) === state.modell
+        );
+
+        const fahrzeugBild = clean(fahrzeug?.Bild) || "https://via.placeholder.com/220x130?text=Fahrzeug";
+        const standortLabel = standortToLabel(state.standort);
+
+        html += `
+            <div class="summary-box">
+                <div class="summary-text">
+                    <b>Ihre Auswahl:</b><br>
+                    Marke: ${escapeHtml(state.marke)}<br>
+                    Standort: ${escapeHtml(standortLabel)}<br>
+                    Reihe: ${escapeHtml(state.reihe)}<br>
+                    Modell: ${escapeHtml(clean(fahrzeug?.Code) || state.modell)}<br>
+                    Motor: ${escapeHtml(state.motor)}<br>
+                    <button class="change-link" type="button" onclick="resetSelection()">Auswahl ändern</button>
+                </div>
+                <div class="summary-img">
+                    <img src="${escapeHtml(fahrzeugBild)}" alt="${escapeHtml(state.modell)}">
+                </div>
+            </div>
+        `;
+
+        const tnList = [...new Set(
+            mapping
+                .filter(x =>
+                    clean(x["Marke"]) === state.marke &&
+                    clean(x["Reihe"]) === state.reihe &&
+                    clean(x["Modell"]) === state.modell &&
+                    mappingMatchesMotor(x["Motor"], state.motor)
+                )
+                .map(x => clean(x["TN"]))
+                .filter(Boolean)
+        )];
+
+        const results = produkte.filter(p =>
+            clean(p["Standort"]) === state.standort &&
+            clean(p["Marke"]) === state.marke &&
+            tnList.includes(clean(p["TN"]))
+        );
+
+        html += `
+            <div class="products-wrap">
+                <div class="products-header">
+                    <h2 class="products-title">Unsere Winterkomplettradangebote für Ihren ${escapeHtml(state.marke)} ${escapeHtml(clean(fahrzeug?.Code) || state.modell)}</h2>
+                    <div class="products-subline">
+                        <div>Standort: ${escapeHtml(standortLabel)}</div>
+                        <div>Sortierung: Preis</div>
+                    </div>
+                </div>
+        `;
+
+        if (results.length === 0) {
+            html += `<div class="empty-note">Für diese Auswahl wurden keine Produkte gefunden.</div>`;
+        }
+
+        results.forEach(r => {
+            const lager = parseInt(clean(r["Lager"])) || 0;
+            const bild = clean(r["Bild"]) || "https://via.placeholder.com/220x140?text=Rad";
+            const bezeichnung = clean(r["Bezeichnung"]);
+            const markeReifen = clean(r["Reifen"]);
+            const dimension = clean(r["Dimension"]);
+            const hinweistext = clean(r["Hinweistext"]);
+            const verkaufshinweis = clean(r["Verkaufshinweis"]);
+            const teilenummer = clean(r["TN"]);
+            const vp = clean(r["VP"]);
+            const angebot = clean(r["Angebotspreis"]);
+            const empfaengerMail = clean(r["EmpfängerMail"] || r["EmpfaengerMail"]);
+
+            const vpNum = parsePriceValue(vp);
+            const angebotNum = parsePriceValue(angebot);
+
+            const hasPrice =
+                (angebotNum !== null && angebotNum > 0) ||
+                (vpNum !== null && vpNum > 0);
+
+            const isSoldOut = lager <= 0 && !hasPrice;
+            const isOrderable = lager <= 0 && hasPrice;
+
+            const hasRealDiscount =
+                angebotNum !== null &&
+                angebotNum > 0 &&
+                vpNum !== null &&
+                vpNum > 0 &&
+                angebotNum < vpNum;
+
+            let priceHtml = ``;
+
+            if (hasRealDiscount) {
+                priceHtml = `
+                    <div class="new-price">${escapeHtml(angebot)} CHF</div>
+                    <div class="old-price">UPE: ${escapeHtml(vp)} CHF</div>
+                `;
+            } else if (angebotNum !== null && angebotNum > 0) {
+                priceHtml = `<div class="new-price">${escapeHtml(angebot)} CHF</div>`;
+            } else if (vpNum !== null && vpNum > 0) {
+                priceHtml = `<div class="new-price">${escapeHtml(vp)} CHF</div>`;
+            }
+
+            const statusHtml = isSoldOut
+                ? `<div class="status-grey">Ausverkauft</div><div class="delivery-note">Zurzeit nicht verfügbar</div>`
+                : isOrderable
+                    ? `<div class="status-red">Auf Bestellung</div><div class="delivery-note">Lieferzeit 5-10 Arbeitstage</div>`
+                    : `<div class="status-green">An Lager</div><div class="delivery-note">Sofort verfügbar</div>`;
+
+            const buttonHtml = isSoldOut
+                ? `<button class="button button-disabled" type="button">Nicht verfügbar</button>`
+                : `<button class="button" type="button" onclick="openModal('${jsSafe(bezeichnung)}','${jsSafe(markeReifen)}','${jsSafe(dimension)}','${jsSafe(angebot || vp)}','${jsSafe(empfaengerMail)}','${jsSafe(bild)}','${jsSafe(teilenummer)}','${jsSafe(hinweistext)}','${jsSafe(verkaufshinweis)}')">Auswählen</button>`;
+
+            html += `
+                <div class="product ${isSoldOut ? "sold-out" : ""}">
+                    <div class="product-left">
+                        <img src="${escapeHtml(bild)}" alt="${escapeHtml(bezeichnung)}" class="clickable-image" onclick="toggleImageZoom(this)">
+                        <div class="product-info">
+                            <div class="product-title">${escapeHtml(bezeichnung)}</div>
+                            <div class="product-brand">${escapeHtml(markeReifen)}</div>
+                            <div class="product-dimension">${escapeHtml(dimension)}</div>
+                            ${hinweistext ? `<div class="product-hinweis">${escapeHtml(hinweistext)}</div>` : ``}
+                            ${verkaufshinweis ? `<div class="product-detail"><b>Hinweis:</b> ${escapeHtml(verkaufshinweis)}</div>` : ``}
+                            ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
+                        </div>
+                    </div>
+
+                    <div class="product-right">
+                        <div class="price-caption">Pro Satz inkl. Montage</div>
+                        ${priceHtml}
+                        <div class="price-note">Preise inkl. MwSt.</div>
+                        ${statusHtml}
+                        ${buttonHtml}
+                    </div>
+                </div>
+            `;
+        });
+
+        html += `</div>`;
+    }
+
+    document.getElementById("app").innerHTML = html;
+    updateHeroImage();
+    updateBrandTheme();
+}
+
+function updateBrandTheme() {
+    document.body.classList.remove("mini-mode");
+    if (state.marke === "MINI") {
+        document.body.classList.add("mini-mode");
+    }
+}
+
+function activateInternalMode() {
+    if (internalMode) {
+        alert("Der interne Modus ist bereits aktiv.");
+        return;
+    }
+
+    const enteredPassword = prompt("Bitte Passwort für den internen Modus eingeben:");
+    if (enteredPassword === null) return;
+
+    if (enteredPassword === internalPassword) {
+        internalMode = true;
+
+        const banner = document.getElementById("internalBanner");
+        if (banner) {
+            banner.style.display = "block";
+        }
+
+        const internalFields = document.getElementById("internalFields");
+        if (internalFields) {
+            internalFields.style.display = "block";
+        }
+
+        alert("Interner Modus wurde aktiviert.");
+        render();
+    } else {
+        alert("Falsches Passwort.");
+    }
+}
+
+function updateHeroImage() {
     const hero = document.getElementById("heroBanner");
     if (!hero) return;
 
-    if (state.marke === "MINI") {
-        document.body.classList.add("mini-mode");
-        hero.style.backgroundImage = "url('https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/WINTER%20Ix3.jpg')";
-    } else {
-        document.body.classList.remove("mini-mode");
-        hero.style.backgroundImage = "url('https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/WINTER%20Ix3.jpg')";
-    }
-}
+    let heroImage = heroImageStart;
 
-function getMarken() {
-    return unique(fahrzeuge.map(f => clean(f.Marke))).sort((a, b) => a.localeCompare(b, "de"));
-}
-
-function getReihenByMarke(marke) {
-    return unique(
-        fahrzeuge
-            .filter(f => clean(f.Marke) === marke)
-            .map(f => clean(f.Reihe))
-    ).sort((a, b) => a.localeCompare(b, "de"));
-}
-
-function getModelleByMarkeUndReihe(marke, reihe) {
-    return fahrzeuge
-        .filter(f => clean(f.Marke) === marke && clean(f.Reihe) === reihe)
-        .sort((a, b) => getModellAnzeige(a).localeCompare(getModellAnzeige(b), "de"));
-}
-
-function getMotoren(marke, reihe, modell) {
-    const relevant = zuordnung.filter(z =>
-        clean(z.Marke) === marke &&
-        clean(z.Reihe) === reihe &&
-        clean(z.Modell) === modell
-    );
-
-    const motors = [];
-    relevant.forEach(z => {
-        splitMotors(z.Motor).forEach(m => motors.push(m));
-    });
-
-    return unique(motors).sort((a, b) => a.localeCompare(b, "de"));
-}
-
-function getZuordnungen(marke, reihe, modell, motor) {
-    return zuordnung.filter(z => {
-        const markeOk = clean(z.Marke) === marke;
-        const reiheOk = clean(z.Reihe) === reihe;
-        const modellOk = clean(z.Modell) === modell;
-        const motorOk = splitMotors(z.Motor).includes(motor);
-        return markeOk && reiheOk && modellOk && motorOk;
-    });
-}
-
-function getProductsForSelection() {
-    if (!state.marke || !state.reihe || !state.modell || !state.motor) return [];
-
-    const links = getZuordnungen(state.marke, state.reihe, state.modell, state.motor);
-    const teileNummern = unique(links.map(z => clean(z.TN)));
-
-    let result = produkte.filter(p => teileNummern.includes(clean(p.TN)));
-
-    if (state.standort) {
-        result = result.filter(p => {
-            const standort = normalizeStandort(p.Standort);
-            return !clean(p.Standort) || standort === state.standort;
-        });
+    if (state.marke === "BMW") {
+        heroImage = heroImageBMW;
+    } else if (state.marke === "MINI") {
+        heroImage = heroImageMINI;
     }
 
-    return result.map(p => ({
-        ...p,
-        teilenummer: clean(p.TN),
-        bezeichnung: clean(p.Bezeichnung),
-        marke: clean(p.Reifen),
-        dimension: clean(p.Dimension),
-        hinweistext: clean(p.Hinweistext),
-        verkaufshinweis: clean(p.Verkaufshinweis),
-        bild: clean(p.Bild),
-        standort: normalizeStandort(p.Standort),
-        empfaengerMail: clean(p.EmpfaengerMail) || "tv-g-fp@emmeneggerag.ch",
-        preis: getDisplayPrice(p),
-        vp: parsePrice(p.VP),
-        angebotspreis: parsePrice(p.Angebotspreis),
-        lager: parseFloat(clean(p.Lager).replace(",", ".")) || 0,
-        soldOut: isSoldOut(p)
-    }));
+    hero.style.backgroundImage = `url('${heroImage}')`;
 }
 
-function getSelectedFahrzeug() {
-    return fahrzeuge.find(f =>
-        clean(f.Marke) === state.marke &&
-        clean(f.Reihe) === state.reihe &&
-        clean(f.Modell) === state.modell
-    );
+function selectStandort(s) {
+    state.standort = s;
+    state.reihe = null;
+    state.modell = null;
+    state.motor = null;
+    render();
 }
 
-function openRequestModal(index) {
-    const products = getProductsForSelection();
-    selectedProduct = products[index];
+function selectMarke(m) {
+    state.marke = m;
+    state.standort = null;
+    state.reihe = null;
+    state.modell = null;
+    state.motor = null;
+    render();
+}
 
-    if (!selectedProduct || selectedProduct.soldOut) return;
+function selectReihe(r) {
+    state.reihe = r;
+    state.modell = null;
+    state.motor = null;
+    render();
+}
 
-    const modalProduct = document.getElementById("modalProduct");
-    modalProduct.innerHTML = `
-        <b>${escapeHtml(selectedProduct.bezeichnung)}</b><br>
-        ${escapeHtml(selectedProduct.marke)} ${escapeHtml(selectedProduct.dimension)}<br>
-        Teilenummer: ${escapeHtml(selectedProduct.teilenummer)}<br>
-        Preis: ${escapeHtml(selectedProduct.preis)} CHF
-    `;
+function selectModell(m) {
+    state.modell = m;
+    state.motor = null;
+    render();
+}
+
+function selectMotor(m) {
+    state.motor = m;
+    render();
+}
+
+function resetSelection() {
+    state.standort = null;
+    state.marke = null;
+    state.reihe = null;
+    state.modell = null;
+    state.motor = null;
+    selectedProduct = null;
+    closeModal();
+    render();
+}
+
+function openModal(bezeichnung, marke, dimension, preis, empfaengerMail, bild, teilenummer, hinweistext, verkaufshinweis) {
+    selectedProduct = {
+        bezeichnung: bezeichnung,
+        marke: marke,
+        dimension: dimension,
+        preis: preis,
+        empfaengerMail: empfaengerMail,
+        bild: bild,
+        teilenummer: teilenummer,
+        hinweistext: hinweistext,
+        verkaufshinweis: verkaufshinweis
+    };
+
+    document.getElementById("modalProduct").innerHTML =
+        `<b>Produkt:</b> ${escapeHtml(bezeichnung)}<br>` +
+        `${escapeHtml(marke)} ${escapeHtml(dimension)}<br>` +
+        (preis ? `<b>Preis:</b> ${escapeHtml(preis)} CHF` : "");
+
+    const internalFields = document.getElementById("internalFields");
+    if (internalFields) {
+        internalFields.style.display = internalMode ? "block" : "none";
+    }
 
     document.getElementById("modal").style.display = "flex";
 }
 
-function toggleImageZoom(img) {
-    document.querySelectorAll(".clickable-image.zoomed").forEach(el => {
-        if (el !== img) {
-            el.classList.remove("zoomed");
-        }
-    });
-    img.classList.toggle("zoomed");
-}
-
-function renderStandortSelection() {
-    return `
-        <div class="selection-label">Bitte wählen Sie Ihren Standort</div>
-        <div class="grid">
-            <div class="card reihe-card" onclick="setStandort('GEB')">Gebenstorf</div>
-            <div class="card reihe-card" onclick="setStandort('HET')">Hettenschwil</div>
-        </div>
-    `;
-}
-
-function renderMarkenSelection() {
-    const marken = getMarken();
-
-    if (!marken.length) {
-        return `<div class="empty-note">Keine Marken gefunden.</div>`;
-    }
-
-    return `
-        <div class="selection-label">Bitte wählen Sie die Marke</div>
-        <div class="grid">
-            ${marken.map(m => `
-                <div class="card reihe-card ${m === 'MINI' ? 'mini-start-card' : ''}" onclick="setMarke('${escapeHtml(m)}')">
-                    ${escapeHtml(m)}
-                </div>
-            `).join("")}
-        </div>
-    `;
-}
-
-function renderReihenSelection() {
-    const reihen = getReihenByMarke(state.marke);
-
-    if (!reihen.length) {
-        return `<div class="empty-note">Keine Reihen gefunden.</div>`;
-    }
-
-    return `
-        <div class="selection-label">Bitte wählen Sie die Reihe</div>
-        <div class="grid">
-            ${reihen.map(r => `
-                <div class="card reihe-card" onclick="setReihe('${escapeHtml(r)}')">${escapeHtml(r)}</div>
-            `).join("")}
-        </div>
-    `;
-}
-
-function renderModelSelection() {
-    const modelle = getModelleByMarkeUndReihe(state.marke, state.reihe);
-
-    if (!modelle.length) {
-        return `<div class="empty-note">Keine Modelle gefunden.</div>`;
-    }
-
-    return `
-        <div class="selection-label">Bitte wählen Sie das Modell</div>
-        <div class="grid">
-            ${modelle.map(f => `
-                <div class="card model-card" onclick="setModell('${escapeHtml(clean(f.Modell))}')">
-                    ${getFahrzeugImage(f) ? `<img src="${escapeHtml(getFahrzeugImage(f))}" alt="${escapeHtml(getModellAnzeige(f))}">` : ``}
-                    <div class="model-name">${escapeHtml(getModellAnzeige(f))}</div>
-                </div>
-            `).join("")}
-        </div>
-    `;
-}
-
-function renderMotorSelection() {
-    const motors = getMotoren(state.marke, state.reihe, state.modell);
-
-    if (!motors.length) {
-        return `<div class="empty-note">Keine Motoren gefunden.</div>`;
-    }
-
-    return `
-        <div class="selection-label">Bitte wählen Sie den Motor</div>
-        <div class="grid">
-            ${motors.map(m => `
-                <div class="card motor-card" onclick="setMotor('${escapeHtml(m)}')">${escapeHtml(m)}</div>
-            `).join("")}
-        </div>
-    `;
-}
-
-function renderSummaryAndProducts() {
-    const fahrzeug = getSelectedFahrzeug();
-    const products = getProductsForSelection();
-    const modellAnzeige = getModellAnzeige(fahrzeug);
-
-    return `
-        <div class="summary-box">
-            <div class="summary-text">
-                <b>Ihre Auswahl</b><br>
-                Standort: ${escapeHtml(standortLabel(state.standort))}<br>
-                Marke: ${escapeHtml(state.marke)}<br>
-                Reihe: ${escapeHtml(state.reihe)}<br>
-                Modell: ${escapeHtml(modellAnzeige)}<br>
-                Motor: ${escapeHtml(state.motor)}<br>
-                <button class="change-link" type="button" onclick="resetFrom('modell')">Fahrzeug ändern</button>
-            </div>
-            <div class="summary-img">
-                ${fahrzeug && getFahrzeugImage(fahrzeug) ? `<img src="${escapeHtml(getFahrzeugImage(fahrzeug))}" alt="${escapeHtml(modellAnzeige)}">` : ``}
-            </div>
-        </div>
-
-        <div class="products-wrap">
-            <div class="products-header">
-                <h2 class="products-title">Passende Winterkompletträder</h2>
-                <div class="products-subline">
-                    <span>Angebotssuche über Modellauswahl</span>
-                    <span>Standort: ${escapeHtml(standortLabel(state.standort))}</span>
-                </div>
-            </div>
-
-            ${products.length ? products.map((p, index) => {
-                const lagerVorhanden = p.lager > 0;
-                const statusHtml = p.soldOut
-                    ? `<div class="status-grey">Ausverkauft</div><div class="delivery-note">Aktuell nicht verfügbar</div>`
-                    : lagerVorhanden
-                        ? `<div class="status-green">An Lager</div><div class="delivery-note">Sofort verfügbar</div>`
-                        : `<div class="status-red">Auf Bestellung</div><div class="delivery-note">Lieferzeit 5–10 Arbeitstage</div>`;
-
-                const priceHtml = p.soldOut
-                    ? `<div class="sold-out-price">${escapeHtml(p.preis)} CHF</div>`
-                    : p.angebotspreis > 0 && p.vp > 0
-                        ? `<div class="new-price">${escapeHtml(p.preis)} CHF</div>
-                           <div class="old-price">UPE: ${escapeHtml(p.vp.toFixed(2))} CHF</div>`
-                        : `<div class="new-price">${escapeHtml(p.preis)} CHF</div>`;
-
-                return `
-                    <div class="product ${p.soldOut ? "sold-out" : ""}">
-                        <div class="product-left">
-                            ${p.bild ? `<img class="clickable-image" src="${escapeHtml(p.bild)}" alt="${escapeHtml(p.bezeichnung)}" onclick="toggleImageZoom(this)">` : ``}
-                            <div class="product-info">
-                                <div class="product-title">${escapeHtml(p.bezeichnung)}</div>
-                                <div class="product-brand">${escapeHtml(p.marke)}</div>
-                                <div class="product-dimension">${escapeHtml(p.dimension)}</div>
-
-                                ${p.verkaufshinweis ? `<div class="product-detail">${escapeHtml(p.verkaufshinweis)}</div>` : ``}
-                                ${p.hinweistext ? `<div class="product-hinweis">${escapeHtml(p.hinweistext)}</div>` : ``}
-                                ${internalMode ? `<div class="internal-note">Standort intern: ${escapeHtml(standortLabel(p.standort || state.standort))}</div>` : ``}
-
-                                <div class="product-partnr">Teilenummer: ${escapeHtml(p.teilenummer)}</div>
-                            </div>
-                        </div>
-
-                        <div class="product-right">
-                            <div class="price-caption">Pro Satz inkl. Montage</div>
-                            ${priceHtml}
-                            <div class="price-note">Preise inkl. MwSt.</div>
-                            ${statusHtml}
-                            <button class="button ${p.soldOut ? "button-disabled" : ""}" type="button" onclick="openRequestModal(${index})">
-                                ${p.soldOut ? "Nicht verfügbar" : "Auswählen"}
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join("") : `<div class="empty-note">Für diese Auswahl wurden keine Produkte gefunden.</div>`}
-        </div>
-    `;
-}
-
-function renderApp() {
-    setHeroByMarke();
-
-    const app = document.getElementById("app");
-
-    if (!dataLoaded) {
-        app.innerHTML = `<div class="loading-note">Daten werden geladen...</div>`;
-        return;
-    }
-
-    if (!state.standort) {
-        app.innerHTML = renderStandortSelection();
-        return;
-    }
-
-    if (!state.marke) {
-        app.innerHTML = renderMarkenSelection();
-        return;
-    }
-
-    if (!state.reihe) {
-        app.innerHTML = renderReihenSelection();
-        return;
-    }
-
-    if (!state.modell) {
-        app.innerHTML = renderModelSelection();
-        return;
-    }
-
-    if (!state.motor) {
-        app.innerHTML = renderMotorSelection();
-        return;
-    }
-
-    app.innerHTML = renderSummaryAndProducts();
-}
-
-async function fetchJson(url) {
-    const response = await fetch(url);
-    if (!response.ok) {
-        throw new Error(`Fehler beim Laden: ${url}`);
-    }
-    return await response.json();
-}
-
-async function loadData() {
-    try {
-        if (
-            PRODUKTE_URL === "HIER_DEINE_PRODUKTE_URL" ||
-            ZUORDNUNG_URL === "HIER_DEINE_ZUORDNUNG_URL" ||
-            FAHRZEUGE_URL === "HIER_DEINE_FAHRZEUGE_URL"
-        ) {
-            throw new Error("Bitte zuerst die drei Daten-URLs im Code eintragen.");
-        }
-
-        const [produkteData, zuordnungData, fahrzeugeData] = await Promise.all([
-            fetchJson(PRODUKTE_URL),
-            fetchJson(ZUORDNUNG_URL),
-            fetchJson(FAHRZEUGE_URL)
-        ]);
-
-        produkte = Array.isArray(produkteData) ? produkteData : [];
-        zuordnung = Array.isArray(zuordnungData) ? zuordnungData : [];
-        fahrzeuge = Array.isArray(fahrzeugeData) ? fahrzeugeData : [];
-
-        dataLoaded = true;
-        renderApp();
-    } catch (error) {
-        document.getElementById("app").innerHTML = `
-            <div class="error-note">
-                ${escapeHtml(error.message || "Die Daten konnten nicht geladen werden.")}
-            </div>
-        `;
-    }
+function closeModal() {
+    document.getElementById("modal").style.display = "none";
 }
 
 function showOfferPreview() {
@@ -1447,16 +1290,21 @@ function showOfferPreview() {
     const art = clean(document.getElementById("kundeArt").value);
     const bemerkung = clean(document.getElementById("kundeBemerkung").value);
 
-    const internerMitarbeiter = clean(document.getElementById("internerMitarbeiter")?.value);
     const internerKundenname = clean(document.getElementById("internerKundenname")?.value);
-    const internesLieferdatum = clean(document.getElementById("internesLieferdatum")?.value);
-    const interneAdressnummer = clean(document.getElementById("interneAdressnummer")?.value);
-    const interneOrdernummer = clean(document.getElementById("interneOrdernummer")?.value);
-    const interneChassisnr = clean(document.getElementById("interneChassisnr")?.value);
+    const interneAuftragsnummer = clean(document.getElementById("interneAuftragsnummer")?.value);
+    const interneOrderOderFIN = clean(document.getElementById("interneOrderOderFIN")?.value);
+    const internesAblieferdatum = clean(document.getElementById("internesAblieferdatum")?.value);
 
     const today = new Date().toLocaleDateString("de-CH");
-    const fahrzeug = getSelectedFahrzeug();
-    const modellAnzeige = getModellAnzeige(fahrzeug);
+    const standortLabel = standortToLabel(state.standort);
+
+    const fahrzeug = fahrzeuge.find(f =>
+        clean(f["Marke"]) === state.marke &&
+        clean(f["Reihe"]) === state.reihe &&
+        clean(f["Modell"]) === state.modell
+    );
+
+    const modellAnzeige = clean(fahrzeug?.Code) || state.modell;
 
     const offerWindow = window.open("", "_blank");
     if (!offerWindow) {
@@ -1589,8 +1437,12 @@ body {
     background: #666;
 }
 @media print {
-    body { padding: 0; }
-    .print-actions { display: none; }
+    body {
+        padding: 0;
+    }
+    .print-actions {
+        display: none;
+    }
 }
 </style>
 </head>
@@ -1606,7 +1458,7 @@ body {
             <div class="meta">
                 Datum: ${escapeHtml(today)}<br>
                 Art: ${escapeHtml(art || "Anfrage")}<br>
-                Standort: ${escapeHtml(standortLabel(state.standort))}
+                Standort: ${escapeHtml(standortLabel || "")}
             </div>
         </div>
     </div>
@@ -1614,18 +1466,15 @@ body {
     <div class="offer-section">
         <h2>Fahrzeugangaben</h2>
         <table class="vehicle-table">
-            <tr><td>Standort</td><td>${escapeHtml(standortLabel(state.standort))}</td></tr>
             <tr><td>Marke</td><td>${escapeHtml(state.marke || "")}</td></tr>
             <tr><td>Reihe</td><td>${escapeHtml(state.reihe || "")}</td></tr>
             <tr><td>Modell</td><td>${escapeHtml(modellAnzeige || "")}</td></tr>
             <tr><td>Motor</td><td>${escapeHtml(state.motor || "")}</td></tr>
-            ${!internalMode ? `<tr><td>Kontrollschild</td><td>${escapeHtml(kontrollschild || "")}</td></tr>` : ``}
-            ${internalMode ? `<tr><td>Verkäufer</td><td>${escapeHtml(internerMitarbeiter || "")}</td></tr>` : `<tr><td>Name</td><td>${escapeHtml(name || "")}</td></tr>`}
-            ${internalMode ? `<tr><td>Kundenname</td><td>${escapeHtml(internerKundenname || "")}</td></tr>` : ``}
-            ${internalMode ? `<tr><td>Lieferdatum Fahrzeug</td><td>${escapeHtml(internesLieferdatum || "")}</td></tr>` : ``}
-            ${internalMode ? `<tr><td>Adressnummer Rechnungsempfänger</td><td>${escapeHtml(interneAdressnummer || "")}</td></tr>` : ``}
-            ${internalMode ? `<tr><td>Ordernummer</td><td>${escapeHtml(interneOrdernummer || "")}</td></tr>` : ``}
-            ${internalMode ? `<tr><td>Chassisnr.</td><td>${escapeHtml(interneChassisnr || "")}</td></tr>` : ``}
+            <tr><td>Kontrollschild</td><td>${escapeHtml(kontrollschild || "")}</td></tr>
+            ${internalMode ? `<tr><td>Kundenname</td><td>${escapeHtml(internerKundenname || "")}</td></tr>` : `<tr><td>Name</td><td>${escapeHtml(name || "")}</td></tr>`}
+            ${internalMode ? `<tr><td>Auftragsnummer</td><td>${escapeHtml(interneAuftragsnummer || "")}</td></tr>` : ``}
+            ${internalMode ? `<tr><td>Ordernummer / Fahrgestellnummer</td><td>${escapeHtml(interneOrderOderFIN || "")}</td></tr>` : ``}
+            ${internalMode ? `<tr><td>Ablieferungsdatum</td><td>${escapeHtml(internesAblieferdatum || "")}</td></tr>` : ``}
             ${!internalMode ? `<tr><td>E-Mail</td><td>${escapeHtml(email || "")}</td></tr>` : ``}
         </table>
     </div>
@@ -1634,7 +1483,7 @@ body {
         <h2>Angebotenes Produkt</h2>
         <div class="offer-grid">
             <div class="offer-image">
-                ${selectedProduct.bild ? `<img src="${escapeHtml(selectedProduct.bild)}" alt="${escapeHtml(selectedProduct.bezeichnung)}">` : ``}
+                <img src="${escapeHtml(selectedProduct.bild || "")}" alt="${escapeHtml(selectedProduct.bezeichnung || "")}">
             </div>
             <div class="offer-details">
                 <table>
@@ -1681,37 +1530,33 @@ async function sendMail() {
         return;
     }
 
-    const name = clean(document.getElementById("kundeName")?.value);
-    const email = clean(document.getElementById("kundeEmail")?.value);
-    const kontrollschild = clean(document.getElementById("kundeKontrollschild")?.value);
+    const name = clean(document.getElementById("kundeName").value);
+    const email = clean(document.getElementById("kundeEmail").value);
+    const kontrollschild = clean(document.getElementById("kundeKontrollschild").value);
     const art = clean(document.getElementById("kundeArt").value);
     const bemerkung = clean(document.getElementById("kundeBemerkung").value);
 
-    const internerMitarbeiter = clean(document.getElementById("internerMitarbeiter")?.value);
+    const interneAuftragsnummer = clean(document.getElementById("interneAuftragsnummer")?.value);
     const internerKundenname = clean(document.getElementById("internerKundenname")?.value);
-    const internesLieferdatum = clean(document.getElementById("internesLieferdatum")?.value);
-    const interneAdressnummer = clean(document.getElementById("interneAdressnummer")?.value);
-    const interneOrdernummer = clean(document.getElementById("interneOrdernummer")?.value);
-    const interneChassisnr = clean(document.getElementById("interneChassisnr")?.value);
+    const interneOrderOderFIN = clean(document.getElementById("interneOrderOderFIN")?.value);
+    const internesAblieferdatum = clean(document.getElementById("internesAblieferdatum")?.value);
 
-    const sendBtn = document.getElementById("mainSendBtn");
+    const sendBtn = document.getElementById("sendBtn");
 
-    if (!internalMode && (!name || !email || !kontrollschild)) {
+    if (!name || !email || !kontrollschild) {
         alert("Bitte alle Pflichtfelder ausfüllen.");
         return;
     }
 
-    if (internalMode && (!internerMitarbeiter || !internerKundenname || !internesLieferdatum || !interneAdressnummer || !interneOrdernummer)) {
-        alert("Bitte alle internen Pflichtfelder ausfüllen.");
+    if (internalMode && (!internerKundenname || !interneAuftragsnummer)) {
+        alert("Bitte Kundenname und Auftragsnummer ausfüllen.");
         return;
     }
 
-    if (!internalMode) {
-        const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,}$/i;
-        if (!emailPattern.test(email)) {
-            alert("Bitte eine gültige E-Mail Adresse eingeben.");
-            return;
-        }
+    const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,}$/i;
+    if (!emailPattern.test(email)) {
+        alert("Bitte eine gültige E-Mail Adresse eingeben.");
+        return;
     }
 
     const originalText = sendBtn.textContent;
@@ -1719,11 +1564,11 @@ async function sendMail() {
     sendBtn.disabled = true;
 
     const formData = new FormData();
-    formData.append("access_key", WEB3FORMS_ACCESS_KEY);
+    formData.append("access_key", "29788c4e-2b0a-47ba-a817-eb729a965e38");
     formData.append(
         "subject",
         internalMode
-            ? `Interne ${art} Winterkompletträder - ${interneOrdernummer || ""} - ${selectedProduct?.bezeichnung || ""}`
+            ? `Interne ${art} Winterkompletträder - ${interneAuftragsnummer || ""} - ${selectedProduct?.bezeichnung || ""}`
             : `${art} Winterkompletträder - ${selectedProduct?.bezeichnung || ""}`
     );
     formData.append("from_name", "WKR Konfigurator");
@@ -1733,7 +1578,7 @@ async function sendMail() {
     formData.append("E-Mail", email);
     formData.append("Kontrollschild", kontrollschild);
     formData.append("Art", art);
-    formData.append("Standort", standortLabel(state.standort) || "");
+    formData.append("Standort", state.standort || "");
     formData.append("Marke", state.marke || "");
     formData.append("Reihe", state.reihe || "");
     formData.append("Modell", state.modell || "");
@@ -1742,19 +1587,17 @@ async function sendMail() {
     formData.append("Reifen", `${selectedProduct?.marke || ""} ${selectedProduct?.dimension || ""}`.trim());
     formData.append("Preis", selectedProduct?.preis ? `${selectedProduct.preis} CHF` : "");
     formData.append("InternerModus", internalMode ? "Ja" : "Nein");
-    formData.append("Verkäufer", internerMitarbeiter || "");
+    formData.append("Auftragsnummer", interneAuftragsnummer || "");
     formData.append("Kundenname intern", internerKundenname || "");
-    formData.append("Lieferdatum Fahrzeug", internesLieferdatum || "");
-    formData.append("Adressnummer Rechnungsempfänger", interneAdressnummer || "");
-    formData.append("Ordernummer", interneOrdernummer || "");
-    formData.append("Chassisnr", interneChassisnr || "");
+    formData.append("Ordernummer / Fahrgestellnummer", interneOrderOderFIN || "");
+    formData.append("Ablieferungsdatum", internesAblieferdatum || "");
     formData.append("Bemerkung", bemerkung);
 
     const message =
 `${internalMode ? "Es wurde eine interne " : "Es wurde eine "} ${art.toLowerCase()} über den WKR Konfigurator erfasst.
 
 Fahrzeug:
-Standort: ${standortLabel(state.standort) || ""}
+Standort: ${state.standort || ""}
 Marke: ${state.marke || ""}
 Reihe: ${state.reihe || ""}
 Modell: ${state.modell || ""}
@@ -1765,20 +1608,18 @@ ${selectedProduct?.bezeichnung || ""}
 ${selectedProduct?.marke || ""} ${selectedProduct?.dimension || ""}
 Preis: ${selectedProduct?.preis || ""} CHF
 
-${internalMode ? `Interne Angaben:
-Verkäufer: ${internerMitarbeiter || ""}
-Kundenname: ${internerKundenname || ""}
-Lieferdatum Fahrzeug: ${internesLieferdatum || ""}
-Adressnummer Rechnungsempfänger: ${interneAdressnummer || ""}
-Ordernummer: ${interneOrdernummer || ""}
-Chassisnr: ${interneChassisnr || ""}
-
-` : `Kundendaten:
+Kundendaten:
 Name: ${name}
 E-Mail: ${email}
 Kontrollschild: ${kontrollschild}
 
-`}Bemerkung:
+${internalMode ? `Interne Angaben:
+Auftragsnummer: ${interneAuftragsnummer || ""}
+Kundenname: ${internerKundenname || ""}
+Ordernummer / Fahrgestellnummer: ${interneOrderOderFIN || ""}
+Ablieferungsdatum: ${internesAblieferdatum || ""}
+
+` : ""}Bemerkung:
 ${bemerkung}`;
 
     formData.append("message", message);
@@ -1800,20 +1641,17 @@ ${bemerkung}`;
             document.getElementById("kundeArt").value = "Anfrage";
             document.getElementById("kundeBemerkung").value = "";
 
+            if (document.getElementById("interneAuftragsnummer")) {
+                document.getElementById("interneAuftragsnummer").value = "";
+            }
             if (document.getElementById("internerKundenname")) {
                 document.getElementById("internerKundenname").value = "";
             }
-            if (document.getElementById("internesLieferdatum")) {
-                document.getElementById("internesLieferdatum").value = "";
+            if (document.getElementById("interneOrderOderFIN")) {
+                document.getElementById("interneOrderOderFIN").value = "";
             }
-            if (document.getElementById("interneAdressnummer")) {
-                document.getElementById("interneAdressnummer").value = "";
-            }
-            if (document.getElementById("interneOrdernummer")) {
-                document.getElementById("interneOrdernummer").value = "";
-            }
-            if (document.getElementById("interneChassisnr")) {
-                document.getElementById("interneChassisnr").value = "";
+            if (document.getElementById("internesAblieferdatum")) {
+                document.getElementById("internesAblieferdatum").value = "";
             }
 
             closeModal();
@@ -1828,32 +1666,22 @@ ${bemerkung}`;
     }
 }
 
+function toggleImageZoom(img) {
+    document.querySelectorAll(".clickable-image.zoomed").forEach(el => {
+        if (el !== img) {
+            el.classList.remove("zoomed");
+        }
+    });
+
+    img.classList.toggle("zoomed");
+}
+
 window.onclick = function(event) {
     const modal = document.getElementById("modal");
-    const loginModal = document.getElementById("loginModal");
-
     if (event.target === modal) {
         closeModal();
     }
-
-    if (event.target === loginModal) {
-        closeLoginModal();
-    }
 };
-
-document.getElementById("loginPassword").addEventListener("keydown", function(event) {
-    if (event.key === "Enter") {
-        submitInternalLogin();
-    }
-});
-
-document.getElementById("loginName").addEventListener("keydown", function(event) {
-    if (event.key === "Enter") {
-        submitInternalLogin();
-    }
-});
-
-loadData();
 </script>
 </body>
 </html>
