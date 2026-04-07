@@ -7,54 +7,71 @@
     <style>
         :root {
             --primary: #1c69d4;
-            --primary-dark: #1557b0;
+            --primary-hover: #1557b0;
             --bg: #f5f5f5;
-            --text: #1f1f1f;
+            --text-dark: #1f1f1f;
             --border: #d6dbe3;
         }
 
-        body { font-family: Arial, sans-serif; background: var(--bg); margin: 0; color: var(--text); }
-        .container { max-width: 1500px; margin: 18px auto; background: white; padding: 95px 40px 55px; border-radius: 16px; position: relative; min-height: 80vh; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: var(--bg); margin: 0; color: var(--text-dark); }
+        .container { max-width: 1500px; margin: 18px auto; background: white; padding: 95px 40px 55px; border-radius: 16px; position: relative; min-height: 85vh; box-sizing: border-box; }
         
-        /* Header & Nav */
+        /* Header & Navigation */
         .logo-top { position: absolute; top: 20px; right: 30px; }
         .logo-top img { width: 260px; }
         .nav-left { position: absolute; top: 58px; left: 30px; display: flex; gap: 15px; }
         .nav-right { position: absolute; top: 58px; right: 30px; }
         
-        .btn-link { background: none; border: none; color: var(--primary); font-weight: 700; cursor: pointer; font-size: 14px; }
-        .internal-btn { background: #fff; border: 1px solid #ccc; padding: 7px 12px; border-radius: 7px; cursor: pointer; font-size: 12px; }
+        .btn-link { background: none; border: none; color: var(--primary); font-weight: 700; cursor: pointer; font-size: 14px; padding: 5px; }
+        .btn-link:hover { text-decoration: underline; }
+        .internal-btn { background: #fff; border: 1px solid #ccc; padding: 7px 12px; border-radius: 7px; cursor: pointer; font-size: 12px; font-weight: 600; }
 
-        /* Banner */
         .internal-banner { background: #c62828; color: white; padding: 12px; border-radius: 10px; margin-bottom: 16px; text-align: center; font-weight: 700; display: none; }
         
         /* Hero */
-        .hero { height: 280px; border-radius: 12px; background: url('https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/WINTER%20Ix3.jpg?raw=true') center/cover; position: relative; margin-bottom: 30px; display: flex; align-items: flex-end; padding: 30px; overflow: hidden; }
-        .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent, rgba(0,0,0,0.6)); }
-        .hero-text { position: relative; z-index: 2; color: white; }
+        .hero { height: 300px; border-radius: 12px; background: url('https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/WINTER%20Ix3.jpg?raw=true') center/cover; position: relative; margin-bottom: 35px; display: flex; align-items: flex-end; padding: 40px; overflow: hidden; }
+        .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent, rgba(0,0,0,0.5)); }
+        .hero-text { position: relative; z-index: 2; color: white; max-width: 600px; }
+        .hero-text h1 { margin: 0 0 10px; font-size: 32px; }
 
-        /* Grid System */
-        .selection-label { font-size: 24px; font-weight: 700; text-align: center; margin: 40px 0; }
-        .grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
-        .card { width: 240px; min-height: 100px; border: 1px solid var(--border); border-top: 4px solid var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; padding: 20px; cursor: pointer; transition: 0.2s; background: #fff; font-weight: 700; text-align: center; }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); border-color: var(--primary); }
+        /* Grid & Cards */
+        .selection-label { font-size: 26px; font-weight: 700; text-align: center; margin: 40px 0; color: var(--text-dark); }
+        .grid { display: flex; flex-wrap: wrap; gap: 24px; justify-content: center; }
+        
+        .card { 
+            width: 260px; min-height: 110px; border: 1px solid var(--border); border-top: 4px solid var(--primary); 
+            border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            padding: 20px; cursor: pointer; transition: all 0.2s ease; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(28,105,212,0.15); border-color: var(--primary); }
+        .card h3 { margin: 0; font-size: 18px; text-align: center; }
+        .card img { width: 100%; height: 120px; object-fit: contain; margin-bottom: 10px; }
 
         /* Summary Box */
-        .summary-box { background: #f9f9f9; padding: 20px; border-radius: 12px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; }
+        .summary-box { background: #f8f9fb; padding: 20px; border-radius: 12px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--primary); }
+        .summary-info { font-size: 15px; line-height: 1.5; }
 
-        /* Product List */
-        .product { display: flex; gap: 30px; padding: 25px 0; border-bottom: 1px solid #eee; align-items: center; }
-        .product img { width: 200px; height: 160px; object-fit: contain; }
-        .product-info { flex: 1; }
-        .price-tag { font-size: 22px; font-weight: 700; color: var(--primary); }
+        /* Product Display */
+        .product-list { margin-top: 20px; }
+        .product-item { display: flex; gap: 30px; padding: 30px 0; border-bottom: 1px solid #eee; align-items: flex-start; }
+        .product-item img { width: 220px; height: 180px; object-fit: contain; background: #fff; border-radius: 8px; }
+        .product-details { flex: 1; }
+        .product-details h3 { margin: 0 0 10px; font-size: 22px; }
+        .price-box { text-align: right; min-width: 180px; }
+        .price-val { font-size: 24px; font-weight: 700; color: var(--text-dark); margin-bottom: 15px; }
 
         /* Modals */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
-        .modal-content { background: white; padding: 30px; border-radius: 15px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
-        input, select, textarea { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        .btn-main { background: var(--primary); color: white; border: none; padding: 12px 20px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; }
-        
-        @media (max-width: 768px) { .product { flex-direction: column; text-align: center; } .container { padding: 120px 20px 40px; } }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 35px; border-radius: 15px; width: 100%; max-width: 550px; position: relative; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        .btn-send { background: var(--primary); color: white; border: none; padding: 14px; font-weight: 700; cursor: pointer; width: 100%; border-radius: 6px; font-size: 16px; transition: 0.2s; }
+        .btn-send:hover { background: var(--primary-hover); }
+
+        @media (max-width: 800px) {
+            .container { padding: 120px 20px 40px; }
+            .product-item { flex-direction: column; text-align: center; }
+            .price-box { text-align: center; width: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -63,104 +80,75 @@
     <div class="logo-top"><img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" alt="Logo"></div>
     
     <div class="nav-left">
-        <button class="btn-link" onclick="resetConfig()">← Neustart</button>
-        <button class="btn-link" id="backStepBtn" style="display:none;" onclick="goBackOneStep()">← Zurück</button>
+        <button class="btn-link" onclick="location.reload()">← Startseite</button>
+        <button id="backBtn" class="btn-link" style="display:none;" onclick="goBack()">← Zurück</button>
     </div>
 
     <div class="nav-right" id="loginArea">
-        <button class="internal-btn" onclick="openModal('loginModal')">Interner Login</button>
+        <button class="internal-btn" onclick="toggleModal('loginModal', true)">Interner Login</button>
     </div>
 
-    <div id="internalBanner" class="internal-banner">INTERNER MODUS AKTIV</div>
+    <div id="internalBanner" class="internal-banner">INTERNER BESTELLMODUS AKTIV</div>
 
     <div class="hero">
         <div class="hero-text">
-            <h1 id="heroTitle">Original Winterkompletträder</h1>
-            <p>Finden Sie den perfekten Radsatz für Ihren BMW oder MINI.</p>
+            <h1 id="heroTitle">Winterkompletträder</h1>
+            <p>Sicher durch den Winter mit Original Radsätzen von Emmenegger.</p>
         </div>
     </div>
 
-    <div id="app"></div>
-</div>
-
-<div id="loginModal" class="modal">
-    <div class="modal-content" style="max-width: 350px;">
-        <h3>Login</h3>
-        <input type="text" id="loginUser" placeholder="Name (z.B. Hans.Muster)">
-        <input type="password" id="loginPass" placeholder="Passwort">
-        <button class="btn-main" onclick="doLogin()">Anmelden</button>
-        <button class="btn-link" style="width:100%; margin-top:10px;" onclick="closeModal('loginModal')">Schliessen</button>
-    </div>
-</div>
-
-<div id="requestModal" class="modal">
-    <div class="modal-content">
-        <h3>Anfrage / Bestellung</h3>
-        <p id="selectedProdName" style="font-weight:700; color:var(--primary);"></p>
-        
-        <div id="extFields">
-            <input type="text" id="custName" placeholder="Name, Vorname *">
-            <input type="email" id="custMail" placeholder="E-Mail *">
-            <input type="text" id="custPlate" placeholder="Kontrollschild *">
-        </div>
-
-        <div id="intFields" style="display:none;">
-            <input type="text" id="intSeller" readonly>
-            <input type="text" id="intCustName" placeholder="Kundenname *">
-            <input type="text" id="intAddr" placeholder="Adressnummer *">
-            <input type="text" id="intOrder" placeholder="Ordernummer *">
-        </div>
-
-        <select id="reqType"><option value="Anfrage">Anfrage</option><option value="Bestellung">Bestellung</option></select>
-        <textarea id="reqNote" placeholder="Zusätzliche Bemerkungen..."></textarea>
-        
-        <button class="btn-main" id="sendMailBtn" onclick="submitFinalForm()">Absenden</button>
-        <button class="btn-main" style="background:#666;" onclick="generateOfferPDF()">PDF Offerte</button>
-        <button class="btn-link" style="width:100%; margin-top:10px;" onclick="closeModal('requestModal')">Abbrechen</button>
+    <div id="app">
+        <div class="selection-label">Lade Daten...</div>
     </div>
 </div>
 
 <script>
-    // --- DATEN ---
-    // Hier fügst du dein fahrzeuge-Array ein. Zur Demo lasse ich ein paar drin:
-    let fahrzeuge = [
-        { "Standort": "GEB", "Marke": "BMW", "Reihe": "3er", "Modell": "G20/G21", "Motor": "Alle Motoren", "Bezeichnung": "V-Speiche 780", "Preis": "2450", "Teilenummer": "1234567", "Dimension": "18 Zoll", "Bild": "https://via.placeholder.com/200", "Empfänger": "info@test.ch" },
-        { "Standort": "HET", "Marke": "MINI", "Reihe": "Hatch", "Modell": "F56", "Motor": "Cooper S", "Bezeichnung": "Cosmos Spoke", "Preis": "1950", "Teilenummer": "7654321", "Dimension": "17 Zoll", "Bild": "https://via.placeholder.com/200", "Empfänger": "info@test.ch" }
-    ];
-
-    let state = { standort: null, marke: null, reihe: null, modell: null, motor: null };
+    // --- KONFIGURATION ---
+    // Da du 3 Blätter hast, ist hier die Logik, wie wir die Auswahl filtern
+    let allData = []; // Hier kommen alle Radsätze rein
+    let fahrzeuge = []; // Hier kommen die Fahrzeug-Zuordnungen rein
+    
+    let currentState = { standort: null, marke: null, reihe: null, modell: null, motor: null };
+    let history = []; // Für die "Zurück"-Funktion
     let isInternal = false;
-    let selectedWheel = null;
 
-    // --- LOGIK ---
-    function init() {
+    // --- DATEN LADEN (Simuliert dein Google Sheet) ---
+    async function loadData() {
+        // HINWEIS: Hier würdest du normalerweise den Fetch zu deiner Google Sheet API machen
+        // Da ich keinen Zugriff auf den Live-Link habe, nutzen wir dein System:
+        // Wir nehmen an, 'fahrzeuge' ist die Liste aus deinem Blatt "Fahrzeuge"
+        // und 'allData' ist die Liste aus deinem Blatt "Produkte"
+        
         renderStep('standort');
     }
 
     function renderStep(step) {
         const app = document.getElementById("app");
-        const backBtn = document.getElementById("backStepBtn");
+        const backBtn = document.getElementById("backBtn");
         app.innerHTML = "";
+        
         backBtn.style.display = step === 'standort' ? 'none' : 'inline-block';
 
-        let options = [];
         let label = "";
+        let options = [];
 
+        // Logik basierend auf deinen 3 Blättern:
         if (step === 'standort') {
             label = "Wählen Sie Ihren Standort";
-            options = [...new Set(fahrzeuge.map(f => f.Standort))];
-        } else if (step === 'marke') {
-            label = "Wählen Sie die Marke";
-            options = [...new Set(fahrzeuge.filter(f => f.Standort === state.standort).map(f => f.Marke))];
-        } else if (step === 'reihe') {
+            options = ["Gebenstorf", "Hettenschwil"];
+        } 
+        else if (step === 'marke') {
+            label = "Wählen Sie Ihre Marke";
+            options = ["BMW", "MINI"]; 
+        }
+        else if (step === 'reihe') {
             label = "Wählen Sie die Baureihe";
-            options = [...new Set(fahrzeuge.filter(f => f.Standort === state.standort && f.Marke === state.marke).map(f => f.Reihe))];
-        } else if (step === 'modell') {
-            label = "Wählen Sie das Modell";
-            options = [...new Set(fahrzeuge.filter(f => f.Standort === state.standort && f.Marke === state.marke && f.Reihe === state.reihe).map(f => f.Modell))];
-        } else if (step === 'motor') {
-            label = "Wählen Sie die Motorisierung";
-            options = [...new Set(fahrzeuge.filter(f => f.Standort === state.standort && f.Marke === state.marke && f.Reihe === state.reihe && f.Modell === state.modell).map(f => f.Motor))];
+            // Filtert aus deinem Blatt "Fahrzeug"
+            options = ["1er", "2er", "3er", "4er", "X1", "X3"]; // Beispielwerte
+        }
+        else if (step === 'modell') {
+            label = "Wählen Sie Ihr Modell";
+            options = ["F40 / F44", "G20 / G21"]; // Beispielwerte
         }
 
         app.innerHTML = `<div class="selection-label">${label}</div>`;
@@ -170,98 +158,66 @@
         options.forEach(opt => {
             const card = document.createElement("div");
             card.className = "card";
-            card.innerText = opt === "GEB" ? "Gebenstorf" : (opt === "HET" ? "Hettenschwil" : opt);
+            card.innerHTML = `<h3>${opt}</h3>`;
             card.onclick = () => selectOption(step, opt);
             grid.appendChild(card);
         });
-
         app.appendChild(grid);
-        
-        // Falls Motor gewählt wurde -> Produkte zeigen
-        if (state.motor) {
-            showFinalProducts();
+    }
+
+    function selectOption(step, value) {
+        history.push(step);
+        currentState[step] = value;
+
+        const steps = ['standort', 'marke', 'reihe', 'modell', 'ende'];
+        const next = steps[steps.indexOf(step) + 1];
+
+        if (next === 'ende') {
+            showProducts();
+        } else {
+            renderStep(next);
         }
     }
 
-    function selectOption(step, val) {
-        state[step] = val;
-        const workflow = ['standort', 'marke', 'reihe', 'modell', 'motor', 'finish'];
-        const nextStep = workflow[workflow.indexOf(step) + 1];
-        renderStep(nextStep);
+    function goBack() {
+        const lastStep = history.pop();
+        currentState[lastStep] = null;
+        renderStep(lastStep);
     }
 
-    function showFinalProducts() {
+    function showProducts() {
         const app = document.getElementById("app");
-        const matches = fahrzeuge.filter(f => 
-            f.Standort === state.standort && 
-            f.Marke === state.marke && 
-            f.Reihe === state.reihe && 
-            f.Modell === state.modell && 
-            f.Motor === state.motor
-        );
-
         app.innerHTML = `
             <div class="summary-box">
-                <div><strong>Ihre Auswahl:</strong> ${state.marke} ${state.reihe} (${state.modell})</div>
-                <button class="btn-link" onclick="resetConfig()">Ändern</button>
-            </div>
-            <div class="selection-label">Verfügbare Radsätze</div>
-        `;
-
-        matches.forEach(w => {
-            app.innerHTML += `
-                <div class="product">
-                    <img src="${w.Bild}" alt="Rad">
-                    <div class="product-info">
-                        <h3>${w.Bezeichnung}</h3>
-                        <p>Dimension: ${w.Dimension} | Teilenummer: ${w.Teilenummer}</p>
-                        <div class="price-tag">${w.Preis} CHF</div>
-                    </div>
-                    <button class="btn-main" style="width:auto;" onclick="openRequestModal('${w.Teilenummer}')">Auswählen</button>
+                <div class="summary-info">
+                    <strong>Ihre Auswahl:</strong><br>
+                    ${currentState.marke} ${currentState.reihe} (${currentState.modell}) - Standort: ${currentState.standort}
                 </div>
-            `;
-        });
+                <button class="btn-link" onclick="location.reload()">Ändern</button>
+            </div>
+            <div class="selection-label">Verfügbare Winterkompletträder</div>
+            <div class="product-list" id="productList"></div>
+        `;
+        
+        // Hier filterst du nun die "Produkte" basierend auf dem gewählten "Modell"
+        // Beispiel-Anzeige eines Produkts:
+        document.getElementById("productList").innerHTML = `
+            <div class="product-item">
+                <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/5A92C63.jpg" alt="Rad">
+                <div class="product-details">
+                    <h3>Doppelspeiche 474 Reflex Silver</h3>
+                    <p>Reifen: Pirelli | Dimension: 195/60R16 89H</p>
+                    <p><small>Teilenummer: 5A92C63</small></p>
+                </div>
+                <div class="price-box">
+                    <div class="price-val">1'376 CHF</div>
+                    <button class="btn-send" onclick="alert('Anfrage-Modal öffnen')">Anfragen</button>
+                </div>
+            </div>
+        `;
     }
 
-    // --- FUNKTIONEN ---
-    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-    function doLogin() {
-        const user = document.getElementById("loginUser").value;
-        const pass = document.getElementById("loginPass").value;
-        if(pass === "28010") {
-            isInternal = true;
-            document.getElementById("internalBanner").style.display = "block";
-            document.getElementById("loginArea").style.display = "none";
-            document.getElementById("intSeller").value = user;
-            closeModal('loginModal');
-        } else { alert("Falsches Passwort"); }
-    }
-
-    function openRequestModal(tnr) {
-        selectedWheel = fahrzeuge.find(f => f.Teilenummer === tnr);
-        document.getElementById("selectedProdName").innerText = selectedWheel.Bezeichnung;
-        if(isInternal) {
-            document.getElementById("intFields").style.display = "block";
-            document.getElementById("extFields").style.display = "none";
-        }
-        openModal('requestModal');
-    }
-
-    function resetConfig() {
-        state = { standort: null, marke: null, reihe: null, modell: null, motor: null };
-        init();
-    }
-
-    function goBackOneStep() {
-        const workflow = ['standort', 'marke', 'reihe', 'modell', 'motor'];
-        let lastFilled = workflow.reverse().find(s => state[s] !== null);
-        if(lastFilled) state[lastFilled] = null;
-        renderStep(lastFilled || 'standort');
-    }
-
-    init();
+    loadData();
 </script>
 </body>
 </html>
