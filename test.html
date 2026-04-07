@@ -1074,9 +1074,10 @@ function render() {
             const hinweistext = clean(r["Hinweistext"]);
             const verkaufshinweis = clean(r["Verkaufshinweis"]);
             const teilenummer = clean(r["TN"]);
-            const vp = clean(r["VP"]);
-            const angebot = clean(r["Angebotspreis"]);
-            const empfaengerMail = clean(r["EmpfängerMail"] || r["EmpfaengerMail"]);
+           const vp = clean(r["VP"]);
+const angebot = clean(r["Angebotspreis"]);
+const nettopreis = clean(r["Nettopreis"]);
+const empfaengerMail = clean(r["EmpfängerMail"] || r["EmpfaengerMail"]);
 
             const vpNum = parsePriceValue(vp);
             const angebotNum = parsePriceValue(angebot);
@@ -1116,8 +1117,7 @@ function render() {
 
             const buttonHtml = isSoldOut
                 ? `<button class="button button-disabled" type="button">Nicht verfügbar</button>`
-                : `<button class="button" type="button" onclick="openModal('${jsSafe(bezeichnung)}','${jsSafe(markeReifen)}','${jsSafe(dimension)}','${jsSafe(angebot || vp)}','${jsSafe(empfaengerMail)}','${jsSafe(bild)}','${jsSafe(teilenummer)}','${jsSafe(hinweistext)}','${jsSafe(verkaufshinweis)}')">Auswählen</button>`;
-
+               : `<button class="button" type="button" onclick="openModal('${jsSafe(bezeichnung)}','${jsSafe(markeReifen)}','${jsSafe(dimension)}','${jsSafe(angebot || vp)}','${jsSafe(empfaengerMail)}','${jsSafe(bild)}','${jsSafe(teilenummer)}','${jsSafe(hinweistext)}','${jsSafe(verkaufshinweis)}','${jsSafe(nettopreis)}')">Auswählen</button>`;
             html += `
                 <div class="product ${isSoldOut ? "sold-out" : ""}">
                     <div class="product-left">
@@ -1133,12 +1133,13 @@ function render() {
                     </div>
 
                     <div class="product-right">
-                        <div class="price-caption">Pro Satz inkl. Montage</div>
-                        ${priceHtml}
-                        <div class="price-note">Preise inkl. MwSt.</div>
-                        ${statusHtml}
-                        ${buttonHtml}
-                    </div>
+    <div class="price-caption">Pro Satz inkl. Montage</div>
+    ${priceHtml}
+    <div class="price-note">Preise inkl. MwSt.</div>
+    ${internalMode && nettopreis ? `<div class="price-note"><b>Netto Preis:</b> ${escapeHtml(nettopreis)} CHF</div>` : ``}
+    ${statusHtml}
+    ${buttonHtml}
+</div>
                 </div>
             `;
         });
@@ -1248,23 +1249,24 @@ function resetSelection() {
     render();
 }
 
-function openModal(bezeichnung, marke, dimension, preis, empfaengerMail, bild, teilenummer, hinweistext, verkaufshinweis) {
+function openModal(bezeichnung, marke, dimension, preis, empfaengerMail, bild, teilenummer, hinweistext, verkaufshinweis, nettopreis) {
     selectedProduct = {
-        bezeichnung: bezeichnung,
-        marke: marke,
-        dimension: dimension,
-        preis: preis,
-        empfaengerMail: empfaengerMail,
-        bild: bild,
-        teilenummer: teilenummer,
-        hinweistext: hinweistext,
-        verkaufshinweis: verkaufshinweis
-    };
-
+    bezeichnung: bezeichnung,
+    marke: marke,
+    dimension: dimension,
+    preis: preis,
+    nettopreis: nettopreis,
+    empfaengerMail: empfaengerMail,
+    bild: bild,
+    teilenummer: teilenummer,
+    hinweistext: hinweistext,
+    verkaufshinweis: verkaufshinweis
+};
     document.getElementById("modalProduct").innerHTML =
-        `<b>Produkt:</b> ${escapeHtml(bezeichnung)}<br>` +
-        `${escapeHtml(marke)} ${escapeHtml(dimension)}<br>` +
-        (preis ? `<b>Preis:</b> ${escapeHtml(preis)} CHF` : "");
+    `<b>Produkt:</b> ${escapeHtml(bezeichnung)}<br>` +
+    `${escapeHtml(marke)} ${escapeHtml(dimension)}<br>` +
+    (preis ? `<b>Preis:</b> ${escapeHtml(preis)} CHF<br>` : "") +
+    (internalMode && nettopreis ? `<b>Netto Preis:</b> ${escapeHtml(nettopreis)} CHF` : "");
 
     const internalFields = document.getElementById("internalFields");
     if (internalFields) {
@@ -1487,10 +1489,11 @@ body {
             </div>
             <div class="offer-details">
                 <table>
-                    <tr><td>Bezeichnung</td><td>${escapeHtml(selectedProduct.bezeichnung || "")}</td></tr>
-                    <tr><td>Reifen</td><td>${escapeHtml(selectedProduct.marke || "")}</td></tr>
-                    <tr><td>Dimension</td><td>${escapeHtml(selectedProduct.dimension || "")}</td></tr>
-                    <tr><td>Teilenummer</td><td>${escapeHtml(selectedProduct.teilenummer || "")}</td></tr>
+                   <tr><td>Bezeichnung</td><td>${escapeHtml(selectedProduct.bezeichnung || "")}</td></tr>
+<tr><td>Reifen</td><td>${escapeHtml(selectedProduct.marke || "")}</td></tr>
+<tr><td>Dimension</td><td>${escapeHtml(selectedProduct.dimension || "")}</td></tr>
+<tr><td>Teilenummer</td><td>${escapeHtml(selectedProduct.teilenummer || "")}</td></tr>
+${internalMode && selectedProduct.nettopreis ? `<tr><td>Netto Preis</td><td>${escapeHtml(selectedProduct.nettopreis)} CHF</td></tr>` : ``}
                 </table>
 
                 <div class="price-box">
