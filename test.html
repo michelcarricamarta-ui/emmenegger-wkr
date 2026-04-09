@@ -711,30 +711,76 @@ body.mini-mode .internal-login-btn:hover {
     margin: 0 0 12px 0;
 }
 
-.tire-meta {
-    font-size: 14px;
-    color: #444;
+.tire-brand-main {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.1;
     margin-bottom: 6px;
+    text-transform: uppercase;
+}
+
+.tire-brand-sub {
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 14px;
+    color: #2d2d2d;
+}
+
+.tire-meta {
+    font-size: 15px;
+    color: #444;
+    margin-bottom: 7px;
 }
 
 .tire-dot {
     font-size: 14px;
     color: #c62828;
     font-weight: 700;
-    margin-bottom: 8px;
+    margin-top: 14px;
+    margin-bottom: 10px;
 }
 
 .tire-price-main {
-    font-size: 24px;
+    font-size: 30px;
     font-weight: 700;
     line-height: 1.1;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 
 .tire-price-secondary {
     font-size: 14px;
     color: #666;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
+}
+
+.tire-qty-wrap {
+    margin-bottom: 16px;
+}
+
+.tire-qty-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #333;
+}
+
+.tire-qty-select {
+    width: 100%;
+    max-width: 180px;
+    padding: 10px 12px;
+    border: 1px solid #cfcfcf;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 14px;
+    background: white;
+}
+
+.tire-price-note {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 18px;
 }
 
 .tire-empty-note {
@@ -1004,7 +1050,16 @@ function formatTireSize(row) {
     if (!breite || !quer || !zoll) return "";
     return `${breite}/${quer} R${zoll}`;
 }
+function getTireQuantityOptions(maxQty) {
+    const qty = parseInt(clean(maxQty), 10) || 0;
+    const options = [];
 
+    if (qty >= 1) options.push(1);
+    if (qty >= 2) options.push(2);
+    if (qty >= 4) options.push(4);
+
+    return options;
+}
 function parseDirectTireInput(input) {
     const raw = clean(input).toUpperCase();
     if (!raw) {
@@ -1368,49 +1423,85 @@ const empfaengerMail = clean(r["EmpfängerMail"] || r["EmpfaengerMail"]);
                 html += `<div class="tire-empty-note">Für diese Reifengrösse wurden keine aktiven Reifen gefunden.</div>`;
             }
 
-            tireResults.forEach(r => {
-                const bild = clean(r["Bild"]) || "https://via.placeholder.com/220x140?text=Reifen";
-                const hersteller = clean(r["Hersteller"]);
-                const reifentyp = clean(r["Reifentyp"]);
-                const profil = clean(r["Profil"]);
-                const lastindex = clean(r["Lastindex"]);
-                const geschwindigkeitsindex = clean(r["Geschwindigkeitsindex"]);
-                const runflat = normalizeYesNo(r["Runflat"]);
-                const dot = clean(r["DOT"]);
-                const anzahl = clean(r["Anzahl"]);
-                const standort = standortToLabel(clean(r["Standort"]));
-                const angebotspreis = clean(r["Angebotspreis"]);
-                const verkaufspreis = clean(r["Verkaufspreis"]);
-                const teilenummer = clean(r["Teilenummer"]);
-                const groesse = formatTireSize(r);
+           tireResults.forEach(r => {
+    const bild = clean(r["Bild"]) || "https://via.placeholder.com/220x140?text=Reifen";
+    const hersteller = clean(r["Hersteller"]);
+    const reifentyp = clean(r["Reifentyp"]);
+    const profil = clean(r["Profil"]);
+    const lastindex = clean(r["Lastindex"]);
+    const geschwindigkeitsindex = clean(r["Geschwindigkeitsindex"]);
+    const runflat = normalizeYesNo(r["Runflat"]);
+    const dot = clean(r["DOT"]);
+    const anzahl = clean(r["Anzahl"]);
+    const standort = standortToLabel(clean(r["Standort"]));
+    const angebotspreis = clean(r["Angebotspreis"]);
+    const verkaufspreis = clean(r["Verkaufspreis"]);
+    const teilenummer = clean(r["Teilenummer"]);
+    const groesse = formatTireSize(r);
 
-                const hauptpreis = angebotspreis || verkaufspreis;
+    const hauptpreis = angebotspreis || verkaufspreis;
+    const hauptpreisNum = parsePriceValue(hauptpreis) || 0;
+    const qtyOptions = getTireQuantityOptions(anzahl);
 
-                html += `
-                    <div class="product">
-                        <div class="product-left">
-                            <img src="${escapeHtml(bild)}" alt="${escapeHtml(hersteller)}" class="clickable-image" onclick="toggleImageZoom(this)">
-                            <div class="product-info">
-                                <div class="product-title">${escapeHtml(hersteller)} ${escapeHtml(reifentyp)}</div>
-                                <div class="product-brand">${escapeHtml(groesse)}</div>
-                                ${profil ? `<div class="tire-meta"><b>Profil:</b> ${escapeHtml(profil)}</div>` : ``}
-                                ${runflat ? `<div class="tire-meta"><b>Runflat:</b> ${escapeHtml(runflat)}</div>` : ``}
-                                ${dot ? `<div class="tire-dot"><b>DOT:</b> ${escapeHtml(dot)}</div>` : ``}
-                                ${(lastindex || geschwindigkeitsindex) ? `<div class="tire-meta"><b>LI / SI:</b> ${escapeHtml(lastindex)} ${escapeHtml(geschwindigkeitsindex)}</div>` : ``}
-                                ${anzahl ? `<div class="tire-meta"><b>Anzahl:</b> ${escapeHtml(anzahl)}</div>` : ``}
-                                ${standort ? `<div class="tire-meta"><b>Standort:</b> ${escapeHtml(standort)}</div>` : ``}
-                                ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
-                            </div>
+    const qtyOptionsHtml = qtyOptions.map(q => `<option value="${q}">${q}</option>`).join("");
+
+    html += `
+        <div class="product">
+            <div class="product-left">
+                <img src="${escapeHtml(bild)}" alt="${escapeHtml(hersteller)}" class="clickable-image" onclick="toggleImageZoom(this)">
+                <div class="product-info">
+                    ${hersteller ? `<div class="tire-brand-main">${escapeHtml(hersteller)}</div>` : ``}
+                    ${profil ? `<div class="tire-brand-sub">${escapeHtml(profil)}</div>` : ``}
+                    ${groesse ? `<div class="tire-meta"><b>Grösse:</b> ${escapeHtml(groesse)}</div>` : ``}
+                    ${reifentyp ? `<div class="tire-meta"><b>Reifentyp:</b> ${escapeHtml(reifentyp)}</div>` : ``}
+                    ${runflat ? `<div class="tire-meta"><b>Runflat:</b> ${escapeHtml(runflat)}</div>` : ``}
+                    ${(lastindex || geschwindigkeitsindex) ? `<div class="tire-meta"><b>LI / SI:</b> ${escapeHtml(lastindex)} ${escapeHtml(geschwindigkeitsindex)}</div>` : ``}
+                    ${anzahl ? `<div class="tire-meta"><b>An Lager:</b> ${escapeHtml(anzahl)}</div>` : ``}
+                    ${standort ? `<div class="tire-meta"><b>Standort:</b> ${escapeHtml(standort)}</div>` : ``}
+                    ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
+                    ${dot ? `<div class="tire-dot"><b>DOT:</b> ${escapeHtml(dot)}</div>` : ``}
+                </div>
+            </div>
+
+            <div class="product-right">
+                <div class="price-caption">Angebotspreis</div>
+                ${hauptpreis ? `<div class="tire-price-main">${escapeHtml(hauptpreis)} CHF</div>` : `<div class="tire-price-main">Preis offen</div>`}
+
+                ${
+                    qtyOptions.length > 0
+                        ? `
+                        <div class="tire-qty-wrap">
+                            <label class="tire-qty-label">Menge wählen</label>
+                            <select class="tire-qty-select" onchange="updateTirePrice(this, '${jsSafe(hauptpreisNum)}')">
+                                ${qtyOptionsHtml}
+                            </select>
                         </div>
+                        `
+                        : ``
+                }
 
-                        <div class="product-right">
-                            <div class="price-caption">Interner Angebotspreis</div>
-                            ${hauptpreis ? `<div class="tire-price-main">${escapeHtml(hauptpreis)} CHF</div>` : `<div class="tire-price-main">Preis offen</div>`}
-                            ${verkaufspreis ? `<div class="tire-price-secondary">Verkaufspreis: ${escapeHtml(verkaufspreis)} CHF</div>` : ``}
-                        </div>
-                    </div>
-                `;
-            });
+                <div class="tire-price-note">inkl. MwSt.</div>
+
+                <button
+                    class="button"
+                    type="button"
+                    onclick="openModal(
+                        '${jsSafe((hersteller || '') + ((hersteller && profil) ? ' ' : '') + (profil || ''))}',
+                        '${jsSafe(reifentyp)}',
+                        '${jsSafe(groesse)}',
+                        this.closest('.product-right').querySelector('.tire-price-main').textContent.replace(' CHF',''),
+                        'tv-g-fp@emmeneggerag.ch',
+                        '${jsSafe(bild)}',
+                        '${jsSafe(teilenummer)}',
+                        '${jsSafe("DOT: " + dot + (anzahl ? " | Anzahl: " + anzahl : "") + (runflat ? " | Runflat: " + runflat : ""))}',
+                        '${jsSafe("Standort: " + standort)}',
+                        ''
+                    )"
+                >Auswählen</button>
+            </div>
+        </div>
+    `;
+});
 
             html += `</div>`;
         }
@@ -1533,6 +1624,19 @@ function resetTireSearch() {
     tireSearch.querschnitt = "";
     tireSearch.zoll = "";
     render();
+}
+    function updateTirePrice(selectEl, basePrice) {
+    const wrap = selectEl.closest(".product-right");
+    if (!wrap) return;
+
+    const qty = parseInt(selectEl.value, 10) || 1;
+    const priceValue = parseFloat(basePrice) || 0;
+    const total = priceValue * qty;
+
+    const target = wrap.querySelector(".tire-price-main");
+    if (target) {
+        target.textContent = `${total.toFixed(2).replace(".00", "")} CHF`;
+    }
 }
 function openModal(bezeichnung, marke, dimension, preis, empfaengerMail, bild, teilenummer, hinweistext, verkaufshinweis, nettopreis) {
     selectedProduct = {
