@@ -36,9 +36,12 @@ body {
 
 .internal-login-wrap {
     position: absolute;
-    top: 58px;
+    top: 86px;
     right: 30px;
     z-index: 6;
+    display: flex;
+    gap: 8px;
+    align-items: center;
 }
 
 .back-home-wrap {
@@ -1546,16 +1549,17 @@ const empfaengerMail = clean(r["EmpfängerMail"] || r["EmpfaengerMail"]);
         <div class="product">
             <div class="product-left">
                 <img src="${escapeHtml(bild)}" alt="${escapeHtml(hersteller)}" class="clickable-image" onclick="toggleImageZoom(this)">
-               <div class="product-info">
-    ${reifentyp ? `<div class="tire-type-line">${escapeHtml(reifentyp)}reifen</div>` : ``}
-    ${hersteller ? `<div class="tire-brand-main">${escapeHtml(hersteller)}</div>` : ``}
-    ${profil ? `<div class="tire-brand-sub">${escapeHtml(profil)}</div>` : ``}
-    ${(groesse || lastindex || geschwindigkeitsindex) ? `<div class="tire-size-line">${escapeHtml(groesse)} ${escapeHtml(lastindex)}${escapeHtml(geschwindigkeitsindex)}</div>` : ``}
-    ${runflat ? `<div class="tire-spec-line"><b>Runflat:</b> ${escapeHtml(runflat)}</div>` : ``}
-    ${anzahl ? `<div class="tire-spec-line"><b>An Lager:</b> ${escapeHtml(anzahl)}</div>` : ``}
-    ${standort ? `<div class="tire-spec-line"><b>Standort:</b> ${escapeHtml(standort)}</div>` : ``}
+              <div class="product-info">
+    ${reifentyp ? `<div class="product-brand">${escapeHtml(reifentyp)}reifen</div>` : ``}
+    ${hersteller ? `<div class="product-title">${escapeHtml(hersteller)}</div>` : ``}
+    ${profil ? `<div class="product-brand">${escapeHtml(profil)}</div>` : ``}
+    ${(groesse || lastindex || geschwindigkeitsindex) ? `<div class="product-dimension">${escapeHtml(groesse)} ${escapeHtml(lastindex)}${escapeHtml(geschwindigkeitsindex)}</div>` : ``}
+
+    ${runflat ? `<div class="product-detail"><b>Runflat:</b> ${escapeHtml(runflat)}</div>` : ``}
+    ${anzahl ? `<div class="product-detail"><b>An Lager:</b> ${escapeHtml(anzahl)}</div>` : ``}
+    ${standort ? `<div class="product-detail"><b>Standort:</b> ${escapeHtml(standort)}</div>` : ``}
     ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
-    ${dot ? `<div class="tire-dot"><b>DOT:</b> ${escapeHtml(dot)}</div>` : ``}
+   ${dot ? `<div class="tire-dot"><b>DOT:</b> ${escapeHtml(dot)}</div>` : ``}
 </div>
             </div>
 
