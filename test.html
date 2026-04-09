@@ -899,8 +899,16 @@ body.mini-mode .internal-login-btn:hover {
 </div>
 
     <div class="internal-login-wrap">
-        <button class="internal-login-btn" type="button" onclick="activateInternalMode()">Interner Login</button>
-    </div>
+    <button id="internalLoginBtn" class="internal-login-btn" type="button" onclick="activateInternalMode()">Interner Login</button>
+
+    <button id="publicViewBtn"
+            class="internal-login-btn"
+            type="button"
+            onclick="deactivateInternalMode()"
+            style="display:none; margin-left:6px;">
+        Öffentliche Ansicht
+    </button>
+</div>
 
     <div id="internalBanner" class="internal-banner" style="display:none;">
         Interner Bestellmodus aktiv
@@ -1607,6 +1615,27 @@ function updateBrandTheme() {
     if (state.marke === "MINI") {
         document.body.classList.add("mini-mode");
     }
+     }
+function deactivateInternalMode() {
+    internalMode = false;
+    state.internalSection = null;
+
+    const banner = document.getElementById("internalBanner");
+    if (banner) {
+        banner.style.display = "none";
+    }
+
+    const internalFields = document.getElementById("internalFields");
+    if (internalFields) {
+        internalFields.style.display = "none";
+    }
+
+    const publicBtn = document.getElementById("publicViewBtn");
+    if (publicBtn) {
+        publicBtn.style.display = "none";
+    }
+
+    render();
 }
 
 function activateInternalMode() {
@@ -1622,10 +1651,15 @@ if (enteredPassword === internalPassword) {
     internalMode = true;
     state.internalSection = null;
 
+    const publicBtn = document.getElementById("publicViewBtn");
+    if (publicBtn) {
+        publicBtn.style.display = "inline-block";
+    }
+
     const banner = document.getElementById("internalBanner");
-        if (banner) {
-            banner.style.display = "block";
-        }
+    if (banner) {
+        banner.style.display = "block";
+    }
 
         const internalFields = document.getElementById("internalFields");
         if (internalFields) {
