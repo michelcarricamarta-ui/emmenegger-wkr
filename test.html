@@ -711,20 +711,42 @@ body.mini-mode .internal-login-btn:hover {
     margin: 0 0 12px 0;
 }
 
+.tire-type-line {
+    font-size: 16px;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 10px;
+}
+
 .tire-brand-main {
-    font-size: 28px;
-    font-weight: 700;
-    line-height: 1.1;
-    margin-bottom: 6px;
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.08;
+    margin-bottom: 8px;
     text-transform: uppercase;
+    color: #1f1f1f;
+    letter-spacing: 0.2px;
 }
 
 .tire-brand-sub {
-    font-size: 22px;
+    font-size: 21px;
     font-weight: 600;
-    line-height: 1.2;
-    margin-bottom: 14px;
+    line-height: 1.15;
+    margin-bottom: 12px;
     color: #2d2d2d;
+}
+
+.tire-size-line {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f1f1f;
+    margin-bottom: 14px;
+}
+
+.tire-spec-line {
+    font-size: 14px;
+    color: #444;
+    margin-bottom: 7px;
 }
 
 .tire-meta {
@@ -1348,14 +1370,18 @@ const empfaengerMail = clean(r["EmpfängerMail"] || r["EmpfaengerMail"]);
                 <div class="product ${isSoldOut ? "sold-out" : ""}">
                     <div class="product-left">
                         <img src="${escapeHtml(bild)}" alt="${escapeHtml(bezeichnung)}" class="clickable-image" onclick="toggleImageZoom(this)">
-                        <div class="product-info">
-                            <div class="product-title">${escapeHtml(bezeichnung)}</div>
-                            <div class="product-brand">${escapeHtml(markeReifen)}</div>
-                            <div class="product-dimension">${escapeHtml(dimension)}</div>
-                            ${hinweistext ? `<div class="product-hinweis">${escapeHtml(hinweistext)}</div>` : ``}
-                            ${verkaufshinweis ? `<div class="product-detail"><b>Hinweis:</b> ${escapeHtml(verkaufshinweis)}</div>` : ``}
-                            ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
-                        </div>
+                       <div class="product-info">
+    ${reifentyp ? `<div class="tire-type-line">${escapeHtml(reifentyp)}reifen</div>` : ``}
+    ${hersteller ? `<div class="tire-brand-main">${escapeHtml(hersteller)}</div>` : ``}
+    ${profil ? `<div class="tire-brand-sub">${escapeHtml(profil)}</div>` : ``}
+    ${(groesse || lastindex || geschwindigkeitsindex) ? `<div class="tire-size-line">${escapeHtml(groesse)} ${escapeHtml(lastindex)}${escapeHtml(geschwindigkeitsindex)}</div>` : ``}
+
+    ${runflat ? `<div class="tire-spec-line"><b>Runflat:</b> ${escapeHtml(runflat)}</div>` : ``}
+    ${anzahl ? `<div class="tire-spec-line"><b>An Lager:</b> ${escapeHtml(anzahl)}</div>` : ``}
+    ${standort ? `<div class="tire-spec-line"><b>Standort:</b> ${escapeHtml(standort)}</div>` : ``}
+    ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
+    ${dot ? `<div class="tire-dot"><b>DOT:</b> ${escapeHtml(dot)}</div>` : ``}
+</div>
                     </div>
 
                     <div class="product-right">
