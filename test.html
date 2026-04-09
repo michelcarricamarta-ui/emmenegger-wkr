@@ -1368,21 +1368,17 @@ const empfaengerMail = clean(r["EmpfängerMail"] || r["EmpfaengerMail"]);
                : `<button class="button" type="button" onclick="openModal('${jsSafe(bezeichnung)}','${jsSafe(markeReifen)}','${jsSafe(dimension)}','${jsSafe(angebot || vp)}','${jsSafe(empfaengerMail)}','${jsSafe(bild)}','${jsSafe(teilenummer)}','${jsSafe(hinweistext)}','${jsSafe(verkaufshinweis)}','${jsSafe(nettopreis)}')">Auswählen</button>`;
             html += `
                 <div class="product ${isSoldOut ? "sold-out" : ""}">
-                    <div class="product-left">
-                        <img src="${escapeHtml(bild)}" alt="${escapeHtml(bezeichnung)}" class="clickable-image" onclick="toggleImageZoom(this)">
-                       <div class="product-info">
-    ${reifentyp ? `<div class="tire-type-line">${escapeHtml(reifentyp)}reifen</div>` : ``}
-    ${hersteller ? `<div class="tire-brand-main">${escapeHtml(hersteller)}</div>` : ``}
-    ${profil ? `<div class="tire-brand-sub">${escapeHtml(profil)}</div>` : ``}
-    ${(groesse || lastindex || geschwindigkeitsindex) ? `<div class="tire-size-line">${escapeHtml(groesse)} ${escapeHtml(lastindex)}${escapeHtml(geschwindigkeitsindex)}</div>` : ``}
-
-    ${runflat ? `<div class="tire-spec-line"><b>Runflat:</b> ${escapeHtml(runflat)}</div>` : ``}
-    ${anzahl ? `<div class="tire-spec-line"><b>An Lager:</b> ${escapeHtml(anzahl)}</div>` : ``}
-    ${standort ? `<div class="tire-spec-line"><b>Standort:</b> ${escapeHtml(standort)}</div>` : ``}
-    ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
-    ${dot ? `<div class="tire-dot"><b>DOT:</b> ${escapeHtml(dot)}</div>` : ``}
+                   <div class="product-left">
+    <img src="${escapeHtml(bild)}" alt="${escapeHtml(bezeichnung)}" class="clickable-image" onclick="toggleImageZoom(this)">
+    <div class="product-info">
+        <div class="product-title">${escapeHtml(bezeichnung)}</div>
+        <div class="product-brand">${escapeHtml(markeReifen)}</div>
+        <div class="product-dimension">${escapeHtml(dimension)}</div>
+        ${hinweistext ? `<div class="product-hinweis">${escapeHtml(hinweistext)}</div>` : ``}
+        ${verkaufshinweis ? `<div class="product-detail"><b>Hinweis:</b> ${escapeHtml(verkaufshinweis)}</div>` : ``}
+        ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
+    </div>
 </div>
-                    </div>
 
                     <div class="product-right">
     <div class="price-caption">Pro Satz inkl. Montage</div>
@@ -1475,18 +1471,17 @@ const empfaengerMail = clean(r["EmpfängerMail"] || r["EmpfaengerMail"]);
         <div class="product">
             <div class="product-left">
                 <img src="${escapeHtml(bild)}" alt="${escapeHtml(hersteller)}" class="clickable-image" onclick="toggleImageZoom(this)">
-                <div class="product-info">
-                    ${hersteller ? `<div class="tire-brand-main">${escapeHtml(hersteller)}</div>` : ``}
-                    ${profil ? `<div class="tire-brand-sub">${escapeHtml(profil)}</div>` : ``}
-                    ${groesse ? `<div class="tire-meta"><b>Grösse:</b> ${escapeHtml(groesse)}</div>` : ``}
-                    ${reifentyp ? `<div class="tire-meta"><b>Reifentyp:</b> ${escapeHtml(reifentyp)}</div>` : ``}
-                    ${runflat ? `<div class="tire-meta"><b>Runflat:</b> ${escapeHtml(runflat)}</div>` : ``}
-                    ${(lastindex || geschwindigkeitsindex) ? `<div class="tire-meta"><b>LI / SI:</b> ${escapeHtml(lastindex)} ${escapeHtml(geschwindigkeitsindex)}</div>` : ``}
-                    ${anzahl ? `<div class="tire-meta"><b>An Lager:</b> ${escapeHtml(anzahl)}</div>` : ``}
-                    ${standort ? `<div class="tire-meta"><b>Standort:</b> ${escapeHtml(standort)}</div>` : ``}
-                    ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
-                    ${dot ? `<div class="tire-dot"><b>DOT:</b> ${escapeHtml(dot)}</div>` : ``}
-                </div>
+               <div class="product-info">
+    ${reifentyp ? `<div class="tire-type-line">${escapeHtml(reifentyp)}reifen</div>` : ``}
+    ${hersteller ? `<div class="tire-brand-main">${escapeHtml(hersteller)}</div>` : ``}
+    ${profil ? `<div class="tire-brand-sub">${escapeHtml(profil)}</div>` : ``}
+    ${(groesse || lastindex || geschwindigkeitsindex) ? `<div class="tire-size-line">${escapeHtml(groesse)} ${escapeHtml(lastindex)}${escapeHtml(geschwindigkeitsindex)}</div>` : ``}
+    ${runflat ? `<div class="tire-spec-line"><b>Runflat:</b> ${escapeHtml(runflat)}</div>` : ``}
+    ${anzahl ? `<div class="tire-spec-line"><b>An Lager:</b> ${escapeHtml(anzahl)}</div>` : ``}
+    ${standort ? `<div class="tire-spec-line"><b>Standort:</b> ${escapeHtml(standort)}</div>` : ``}
+    ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
+    ${dot ? `<div class="tire-dot"><b>DOT:</b> ${escapeHtml(dot)}</div>` : ``}
+</div>
             </div>
 
             <div class="product-right">
