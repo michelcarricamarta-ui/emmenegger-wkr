@@ -894,9 +894,9 @@ body.mini-mode .internal-login-btn:hover {
         <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" alt="Emmenegger Logo">
     </div>
 
-    <div class="back-home-wrap">
-        <button class="back-home-link" type="button" onclick="goToHome()">← Zurück zur Startseite</button>
-    </div>
+   <div class="back-home-wrap">
+    <button id="backHomeBtn" class="back-home-link" type="button" onclick="goToHome()">← Zurück zur Startseite</button>
+</div>
 
     <div class="internal-login-wrap">
         <button class="internal-login-btn" type="button" onclick="activateInternalMode()">Interner Login</button>
@@ -994,7 +994,8 @@ let state = {
     marke: null,
     reihe: null,
     modell: null,
-    motor: null
+    motor: null,
+    internalSection: null
 };
 
 let tireSearch = {
@@ -1130,9 +1131,59 @@ function getFilteredReifen() {
     );
 }
 function goToHome() {
-    location.reload();
+    state.standort = null;
+    state.marke = null;
+    state.reihe = null;
+    state.modell = null;
+    state.motor = null;
+    state.internalSection = null;
+
+    tireSearch.direkt = "";
+    tireSearch.profilbreite = "";
+    tireSearch.querschnitt = "";
+    tireSearch.zoll = "";
+
+    selectedProduct = null;
+    closeModal();
+    render();
+}
+function selectInternalSection(section) {
+    state.internalSection = section;
+
+    state.standort = null;
+    state.marke = null;
+    state.reihe = null;
+    state.modell = null;
+    state.motor = null;
+
+    tireSearch.direkt = "";
+    tireSearch.profilbreite = "";
+    tireSearch.querschnitt = "";
+    tireSearch.zoll = "";
+
+    selectedProduct = null;
+    closeModal();
+    render();
 }
 
+function resetInternalSection() {
+    state.internalSection = null;
+
+    state.standort = null;
+    state.marke = null;
+    state.reihe = null;
+    state.modell = null;
+    state.motor = null;
+
+    tireSearch.direkt = "";
+    tireSearch.profilbreite = "";
+    tireSearch.querschnitt = "";
+    tireSearch.zoll = "";
+
+    selectedProduct = null;
+    closeModal();
+    render();
+}
 Promise.all([
     fetch(urlProdukte).then(r => r.json()),
     fetch(urlMapping).then(r => r.json()),
@@ -1151,15 +1202,31 @@ Promise.all([
 function render() {
     let html = "";
 
-    if (!state.marke) {
-        html += `<div class="selection-label">Marke wählen</div>`;
-        html += `<div class="grid">`;
-        html += `<div class="card reihe-card" onclick="selectMarke('BMW')">BMW Winterkompletträder</div>`;
-        html += `<div class="card reihe-card mini-start-card" onclick="selectMarke('MINI')">MINI Winterkompletträder</div>`;
-        html += `</div>`;
-    }
+   if (internalMode && !state.internalSection) {
+    html += `<div class="selection-label">Was möchtest du suchen?</div>`;
+    html += `<div class="grid">`;
+    html += `<div class="card reihe-card" onclick="selectInternalSection('wkr')">Winterkompletträder</div>`;
+    html += `<div class="card reihe-card mini-start-card" onclick="selectInternalSection('reifen')">Einzelreifen</div>`;
+    html += `</div>`;
+}
 
-    if (state.marke && !state.standort) {
+if (!internalMode && !state.marke) {
+    html += `<div class="selection-label">Marke wählen</div>`;
+    html += `<div class="grid">`;
+    html += `<div class="card reihe-card" onclick="selectMarke('BMW')">BMW Winterkompletträder</div>`;
+    html += `<div class="card reihe-card mini-start-card" onclick="selectMarke('MINI')">MINI Winterkompletträder</div>`;
+    html += `</div>`;
+}
+
+if (internalMode && state.internalSection === "wkr" && !state.marke) {
+    html += `<div class="selection-label">Marke wählen</div>`;
+    html += `<div class="grid">`;
+    html += `<div class="card reihe-card" onclick="selectMarke('BMW')">BMW Winterkompletträder</div>`;
+    html += `<div class="card reihe-card mini-start-card" onclick="selectMarke('MINI')">MINI Winterkompletträder</div>`;
+    html += `</div>`;
+}
+
+   if ((!internalMode || state.internalSection === "wkr") && state.marke && !state.standort) {
         const standorte = [...new Set(
             produkte
                 .filter(x => clean(x["Marke"]) === state.marke)
@@ -1178,7 +1245,7 @@ function render() {
         html += `</div>`;
     }
 
-    if (state.marke && state.standort && !state.reihe) {
+    if ((!internalMode || state.internalSection === "wkr") && state.marke && state.standort && !state.reihe) {
         const reihen = [...new Set(
             mapping
                 .filter(x => clean(x["Marke"]) === state.marke)
@@ -1196,7 +1263,7 @@ function render() {
         html += `</div>`;
     }
 
-    if (state.marke && state.standort && state.reihe && !state.modell) {
+    if ((!internalMode || state.internalSection === "wkr") && state.marke && state.standort && state.reihe && !state.modell) {
         const modelle = [...new Set(
             mapping
                 .filter(x =>
@@ -1231,7 +1298,7 @@ function render() {
         html += `</div>`;
     }
 
-    if (state.marke && state.standort && state.reihe && state.modell && !state.motor) {
+   if ((!internalMode || state.internalSection === "wkr") && state.marke && state.standort && state.reihe && state.modell && !state.motor) {
         const motors = [...new Set(
             mapping
                 .filter(x =>
@@ -1252,7 +1319,7 @@ function render() {
         html += `</div>`;
     }
 
-    if (state.motor) {
+    if ((!internalMode || state.internalSection === "wkr") && state.motor) {
         const fahrzeug = fahrzeuge.find(f =>
             clean(f["Marke"]) === state.marke &&
             clean(f["Reihe"]) === state.reihe &&
@@ -1394,7 +1461,7 @@ const empfaengerMail = clean(r["EmpfängerMail"] || r["EmpfaengerMail"]);
 
         html += `</div>`;
     }
-    if (internalMode) {
+   if (internalMode && state.internalSection === "reifen") {
         const tireResults = getFilteredReifen();
 
         html += `
@@ -1551,10 +1618,11 @@ function activateInternalMode() {
     const enteredPassword = prompt("Bitte Passwort für den internen Modus eingeben:");
     if (enteredPassword === null) return;
 
-    if (enteredPassword === internalPassword) {
-        internalMode = true;
+if (enteredPassword === internalPassword) {
+    internalMode = true;
+    state.internalSection = null;
 
-        const banner = document.getElementById("internalBanner");
+    const banner = document.getElementById("internalBanner");
         if (banner) {
             banner.style.display = "block";
         }
