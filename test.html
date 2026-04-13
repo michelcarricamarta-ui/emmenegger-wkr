@@ -991,6 +991,7 @@ const urlProdukte = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcy
 const urlMapping = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Zuordnung";
 const urlFahrzeuge = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Fahrzeuge";
 const urlReifen = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Reifen";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0KKl3l3voWD0cb0IkBRhyOn1soGWUe_jisZkjT4F2fsrEq9Q3Q9zgFG1eUHbaeyaFug/exec";
 
 const heroImageStart = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/WINTER%20Ix3.jpg?raw=true";
 const heroImageBMW = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/2026-bmw-ix3-snow-driving-04.jpg?raw=true";
@@ -1036,7 +1037,7 @@ let adminWkrFilter = {
     nurAnLager: false
 };
 let selectedProduct = null;
-
+let editingField = "";
 function clean(v) {
     return (v || "").toString().trim();
 }
@@ -1273,7 +1274,44 @@ function resetAdminReifenFilter() {
     adminReifenFilter.nurAnLager = false;
     render();
 }
-       
+    async function updateSheetValue(sheet, keyField, keyValue, updates) {
+
+    try {
+
+        const response = await fetch(APPS_SCRIPT_URL, {
+
+            method: "POST",
+
+            body: JSON.stringify({
+                sheet,
+                keyField,
+                keyValue,
+                updates
+            })
+
+        });
+
+        const result = await response.text();
+
+        if (result === "OK") {
+
+            alert("Gespeichert");
+
+        } else {
+
+            alert("Fehler: " + result);
+
+        }
+
+    } catch (err) {
+
+        alert("Speichern fehlgeschlagen");
+
+        console.error(err);
+
+    }
+
+}   
 function getFilteredReifen() {
     let profilbreite = clean(tireSearch.profilbreite);
     let querschnitt = clean(tireSearch.querschnitt);
@@ -1536,7 +1574,44 @@ if (adminMode && state.adminSection === "reifen_list") {
                         ${profil ? `<div class="product-brand">${escapeHtml(profil)}</div>` : ``}
                         ${(groesse || lastindex || geschwindigkeitsindex) ? `<div class="product-dimension">${escapeHtml(groesse)} ${escapeHtml(lastindex)}${escapeHtml(geschwindigkeitsindex)}</div>` : ``}
                         ${runflat ? `<div class="product-detail"><b>Runflat:</b> ${escapeHtml(runflat)}</div>` : ``}
-                        ${anzahl ? `<div class="product-detail"><b>An Lager:</b> ${escapeHtml(anzahl)}</div>` : ``}
+                        ${
+    ${
+    editingField === `reifen-anzahl-${teilenummer}`
+        ? `
+        <div class="product-detail">
+            <b>An Lager:</b>
+            <input
+                id="edit-reifen-anzahl-${teilenummer}"
+                type="number"
+                value="${escapeHtml(anzahl)}"
+                style="width:90px; margin-left:8px; padding:6px 8px; border:1px solid #cfcfcf; border-radius:6px;"
+            >
+            <button
+                class="button"
+                type="button"
+                style="min-width:auto; padding:6px 10px; margin-left:8px; font-size:13px;"
+                onclick="saveEdit('Reifen','Teilenummer','${jsSafe(teilenummer)}','Anzahl','edit-reifen-anzahl-${teilenummer}')"
+            >Speichern</button>
+            <button
+                class="button button-secondary"
+                type="button"
+                style="min-width:auto; padding:6px 10px; margin-left:6px; font-size:13px;"
+                onclick="cancelEdit()"
+            >Abbrechen</button>
+        </div>
+        `
+        : `
+        <div class="product-detail">
+            <b>An Lager:</b> ${escapeHtml(anzahl || "0")}
+            <button
+                class="button button-secondary"
+                type="button"
+                style="min-width:auto; padding:6px 10px; margin-left:10px; font-size:13px;"
+                onclick="startEdit('reifen-anzahl-${jsSafe(teilenummer)}')"
+            >Bearbeiten</button>
+        </div>
+        `
+}
                         ${standort ? `<div class="product-detail"><b>Standort:</b> ${escapeHtml(standort)}</div>` : ``}
                         ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
                         ${dot ? `<div class="tire-dot"><b>DOT:</b> ${escapeHtml(dot)}</div>` : ``}
@@ -2279,6 +2354,32 @@ function resetTireSearch() {
     tireSearch.profilbreite = "";
     tireSearch.querschnitt = "";
     tireSearch.zoll = "";
+    render();
+}
+    function startEdit(fieldId) {
+    editingField = fieldId;
+    render();
+}
+
+function cancelEdit() {
+    editingField = "";
+    render();
+}
+
+async function saveEdit(sheet, keyField, keyValue, updateField, inputId) {
+    const input = document.getElementById(inputId);
+    if (!input) {
+        alert("Eingabefeld nicht gefunden.");
+        return;
+    }
+
+    const newValue = input.value;
+
+    await updateSheetValue(sheet, keyField, keyValue, {
+        [updateField]: newValue
+    });
+
+    editingField = "";
     render();
 }
     function updateTirePrice(selectEl, basePrice) {
