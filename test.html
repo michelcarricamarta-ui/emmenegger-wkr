@@ -1390,7 +1390,6 @@ if (adminMode && !state.adminSection) {
             <div style="max-width:900px; margin:0 auto 38px auto;">
                 <div style="font-size:22px; font-weight:700; margin-bottom:14px;">Winterkompletträder</div>
                 <div style="display:flex; flex-direction:column; gap:12px;">
-                    <button class="button" type="button" onclick="selectAdminSection('wkr_search')">WKR suchen</button>
                     <button class="button" type="button" onclick="selectAdminSection('wkr_model')">WKR nach Modell suchen</button>
                     <button class="button" type="button" onclick="selectAdminSection('wkr_list')">Gesamte WKR-Übersicht</button>
                 </div>
@@ -1399,7 +1398,6 @@ if (adminMode && !state.adminSection) {
             <div style="max-width:900px; margin:0 auto;">
                 <div style="font-size:22px; font-weight:700; margin-bottom:14px;">Reifen</div>
                 <div style="display:flex; flex-direction:column; gap:12px;">
-                    <button class="button button-secondary" type="button" onclick="selectAdminSection('reifen_search')">Reifen suchen</button>
                     <button class="button button-secondary" type="button" onclick="selectAdminSection('reifen_dimension')">Reifen nach Dimension suchen</button>
                     <button class="button button-secondary" type="button" onclick="selectAdminSection('reifen_list')">Gesamte Reifen-Übersicht</button>
                 </div>
@@ -1424,211 +1422,8 @@ if ((internalMode && state.internalSection === "wkr" && !state.marke) ||
     html += `<div class="card reihe-card mini-start-card" onclick="selectMarke('MINI')">MINI</div>`;
     html += `</div>`;
 }
-    if (adminMode && state.adminSection === "wkr_search") {
-    const results = getAdminWkrSearchResults();
+    
 
-    html += `
-        <div class="tire-search-wrap">
-            <div class="tire-search-title">WKR suchen</div>
-            <div class="tire-search-subtitle">
-                Suche gezielt nach Teilenummer, Bezeichnung, Reifenmarke oder Dimension.
-            </div>
-
-            <div class="tire-search-fields" style="grid-template-columns: 2fr auto auto;">
-                <div class="tire-search-field">
-                    <label for="adminWkrSuche">Suchbegriff</label>
-                    <input id="adminWkrSuche" type="text" placeholder="z. B. Teilenummer, Styling, Pirelli, 19 Zoll" value="${escapeHtml(adminWkrFilter.suche)}">
-                </div>
-
-                <button class="button" type="button" onclick="applyAdminWkrFilter()">Suchen</button>
-                <button class="button button-secondary" type="button" onclick="resetAdminWkrFilter()">Zurücksetzen</button>
-            </div>
-    `;
-
-    if (clean(adminWkrFilter.suche)) {
-        html += `
-            <div class="products-wrap">
-                <div class="products-header">
-                    <h2 class="products-title">Suchergebnisse WKR</h2>
-                    <div class="products-subline">
-                        <div>Treffer: ${results.length}</div>
-                        <div>Administrator Ansicht</div>
-                    </div>
-                </div>
-        `;
-
-        if (results.length === 0) {
-            html += `<div class="empty-note">Für diesen Suchbegriff wurden keine WKR gefunden.</div>`;
-        }
-
-        results.forEach(r => {
-            const lager = parseInt(clean(r["Lager"]), 10) || 0;
-            const bild = clean(r["Bild"]) || "https://via.placeholder.com/220x140?text=Rad";
-            const bezeichnung = clean(r["Bezeichnung"]);
-            const marke = clean(r["Marke"]);
-            const standort = standortToLabel(clean(r["Standort"]));
-            const markeReifen = clean(r["Reifen"]);
-            const dimension = clean(r["Dimension"]);
-            const hinweistext = clean(r["Hinweistext"]);
-            const verkaufshinweis = clean(r["Verkaufshinweis"]);
-            const teilenummer = clean(r["TN"]);
-            const vp = clean(r["VP"]);
-            const angebot = clean(r["Angebotspreis"]);
-            const nettopreis = clean(r["Nettopreis"]);
-            const empfaengerMail = clean(r["EmpfängerMail"] || r["EmpfaengerMail"]);
-
-            const vpNum = parsePriceValue(vp);
-            const angebotNum = parsePriceValue(angebot);
-
-            let priceHtml = ``;
-
-            if (angebotNum !== null && angebotNum > 0 && vpNum !== null && vpNum > 0 && angebotNum < vpNum) {
-                priceHtml = `
-                    <div class="new-price">${escapeHtml(angebot)} CHF</div>
-                    <div class="old-price">UPE: ${escapeHtml(vp)} CHF</div>
-                `;
-            } else if (angebotNum !== null && angebotNum > 0) {
-                priceHtml = `<div class="new-price">${escapeHtml(angebot)} CHF</div>`;
-            } else if (vpNum !== null && vpNum > 0) {
-                priceHtml = `<div class="new-price">${escapeHtml(vp)} CHF</div>`;
-            } else {
-                priceHtml = `<div class="new-price">Preis offen</div>`;
-            }
-
-            html += `
-                <div class="product">
-                    <div class="product-left">
-                        <img src="${escapeHtml(bild)}" alt="${escapeHtml(bezeichnung)}" class="clickable-image" onclick="toggleImageZoom(this)">
-                        <div class="product-info">
-                            <div class="product-title">${escapeHtml(bezeichnung)}</div>
-                            <div class="product-brand">${escapeHtml(marke)} / ${escapeHtml(markeReifen)}</div>
-                            <div class="product-dimension">${escapeHtml(dimension)}</div>
-                            <div class="product-detail"><b>Standort:</b> ${escapeHtml(standort)}</div>
-                            ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
-                            ${hinweistext ? `<div class="product-hinweis">${escapeHtml(hinweistext)}</div>` : ``}
-                            ${verkaufshinweis ? `<div class="product-detail"><b>Hinweis:</b> ${escapeHtml(verkaufshinweis)}</div>` : ``}
-                        </div>
-                    </div>
-
-                    <div class="product-right">
-                        <div class="price-caption">Pro Satz inkl. Montage</div>
-                        ${priceHtml}
-                        <div class="price-note">Preise inkl. MwSt.</div>
-                        ${nettopreis ? `<div class="price-note"><b>Netto Preis:</b> ${escapeHtml(nettopreis)} CHF</div>` : ``}
-                        <div class="${lager > 0 ? "status-green" : "status-grey"}">Lagerbestand: ${lager}</div>
-                        <button class="button" type="button" onclick="openModal('${jsSafe(bezeichnung)}','${jsSafe(markeReifen)}','${jsSafe(dimension)}','${jsSafe(angebot || vp)}','${jsSafe(empfaengerMail)}','${jsSafe(bild)}','${jsSafe(teilenummer)}','${jsSafe(hinweistext)}','${jsSafe(verkaufshinweis)}','${jsSafe(nettopreis)}')">Auswählen</button>
-                    </div>
-                </div>
-            `;
-        });
-
-        html += `</div>`;
-    }
-
-        html += `</div>`;
-}
-if (adminMode && state.adminSection === "reifen_search") {
-    const results = getAdminReifenSearchResults();
-
-    html += `
-        <div class="tire-search-wrap">
-            <div class="tire-search-title">Reifen suchen</div>
-            <div class="tire-search-subtitle">
-                Suche gezielt nach Hersteller, Profil, Teilenummer, Reifentyp, Standort oder Dimension.
-            </div>
-
-            <div class="tire-search-fields" style="grid-template-columns: 2fr auto auto;">
-                <div class="tire-search-field">
-                    <label for="adminWkrSuche">Suchbegriff</label>
-                    <input id="adminWkrSuche" type="text" placeholder="z. B. Pirelli, SottoZero, 225/45 R17, Teilenummer" value="${escapeHtml(adminWkrFilter.suche)}">
-                </div>
-
-                <button class="button" type="button" onclick="applyAdminWkrFilter()">Suchen</button>
-                <button class="button button-secondary" type="button" onclick="resetAdminWkrFilter()">Zurücksetzen</button>
-            </div>
-    `;
-
-    if (clean(adminWkrFilter.suche)) {
-        html += `
-            <div class="products-wrap">
-                <div class="products-header">
-                    <h2 class="products-title">Suchergebnisse Reifen</h2>
-                    <div class="products-subline">
-                        <div>Treffer: ${results.length}</div>
-                        <div>Administrator Ansicht</div>
-                    </div>
-                </div>
-        `;
-
-        if (results.length === 0) {
-            html += `<div class="empty-note">Für diesen Suchbegriff wurden keine Reifen gefunden.</div>`;
-        }
-
-        results.forEach(r => {
-            const bild = clean(r["Bild"]) || "https://via.placeholder.com/220x140?text=Reifen";
-            const hersteller = clean(r["Hersteller"]);
-            const reifentyp = clean(r["Reifentyp"]);
-            const profil = clean(r["Profil"]);
-            const lastindex = clean(r["Lastindex"]);
-            const geschwindigkeitsindex = clean(r["Geschwindigkeitsindex"]);
-            const runflat = normalizeYesNo(r["Runflat"]);
-            const dot = clean(r["DOT"]);
-            const anzahl = clean(r["Anzahl"]);
-            const standort = standortToLabel(clean(r["Standort"]));
-            const angebotspreis = clean(r["Angebotspreis"]);
-            const verkaufspreis = clean(r["Verkaufspreis"]);
-            const teilenummer = clean(r["Teilenummer"]);
-            const groesse = formatTireSize(r);
-
-            const hauptpreis = angebotspreis || verkaufspreis;
-
-            html += `
-                <div class="product">
-                    <div class="product-left">
-                        <img src="${escapeHtml(bild)}" alt="${escapeHtml(hersteller)}" class="clickable-image" onclick="toggleImageZoom(this)">
-                        <div class="product-info">
-                            ${reifentyp ? `<div class="product-brand">${escapeHtml(reifentyp)}reifen</div>` : ``}
-                            ${hersteller ? `<div class="product-title">${escapeHtml(hersteller)}</div>` : ``}
-                            ${profil ? `<div class="product-brand">${escapeHtml(profil)}</div>` : ``}
-                            ${(groesse || lastindex || geschwindigkeitsindex) ? `<div class="product-dimension">${escapeHtml(groesse)} ${escapeHtml(lastindex)}${escapeHtml(geschwindigkeitsindex)}</div>` : ``}
-                            ${runflat ? `<div class="product-detail"><b>Runflat:</b> ${escapeHtml(runflat)}</div>` : ``}
-                            ${anzahl ? `<div class="product-detail"><b>An Lager:</b> ${escapeHtml(anzahl)}</div>` : ``}
-                            ${standort ? `<div class="product-detail"><b>Standort:</b> ${escapeHtml(standort)}</div>` : ``}
-                            ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
-                            ${dot ? `<div class="tire-dot"><b>DOT:</b> ${escapeHtml(dot)}</div>` : ``}
-                        </div>
-                    </div>
-
-                    <div class="product-right">
-                        <div class="price-caption">Angebotspreis</div>
-                        ${hauptpreis ? `<div class="tire-price-main">${escapeHtml(hauptpreis)} CHF</div>` : `<div class="tire-price-main">Preis offen</div>`}
-                        <div class="tire-price-note">inkl. MwSt.</div>
-                        <button
-                            class="button"
-                            type="button"
-                            onclick="openModal(
-                                '${jsSafe((hersteller || '') + ((hersteller && profil) ? ' ' : '') + (profil || ''))}',
-                                '${jsSafe(reifentyp)}',
-                                '${jsSafe(groesse)}',
-                                '${jsSafe(hauptpreis)}',
-                                'tv-g-fp@emmeneggerag.ch',
-                                '${jsSafe(bild)}',
-                                '${jsSafe(teilenummer)}',
-                                '${jsSafe("DOT: " + dot + (anzahl ? " | Anzahl: " + anzahl : "") + (runflat ? " | Runflat: " + runflat : ""))}',
-                                '${jsSafe("Standort: " + standort)}',
-                                ''
-                            )"
-                        >Auswählen</button>
-                    </div>
-                </div>
-            `;
-        });
-
-        html += `</div>`;
-    }
-
-    html += `</div>`;
-}
 if (adminMode && state.adminSection === "reifen_list") {
     const results = reifen
         .filter(r => isActiveTire(r["Aktiv"]))
