@@ -1575,7 +1575,6 @@ if (adminMode && state.adminSection === "reifen_list") {
                         ${(groesse || lastindex || geschwindigkeitsindex) ? `<div class="product-dimension">${escapeHtml(groesse)} ${escapeHtml(lastindex)}${escapeHtml(geschwindigkeitsindex)}</div>` : ``}
                         ${runflat ? `<div class="product-detail"><b>Runflat:</b> ${escapeHtml(runflat)}</div>` : ``}
                         ${
-    ${
     editingField === `reifen-anzahl-${teilenummer}`
         ? `
         <div class="product-detail">
