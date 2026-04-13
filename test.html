@@ -1011,7 +1011,8 @@ let state = {
     reihe: null,
     modell: null,
     motor: null,
-    internalSection: null
+    internalSection: null,
+    adminSection: null
 };
 
 let tireSearch = {
@@ -1153,6 +1154,7 @@ function goToHome() {
     state.modell = null;
     state.motor = null;
     state.internalSection = null;
+    state.adminSection = null;
 
     tireSearch.direkt = "";
     tireSearch.profilbreite = "";
@@ -1181,7 +1183,24 @@ function selectInternalSection(section) {
     closeModal();
     render();
 }
+function selectAdminSection(section) {
+    state.adminSection = section;
 
+    state.standort = null;
+    state.marke = null;
+    state.reihe = null;
+    state.modell = null;
+    state.motor = null;
+
+    tireSearch.direkt = "";
+    tireSearch.profilbreite = "";
+    tireSearch.querschnitt = "";
+    tireSearch.zoll = "";
+
+    selectedProduct = null;
+    closeModal();
+    render();
+}
 function resetInternalSection() {
     state.internalSection = null;
 
@@ -1225,9 +1244,16 @@ function render() {
     html += `<div class="card reihe-card mini-start-card" onclick="selectInternalSection('reifen')">Reifen</div>`;
     html += `</div>`;
 }
-if (adminMode) {
-    state.internalSection = "wkr";
+if (adminMode && !state.adminSection) {
+    html += `<div class="selection-label">Administrator Bereich</div>`;
+    html += `<div class="grid">`;
+    html += `<div class="card reihe-card" onclick="selectAdminSection('wkr_search')">WKR suchen</div>`;
+    html += `<div class="card reihe-card" onclick="selectAdminSection('wkr_overview')">WKR Übersicht</div>`;
+    html += `<div class="card reihe-card mini-start-card" onclick="selectAdminSection('reifen_search')">Reifen suchen</div>`;
+    html += `<div class="card reihe-card mini-start-card" onclick="selectAdminSection('reifen_overview')">Reifen Übersicht</div>`;
+    html += `</div>`;
 }
+
 if (!internalMode && !adminMode && !state.marke) {
     html += `<div class="selection-label">Marke wählen</div>`;
     html += `<div class="grid">`;
@@ -1236,7 +1262,8 @@ if (!internalMode && !adminMode && !state.marke) {
     html += `</div>`;
 }
 
-if ((internalMode && state.internalSection === "wkr" && !state.marke) || (adminMode && !state.marke)) {
+if ((internalMode && state.internalSection === "wkr" && !state.marke) ||
+    (adminMode && state.adminSection === "wkr_overview" && !state.marke)) {
     html += `<div class="selection-label">Marke wählen</div>`;
     html += `<div class="grid">`;
     html += `<div class="card reihe-card" onclick="selectMarke('BMW')">BMW</div>`;
@@ -1244,7 +1271,10 @@ if ((internalMode && state.internalSection === "wkr" && !state.marke) || (adminM
     html += `</div>`;
 }
 
-   if (((!internalMode && !adminMode) || state.internalSection === "wkr" || adminMode) && state.marke && !state.standort) {
+if (((!internalMode && !adminMode) ||
+    state.internalSection === "wkr" ||
+    state.adminSection === "wkr_overview") &&
+    state.marke && !state.standort) {
         const standorte = [...new Set(
             produkte
                 .filter(x => clean(x["Marke"]) === state.marke)
@@ -1263,7 +1293,10 @@ if ((internalMode && state.internalSection === "wkr" && !state.marke) || (adminM
         html += `</div>`;
     }
 
-    if (((!internalMode && !adminMode) || state.internalSection === "wkr" || adminMode) && state.marke && state.standort && !state.reihe) {
+    if (((!internalMode && !adminMode) ||
+    state.internalSection === "wkr" ||
+    state.adminSection === "wkr_overview") &&
+    state.marke && state.standort && !state.reihe) {
         const reihen = [...new Set(
             mapping
                 .filter(x => clean(x["Marke"]) === state.marke)
@@ -1281,7 +1314,10 @@ if ((internalMode && state.internalSection === "wkr" && !state.marke) || (adminM
         html += `</div>`;
     }
 
-    if (((!internalMode && !adminMode) || state.internalSection === "wkr" || adminMode) && state.marke && state.standort && state.reihe && !state.modell) {
+    if (((!internalMode && !adminMode) ||
+    state.internalSection === "wkr" ||
+    state.adminSection === "wkr_overview") &&
+    state.marke && state.standort && state.reihe && !state.modell) {
         const modelle = [...new Set(
             mapping
                 .filter(x =>
@@ -1316,7 +1352,10 @@ if ((internalMode && state.internalSection === "wkr" && !state.marke) || (adminM
         html += `</div>`;
     }
 
-  if (((!internalMode && !adminMode) || state.internalSection === "wkr" || adminMode) && state.marke && state.standort && state.reihe && state.modell && !state.motor) {
+  if (((!internalMode && !adminMode) ||
+    state.internalSection === "wkr" ||
+    state.adminSection === "wkr_overview") &&
+    state.marke && state.standort && state.reihe && state.modell && !state.motor) {
         const motors = [...new Set(
             mapping
                 .filter(x =>
@@ -1337,7 +1376,10 @@ if ((internalMode && state.internalSection === "wkr" && !state.marke) || (adminM
         html += `</div>`;
     }
 
-    if (((!internalMode && !adminMode) || state.internalSection === "wkr" || adminMode) && state.motor) {
+if (((!internalMode && !adminMode) ||
+    state.internalSection === "wkr" ||
+    state.adminSection === "wkr_overview") &&
+    state.motor) {
         const fahrzeug = fahrzeuge.find(f =>
             clean(f["Marke"]) === state.marke &&
             clean(f["Reihe"]) === state.reihe &&
@@ -1631,6 +1673,7 @@ function deactivateAllModes() {
     internalMode = false;
     adminMode = false;
     state.internalSection = null;
+    state.adminSection = null;
 
     const banner = document.getElementById("internalBanner");
     if (banner) {
@@ -1660,9 +1703,10 @@ function activateInternalMode() {
     if (enteredPassword === null) return;
 
     if (enteredPassword === internalPassword) {
-        internalMode = true;
-        adminMode = false;
-        state.internalSection = null;
+    internalMode = true;
+    adminMode = false;
+    state.internalSection = null;
+    state.adminSection = null;
 
         const publicBtn = document.getElementById("publicViewBtn");
         if (publicBtn) {
@@ -1698,7 +1742,8 @@ function activateAdminMode() {
     if (enteredPassword === adminPassword) {
         adminMode = true;
         internalMode = false;
-        state.internalSection = "wkr";
+        state.internalSection = null;
+state.adminSection = null;
 
         const publicBtn = document.getElementById("publicViewBtn");
         if (publicBtn) {
