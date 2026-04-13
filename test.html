@@ -1029,6 +1029,12 @@ let adminWkrFilter = {
     standort: "",
     nurAnLager: false
 };
+    let adminReifenFilter = {
+    suche: "",
+    standort: "",
+    reifentyp: "",
+    nurAnLager: false
+};
 let selectedProduct = null;
 
 function clean(v) {
@@ -1193,54 +1199,47 @@ function resetAdminWkrFilter() {
     adminWkrFilter.nurAnLager = false;
     render();
 }
-    function getAdminWkrSearchResults() {
-    const suchtext = clean(adminWkrFilter.suche).toLowerCase();
-
-    if (!suchtext) return [];
-
-    let results = produkte.filter(p => {
-        const tn = clean(p["TN"]).toLowerCase();
-        const bezeichnung = clean(p["Bezeichnung"]).toLowerCase();
-        const reifenmarke = clean(p["Reifen"]).toLowerCase();
-        const dimension = clean(p["Dimension"]).toLowerCase();
-
-        return (
-            tn.includes(suchtext) ||
-            bezeichnung.includes(suchtext) ||
-            reifenmarke.includes(suchtext) ||
-            dimension.includes(suchtext)
-        );
-    });
-
-    results.sort((a, b) => {
-        const bezA = clean(a["Bezeichnung"]);
-        const bezB = clean(b["Bezeichnung"]);
-        return bezA.localeCompare(bezB, "de");
-    });
-
-    return results;
-}
-    function getAdminReifenSearchResults() {
-    const suchtext = clean(adminWkrFilter.suche).toLowerCase();
-
-    if (!suchtext) return [];
-
+    function getFilteredAdminReifen() {
     let results = reifen.filter(r => {
-        const hersteller = clean(r["Hersteller"]).toLowerCase();
-        const profil = clean(r["Profil"]).toLowerCase();
-        const teilenummer = clean(r["Teilenummer"]).toLowerCase();
-        const standort = clean(r["Standort"]).toLowerCase();
-        const groesse = formatTireSize(r).toLowerCase();
-        const reifentyp = clean(r["Reifentyp"]).toLowerCase();
+        if (!isActiveTire(r["Aktiv"])) return false;
 
-        return (
-            hersteller.includes(suchtext) ||
-            profil.includes(suchtext) ||
-            teilenummer.includes(suchtext) ||
-            standort.includes(suchtext) ||
-            groesse.includes(suchtext) ||
-            reifentyp.includes(suchtext)
-        );
+        const hersteller = clean(r["Hersteller"]);
+        const profil = clean(r["Profil"]);
+        const teilenummer = clean(r["Teilenummer"]);
+        const standort = clean(r["Standort"]);
+        const groesse = formatTireSize(r);
+        const reifentyp = clean(r["Reifentyp"]);
+        const dot = clean(r["DOT"]);
+        const lastindex = clean(r["Lastindex"]);
+        const geschwindigkeitsindex = clean(r["GeschwindigkeitsIndex"] || r["Geschwindigkeitsindex"]);
+        const anzahl = parseInt(clean(r["Anzahl"]), 10) || 0;
+
+        const suchtext = adminReifenFilter.suche.toLowerCase();
+
+        const matchSuche =
+            !suchtext ||
+            hersteller.toLowerCase().includes(suchtext) ||
+            profil.toLowerCase().includes(suchtext) ||
+            teilenummer.toLowerCase().includes(suchtext) ||
+            standort.toLowerCase().includes(suchtext) ||
+            groesse.toLowerCase().includes(suchtext) ||
+            reifentyp.toLowerCase().includes(suchtext) ||
+            dot.toLowerCase().includes(suchtext) ||
+            `${lastindex}${geschwindigkeitsindex}`.toLowerCase().includes(suchtext);
+
+        const matchStandort =
+            !adminReifenFilter.standort ||
+            standort === adminReifenFilter.standort;
+
+        const matchReifentyp =
+            !adminReifenFilter.reifentyp ||
+            reifentyp === adminReifenFilter.reifentyp;
+
+        const matchLager =
+            !adminReifenFilter.nurAnLager ||
+            anzahl > 0;
+
+        return matchSuche && matchStandort && matchReifentyp && matchLager;
     });
 
     results.sort((a, b) => {
@@ -1258,6 +1257,23 @@ function resetAdminWkrFilter() {
 
     return results;
 }
+
+function applyAdminReifenFilter() {
+    adminReifenFilter.suche = clean(document.getElementById("adminReifenSuche")?.value);
+    adminReifenFilter.standort = clean(document.getElementById("adminReifenStandort")?.value);
+    adminReifenFilter.reifentyp = clean(document.getElementById("adminReifenTyp")?.value);
+    adminReifenFilter.nurAnLager = !!document.getElementById("adminReifenNurLager")?.checked;
+    render();
+}
+
+function resetAdminReifenFilter() {
+    adminReifenFilter.suche = "";
+    adminReifenFilter.standort = "";
+    adminReifenFilter.reifentyp = "";
+    adminReifenFilter.nurAnLager = false;
+    render();
+}
+       
 function getFilteredReifen() {
     let profilbreite = clean(tireSearch.profilbreite);
     let querschnitt = clean(tireSearch.querschnitt);
@@ -1396,12 +1412,11 @@ if (adminMode && !state.adminSection) {
             </div>
 
             <div style="max-width:900px; margin:0 auto;">
-                <div style="font-size:22px; font-weight:700; margin-bottom:14px;">Reifen</div>
-                <div style="display:flex; flex-direction:column; gap:12px;">
-                    <button class="button button-secondary" type="button" onclick="selectAdminSection('reifen_dimension')">Reifen nach Dimension suchen</button>
-                    <button class="button button-secondary" type="button" onclick="selectAdminSection('reifen_list')">Gesamte Reifen-Übersicht</button>
-                </div>
-            </div>
+    <div style="font-size:22px; font-weight:700; margin-bottom:14px;">Reifen</div>
+    <div style="display:flex; flex-direction:column; gap:12px;">
+        <button class="button button-secondary" type="button" onclick="selectAdminSection('reifen_list')">Gesamte Reifen-Übersicht</button>
+    </div>
+</div>
         </div>
     `;
 }
@@ -1425,26 +1440,58 @@ if ((internalMode && state.internalSection === "wkr" && !state.marke) ||
     
 
 if (adminMode && state.adminSection === "reifen_list") {
-    const results = reifen
-        .filter(r => isActiveTire(r["Aktiv"]))
-        .sort((a, b) => {
-            const herstellerA = clean(a["Hersteller"]);
-            const herstellerB = clean(b["Hersteller"]);
-            const profilA = clean(a["Profil"]);
-            const profilB = clean(b["Profil"]);
+    const results = getFilteredAdminReifen();
 
-            if (herstellerA !== herstellerB) {
-                return herstellerA.localeCompare(herstellerB, "de");
-            }
+    const standorte = [...new Set(
+        reifen
+            .filter(r => isActiveTire(r["Aktiv"]))
+            .map(r => clean(r["Standort"]))
+            .filter(Boolean)
+    )];
 
-            return profilA.localeCompare(profilB, "de");
-        });
+    const reifentypen = [...new Set(
+        reifen
+            .filter(r => isActiveTire(r["Aktiv"]))
+            .map(r => clean(r["Reifentyp"]))
+            .filter(Boolean)
+    )];
 
     html += `
         <div class="tire-search-wrap">
             <div class="tire-search-title">Gesamte Reifen-Übersicht</div>
             <div class="tire-search-subtitle">
-                Alle aktiven Reifen aus der Reifenliste.
+                Alle aktiven Reifen aus der Reifenliste mit Filter nach Dimension, Hersteller, Profil, Teilenummer, Reifentyp oder Standort.
+            </div>
+
+            <div class="tire-search-fields" style="grid-template-columns: 2fr 1fr 1fr auto auto auto;">
+                <div class="tire-search-field">
+                    <label for="adminReifenSuche">Suche</label>
+                    <input id="adminReifenSuche" type="text" placeholder="z. B. 225/45 R18, Pirelli, SottoZero, Teilenummer" value="${escapeHtml(adminReifenFilter.suche)}">
+                </div>
+
+                <div class="tire-search-field">
+                    <label for="adminReifenStandort">Standort</label>
+                    <select id="adminReifenStandort">
+                        <option value="">Alle</option>
+                        ${standorte.map(s => `<option value="${escapeHtml(s)}" ${adminReifenFilter.standort === s ? "selected" : ""}>${escapeHtml(standortToLabel(s))}</option>`).join("")}
+                    </select>
+                </div>
+
+                <div class="tire-search-field">
+                    <label for="adminReifenTyp">Reifentyp</label>
+                    <select id="adminReifenTyp">
+                        <option value="">Alle</option>
+                        ${reifentypen.map(t => `<option value="${escapeHtml(t)}" ${adminReifenFilter.reifentyp === t ? "selected" : ""}>${escapeHtml(t)}</option>`).join("")}
+                    </select>
+                </div>
+
+                <div class="tire-search-field" style="display:flex; align-items:center; gap:8px; min-height:42px;">
+                    <input id="adminReifenNurLager" type="checkbox" ${adminReifenFilter.nurAnLager ? "checked" : ""} style="width:auto; margin:0;">
+                    <label for="adminReifenNurLager" style="margin:0;">Nur an Lager</label>
+                </div>
+
+                <button class="button" type="button" onclick="applyAdminReifenFilter()">Suchen</button>
+                <button class="button button-secondary" type="button" onclick="resetAdminReifenFilter()">Zurücksetzen</button>
             </div>
 
             <div class="products-wrap">
@@ -1458,7 +1505,7 @@ if (adminMode && state.adminSection === "reifen_list") {
     `;
 
     if (results.length === 0) {
-        html += `<div class="empty-note">Es wurden keine aktiven Reifen gefunden.</div>`;
+        html += `<div class="empty-note">Für diese Filter wurden keine aktiven Reifen gefunden.</div>`;
     }
 
     results.forEach(r => {
@@ -1467,7 +1514,7 @@ if (adminMode && state.adminSection === "reifen_list") {
         const reifentyp = clean(r["Reifentyp"]);
         const profil = clean(r["Profil"]);
         const lastindex = clean(r["Lastindex"]);
-        const geschwindigkeitsindex = clean(r["Geschwindigkeitsindex"]);
+        const geschwindigkeitsindex = clean(r["GeschwindigkeitsIndex"] || r["Geschwindigkeitsindex"]);
         const runflat = normalizeYesNo(r["Runflat"]);
         const dot = clean(r["DOT"]);
         const anzahl = clean(r["Anzahl"]);
@@ -1522,7 +1569,7 @@ if (adminMode && state.adminSection === "reifen_list") {
     });
 
     html += `</div></div>`;
-    }
+}
 
 if (adminMode && state.adminSection === "wkr_list") {
     const results = getFilteredAdminWkr();
@@ -2682,12 +2729,23 @@ function toggleImageZoom(img) {
 document.addEventListener("keydown", function(event) {
     if (event.key === "Enter") {
         const activeElement = document.activeElement;
+        if (!activeElement) return;
+
         if (
-            activeElement &&
             ["tireDirektInput", "tireBreiteInput", "tireQuerschnittInput", "tireZollInput"].includes(activeElement.id)
         ) {
             event.preventDefault();
             applyTireSearch();
+        }
+
+        if (activeElement.id === "adminReifenSuche") {
+            event.preventDefault();
+            applyAdminReifenFilter();
+        }
+
+        if (activeElement.id === "adminWkrSuche") {
+            event.preventDefault();
+            applyAdminWkrFilter();
         }
     }
 });
