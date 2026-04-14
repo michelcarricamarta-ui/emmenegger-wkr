@@ -318,7 +318,11 @@ body.mini-mode .back-home-link:hover {
     opacity: 0.55;
     filter: grayscale(100%);
 }
-
+.product.inactive-tire {
+    opacity: 0.6;
+    filter: grayscale(100%);
+    background: #fafafa;
+}
 .product.sold-out .product-title,
 .product.sold-out .product-brand,
 .product.sold-out .product-dimension,
@@ -1322,6 +1326,7 @@ let adminReifenFilter = {
     suche: "",
     standort: "",
     reifentyp: "",
+    aktivStatus: "",
     nurAnLager: false
 };
 
@@ -1567,28 +1572,39 @@ function getFilteredAdminReifen() {
             standort === adminReifenFilter.standort;
 
         const matchReifentyp =
-            !adminReifenFilter.reifentyp ||
-            reifentyp === adminReifenFilter.reifentyp;
+    !adminReifenFilter.reifentyp ||
+    reifentyp === adminReifenFilter.reifentyp;
 
-        const matchLager =
-            !adminReifenFilter.nurAnLager ||
-            anzahl > 0;
+const matchAktiv =
+    !adminReifenFilter.aktivStatus ||
+    aktiv === adminReifenFilter.aktivStatus;
 
-        return matchSuche && matchStandort && matchReifentyp && matchLager;
+const matchLager =
+    !adminReifenFilter.nurAnLager ||
+    anzahl > 0;
+
+return matchSuche && matchStandort && matchReifentyp && matchAktiv && matchLager;
     });
 
     results.sort((a, b) => {
-        const herstellerA = clean(a["Hersteller"]);
-        const herstellerB = clean(b["Hersteller"]);
-        const profilA = clean(a["Profil"]);
-        const profilB = clean(b["Profil"]);
+    const aktivA = clean(a["Aktiv"]) === "Ja" ? 0 : 1;
+    const aktivB = clean(b["Aktiv"]) === "Ja" ? 0 : 1;
 
-        if (herstellerA !== herstellerB) {
-            return herstellerA.localeCompare(herstellerB, "de");
-        }
+    if (aktivA !== aktivB) {
+        return aktivA - aktivB;
+    }
 
-        return profilA.localeCompare(profilB, "de");
-    });
+    const herstellerA = clean(a["Hersteller"]);
+    const herstellerB = clean(b["Hersteller"]);
+    const profilA = clean(a["Profil"]);
+    const profilB = clean(b["Profil"]);
+
+    if (herstellerA !== herstellerB) {
+        return herstellerA.localeCompare(herstellerB, "de");
+    }
+
+    return profilA.localeCompare(profilB, "de");
+});
 
     return results;
 }
@@ -1597,6 +1613,7 @@ function applyAdminReifenFilter() {
     adminReifenFilter.suche = clean(document.getElementById("adminReifenSuche")?.value);
     adminReifenFilter.standort = clean(document.getElementById("adminReifenStandort")?.value);
     adminReifenFilter.reifentyp = clean(document.getElementById("adminReifenTyp")?.value);
+    adminReifenFilter.aktivStatus = clean(document.getElementById("adminReifenAktiv")?.value);
     adminReifenFilter.nurAnLager = !!document.getElementById("adminReifenNurLager")?.checked;
     render();
 }
@@ -1605,6 +1622,7 @@ function resetAdminReifenFilter() {
     adminReifenFilter.suche = "";
     adminReifenFilter.standort = "";
     adminReifenFilter.reifentyp = "";
+    adminReifenFilter.aktivStatus = "";
     adminReifenFilter.nurAnLager = false;
     render();
 }
@@ -1861,7 +1879,7 @@ const reifentypen = [...new Set(
     <button class="button" type="button" onclick="openAddTireModal()">Neuen Reifen hinzufügen</button>
 </div>
 
-<div class="tire-search-fields" style="grid-template-columns: 2fr 1fr 1fr auto auto auto;">
+<div class="tire-search-fields" style="grid-template-columns: 2fr 1fr 1fr 1fr auto auto auto;">
     <div class="tire-search-field">
         <label for="adminReifenSuche">Suche</label>
         <input id="adminReifenSuche" type="text" placeholder="z. B. 225/45 R18, Pirelli, SottoZero, Teilenummer" value="${escapeHtml(adminReifenFilter.suche)}">
@@ -1883,6 +1901,15 @@ const reifentypen = [...new Set(
         </select>
     </div>
 
+    <div class="tire-search-field">
+        <label for="adminReifenAktiv">Status</label>
+        <select id="adminReifenAktiv">
+            <option value="">Alle</option>
+            <option value="Ja" ${adminReifenFilter.aktivStatus === "Ja" ? "selected" : ""}>Nur aktiv</option>
+            <option value="Nein" ${adminReifenFilter.aktivStatus === "Nein" ? "selected" : ""}>Nur inaktiv</option>
+        </select>
+    </div>
+
     <div class="tire-search-field" style="display:flex; align-items:center; gap:8px; min-height:42px;">
         <input id="adminReifenNurLager" type="checkbox" ${adminReifenFilter.nurAnLager ? "checked" : ""} style="width:auto; margin:0;">
         <label for="adminReifenNurLager" style="margin:0;">Nur an Lager</label>
@@ -1892,17 +1919,21 @@ const reifentypen = [...new Set(
     <button class="button button-secondary" type="button" onclick="resetAdminReifenFilter()">Zurücksetzen</button>
 </div>
             <div class="products-wrap">
-                <div class="products-header">
-                    <h2 class="products-title">Reifen Gesamtübersicht</h2>
-                    <div class="products-subline">
-                        <div>Treffer: ${results.length}</div>
-                        <div>Administrator Ansicht</div>
-                    </div>
-                </div>
+               <div class="products-header">
+    <h2 class="products-title">Reifen Gesamtübersicht</h2>
+    <div class="products-subline">
+        <div>
+            Treffer: <b>${results.length}</b> |
+            Aktiv: <span style="color:#2e7d32; font-weight:700;">${results.filter(r => clean(r["Aktiv"]) === "Ja").length}</span> |
+            Inaktiv: <span style="color:#c62828; font-weight:700;">${results.filter(r => clean(r["Aktiv"]) !== "Ja").length}</span>
+        </div>
+        <div>Administrator Ansicht</div>
+    </div>
+</div>
     `;
 
     if (results.length === 0) {
-        html += `<div class="empty-note">Für diese Filter wurden keine aktiven Reifen gefunden.</div>`;
+html += `<div class="empty-note">Für diese Filter wurden keine Reifen gefunden.</div>`;
     }
 
     results.forEach(r => {
@@ -1931,7 +1962,7 @@ const reifentypen = [...new Set(
         const isSpecialPrice = ekNum !== null && vkNum !== null && ekNum > vkNum;
 
         html += `
-            <div class="product">
+           <div class="product ${aktiv !== "Ja" ? "inactive-tire" : ""}">
                 <div class="product-left">
 ${bildHtml}
 <div class="product-info">
@@ -1944,7 +1975,12 @@ ${bildHtml}
                         ${standort ? `<div class="product-detail"><b>Standort:</b> ${escapeHtml(standort)}</div>` : ``}
                         ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
                         ${dot ? `<div class="tire-dot" style="${isDotOlderThan3Years(dot) ? 'color:#c62828; font-weight:700;' : 'color:#1f1f1f; font-weight:700;'}"><b>DOT:</b> ${escapeHtml(dot)}</div>` : ``}
-                        <div class="product-detail"><b>Aktiv:</b> ${escapeHtml(aktiv || "Nein")}</div>
+                        <div class="product-detail">
+    <b>Status:</b>
+    <span style="font-weight:700; color:${aktiv === "Ja" ? "#2e7d32" : "#c62828"};">
+        ${aktiv === "Ja" ? "Aktiv" : "Inaktiv"}
+    </span>
+</div>
                     </div>
                 </div>
 
