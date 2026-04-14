@@ -3724,18 +3724,20 @@ html, body {
 }
 
 .label-logo-wrap {
+    width: 42mm;
     height: 12mm;
     display: flex;
     align-items: center;
+    justify-content: flex-start;
     margin-bottom: 1.2mm;
+    overflow: hidden;
 }
 
 .label-logo {
-    max-height: 12mm;
-    max-width: 42mm;
-    width: auto;
-    height: auto;
+    width: 42mm;
+    height: 12mm;
     object-fit: contain;
+    object-position: left center;
     display: block;
 }
 
