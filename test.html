@@ -1293,6 +1293,25 @@ function resetAdminReifenFilter() {
         const result = await response.text();
 
         if (result === "OK") {
+
+            if (sheet === "Reifen") {
+                const row = reifen.find(r => clean(r[keyField]) === clean(keyValue));
+                if (row) {
+                    Object.keys(updates).forEach(field => {
+                        row[field] = updates[field];
+                    });
+                }
+            }
+
+            if (sheet === "Produkte") {
+                const row = produkte.find(p => clean(p[keyField]) === clean(keyValue));
+                if (row) {
+                    Object.keys(updates).forEach(field => {
+                        row[field] = updates[field];
+                    });
+                }
+            }
+
             alert("Gespeichert");
         } else {
             alert("Fehler: " + result);
