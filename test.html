@@ -647,7 +647,11 @@ body.mini-mode .internal-login-btn:hover {
     min-height: 90px;
     resize: vertical;
 }
-
+#newTireBemerkung,
+#editTireBemerkung {
+    min-height: 80px;
+    resize: vertical;
+}
 .modal-actions {
     display: flex;
     gap: 10px;
@@ -1102,6 +1106,18 @@ body.mini-mode .internal-login-btn:hover {
                 <label for="newTireVkPreis">VK Preis *</label>
                 <input id="newTireVkPreis" type="text" placeholder="z. B. 180">
             </div>
+<div>
+    <label for="newTireBemerkung">Bemerkung</label>
+    <textarea id="newTireBemerkung" placeholder="Freie Bemerkung"></textarea>
+</div>
+
+<div>
+    <label for="newTireBemerkungSichtbar">Bemerkung sichtbar im internen Modus</label>
+    <select id="newTireBemerkungSichtbar">
+        <option value="Nein" selected>Nein</option>
+        <option value="Ja">Ja</option>
+    </select>
+</div>
 
             <div>
                 <label for="newTireAktiv">Aktiv *</label>
@@ -1228,7 +1244,18 @@ body.mini-mode .internal-login-btn:hover {
                 <label for="editTireVkPreis">VK Preis *</label>
                 <input id="editTireVkPreis" type="text" placeholder="z. B. 180">
             </div>
+<div>
+    <label for="editTireBemerkung">Bemerkung</label>
+    <textarea id="editTireBemerkung" placeholder="Freie Bemerkung"></textarea>
+</div>
 
+<div>
+    <label for="editTireBemerkungSichtbar">Bemerkung sichtbar im internen Modus</label>
+    <select id="editTireBemerkungSichtbar">
+        <option value="Nein">Nein</option>
+        <option value="Ja">Ja</option>
+    </select>
+</div>
             <div>
                 <label for="editTireAktiv">Aktiv *</label>
                 <select id="editTireAktiv">
@@ -1295,8 +1322,8 @@ const tireLogoMap = {
     "michelin": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Michelin_Logo.jpg",
     "nexen": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Nexen_Logo.jpg",
     "pirelli": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Pirelli_Logo.jpg",
-    "yokohama": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Yokohama_Logo.jpg"
-    "goodyear": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Goodyear_Logo.jpg",
+    "yokohama": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Yokohama_Logo.jpg",
+"goodyear": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Goodyear_Logo.jpg",
 
 };
 let produkte = [];
@@ -1458,14 +1485,15 @@ function getAutomaticTireImage(hersteller, reifentyp) {
     if (!brand || !normalizedType) {
         return "";
     }
-function getTireBrandLogo(hersteller) {
-    const brand = clean(hersteller).toLowerCase();
-    return tireLogoMap[brand] || "";
-}
+
     const key = `${brand}_${normalizedType}`;
     return tireImageMap[key] || "";
 }
 
+function getTireBrandLogo(hersteller) {
+    const brand = clean(hersteller).toLowerCase();
+    return tireLogoMap[brand] || "";
+}
 function parseDirectTireInput(input) {
     const raw = clean(input).toUpperCase();
     if (!raw) {
@@ -2878,11 +2906,15 @@ if (knownBrands.includes(currentHersteller)) {
     document.getElementById("editTireEkPreis").value = clean(tire["EK Preis"]);
     document.getElementById("editTireVkPreis").value = clean(tire["VK Preis"]);
     document.getElementById("editTireAktiv").value = clean(tire["Aktiv"]) || "Ja";
+    document.getElementById("editTireBemerkung").value = clean(tire["Bemerkung"]);
+document.getElementById("editTireBemerkungSichtbar").value = clean(tire["Bemerkung sichtbar"]) || "Nein";
 
     document.getElementById("editTireModal").style.display = "flex";
 }
 
 function closeEditTireModal() {
+    document.getElementById("editTireBemerkung").value = "";
+document.getElementById("editTireBemerkungSichtbar").value = "Nein";
     document.getElementById("editTireModal").style.display = "none";
     editingTireId = "";
     document.getElementById("editTireHerstellerSelect").value = "";
@@ -2917,6 +2949,8 @@ const hersteller = herstellerSelect === "Andere" ? herstellerOther : herstellerS
     const vkpreis = clean(document.getElementById("editTireVkPreis").value);
    const bild = getAutomaticTireImage(hersteller, reifentyp);
     const aktiv = clean(document.getElementById("editTireAktiv").value);
+    const bemerkung = clean(document.getElementById("editTireBemerkung").value);
+const bemerkungSichtbar = clean(document.getElementById("editTireBemerkungSichtbar").value);
 
     if (!standort || !reifentyp || !hersteller || !profil || !profilbreite || !querschnitt || !zoll || !teilenummer || !anzahl || !vkpreis || !aktiv) {
         alert("Bitte alle Pflichtfelder ausfüllen.");
@@ -2952,7 +2986,9 @@ const hersteller = herstellerSelect === "Andere" ? herstellerOther : herstellerS
                     "EK Preis": ekpreis,
                     "VK Preis": vkpreis,
                     "Bild": bild,
-                    "Aktiv": aktiv
+                    "Aktiv": aktiv,
+"Bemerkung": bemerkung,
+"Bemerkung sichtbar": bemerkungSichtbar
                 }
             }),
             redirect: "follow"
@@ -2980,6 +3016,8 @@ const hersteller = herstellerSelect === "Andere" ? herstellerOther : herstellerS
                 row["VK Preis"] = vkpreis;
                 row["Bild"] = bild;
                 row["Aktiv"] = aktiv;
+                row["Bemerkung"] = bemerkung;
+row["Bemerkung sichtbar"] = bemerkungSichtbar;
             }
 
             alert("Reifen wurde aktualisiert.");
@@ -3065,6 +3103,8 @@ function toggleEditTireOtherBrand() {
     otherWrap.style.display = select.value === "Andere" ? "block" : "none";
 }
 function clearAddTireForm() {
+    document.getElementById("newTireBemerkung").value = "";
+document.getElementById("newTireBemerkungSichtbar").value = "Nein";
     document.getElementById("newTireStandort").value = "";
     document.getElementById("newTireReifentyp").value = "";
     document.getElementById("newTireHerstellerSelect").value = "";
