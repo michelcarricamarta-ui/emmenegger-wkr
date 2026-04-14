@@ -1287,7 +1287,18 @@ const tireImageMap = {
     "yokohama_sommer": TIRE_IMAGE_BASE + "yokohama_Sommer.jpg",
     "yokohama_winter": TIRE_IMAGE_BASE + "yokohama_Winter.jpg"
 };
+const tireLogoMap = {
+    "bridgestone": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Bridgestone_Logo.jpg",
+    "continental": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Continental_Logo.jpg",
+    "dunlop": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Dunlop_Logo.jpg",
+    "hankook": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Hankook_Logo.jpg",
+    "michelin": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Michelin_Logo.jpg",
+    "nexen": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Nexen_Logo.jpg",
+    "pirelli": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Pirelli_Logo.jpg",
+    "yokohama": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Yokohama_Logo.jpg"
+    "goodyear": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Goodyear_Logo.jpg",
 
+};
 let produkte = [];
 let mapping = [];
 let fahrzeuge = [];
@@ -1447,7 +1458,10 @@ function getAutomaticTireImage(hersteller, reifentyp) {
     if (!brand || !normalizedType) {
         return "";
     }
-
+function getTireBrandLogo(hersteller) {
+    const brand = clean(hersteller).toLowerCase();
+    return tireLogoMap[brand] || "";
+}
     const key = `${brand}_${normalizedType}`;
     return tireImageMap[key] || "";
 }
@@ -3622,6 +3636,7 @@ window.onclick = function(event) {
     const reifentyp = clean(tire["Reifentyp"]);
     const anzahl = clean(tire["Anzahl"]);
     const aktiv = clean(tire["Aktiv"]);
+    const logo = getTireBrandLogo(hersteller);
 
     return `
 <!DOCTYPE html>
@@ -3659,13 +3674,42 @@ html, body {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 2mm;
+    gap: 4mm;
+    margin-bottom: 2.5mm;
+}
+
+.label-brand-block {
+    flex: 1;
+    min-width: 0;
+}
+
+.label-logo-wrap {
+    height: 12mm;
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.2mm;
+}
+
+.label-logo {
+    max-height: 12mm;
+    max-width: 42mm;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
 }
 
 .label-title {
     font-size: 15pt;
     font-weight: 700;
     line-height: 1.05;
+    margin-bottom: 1mm;
+}
+
+.label-profile {
+    font-size: 10pt;
+    font-weight: 700;
+    line-height: 1.15;
 }
 
 .label-status {
@@ -3673,6 +3717,7 @@ html, body {
     font-weight: 700;
     padding: 1mm 2mm;
     border: 1px solid #000;
+    white-space: nowrap;
 }
 
 .label-line {
@@ -3694,20 +3739,25 @@ html, body {
 }
 
 .label-barcode-wrap {
-    margin-top: 2mm;
+    margin-top: 3mm;
+    padding-top: 1.5mm;
     text-align: center;
+    border-top: 1px solid #d9d9d9;
 }
 
 .label-barcode {
     width: 100%;
-    max-width: 88mm;
-    height: 16mm;
+    max-width: 84mm;
+    height: 14mm;
+    display: block;
+    margin: 0 auto;
 }
 
 .label-part-text {
     font-size: 9pt;
-    margin-top: 1mm;
-    letter-spacing: 0.5px;
+    margin-top: 1.2mm;
+    letter-spacing: 0.6px;
+    font-weight: 700;
 }
 
 .print-actions {
@@ -3746,11 +3796,21 @@ html, body {
 
 <div class="label-wrap">
     <div class="label-top">
-        <div class="label-title">${escapeHtml(hersteller)}</div>
-        <div class="label-status">${escapeHtml(aktiv === "Ja" ? "AKTIV" : "INAKTIV")}</div>
+    <div class="label-brand-block">
+        ${
+            logo
+                ? `<div class="label-logo-wrap">
+                        <img src="${escapeHtml(logo)}" alt="${escapeHtml(hersteller)}" class="label-logo">
+                   </div>`
+                : `<div class="label-title">${escapeHtml(hersteller)}</div>`
+        }
+
+        ${logo ? `` : ``}
+        ${profil ? `<div class="label-profile">${escapeHtml(profil)}</div>` : ``}
     </div>
 
-    ${profil ? `<div class="label-line"><b>Profil:</b> ${escapeHtml(profil)}</div>` : ``}
+    <div class="label-status">${escapeHtml(aktiv === "Ja" ? "AKTIV" : "INAKTIV")}</div>
+</div>
     ${reifentyp ? `<div class="label-line"><b>Typ:</b> ${escapeHtml(reifentyp)}</div>` : ``}
     <div class="label-size">${escapeHtml(groesse)} ${escapeHtml(lastindex)}${escapeHtml(geschwindigkeitsindex)}</div>
 
@@ -3774,8 +3834,8 @@ if (${JSON.stringify(!!teilenummer)}) {
         format: "CODE128",
         displayValue: false,
         margin: 0,
-        width: 1.4,
-        height: 42
+        width: 1.7,
+        height: 34
     });
 }
 <\/script>
