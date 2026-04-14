@@ -664,6 +664,7 @@ body.mini-mode .internal-login-btn:hover {
     margin-top: -4px;
     margin-bottom: 14px;
 }
+
 .tire-search-wrap {
     margin-top: 45px;
     padding: 24px;
@@ -829,6 +830,7 @@ body.mini-mode .internal-login-btn:hover {
         grid-template-columns: 1fr;
     }
 }
+
 @media (max-width: 1100px) {
     .product {
         flex-direction: column;
@@ -901,26 +903,26 @@ body.mini-mode .internal-login-btn:hover {
         <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" alt="Emmenegger Logo">
     </div>
 
-   <div class="back-home-wrap">
-    <button id="backHomeBtn" class="back-home-link" type="button" onclick="goToHome()">← Zurück zur Startseite</button>
-</div>
+    <div class="back-home-wrap">
+        <button id="backHomeBtn" class="back-home-link" type="button" onclick="goToHome()">← Zurück zur Startseite</button>
+    </div>
 
-   <div class="internal-login-wrap">
-    <button id="internalLoginBtn" class="internal-login-btn" type="button" onclick="activateInternalMode()">Interner Login</button>
+    <div class="internal-login-wrap">
+        <button id="internalLoginBtn" class="internal-login-btn" type="button" onclick="activateInternalMode()">Interner Login</button>
 
-    <button id="adminLoginBtn" class="internal-login-btn" type="button" onclick="activateAdminMode()">Administrator Login</button>
+        <button id="adminLoginBtn" class="internal-login-btn" type="button" onclick="activateAdminMode()">Administrator Login</button>
 
-    <button id="publicViewBtn"
-            class="internal-login-btn"
-            type="button"
-            onclick="deactivateAllModes()"
-            style="display:none; margin-left:6px;">
-        Öffentliche Ansicht
-    </button>
-</div>
+        <button id="publicViewBtn"
+                class="internal-login-btn"
+                type="button"
+                onclick="deactivateAllModes()"
+                style="display:none; margin-left:6px;">
+            Öffentliche Ansicht
+        </button>
+    </div>
 
-   <div id="internalBanner" class="internal-banner" style="display:none;"></div>
-       
+    <div id="internalBanner" class="internal-banner" style="display:none;"></div>
+
     <div class="hero" id="heroBanner">
         <div class="hero-text">
             <h1>Original Winterkompletträder</h1>
@@ -986,13 +988,244 @@ body.mini-mode .internal-login-btn:hover {
     </div>
 </div>
 
+<div id="addTireModal" class="modal">
+    <div class="modal-content" style="width:760px; max-width:100%;">
+        <div class="modal-title">Neuen Reifen hinzufügen</div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+            <div>
+                <label for="newTireStandort">Standort *</label>
+                <select id="newTireStandort">
+                    <option value="">Bitte wählen</option>
+                    <option value="GEB">Gebenstorf</option>
+                    <option value="HET">Hettenschwil</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="newTireReifentyp">Reifentyp *</label>
+                <select id="newTireReifentyp">
+                    <option value="">Bitte wählen</option>
+                    <option value="Sommer">Sommer</option>
+                    <option value="Winter">Winter</option>
+                    <option value="Allwetter">Allwetter</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="newTireHersteller">Hersteller *</label>
+                <input id="newTireHersteller" type="text" placeholder="z. B. Pirelli">
+            </div>
+
+            <div>
+                <label for="newTireProfil">Profil *</label>
+                <input id="newTireProfil" type="text" placeholder="z. B. SottoZero 3">
+            </div>
+
+            <div>
+                <label for="newTireBreite">Profilbreite *</label>
+                <input id="newTireBreite" type="text" placeholder="z. B. 225">
+            </div>
+
+            <div>
+                <label for="newTireQuerschnitt">Querschnitt *</label>
+                <input id="newTireQuerschnitt" type="text" placeholder="z. B. 45">
+            </div>
+
+            <div>
+                <label for="newTireZoll">Zoll *</label>
+                <input id="newTireZoll" type="text" placeholder="z. B. 18">
+            </div>
+
+            <div>
+                <label for="newTireLastindex">Lastindex</label>
+                <input id="newTireLastindex" type="text" placeholder="z. B. 95">
+            </div>
+
+            <div>
+                <label for="newTireGeschwindigkeitsindex">Geschwindigkeitsindex</label>
+                <input id="newTireGeschwindigkeitsindex" type="text" placeholder="z. B. Y">
+            </div>
+
+            <div>
+                <label for="newTireRunflat">Runflat</label>
+                <select id="newTireRunflat">
+                    <option value="">Bitte wählen</option>
+                    <option value="Ja">Ja</option>
+                    <option value="Nein">Nein</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="newTireDot">DOT</label>
+                <input id="newTireDot" type="text" placeholder="z. B. 12/24">
+            </div>
+
+            <div>
+                <label for="newTireTeilenummer">Teilenummer *</label>
+                <input id="newTireTeilenummer" type="text" placeholder="z. B. 36115AABBCC">
+            </div>
+
+            <div>
+                <label for="newTireAnzahl">Anzahl *</label>
+                <input id="newTireAnzahl" type="number" min="0" value="1">
+            </div>
+
+            <div>
+                <label for="newTireEkPreis">EK Preis</label>
+                <input id="newTireEkPreis" type="text" placeholder="z. B. 120">
+            </div>
+
+            <div>
+                <label for="newTireVkPreis">VK Preis *</label>
+                <input id="newTireVkPreis" type="text" placeholder="z. B. 180">
+            </div>
+
+            <div style="grid-column:1 / -1;">
+                <label for="newTireBild">Bild URL</label>
+                <input id="newTireBild" type="text" placeholder="https://...">
+            </div>
+
+            <div>
+                <label for="newTireAktiv">Aktiv *</label>
+                <select id="newTireAktiv">
+                    <option value="Ja" selected>Ja</option>
+                    <option value="Nein">Nein</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="required-note">* Pflichtfelder</div>
+
+        <div class="modal-actions">
+            <button class="button button-secondary" type="button" onclick="closeAddTireModal()">Schliessen</button>
+            <button class="button" type="button" onclick="saveNewTire()">Reifen speichern</button>
+        </div>
+    </div>
+</div>
+<div id="editTireModal" class="modal">
+    <div class="modal-content" style="width:760px; max-width:100%;">
+        <div class="modal-title">Reifen bearbeiten</div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+            <div>
+                <label for="editTireStandort">Standort *</label>
+                <select id="editTireStandort">
+                    <option value="">Bitte wählen</option>
+                    <option value="GEB">Gebenstorf</option>
+                    <option value="HET">Hettenschwil</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="editTireReifentyp">Reifentyp *</label>
+                <select id="editTireReifentyp">
+                    <option value="">Bitte wählen</option>
+                    <option value="Sommer">Sommer</option>
+                    <option value="Winter">Winter</option>
+                    <option value="Allwetter">Allwetter</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="editTireHersteller">Hersteller *</label>
+                <input id="editTireHersteller" type="text" placeholder="z. B. Pirelli">
+            </div>
+
+            <div>
+                <label for="editTireProfil">Profil *</label>
+                <input id="editTireProfil" type="text" placeholder="z. B. SottoZero 3">
+            </div>
+
+            <div>
+                <label for="editTireBreite">Profilbreite *</label>
+                <input id="editTireBreite" type="text" placeholder="z. B. 225">
+            </div>
+
+            <div>
+                <label for="editTireQuerschnitt">Querschnitt *</label>
+                <input id="editTireQuerschnitt" type="text" placeholder="z. B. 45">
+            </div>
+
+            <div>
+                <label for="editTireZoll">Zoll *</label>
+                <input id="editTireZoll" type="text" placeholder="z. B. 18">
+            </div>
+
+            <div>
+                <label for="editTireLastindex">Lastindex</label>
+                <input id="editTireLastindex" type="text" placeholder="z. B. 95">
+            </div>
+
+            <div>
+                <label for="editTireGeschwindigkeitsindex">Geschwindigkeitsindex</label>
+                <input id="editTireGeschwindigkeitsindex" type="text" placeholder="z. B. Y">
+            </div>
+
+            <div>
+                <label for="editTireRunflat">Runflat</label>
+                <select id="editTireRunflat">
+                    <option value="">Bitte wählen</option>
+                    <option value="Ja">Ja</option>
+                    <option value="Nein">Nein</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="editTireDot">DOT</label>
+                <input id="editTireDot" type="text" placeholder="z. B. 12/24">
+            </div>
+
+            <div>
+                <label for="editTireTeilenummer">Teilenummer *</label>
+                <input id="editTireTeilenummer" type="text" placeholder="z. B. 36115AABBCC">
+            </div>
+
+            <div>
+                <label for="editTireAnzahl">Anzahl *</label>
+                <input id="editTireAnzahl" type="number" min="0">
+            </div>
+
+            <div>
+                <label for="editTireEkPreis">EK Preis</label>
+                <input id="editTireEkPreis" type="text" placeholder="z. B. 120">
+            </div>
+
+            <div>
+                <label for="editTireVkPreis">VK Preis *</label>
+                <input id="editTireVkPreis" type="text" placeholder="z. B. 180">
+            </div>
+
+            <div style="grid-column:1 / -1;">
+                <label for="editTireBild">Bild URL</label>
+                <input id="editTireBild" type="text" placeholder="https://...">
+            </div>
+
+            <div>
+                <label for="editTireAktiv">Aktiv *</label>
+                <select id="editTireAktiv">
+                    <option value="Ja">Ja</option>
+                    <option value="Nein">Nein</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="required-note">* Pflichtfelder</div>
+
+        <div class="modal-actions">
+            <button class="button button-secondary" type="button" onclick="closeEditTireModal()">Schliessen</button>
+            <button class="button button-secondary" type="button" onclick="deleteTire()">Reifen löschen</button>
+            <button class="button" type="button" onclick="saveEditedTire()">Änderungen speichern</button>
+        </div>
+    </div>
+</div>
 <script>
 const urlProdukte = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Produkte";
 const urlMapping = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Zuordnung";
 const urlFahrzeuge = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Fahrzeuge";
 const urlReifen = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Reifen";
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw66JGYiZlVn7BtxsqYHiG0l_5n_gFlZZBDir6wLINdXG7T3ZSEhIZ3gcp0YKRPj214QA/exec";
-    
+
 const heroImageStart = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/WINTER%20Ix3.jpg?raw=true";
 const heroImageBMW = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/2026-bmw-ix3-snow-driving-04.jpg?raw=true";
 const heroImageMINI = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/MINI%20Countrymann.jpg?raw=true";
@@ -1024,20 +1257,28 @@ let tireSearch = {
     querschnitt: "",
     zoll: ""
 };
+
 let adminWkrFilter = {
     suche: "",
     marke: "",
     standort: "",
     nurAnLager: false
 };
-    let adminReifenFilter = {
+
+let adminReifenFilter = {
     suche: "",
     standort: "",
     reifentyp: "",
     nurAnLager: false
 };
+
 let selectedProduct = null;
 let editingField = "";
+let isSavingNewTire = false;
+let editingTireId = "";
+let isSavingEditedTire = false;
+let isDeletingTire = false;
+
 function clean(v) {
     return (v || "").toString().trim();
 }
@@ -1079,6 +1320,24 @@ function parsePriceValue(value) {
     return Number.isFinite(numeric) ? numeric : null;
 }
 
+function isDotOlderThan3Years(dotValue) {
+    const dot = clean(dotValue);
+    const match = dot.match(/^(\d{2})\/(\d{2})$/);
+
+    if (!match) return false;
+
+    const week = parseInt(match[1], 10);
+    const year = 2000 + parseInt(match[2], 10);
+
+    if (!week || !year) return false;
+
+    const dotDate = new Date(year, 0, 1 + (week - 1) * 7);
+    const today = new Date();
+    const diffYears = (today - dotDate) / (1000 * 60 * 60 * 24 * 365.25);
+
+    return diffYears > 3;
+}
+
 function standortToLabel(value) {
     return value === "GEB"
         ? "Gebenstorf"
@@ -1086,6 +1345,7 @@ function standortToLabel(value) {
             ? "Hettenschwil"
             : value;
 }
+
 function normalizeYesNo(value) {
     const v = clean(value).toLowerCase();
     if (v === "ja" || v === "yes" || v === "true" || v === "1") return "Ja";
@@ -1104,6 +1364,7 @@ function formatTireSize(row) {
     if (!breite || !quer || !zoll) return "";
     return `${breite}/${quer} R${zoll}`;
 }
+
 function getTireQuantityOptions(maxQty) {
     const qty = parseInt(clean(maxQty), 10) || 0;
     const options = [];
@@ -1114,6 +1375,7 @@ function getTireQuantityOptions(maxQty) {
 
     return options;
 }
+
 function parseDirectTireInput(input) {
     const raw = clean(input).toUpperCase();
     if (!raw) {
@@ -1136,6 +1398,7 @@ function parseDirectTireInput(input) {
         zoll: match[3]
     };
 }
+
 function getFilteredAdminWkr() {
     let results = produkte.filter(p => {
         const marke = clean(p["Marke"]);
@@ -1200,10 +1463,9 @@ function resetAdminWkrFilter() {
     adminWkrFilter.nurAnLager = false;
     render();
 }
-    function getFilteredAdminReifen() {
-    let results = reifen.filter(r => {
-        if (!isActiveTire(r["Aktiv"])) return false;
 
+function getFilteredAdminReifen() {
+    let results = reifen.filter(r => {
         const hersteller = clean(r["Hersteller"]);
         const profil = clean(r["Profil"]);
         const teilenummer = clean(r["Teilenummer"]);
@@ -1212,8 +1474,9 @@ function resetAdminWkrFilter() {
         const reifentyp = clean(r["Reifentyp"]);
         const dot = clean(r["DOT"]);
         const lastindex = clean(r["Lastindex"]);
-        const geschwindigkeitsindex = clean(r["GeschwindigkeitsIndex"] || r["Geschwindigkeitsindex"]);
+        const geschwindigkeitsindex = clean(r["Geschwindigkeitsindex"]);
         const anzahl = parseInt(clean(r["Anzahl"]), 10) || 0;
+        const aktiv = clean(r["Aktiv"]);
 
         const suchtext = adminReifenFilter.suche.toLowerCase();
 
@@ -1226,6 +1489,7 @@ function resetAdminWkrFilter() {
             groesse.toLowerCase().includes(suchtext) ||
             reifentyp.toLowerCase().includes(suchtext) ||
             dot.toLowerCase().includes(suchtext) ||
+            aktiv.toLowerCase().includes(suchtext) ||
             `${lastindex}${geschwindigkeitsindex}`.toLowerCase().includes(suchtext);
 
         const matchStandort =
@@ -1258,7 +1522,7 @@ function resetAdminWkrFilter() {
 
     return results;
 }
-
+        
 function applyAdminReifenFilter() {
     adminReifenFilter.suche = clean(document.getElementById("adminReifenSuche")?.value);
     adminReifenFilter.standort = clean(document.getElementById("adminReifenStandort")?.value);
@@ -1274,7 +1538,8 @@ function resetAdminReifenFilter() {
     adminReifenFilter.nurAnLager = false;
     render();
 }
-    async function updateSheetValue(sheet, keyField, keyValue, updates) {
+
+async function updateSheetValue(sheet, keyField, keyValue, updates) {
     try {
         const response = await fetch(APPS_SCRIPT_URL, {
             method: "POST",
@@ -1293,7 +1558,6 @@ function resetAdminReifenFilter() {
         const result = await response.text();
 
         if (result === "OK") {
-
             if (sheet === "Reifen") {
                 const row = reifen.find(r => clean(r[keyField]) === clean(keyValue));
                 if (row) {
@@ -1322,6 +1586,7 @@ function resetAdminReifenFilter() {
         console.error(err);
     }
 }
+
 function getFilteredReifen() {
     let profilbreite = clean(tireSearch.profilbreite);
     let querschnitt = clean(tireSearch.querschnitt);
@@ -1346,6 +1611,7 @@ function getFilteredReifen() {
         clean(r["Zoll"]) === zoll
     );
 }
+
 function goToHome() {
     state.standort = null;
     state.marke = null;
@@ -1361,9 +1627,12 @@ function goToHome() {
     tireSearch.zoll = "";
 
     selectedProduct = null;
-    closeModal();
-    render();
+closeModal();
+closeAddTireModal();
+closeEditTireModal();
+render();
 }
+
 function selectInternalSection(section) {
     state.internalSection = section;
 
@@ -1378,10 +1647,13 @@ function selectInternalSection(section) {
     tireSearch.querschnitt = "";
     tireSearch.zoll = "";
 
-    selectedProduct = null;
-    closeModal();
-    render();
+   selectedProduct = null;
+closeModal();
+closeAddTireModal();
+closeEditTireModal();
+render();
 }
+
 function selectAdminSection(section) {
     state.adminSection = section;
 
@@ -1396,10 +1668,13 @@ function selectAdminSection(section) {
     tireSearch.querschnitt = "";
     tireSearch.zoll = "";
 
-    selectedProduct = null;
-    closeModal();
-    render();
+  selectedProduct = null;
+closeModal();
+closeAddTireModal();
+closeEditTireModal();
+render();
 }
+
 function resetInternalSection() {
     state.internalSection = null;
 
@@ -1414,10 +1689,13 @@ function resetInternalSection() {
     tireSearch.querschnitt = "";
     tireSearch.zoll = "";
 
-    selectedProduct = null;
-    closeModal();
-    render();
+selectedProduct = null;
+closeModal();
+closeAddTireModal();
+closeEditTireModal();
+render();
 }
+
 Promise.all([
     fetch(urlProdukte).then(r => r.json()),
     fetch(urlMapping).then(r => r.json()),
@@ -1436,112 +1714,113 @@ Promise.all([
 function render() {
     let html = "";
 
-   if (internalMode && !state.internalSection) {
-    html += `<div class="selection-label">Was möchtest du suchen?</div>`;
-    html += `<div class="grid">`;
-    html += `<div class="card reihe-card" onclick="selectInternalSection('wkr')">Winterkompletträder</div>`;
-    html += `<div class="card reihe-card mini-start-card" onclick="selectInternalSection('reifen')">Reifen</div>`;
-    html += `</div>`;
-}
-if (adminMode && !state.adminSection) {
-    html += `
-        <div style="margin-bottom:30px;">
-            <div class="selection-label" style="margin-bottom:10px;">Administrator Bereich</div>
-            <div style="text-align:center; font-size:15px; color:#666; margin-bottom:32px;">
-                Datenpflege Winterkompletträder und Reifen
-            </div>
+    if (internalMode && !state.internalSection) {
+        html += `<div class="selection-label">Was möchtest du suchen?</div>`;
+        html += `<div class="grid">`;
+        html += `<div class="card reihe-card" onclick="selectInternalSection('wkr')">Winterkompletträder</div>`;
+        html += `<div class="card reihe-card mini-start-card" onclick="selectInternalSection('reifen')">Reifen</div>`;
+        html += `</div>`;
+    }
 
-            <div style="max-width:900px; margin:0 auto 38px auto;">
-                <div style="font-size:22px; font-weight:700; margin-bottom:14px;">Winterkompletträder</div>
-                <div style="display:flex; flex-direction:column; gap:12px;">
-                    <button class="button" type="button" onclick="selectAdminSection('wkr_model')">WKR nach Modell suchen</button>
-                    <button class="button" type="button" onclick="selectAdminSection('wkr_list')">Gesamte WKR-Übersicht</button>
+    if (adminMode && !state.adminSection) {
+        html += `
+            <div style="margin-bottom:30px;">
+                <div class="selection-label" style="margin-bottom:10px;">Administrator Bereich</div>
+                <div style="text-align:center; font-size:15px; color:#666; margin-bottom:32px;">
+                    Datenpflege Winterkompletträder und Reifen
                 </div>
-            </div>
 
-            <div style="max-width:900px; margin:0 auto;">
+                <div style="max-width:900px; margin:0 auto 38px auto;">
+                    <div style="font-size:22px; font-weight:700; margin-bottom:14px;">Winterkompletträder</div>
+                    <div style="display:flex; flex-direction:column; gap:12px;">
+                        <button class="button" type="button" onclick="selectAdminSection('wkr_model')">WKR nach Modell suchen</button>
+                        <button class="button" type="button" onclick="selectAdminSection('wkr_list')">Gesamte WKR-Übersicht</button>
+                    </div>
+                </div>
+
+               <div style="max-width:900px; margin:0 auto;">
     <div style="font-size:22px; font-weight:700; margin-bottom:14px;">Reifen</div>
     <div style="display:flex; flex-direction:column; gap:12px;">
         <button class="button button-secondary" type="button" onclick="selectAdminSection('reifen_list')">Gesamte Reifen-Übersicht</button>
     </div>
 </div>
-        </div>
-    `;
-}
+            </div>
+        `;
+    }
 
-if (!internalMode && !adminMode && !state.marke) {
-    html += `<div class="selection-label">Marke wählen</div>`;
-    html += `<div class="grid">`;
-    html += `<div class="card reihe-card" onclick="selectMarke('BMW')">BMW</div>`;
-    html += `<div class="card reihe-card mini-start-card" onclick="selectMarke('MINI')">MINI</div>`;
-    html += `</div>`;
-}
+    if (!internalMode && !adminMode && !state.marke) {
+        html += `<div class="selection-label">Marke wählen</div>`;
+        html += `<div class="grid">`;
+        html += `<div class="card reihe-card" onclick="selectMarke('BMW')">BMW</div>`;
+        html += `<div class="card reihe-card mini-start-card" onclick="selectMarke('MINI')">MINI</div>`;
+        html += `</div>`;
+    }
 
-if ((internalMode && state.internalSection === "wkr" && !state.marke) ||
-    (adminMode && state.adminSection === "wkr_model" && !state.marke)) {
-    html += `<div class="selection-label">Marke wählen</div>`;
-    html += `<div class="grid">`;
-    html += `<div class="card reihe-card" onclick="selectMarke('BMW')">BMW</div>`;
-    html += `<div class="card reihe-card mini-start-card" onclick="selectMarke('MINI')">MINI</div>`;
-    html += `</div>`;
-}
-    
+    if ((internalMode && state.internalSection === "wkr" && !state.marke) ||
+        (adminMode && state.adminSection === "wkr_model" && !state.marke)) {
+        html += `<div class="selection-label">Marke wählen</div>`;
+        html += `<div class="grid">`;
+        html += `<div class="card reihe-card" onclick="selectMarke('BMW')">BMW</div>`;
+        html += `<div class="card reihe-card mini-start-card" onclick="selectMarke('MINI')">MINI</div>`;
+        html += `</div>`;
+    }
 
-if (adminMode && state.adminSection === "reifen_list") {
+    if (adminMode && state.adminSection === "reifen_list") {
     const results = getFilteredAdminReifen();
 
     const standorte = [...new Set(
-        reifen
-            .filter(r => isActiveTire(r["Aktiv"]))
-            .map(r => clean(r["Standort"]))
-            .filter(Boolean)
-    )];
+    reifen
+        .map(r => clean(r["Standort"]))
+        .filter(Boolean)
+)];
 
-    const reifentypen = [...new Set(
-        reifen
-            .filter(r => isActiveTire(r["Aktiv"]))
-            .map(r => clean(r["Reifentyp"]))
-            .filter(Boolean)
-    )];
+const reifentypen = [...new Set(
+    reifen
+        .map(r => clean(r["Reifentyp"]))
+        .filter(Boolean)
+)];
 
     html += `
         <div class="tire-search-wrap">
             <div class="tire-search-title">Gesamte Reifen-Übersicht</div>
             <div class="tire-search-subtitle">
-                Alle aktiven Reifen aus der Reifenliste mit Filter nach Dimension, Hersteller, Profil, Teilenummer, Reifentyp oder Standort.
+                Alle Reifen aus der Reifenliste mit Filter nach Dimension, Hersteller, Profil, Teilenummer, Reifentyp oder Standort.
             </div>
 
-            <div class="tire-search-fields" style="grid-template-columns: 2fr 1fr 1fr auto auto auto;">
-                <div class="tire-search-field">
-                    <label for="adminReifenSuche">Suche</label>
-                    <input id="adminReifenSuche" type="text" placeholder="z. B. 225/45 R18, Pirelli, SottoZero, Teilenummer" value="${escapeHtml(adminReifenFilter.suche)}">
-                </div>
+            <div style="display:flex; justify-content:flex-end; margin-bottom:16px;">
+    <button class="button" type="button" onclick="openAddTireModal()">Neuen Reifen hinzufügen</button>
+</div>
 
-                <div class="tire-search-field">
-                    <label for="adminReifenStandort">Standort</label>
-                    <select id="adminReifenStandort">
-                        <option value="">Alle</option>
-                        ${standorte.map(s => `<option value="${escapeHtml(s)}" ${adminReifenFilter.standort === s ? "selected" : ""}>${escapeHtml(standortToLabel(s))}</option>`).join("")}
-                    </select>
-                </div>
+<div class="tire-search-fields" style="grid-template-columns: 2fr 1fr 1fr auto auto auto;">
+    <div class="tire-search-field">
+        <label for="adminReifenSuche">Suche</label>
+        <input id="adminReifenSuche" type="text" placeholder="z. B. 225/45 R18, Pirelli, SottoZero, Teilenummer" value="${escapeHtml(adminReifenFilter.suche)}">
+    </div>
 
-                <div class="tire-search-field">
-                    <label for="adminReifenTyp">Reifentyp</label>
-                    <select id="adminReifenTyp">
-                        <option value="">Alle</option>
-                        ${reifentypen.map(t => `<option value="${escapeHtml(t)}" ${adminReifenFilter.reifentyp === t ? "selected" : ""}>${escapeHtml(t)}</option>`).join("")}
-                    </select>
-                </div>
+    <div class="tire-search-field">
+        <label for="adminReifenStandort">Standort</label>
+        <select id="adminReifenStandort">
+            <option value="">Alle</option>
+            ${standorte.map(s => `<option value="${escapeHtml(s)}" ${adminReifenFilter.standort === s ? "selected" : ""}>${escapeHtml(standortToLabel(s))}</option>`).join("")}
+        </select>
+    </div>
 
-                <div class="tire-search-field" style="display:flex; align-items:center; gap:8px; min-height:42px;">
-                    <input id="adminReifenNurLager" type="checkbox" ${adminReifenFilter.nurAnLager ? "checked" : ""} style="width:auto; margin:0;">
-                    <label for="adminReifenNurLager" style="margin:0;">Nur an Lager</label>
-                </div>
+    <div class="tire-search-field">
+        <label for="adminReifenTyp">Reifentyp</label>
+        <select id="adminReifenTyp">
+            <option value="">Alle</option>
+            ${reifentypen.map(t => `<option value="${escapeHtml(t)}" ${adminReifenFilter.reifentyp === t ? "selected" : ""}>${escapeHtml(t)}</option>`).join("")}
+        </select>
+    </div>
 
-                <button class="button" type="button" onclick="applyAdminReifenFilter()">Suchen</button>
-                <button class="button button-secondary" type="button" onclick="resetAdminReifenFilter()">Zurücksetzen</button>
-            </div>
+    <div class="tire-search-field" style="display:flex; align-items:center; gap:8px; min-height:42px;">
+        <input id="adminReifenNurLager" type="checkbox" ${adminReifenFilter.nurAnLager ? "checked" : ""} style="width:auto; margin:0;">
+        <label for="adminReifenNurLager" style="margin:0;">Nur an Lager</label>
+    </div>
 
+    <button class="button" type="button" onclick="applyAdminReifenFilter()">Suchen</button>
+    <button class="button button-secondary" type="button" onclick="resetAdminReifenFilter()">Zurücksetzen</button>
+</div>
             <div class="products-wrap">
                 <div class="products-header">
                     <h2 class="products-title">Reifen Gesamtübersicht</h2>
@@ -1562,17 +1841,21 @@ if (adminMode && state.adminSection === "reifen_list") {
         const reifentyp = clean(r["Reifentyp"]);
         const profil = clean(r["Profil"]);
         const lastindex = clean(r["Lastindex"]);
-        const geschwindigkeitsindex = clean(r["GeschwindigkeitsIndex"] || r["Geschwindigkeitsindex"]);
+        const geschwindigkeitsindex = clean(r["Geschwindigkeitsindex"]);
         const runflat = normalizeYesNo(r["Runflat"]);
         const dot = clean(r["DOT"]);
         const anzahl = clean(r["Anzahl"]);
         const standort = standortToLabel(clean(r["Standort"]));
-        const angebotspreis = clean(r["Angebotspreis"]);
-        const verkaufspreis = clean(r["Verkaufspreis"]);
+        const ekpreis = clean(r["EK Preis"]);
+        const vkpreis = clean(r["VK Preis"]);
         const teilenummer = clean(r["Teilenummer"]);
         const groesse = formatTireSize(r);
+        const aktiv = clean(r["Aktiv"]);
+        const rowId = clean(r["ID"]);
 
-        const hauptpreis = angebotspreis || verkaufspreis;
+        const ekNum = parsePriceValue(ekpreis);
+        const vkNum = parsePriceValue(vkpreis);
+        const isSpecialPrice = ekNum !== null && vkNum !== null && ekNum > vkNum;
 
         html += `
             <div class="product">
@@ -1584,69 +1867,28 @@ if (adminMode && state.adminSection === "reifen_list") {
                         ${profil ? `<div class="product-brand">${escapeHtml(profil)}</div>` : ``}
                         ${(groesse || lastindex || geschwindigkeitsindex) ? `<div class="product-dimension">${escapeHtml(groesse)} ${escapeHtml(lastindex)}${escapeHtml(geschwindigkeitsindex)}</div>` : ``}
                         ${runflat ? `<div class="product-detail"><b>Runflat:</b> ${escapeHtml(runflat)}</div>` : ``}
-                        ${
-    editingField === `reifen-anzahl-${teilenummer}`
-        ? `
-        <div class="product-detail">
-            <b>An Lager:</b>
-            <input
-                id="edit-reifen-anzahl-${teilenummer}"
-                type="number"
-                value="${escapeHtml(anzahl)}"
-                style="width:90px; margin-left:8px; padding:6px 8px; border:1px solid #cfcfcf; border-radius:6px;"
-            >
-            <button
-                class="button"
-                type="button"
-                style="min-width:auto; padding:6px 10px; margin-left:8px; font-size:13px;"
-                onclick="saveEdit('Reifen','Teilenummer','${jsSafe(teilenummer)}','Anzahl','edit-reifen-anzahl-${teilenummer}')"
-            >Speichern</button>
-            <button
-                class="button button-secondary"
-                type="button"
-                style="min-width:auto; padding:6px 10px; margin-left:6px; font-size:13px;"
-                onclick="cancelEdit()"
-            >Abbrechen</button>
-        </div>
-        `
-        : `
-        <div class="product-detail">
-            <b>An Lager:</b> ${escapeHtml(anzahl || "0")}
-            <button
-                class="button button-secondary"
-                type="button"
-                style="min-width:auto; padding:6px 10px; margin-left:10px; font-size:13px;"
-                onclick="startEdit('reifen-anzahl-${jsSafe(teilenummer)}')"
-            >Bearbeiten</button>
-        </div>
-        `
-}
+                        <div class="product-detail"><b>An Lager:</b> ${escapeHtml(anzahl || "0")}</div>
                         ${standort ? `<div class="product-detail"><b>Standort:</b> ${escapeHtml(standort)}</div>` : ``}
                         ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
-                        ${dot ? `<div class="tire-dot"><b>DOT:</b> ${escapeHtml(dot)}</div>` : ``}
+                        ${dot ? `<div class="tire-dot" style="${isDotOlderThan3Years(dot) ? 'color:#c62828; font-weight:700;' : 'color:#1f1f1f; font-weight:700;'}"><b>DOT:</b> ${escapeHtml(dot)}</div>` : ``}
+                        <div class="product-detail"><b>Aktiv:</b> ${escapeHtml(aktiv || "Nein")}</div>
                     </div>
                 </div>
 
                 <div class="product-right">
-                    <div class="price-caption">Angebotspreis</div>
-                    ${hauptpreis ? `<div class="tire-price-main">${escapeHtml(hauptpreis)} CHF</div>` : `<div class="tire-price-main">Preis offen</div>`}
+                    ${isSpecialPrice ? `<div class="price-caption" style="color:#c62828; font-weight:700;">Angebotspreis</div>` : `<div class="price-caption">VK Preis</div>`}
+                    <div class="tire-price-main" style="${isSpecialPrice ? 'color:#c62828; font-weight:700;' : ''}">${vkpreis ? `${escapeHtml(vkpreis)} CHF` : `Preis offen`}</div>
                     <div class="tire-price-note">inkl. MwSt.</div>
+                    <div class="product-detail" style="text-align:right; margin-top:8px;">
+                        <b>EK Preis:</b> ${escapeHtml(ekpreis || "-")}
+                    </div>
+
                     <button
                         class="button"
                         type="button"
-                        onclick="openModal(
-                            '${jsSafe((hersteller || '') + ((hersteller && profil) ? ' ' : '') + (profil || ''))}',
-                            '${jsSafe(reifentyp)}',
-                            '${jsSafe(groesse)}',
-                            '${jsSafe(hauptpreis)}',
-                            'tv-g-fp@emmeneggerag.ch',
-                            '${jsSafe(bild)}',
-                            '${jsSafe(teilenummer)}',
-                            '${jsSafe("DOT: " + dot + (anzahl ? " | Anzahl: " + anzahl : "") + (runflat ? " | Runflat: " + runflat : ""))}',
-                            '${jsSafe("Standort: " + standort)}',
-                            ''
-                        )"
-                    >Auswählen</button>
+                        style="margin-top:12px;"
+                        onclick="openEditTireModal('${jsSafe(rowId)}')"
+                    >Bearbeiten</button>
                 </div>
             </div>
         `;
@@ -1655,138 +1897,139 @@ if (adminMode && state.adminSection === "reifen_list") {
     html += `</div></div>`;
 }
 
-if (adminMode && state.adminSection === "wkr_list") {
-    const results = getFilteredAdminWkr();
+    if (adminMode && state.adminSection === "wkr_list") {
+        const results = getFilteredAdminWkr();
 
-    const marken = [...new Set(
-        produkte.map(p => clean(p["Marke"])).filter(Boolean)
-    )];
+        const marken = [...new Set(
+            produkte.map(p => clean(p["Marke"])).filter(Boolean)
+        )];
 
-    const standorte = [...new Set(
-        produkte.map(p => clean(p["Standort"])).filter(Boolean)
-    )];
-
-    html += `
-        <div class="tire-search-wrap">
-            <div class="tire-search-title">Gesamte WKR-Übersicht</div>
-            <div class="tire-search-subtitle">
-                Alle Winterkompletträder aus der Produkteliste mit Filter nach Teilenummer, Bezeichnung, Marke oder Standort.
-            </div>
-
-            <div class="tire-search-fields" style="grid-template-columns: 2fr 1fr 1fr auto auto auto;">
-                <div class="tire-search-field">
-                    <label for="adminWkrSuche">Suche</label>
-                    <input id="adminWkrSuche" type="text" placeholder="Teilenummer, Bezeichnung, Reifenmarke, Dimension" value="${escapeHtml(adminWkrFilter.suche)}">
-                </div>
-
-                <div class="tire-search-field">
-                    <label for="adminWkrMarke">Marke</label>
-                    <select id="adminWkrMarke">
-                        <option value="">Alle</option>
-                        ${marken.map(m => `<option value="${escapeHtml(m)}" ${adminWkrFilter.marke === m ? "selected" : ""}>${escapeHtml(m)}</option>`).join("")}
-                    </select>
-                </div>
-
-                <div class="tire-search-field">
-                    <label for="adminWkrStandort">Standort</label>
-                    <select id="adminWkrStandort">
-                        <option value="">Alle</option>
-                        ${standorte.map(s => `<option value="${escapeHtml(s)}" ${adminWkrFilter.standort === s ? "selected" : ""}>${escapeHtml(standortToLabel(s))}</option>`).join("")}
-                    </select>
-                </div>
-
-                <div class="tire-search-field" style="display:flex; align-items:center; gap:8px; min-height:42px;">
-                    <input id="adminWkrNurLager" type="checkbox" ${adminWkrFilter.nurAnLager ? "checked" : ""} style="width:auto; margin:0;">
-                    <label for="adminWkrNurLager" style="margin:0;">Nur an Lager</label>
-                </div>
-
-                <button class="button" type="button" onclick="applyAdminWkrFilter()">Suchen</button>
-                <button class="button button-secondary" type="button" onclick="resetAdminWkrFilter()">Zurücksetzen</button>
-            </div>
-    `;
-
-    html += `
-        <div class="products-wrap">
-            <div class="products-header">
-                <h2 class="products-title">WKR Gesamtübersicht</h2>
-                <div class="products-subline">
-                    <div>Treffer: ${results.length}</div>
-                    <div>Administrator Ansicht</div>
-                </div>
-            </div>
-    `;
-
-    if (results.length === 0) {
-        html += `<div class="empty-note">Für diese Filter wurden keine Produkte gefunden.</div>`;
-    }
-
-    results.forEach(r => {
-        const lager = parseInt(clean(r["Lager"]), 10) || 0;
-        const bild = clean(r["Bild"]) || "https://via.placeholder.com/220x140?text=Rad";
-        const bezeichnung = clean(r["Bezeichnung"]);
-        const marke = clean(r["Marke"]);
-        const standort = standortToLabel(clean(r["Standort"]));
-        const markeReifen = clean(r["Reifen"]);
-        const dimension = clean(r["Dimension"]);
-        const hinweistext = clean(r["Hinweistext"]);
-        const verkaufshinweis = clean(r["Verkaufshinweis"]);
-        const teilenummer = clean(r["TN"]);
-        const vp = clean(r["VP"]);
-        const angebot = clean(r["Angebotspreis"]);
-        const nettopreis = clean(r["Nettopreis"]);
-        const empfaengerMail = clean(r["EmpfängerMail"] || r["EmpfaengerMail"]);
-
-        const vpNum = parsePriceValue(vp);
-        const angebotNum = parsePriceValue(angebot);
-
-        let priceHtml = ``;
-
-        if (angebotNum !== null && angebotNum > 0 && vpNum !== null && vpNum > 0 && angebotNum < vpNum) {
-            priceHtml = `
-                <div class="new-price">${escapeHtml(angebot)} CHF</div>
-                <div class="old-price">UPE: ${escapeHtml(vp)} CHF</div>
-            `;
-        } else if (angebotNum !== null && angebotNum > 0) {
-            priceHtml = `<div class="new-price">${escapeHtml(angebot)} CHF</div>`;
-        } else if (vpNum !== null && vpNum > 0) {
-            priceHtml = `<div class="new-price">${escapeHtml(vp)} CHF</div>`;
-        } else {
-            priceHtml = `<div class="new-price">Preis offen</div>`;
-        }
+        const standorte = [...new Set(
+            produkte.map(p => clean(p["Standort"])).filter(Boolean)
+        )];
 
         html += `
-            <div class="product">
-                <div class="product-left">
-                    <img src="${escapeHtml(bild)}" alt="${escapeHtml(bezeichnung)}" class="clickable-image" onclick="toggleImageZoom(this)">
-                    <div class="product-info">
-                        <div class="product-title">${escapeHtml(bezeichnung)}</div>
-                        <div class="product-brand">${escapeHtml(marke)} / ${escapeHtml(markeReifen)}</div>
-                        <div class="product-dimension">${escapeHtml(dimension)}</div>
-                        <div class="product-detail"><b>Standort:</b> ${escapeHtml(standort)}</div>
-                        ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
-                        ${hinweistext ? `<div class="product-hinweis">${escapeHtml(hinweistext)}</div>` : ``}
-                        ${verkaufshinweis ? `<div class="product-detail"><b>Hinweis:</b> ${escapeHtml(verkaufshinweis)}</div>` : ``}
+            <div class="tire-search-wrap">
+                <div class="tire-search-title">Gesamte WKR-Übersicht</div>
+                <div class="tire-search-subtitle">
+                    Alle Winterkompletträder aus der Produkteliste mit Filter nach Teilenummer, Bezeichnung, Marke oder Standort.
+                </div>
+
+                <div class="tire-search-fields" style="grid-template-columns: 2fr 1fr 1fr auto auto auto;">
+                    <div class="tire-search-field">
+                        <label for="adminWkrSuche">Suche</label>
+                        <input id="adminWkrSuche" type="text" placeholder="Teilenummer, Bezeichnung, Reifenmarke, Dimension" value="${escapeHtml(adminWkrFilter.suche)}">
+                    </div>
+
+                    <div class="tire-search-field">
+                        <label for="adminWkrMarke">Marke</label>
+                        <select id="adminWkrMarke">
+                            <option value="">Alle</option>
+                            ${marken.map(m => `<option value="${escapeHtml(m)}" ${adminWkrFilter.marke === m ? "selected" : ""}>${escapeHtml(m)}</option>`).join("")}
+                        </select>
+                    </div>
+
+                    <div class="tire-search-field">
+                        <label for="adminWkrStandort">Standort</label>
+                        <select id="adminWkrStandort">
+                            <option value="">Alle</option>
+                            ${standorte.map(s => `<option value="${escapeHtml(s)}" ${adminWkrFilter.standort === s ? "selected" : ""}>${escapeHtml(standortToLabel(s))}</option>`).join("")}
+                        </select>
+                    </div>
+
+                    <div class="tire-search-field" style="display:flex; align-items:center; gap:8px; min-height:42px;">
+                        <input id="adminWkrNurLager" type="checkbox" ${adminWkrFilter.nurAnLager ? "checked" : ""} style="width:auto; margin:0;">
+                        <label for="adminWkrNurLager" style="margin:0;">Nur an Lager</label>
+                    </div>
+
+                    <button class="button" type="button" onclick="applyAdminWkrFilter()">Suchen</button>
+                    <button class="button button-secondary" type="button" onclick="resetAdminWkrFilter()">Zurücksetzen</button>
+                </div>
+        `;
+
+        html += `
+            <div class="products-wrap">
+                <div class="products-header">
+                    <h2 class="products-title">WKR Gesamtübersicht</h2>
+                    <div class="products-subline">
+                        <div>Treffer: ${results.length}</div>
+                        <div>Administrator Ansicht</div>
                     </div>
                 </div>
-
-                <div class="product-right">
-                    <div class="price-caption">Pro Satz inkl. Montage</div>
-                    ${priceHtml}
-                    <div class="price-note">Preise inkl. MwSt.</div>
-                    ${nettopreis ? `<div class="price-note"><b>Netto Preis:</b> ${escapeHtml(nettopreis)} CHF</div>` : ``}
-                    <div class="${lager > 0 ? "status-green" : "status-grey"}">Lagerbestand: ${lager}</div>
-                    <button class="button" type="button" onclick="openModal('${jsSafe(bezeichnung)}','${jsSafe(markeReifen)}','${jsSafe(dimension)}','${jsSafe(angebot || vp)}','${jsSafe(empfaengerMail)}','${jsSafe(bild)}','${jsSafe(teilenummer)}','${jsSafe(hinweistext)}','${jsSafe(verkaufshinweis)}','${jsSafe(nettopreis)}')">Auswählen</button>
-                </div>
-            </div>
         `;
-    });
 
-    html += `</div></div>`;
-}
-if (((!internalMode && !adminMode) ||
-    state.internalSection === "wkr" ||
-    state.adminSection === "wkr_model") &&
-    state.marke && !state.standort) {
+        if (results.length === 0) {
+            html += `<div class="empty-note">Für diese Filter wurden keine Produkte gefunden.</div>`;
+        }
+
+        results.forEach(r => {
+            const lager = parseInt(clean(r["Lager"]), 10) || 0;
+            const bild = clean(r["Bild"]) || "https://via.placeholder.com/220x140?text=Rad";
+            const bezeichnung = clean(r["Bezeichnung"]);
+            const marke = clean(r["Marke"]);
+            const standort = standortToLabel(clean(r["Standort"]));
+            const markeReifen = clean(r["Reifen"]);
+            const dimension = clean(r["Dimension"]);
+            const hinweistext = clean(r["Hinweistext"]);
+            const verkaufshinweis = clean(r["Verkaufshinweis"]);
+            const teilenummer = clean(r["TN"]);
+            const vp = clean(r["VP"]);
+            const angebot = clean(r["Angebotspreis"]);
+            const nettopreis = clean(r["Nettopreis"]);
+            const empfaengerMail = clean(r["EmpfängerMail"] || r["EmpfaengerMail"]);
+
+            const vpNum = parsePriceValue(vp);
+            const angebotNum = parsePriceValue(angebot);
+
+            let priceHtml = ``;
+
+            if (angebotNum !== null && angebotNum > 0 && vpNum !== null && vpNum > 0 && angebotNum < vpNum) {
+                priceHtml = `
+                    <div class="new-price">${escapeHtml(angebot)} CHF</div>
+                    <div class="old-price">UPE: ${escapeHtml(vp)} CHF</div>
+                `;
+            } else if (angebotNum !== null && angebotNum > 0) {
+                priceHtml = `<div class="new-price">${escapeHtml(angebot)} CHF</div>`;
+            } else if (vpNum !== null && vpNum > 0) {
+                priceHtml = `<div class="new-price">${escapeHtml(vp)} CHF</div>`;
+            } else {
+                priceHtml = `<div class="new-price">Preis offen</div>`;
+            }
+
+            html += `
+                <div class="product">
+                    <div class="product-left">
+                        <img src="${escapeHtml(bild)}" alt="${escapeHtml(bezeichnung)}" class="clickable-image" onclick="toggleImageZoom(this)">
+                        <div class="product-info">
+                            <div class="product-title">${escapeHtml(bezeichnung)}</div>
+                            <div class="product-brand">${escapeHtml(marke)} / ${escapeHtml(markeReifen)}</div>
+                            <div class="product-dimension">${escapeHtml(dimension)}</div>
+                            <div class="product-detail"><b>Standort:</b> ${escapeHtml(standort)}</div>
+                            ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
+                            ${hinweistext ? `<div class="product-hinweis">${escapeHtml(hinweistext)}</div>` : ``}
+                            ${verkaufshinweis ? `<div class="product-detail"><b>Hinweis:</b> ${escapeHtml(verkaufshinweis)}</div>` : ``}
+                        </div>
+                    </div>
+
+                    <div class="product-right">
+                        <div class="price-caption">Pro Satz inkl. Montage</div>
+                        ${priceHtml}
+                        <div class="price-note">Preise inkl. MwSt.</div>
+                        ${nettopreis ? `<div class="price-note"><b>Netto Preis:</b> ${escapeHtml(nettopreis)} CHF</div>` : ``}
+                        <div class="${lager > 0 ? "status-green" : "status-grey"}">Lagerbestand: ${lager}</div>
+                        <button class="button" type="button" onclick="openModal('${jsSafe(bezeichnung)}','${jsSafe(markeReifen)}','${jsSafe(dimension)}','${jsSafe(angebot || vp)}','${jsSafe(empfaengerMail)}','${jsSafe(bild)}','${jsSafe(teilenummer)}','${jsSafe(hinweistext)}','${jsSafe(verkaufshinweis)}','${jsSafe(nettopreis)}')">Auswählen</button>
+                    </div>
+                </div>
+            `;
+        });
+
+        html += `</div></div>`;
+    }
+
+    if (((!internalMode && !adminMode) ||
+        state.internalSection === "wkr" ||
+        state.adminSection === "wkr_model") &&
+        state.marke && !state.standort) {
         const standorte = [...new Set(
             produkte
                 .filter(x => clean(x["Marke"]) === state.marke)
@@ -1806,9 +2049,9 @@ if (((!internalMode && !adminMode) ||
     }
 
     if (((!internalMode && !adminMode) ||
-    state.internalSection === "wkr" ||
-    state.adminSection === "wkr_model") &&
-    state.marke && state.standort && !state.reihe) {
+        state.internalSection === "wkr" ||
+        state.adminSection === "wkr_model") &&
+        state.marke && state.standort && !state.reihe) {
         const reihen = [...new Set(
             mapping
                 .filter(x => clean(x["Marke"]) === state.marke)
@@ -1827,9 +2070,9 @@ if (((!internalMode && !adminMode) ||
     }
 
     if (((!internalMode && !adminMode) ||
-    state.internalSection === "wkr" ||
-    state.adminSection === "wkr_model") &&
-    state.marke && state.standort && state.reihe && !state.modell) {
+        state.internalSection === "wkr" ||
+        state.adminSection === "wkr_model") &&
+        state.marke && state.standort && state.reihe && !state.modell) {
         const modelle = [...new Set(
             mapping
                 .filter(x =>
@@ -1864,10 +2107,10 @@ if (((!internalMode && !adminMode) ||
         html += `</div>`;
     }
 
-  if (((!internalMode && !adminMode) ||
-    state.internalSection === "wkr" ||
-    state.adminSection === "wkr_model") &&
-    state.marke && state.standort && state.reihe && state.modell && !state.motor) {
+    if (((!internalMode && !adminMode) ||
+        state.internalSection === "wkr" ||
+        state.adminSection === "wkr_model") &&
+        state.marke && state.standort && state.reihe && state.modell && !state.motor) {
         const motors = [...new Set(
             mapping
                 .filter(x =>
@@ -1888,10 +2131,10 @@ if (((!internalMode && !adminMode) ||
         html += `</div>`;
     }
 
-if (((!internalMode && !adminMode) ||
-    state.internalSection === "wkr" ||
-    state.adminSection === "wkr_model") &&
-    state.marke && state.standort && state.reihe && state.modell && state.motor) {
+    if (((!internalMode && !adminMode) ||
+        state.internalSection === "wkr" ||
+        state.adminSection === "wkr_model") &&
+        state.marke && state.standort && state.reihe && state.modell && state.motor) {
         const fahrzeug = fahrzeuge.find(f =>
             clean(f["Marke"]) === state.marke &&
             clean(f["Reihe"]) === state.reihe &&
@@ -1960,10 +2203,10 @@ if (((!internalMode && !adminMode) ||
             const hinweistext = clean(r["Hinweistext"]);
             const verkaufshinweis = clean(r["Verkaufshinweis"]);
             const teilenummer = clean(r["TN"]);
-           const vp = clean(r["VP"]);
-const angebot = clean(r["Angebotspreis"]);
-const nettopreis = clean(r["Nettopreis"]);
-const empfaengerMail = clean(r["EmpfängerMail"] || r["EmpfaengerMail"]);
+            const vp = clean(r["VP"]);
+            const angebot = clean(r["Angebotspreis"]);
+            const nettopreis = clean(r["Nettopreis"]);
+            const empfaengerMail = clean(r["EmpfängerMail"] || r["EmpfaengerMail"]);
 
             const vpNum = parsePriceValue(vp);
             const angebotNum = parsePriceValue(angebot);
@@ -1995,45 +2238,48 @@ const empfaengerMail = clean(r["EmpfängerMail"] || r["EmpfaengerMail"]);
                 priceHtml = `<div class="new-price">${escapeHtml(vp)} CHF</div>`;
             }
 
-          const statusHtml = (internalMode || adminMode)
-    ? `<div class="${lager > 0 ? "status-green" : "status-grey"}">Lagerbestand: ${lager}</div>`
-    : isSoldOut
-        ? `<div class="status-grey">Ausverkauft</div><div class="delivery-note">Zurzeit nicht verfügbar</div>`
-        : isOrderable
-            ? `<div class="status-red">Auf Bestellung</div><div class="delivery-note">Lieferzeit 5-10 Arbeitstage</div>`
-            : `<div class="status-green">An Lager</div><div class="delivery-note">Sofort verfügbar</div>`;
+            const statusHtml = (internalMode || adminMode)
+                ? `<div class="${lager > 0 ? "status-green" : "status-grey"}">Lagerbestand: ${lager}</div>`
+                : isSoldOut
+                    ? `<div class="status-grey">Ausverkauft</div><div class="delivery-note">Zurzeit nicht verfügbar</div>`
+                    : isOrderable
+                        ? `<div class="status-red">Auf Bestellung</div><div class="delivery-note">Lieferzeit 5-10 Arbeitstage</div>`
+                        : `<div class="status-green">An Lager</div><div class="delivery-note">Sofort verfügbar</div>`;
+
             const buttonHtml = isSoldOut
                 ? `<button class="button button-disabled" type="button">Nicht verfügbar</button>`
-               : `<button class="button" type="button" onclick="openModal('${jsSafe(bezeichnung)}','${jsSafe(markeReifen)}','${jsSafe(dimension)}','${jsSafe(angebot || vp)}','${jsSafe(empfaengerMail)}','${jsSafe(bild)}','${jsSafe(teilenummer)}','${jsSafe(hinweistext)}','${jsSafe(verkaufshinweis)}','${jsSafe(nettopreis)}')">Auswählen</button>`;
+                : `<button class="button" type="button" onclick="openModal('${jsSafe(bezeichnung)}','${jsSafe(markeReifen)}','${jsSafe(dimension)}','${jsSafe(angebot || vp)}','${jsSafe(empfaengerMail)}','${jsSafe(bild)}','${jsSafe(teilenummer)}','${jsSafe(hinweistext)}','${jsSafe(verkaufshinweis)}','${jsSafe(nettopreis)}')">Auswählen</button>`;
+
             html += `
                 <div class="product ${isSoldOut ? "sold-out" : ""}">
-                   <div class="product-left">
-    <img src="${escapeHtml(bild)}" alt="${escapeHtml(bezeichnung)}" class="clickable-image" onclick="toggleImageZoom(this)">
-    <div class="product-info">
-        <div class="product-title">${escapeHtml(bezeichnung)}</div>
-        <div class="product-brand">${escapeHtml(markeReifen)}</div>
-        <div class="product-dimension">${escapeHtml(dimension)}</div>
-        ${hinweistext ? `<div class="product-hinweis">${escapeHtml(hinweistext)}</div>` : ``}
-        ${verkaufshinweis ? `<div class="product-detail"><b>Hinweis:</b> ${escapeHtml(verkaufshinweis)}</div>` : ``}
-        ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
-    </div>
-</div>
+                    <div class="product-left">
+                        <img src="${escapeHtml(bild)}" alt="${escapeHtml(bezeichnung)}" class="clickable-image" onclick="toggleImageZoom(this)">
+                        <div class="product-info">
+                            <div class="product-title">${escapeHtml(bezeichnung)}</div>
+                            <div class="product-brand">${escapeHtml(markeReifen)}</div>
+                            <div class="product-dimension">${escapeHtml(dimension)}</div>
+                            ${hinweistext ? `<div class="product-hinweis">${escapeHtml(hinweistext)}</div>` : ``}
+                            ${verkaufshinweis ? `<div class="product-detail"><b>Hinweis:</b> ${escapeHtml(verkaufshinweis)}</div>` : ``}
+                            ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
+                        </div>
+                    </div>
 
                     <div class="product-right">
-    <div class="price-caption">Pro Satz inkl. Montage</div>
-    ${priceHtml}
-    <div class="price-note">Preise inkl. MwSt.</div>
-    ${(internalMode || adminMode) && nettopreis ? `<div class="price-note"><b>Netto Preis:</b> ${escapeHtml(nettopreis)} CHF</div>` : ``}
-    ${statusHtml}
-    ${buttonHtml}
-</div>
+                        <div class="price-caption">Pro Satz inkl. Montage</div>
+                        ${priceHtml}
+                        <div class="price-note">Preise inkl. MwSt.</div>
+                        ${(internalMode || adminMode) && nettopreis ? `<div class="price-note"><b>Netto Preis:</b> ${escapeHtml(nettopreis)} CHF</div>` : ``}
+                        ${statusHtml}
+                        ${buttonHtml}
+                    </div>
                 </div>
             `;
         });
 
         html += `</div>`;
     }
-   if (internalMode && state.internalSection === "reifen") {
+
+    if (internalMode && state.internalSection === "reifen") {
         const tireResults = getFilteredReifen();
 
         html += `
@@ -2084,85 +2330,82 @@ const empfaengerMail = clean(r["EmpfängerMail"] || r["EmpfaengerMail"]);
                 html += `<div class="tire-empty-note">Für diese Reifengrösse wurden keine aktiven Reifen gefunden.</div>`;
             }
 
-           tireResults.forEach(r => {
-    const bild = clean(r["Bild"]) || "https://via.placeholder.com/220x140?text=Reifen";
-    const hersteller = clean(r["Hersteller"]);
-    const reifentyp = clean(r["Reifentyp"]);
-    const profil = clean(r["Profil"]);
-    const lastindex = clean(r["Lastindex"]);
-    const geschwindigkeitsindex = clean(r["Geschwindigkeitsindex"]);
-    const runflat = normalizeYesNo(r["Runflat"]);
-    const dot = clean(r["DOT"]);
-    const anzahl = clean(r["Anzahl"]);
-    const standort = standortToLabel(clean(r["Standort"]));
-    const angebotspreis = clean(r["Angebotspreis"]);
-    const verkaufspreis = clean(r["Verkaufspreis"]);
-    const teilenummer = clean(r["Teilenummer"]);
-    const groesse = formatTireSize(r);
+            tireResults.forEach(r => {
+                const bild = clean(r["Bild"]) || "https://via.placeholder.com/220x140?text=Reifen";
+                const hersteller = clean(r["Hersteller"]);
+                const reifentyp = clean(r["Reifentyp"]);
+                const profil = clean(r["Profil"]);
+                const lastindex = clean(r["Lastindex"]);
+                const geschwindigkeitsindex = clean(r["Geschwindigkeitsindex"]);
+                const runflat = normalizeYesNo(r["Runflat"]);
+                const dot = clean(r["DOT"]);
+                const anzahl = clean(r["Anzahl"]);
+                const standort = standortToLabel(clean(r["Standort"]));
+                const vkpreis = clean(r["VK Preis"]);
+                const teilenummer = clean(r["Teilenummer"]);
+                const groesse = formatTireSize(r);
 
-    const hauptpreis = angebotspreis || verkaufspreis;
-    const hauptpreisNum = parsePriceValue(hauptpreis) || 0;
-    const qtyOptions = getTireQuantityOptions(anzahl);
+                const hauptpreis = vkpreis;
+                const hauptpreisNum = parsePriceValue(hauptpreis) || 0;
+                const qtyOptions = getTireQuantityOptions(anzahl);
+                const qtyOptionsHtml = qtyOptions.map(q => `<option value="${q}">${q}</option>`).join("");
 
-    const qtyOptionsHtml = qtyOptions.map(q => `<option value="${q}">${q}</option>`).join("");
-
-    html += `
-        <div class="product">
-            <div class="product-left">
-                <img src="${escapeHtml(bild)}" alt="${escapeHtml(hersteller)}" class="clickable-image" onclick="toggleImageZoom(this)">
-              <div class="product-info">
-    ${reifentyp ? `<div class="product-brand">${escapeHtml(reifentyp)}reifen</div>` : ``}
-    ${hersteller ? `<div class="product-title">${escapeHtml(hersteller)}</div>` : ``}
-    ${profil ? `<div class="product-brand">${escapeHtml(profil)}</div>` : ``}
-    ${(groesse || lastindex || geschwindigkeitsindex) ? `<div class="product-dimension">${escapeHtml(groesse)} ${escapeHtml(lastindex)}${escapeHtml(geschwindigkeitsindex)}</div>` : ``}
-
-    ${runflat ? `<div class="product-detail"><b>Runflat:</b> ${escapeHtml(runflat)}</div>` : ``}
-    ${anzahl ? `<div class="product-detail"><b>An Lager:</b> ${escapeHtml(anzahl)}</div>` : ``}
-    ${standort ? `<div class="product-detail"><b>Standort:</b> ${escapeHtml(standort)}</div>` : ``}
-    ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
-   ${dot ? `<div class="tire-dot"><b>DOT:</b> ${escapeHtml(dot)}</div>` : ``}
-</div>
-            </div>
-
-            <div class="product-right">
-                <div class="price-caption">Angebotspreis</div>
-                ${hauptpreis ? `<div class="tire-price-main">${escapeHtml(hauptpreis)} CHF</div>` : `<div class="tire-price-main">Preis offen</div>`}
-
-                ${
-                    qtyOptions.length > 0
-                        ? `
-                        <div class="tire-qty-wrap">
-                            <label class="tire-qty-label">Menge wählen</label>
-                            <select class="tire-qty-select" onchange="updateTirePrice(this, '${jsSafe(hauptpreisNum)}')">
-                                ${qtyOptionsHtml}
-                            </select>
+                html += `
+                    <div class="product">
+                        <div class="product-left">
+                            <img src="${escapeHtml(bild)}" alt="${escapeHtml(hersteller)}" class="clickable-image" onclick="toggleImageZoom(this)">
+                            <div class="product-info">
+                                ${reifentyp ? `<div class="product-brand">${escapeHtml(reifentyp)}reifen</div>` : ``}
+                                ${hersteller ? `<div class="product-title">${escapeHtml(hersteller)}</div>` : ``}
+                                ${profil ? `<div class="product-brand">${escapeHtml(profil)}</div>` : ``}
+                                ${(groesse || lastindex || geschwindigkeitsindex) ? `<div class="product-dimension">${escapeHtml(groesse)} ${escapeHtml(lastindex)}${escapeHtml(geschwindigkeitsindex)}</div>` : ``}
+                                ${runflat ? `<div class="product-detail"><b>Runflat:</b> ${escapeHtml(runflat)}</div>` : ``}
+                                ${anzahl ? `<div class="product-detail"><b>An Lager:</b> ${escapeHtml(anzahl)}</div>` : ``}
+                                ${standort ? `<div class="product-detail"><b>Standort:</b> ${escapeHtml(standort)}</div>` : ``}
+                                ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
+                                ${dot ? `<div class="tire-dot" style="${isDotOlderThan3Years(dot) ? 'color:#c62828; font-weight:700;' : 'color:#1f1f1f; font-weight:700;'}"><b>DOT:</b> ${escapeHtml(dot)}</div>` : ``}
+                            </div>
                         </div>
-                        `
-                        : ``
-                }
 
-                <div class="tire-price-note">inkl. MwSt.</div>
+                        <div class="product-right">
+                            <div class="price-caption">Angebotspreis</div>
+                            ${hauptpreis ? `<div class="tire-price-main">${escapeHtml(hauptpreis)} CHF</div>` : `<div class="tire-price-main">Preis offen</div>`}
 
-                <button
-                    class="button"
-                    type="button"
-                    onclick="openModal(
-                        '${jsSafe((hersteller || '') + ((hersteller && profil) ? ' ' : '') + (profil || ''))}',
-                        '${jsSafe(reifentyp)}',
-                        '${jsSafe(groesse)}',
-                        this.closest('.product-right').querySelector('.tire-price-main').textContent.replace(' CHF',''),
-                        'tv-g-fp@emmeneggerag.ch',
-                        '${jsSafe(bild)}',
-                        '${jsSafe(teilenummer)}',
-                        '${jsSafe("DOT: " + dot + (anzahl ? " | Anzahl: " + anzahl : "") + (runflat ? " | Runflat: " + runflat : ""))}',
-                        '${jsSafe("Standort: " + standort)}',
-                        ''
-                    )"
-                >Auswählen</button>
-            </div>
-        </div>
-    `;
-});
+                            ${
+                                qtyOptions.length > 0
+                                    ? `
+                                    <div class="tire-qty-wrap">
+                                        <label class="tire-qty-label">Menge wählen</label>
+                                        <select class="tire-qty-select" onchange="updateTirePrice(this, '${jsSafe(hauptpreisNum)}')">
+                                            ${qtyOptionsHtml}
+                                        </select>
+                                    </div>
+                                    `
+                                    : ``
+                            }
+
+                            <div class="tire-price-note">inkl. MwSt.</div>
+
+                            <button
+                                class="button"
+                                type="button"
+                                onclick="openModal(
+                                    '${jsSafe((hersteller || '') + ((hersteller && profil) ? ' ' : '') + (profil || ''))}',
+                                    '${jsSafe(reifentyp)}',
+                                    '${jsSafe(groesse)}',
+                                    this.closest('.product-right').querySelector('.tire-price-main').textContent.replace(' CHF',''),
+                                    'tv-g-fp@emmeneggerag.ch',
+                                    '${jsSafe(bild)}',
+                                    '${jsSafe(teilenummer)}',
+                                    '${jsSafe("DOT: " + dot + (anzahl ? " | Anzahl: " + anzahl : "") + (runflat ? " | Runflat: " + runflat : ""))}',
+                                    '${jsSafe("Standort: " + standort)}',
+                                    ''
+                                )"
+                            >Auswählen</button>
+                        </div>
+                    </div>
+                `;
+            });
 
             html += `</div>`;
         }
@@ -2180,7 +2423,8 @@ function updateBrandTheme() {
     if (state.marke === "MINI") {
         document.body.classList.add("mini-mode");
     }
-     }
+}
+
 function deactivateAllModes() {
     internalMode = false;
     adminMode = false;
@@ -2203,8 +2447,12 @@ function deactivateAllModes() {
         publicBtn.style.display = "none";
     }
 
-    render();
+    closeModal();
+closeAddTireModal();
+closeEditTireModal();
+render();
 }
+
 function activateInternalMode() {
     if (internalMode) {
         alert("Der interne Verkaufsmodus ist bereits aktiv.");
@@ -2215,10 +2463,10 @@ function activateInternalMode() {
     if (enteredPassword === null) return;
 
     if (enteredPassword === internalPassword) {
-    internalMode = true;
-    adminMode = false;
-    state.internalSection = null;
-    state.adminSection = null;
+        internalMode = true;
+        adminMode = false;
+        state.internalSection = null;
+        state.adminSection = null;
 
         const publicBtn = document.getElementById("publicViewBtn");
         if (publicBtn) {
@@ -2242,6 +2490,7 @@ function activateInternalMode() {
         alert("Falsches Passwort.");
     }
 }
+
 function activateAdminMode() {
     if (adminMode) {
         alert("Der Administrator-Modus ist bereits aktiv.");
@@ -2255,7 +2504,7 @@ function activateAdminMode() {
         adminMode = true;
         internalMode = false;
         state.internalSection = null;
-state.adminSection = null;
+        state.adminSection = null;
 
         const publicBtn = document.getElementById("publicViewBtn");
         if (publicBtn) {
@@ -2279,6 +2528,7 @@ state.adminSection = null;
         alert("Falsches Passwort.");
     }
 }
+
 function updateHeroImage() {
     const hero = document.getElementById("heroBanner");
     if (!hero) return;
@@ -2305,6 +2555,7 @@ function updateHeroImage() {
 
     hero.style.backgroundImage = `url('${heroImage}')`;
 }
+
 function selectStandort(s) {
     state.standort = s;
     state.reihe = null;
@@ -2348,8 +2599,11 @@ function resetSelection() {
     state.motor = null;
     selectedProduct = null;
     closeModal();
+    closeAddTireModal();
+    closeEditTireModal();
     render();
 }
+
 function applyTireSearch() {
     tireSearch.direkt = clean(document.getElementById("tireDirektInput")?.value);
     tireSearch.profilbreite = clean(document.getElementById("tireBreiteInput")?.value);
@@ -2365,7 +2619,8 @@ function resetTireSearch() {
     tireSearch.zoll = "";
     render();
 }
-    function startEdit(fieldId) {
+
+function startEdit(fieldId) {
     editingField = fieldId;
     render();
 }
@@ -2391,7 +2646,8 @@ async function saveEdit(sheet, keyField, keyValue, updateField, inputId) {
     editingField = "";
     render();
 }
-    function updateTirePrice(selectEl, basePrice) {
+
+function updateTirePrice(selectEl, basePrice) {
     const wrap = selectEl.closest(".product-right");
     if (!wrap) return;
 
@@ -2404,25 +2660,27 @@ async function saveEdit(sheet, keyField, keyValue, updateField, inputId) {
         target.textContent = `${total.toFixed(2).replace(".00", "")} CHF`;
     }
 }
+
 function openModal(bezeichnung, marke, dimension, preis, empfaengerMail, bild, teilenummer, hinweistext, verkaufshinweis, nettopreis) {
     selectedProduct = {
-    bezeichnung: bezeichnung,
-    marke: marke,
-    dimension: dimension,
-    preis: preis,
-    nettopreis: nettopreis,
-    empfaengerMail: empfaengerMail,
-    bild: bild,
-    teilenummer: teilenummer,
-    hinweistext: hinweistext,
-    verkaufshinweis: verkaufshinweis
-};
+        bezeichnung: bezeichnung,
+        marke: marke,
+        dimension: dimension,
+        preis: preis,
+        nettopreis: nettopreis,
+        empfaengerMail: empfaengerMail,
+        bild: bild,
+        teilenummer: teilenummer,
+        hinweistext: hinweistext,
+        verkaufshinweis: verkaufshinweis
+    };
+
     document.getElementById("modalProduct").innerHTML =
-    `<b>Produkt:</b> ${escapeHtml(bezeichnung)}<br>` +
-    `${escapeHtml(marke)} ${escapeHtml(dimension)}<br>` +
-    (preis ? `<b>Preis:</b> ${escapeHtml(preis)} CHF<br>` : "") +
-    (((internalMode || adminMode) && nettopreis) ? `<b>Netto Preis:</b> ${escapeHtml(nettopreis)} CHF` : "");
-    
+        `<b>Produkt:</b> ${escapeHtml(bezeichnung)}<br>` +
+        `${escapeHtml(marke)} ${escapeHtml(dimension)}<br>` +
+        (preis ? `<b>Preis:</b> ${escapeHtml(preis)} CHF<br>` : "") +
+        (((internalMode || adminMode) && nettopreis) ? `<b>Netto Preis:</b> ${escapeHtml(nettopreis)} CHF` : "");
+
     const internalFields = document.getElementById("internalFields");
     if (internalFields) {
         internalFields.style.display = internalMode ? "block" : "none";
@@ -2433,6 +2691,311 @@ function openModal(bezeichnung, marke, dimension, preis, empfaengerMail, bild, t
 
 function closeModal() {
     document.getElementById("modal").style.display = "none";
+}
+
+function openAddTireModal() {
+    clearAddTireForm();
+    document.getElementById("addTireModal").style.display = "flex";
+}
+function openEditTireModal(rowId) {
+    const tire = reifen.find(r => clean(r["ID"]) === clean(rowId));
+
+    if (!tire) {
+        alert("Reifen nicht gefunden.");
+        return;
+    }
+
+    editingTireId = clean(rowId);
+
+    document.getElementById("editTireStandort").value = clean(tire["Standort"]);
+    document.getElementById("editTireReifentyp").value = clean(tire["Reifentyp"]);
+    document.getElementById("editTireHersteller").value = clean(tire["Hersteller"]);
+    document.getElementById("editTireProfil").value = clean(tire["Profil"]);
+    document.getElementById("editTireBreite").value = clean(tire["Profilbreite"]);
+    document.getElementById("editTireQuerschnitt").value = clean(tire["Querschnitt"]);
+    document.getElementById("editTireZoll").value = clean(tire["Zoll"]);
+    document.getElementById("editTireLastindex").value = clean(tire["Lastindex"]);
+    document.getElementById("editTireGeschwindigkeitsindex").value = clean(tire["Geschwindigkeitsindex"]);
+    document.getElementById("editTireRunflat").value = clean(tire["Runflat"]);
+    document.getElementById("editTireDot").value = clean(tire["DOT"]);
+    document.getElementById("editTireTeilenummer").value = clean(tire["Teilenummer"]);
+    document.getElementById("editTireAnzahl").value = clean(tire["Anzahl"]);
+    document.getElementById("editTireEkPreis").value = clean(tire["EK Preis"]);
+    document.getElementById("editTireVkPreis").value = clean(tire["VK Preis"]);
+    document.getElementById("editTireBild").value = clean(tire["Bild"]);
+    document.getElementById("editTireAktiv").value = clean(tire["Aktiv"]) || "Ja";
+
+    document.getElementById("editTireModal").style.display = "flex";
+}
+
+function closeEditTireModal() {
+    document.getElementById("editTireModal").style.display = "none";
+    editingTireId = "";
+}
+
+async function saveEditedTire() {
+    if (isSavingEditedTire) return;
+
+    if (!editingTireId) {
+        alert("Keine Reifen-ID vorhanden.");
+        return;
+    }
+
+    const standort = clean(document.getElementById("editTireStandort").value);
+    const reifentyp = clean(document.getElementById("editTireReifentyp").value);
+    const hersteller = clean(document.getElementById("editTireHersteller").value);
+    const profil = clean(document.getElementById("editTireProfil").value);
+    const profilbreite = clean(document.getElementById("editTireBreite").value);
+    const querschnitt = clean(document.getElementById("editTireQuerschnitt").value);
+    const zoll = clean(document.getElementById("editTireZoll").value);
+    const lastindex = clean(document.getElementById("editTireLastindex").value);
+    const geschwindigkeitsindex = clean(document.getElementById("editTireGeschwindigkeitsindex").value);
+    const runflat = clean(document.getElementById("editTireRunflat").value);
+    const dot = clean(document.getElementById("editTireDot").value);
+    const teilenummer = clean(document.getElementById("editTireTeilenummer").value);
+    const anzahl = clean(document.getElementById("editTireAnzahl").value);
+    const ekpreis = clean(document.getElementById("editTireEkPreis").value);
+    const vkpreis = clean(document.getElementById("editTireVkPreis").value);
+    const bild = clean(document.getElementById("editTireBild").value);
+    const aktiv = clean(document.getElementById("editTireAktiv").value);
+
+    if (!standort || !reifentyp || !hersteller || !profil || !profilbreite || !querschnitt || !zoll || !teilenummer || !anzahl || !vkpreis || !aktiv) {
+        alert("Bitte alle Pflichtfelder ausfüllen.");
+        return;
+    }
+
+    isSavingEditedTire = true;
+
+    try {
+        const response = await fetch(APPS_SCRIPT_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "text/plain;charset=utf-8"
+            },
+            body: JSON.stringify({
+                sheet: "Reifen",
+                keyField: "ID",
+                keyValue: editingTireId,
+                updates: {
+                    "Standort": standort,
+                    "Reifentyp": reifentyp,
+                    "Hersteller": hersteller,
+                    "Profil": profil,
+                    "Profilbreite": profilbreite,
+                    "Querschnitt": querschnitt,
+                    "Zoll": zoll,
+                    "Lastindex": lastindex,
+                    "Geschwindigkeitsindex": geschwindigkeitsindex,
+                    "Runflat": runflat,
+                    "DOT": dot,
+                    "Teilenummer": teilenummer,
+                    "Anzahl": anzahl,
+                    "EK Preis": ekpreis,
+                    "VK Preis": vkpreis,
+                    "Bild": bild,
+                    "Aktiv": aktiv
+                }
+            }),
+            redirect: "follow"
+        });
+
+        const resultText = await response.text();
+
+        if (resultText === "OK") {
+            const row = reifen.find(r => clean(r["ID"]) === clean(editingTireId));
+            if (row) {
+                row["Standort"] = standort;
+                row["Reifentyp"] = reifentyp;
+                row["Hersteller"] = hersteller;
+                row["Profil"] = profil;
+                row["Profilbreite"] = profilbreite;
+                row["Querschnitt"] = querschnitt;
+                row["Zoll"] = zoll;
+                row["Lastindex"] = lastindex;
+                row["Geschwindigkeitsindex"] = geschwindigkeitsindex;
+                row["Runflat"] = runflat;
+                row["DOT"] = dot;
+                row["Teilenummer"] = teilenummer;
+                row["Anzahl"] = anzahl;
+                row["EK Preis"] = ekpreis;
+                row["VK Preis"] = vkpreis;
+                row["Bild"] = bild;
+                row["Aktiv"] = aktiv;
+            }
+
+            alert("Reifen wurde aktualisiert.");
+            closeEditTireModal();
+            render();
+        } else {
+            alert("Fehler: " + resultText);
+        }
+    } catch (err) {
+        alert("Speichern fehlgeschlagen: " + err.message);
+        console.error(err);
+    } finally {
+        isSavingEditedTire = false;
+    }
+}
+
+async function deleteTire() {
+    if (isDeletingTire) return;
+
+    if (!editingTireId) {
+        alert("Keine Reifen-ID vorhanden.");
+        return;
+    }
+
+    const confirmed = confirm("Möchtest du diesen Reifen wirklich löschen?");
+    if (!confirmed) return;
+
+    isDeletingTire = true;
+
+    try {
+        const response = await fetch(APPS_SCRIPT_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "text/plain;charset=utf-8"
+            },
+            body: JSON.stringify({
+                action: "deleteRow",
+                sheet: "Reifen",
+                keyField: "ID",
+                keyValue: editingTireId
+            }),
+            redirect: "follow"
+        });
+
+        const resultText = await response.text();
+
+        if (resultText === "OK") {
+            reifen = reifen.filter(r => clean(r["ID"]) !== clean(editingTireId));
+            alert("Reifen wurde gelöscht.");
+            closeEditTireModal();
+            render();
+        } else {
+            alert("Fehler: " + resultText);
+        }
+    } catch (err) {
+        alert("Löschen fehlgeschlagen: " + err.message);
+        console.error(err);
+    } finally {
+        isDeletingTire = false;
+    }
+}
+function closeAddTireModal() {
+    document.getElementById("addTireModal").style.display = "none";
+}
+
+function clearAddTireForm() {
+    document.getElementById("newTireStandort").value = "";
+    document.getElementById("newTireReifentyp").value = "";
+    document.getElementById("newTireHersteller").value = "";
+    document.getElementById("newTireProfil").value = "";
+    document.getElementById("newTireBreite").value = "";
+    document.getElementById("newTireQuerschnitt").value = "";
+    document.getElementById("newTireZoll").value = "";
+    document.getElementById("newTireLastindex").value = "";
+    document.getElementById("newTireGeschwindigkeitsindex").value = "";
+    document.getElementById("newTireRunflat").value = "";
+    document.getElementById("newTireDot").value = "";
+    document.getElementById("newTireTeilenummer").value = "";
+    document.getElementById("newTireAnzahl").value = "1";
+    document.getElementById("newTireEkPreis").value = "";
+    document.getElementById("newTireVkPreis").value = "";
+    document.getElementById("newTireBild").value = "";
+    document.getElementById("newTireAktiv").value = "Ja";
+}
+
+async function saveNewTire() {
+    if (isSavingNewTire) return;
+
+    const standort = clean(document.getElementById("newTireStandort").value);
+    const reifentyp = clean(document.getElementById("newTireReifentyp").value);
+    const hersteller = clean(document.getElementById("newTireHersteller").value);
+    const profil = clean(document.getElementById("newTireProfil").value);
+    const profilbreite = clean(document.getElementById("newTireBreite").value);
+    const querschnitt = clean(document.getElementById("newTireQuerschnitt").value);
+    const zoll = clean(document.getElementById("newTireZoll").value);
+    const lastindex = clean(document.getElementById("newTireLastindex").value);
+    const geschwindigkeitsindex = clean(document.getElementById("newTireGeschwindigkeitsindex").value);
+    const runflat = clean(document.getElementById("newTireRunflat").value);
+    const dot = clean(document.getElementById("newTireDot").value);
+    const teilenummer = clean(document.getElementById("newTireTeilenummer").value);
+    const anzahl = clean(document.getElementById("newTireAnzahl").value);
+    const ekpreis = clean(document.getElementById("newTireEkPreis").value);
+    const vkpreis = clean(document.getElementById("newTireVkPreis").value);
+    const bild = clean(document.getElementById("newTireBild").value);
+    const aktiv = clean(document.getElementById("newTireAktiv").value);
+
+    if (!standort || !reifentyp || !hersteller || !profil || !profilbreite || !querschnitt || !zoll || !teilenummer || !anzahl || !vkpreis || !aktiv) {
+        alert("Bitte alle Pflichtfelder ausfüllen.");
+        return;
+    }
+
+  
+    isSavingNewTire = true;
+
+    const newRow = {
+        "Standort": standort,
+        "Reifentyp": reifentyp,
+        "Hersteller": hersteller,
+        "Profil": profil,
+        "Profilbreite": profilbreite,
+        "Querschnitt": querschnitt,
+        "Zoll": zoll,
+        "Lastindex": lastindex,
+        "Geschwindigkeitsindex": geschwindigkeitsindex,
+        "Runflat": runflat,
+        "DOT": dot,
+        "Teilenummer": teilenummer,
+        "Anzahl": anzahl,
+        "EK Preis": ekpreis,
+        "VK Preis": vkpreis,
+        "Bild": bild,
+        "Aktiv": aktiv
+    };
+
+    try {
+        const response = await fetch(APPS_SCRIPT_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "text/plain;charset=utf-8"
+            },
+            body: JSON.stringify({
+                action: "addRow",
+                sheet: "Reifen",
+                row: newRow
+            }),
+            redirect: "follow"
+        });
+
+        const resultText = await response.text();
+
+let result;
+try {
+    result = JSON.parse(resultText);
+} catch (e) {
+    result = null;
+}
+
+if (result && result.status === "OK") {
+    if (result.id) {
+        newRow.ID = result.id;
+    }
+
+    reifen.push(newRow);
+    alert("Neuer Reifen wurde gespeichert.");
+    closeAddTireModal();
+    render();
+} else {
+    alert("Fehler: " + resultText);
+}
+    } catch (err) {
+        alert("Speichern fehlgeschlagen: " + err.message);
+        console.error(err);
+    } finally {
+        isSavingNewTire = false;
+    }
 }
 
 function showOfferPreview() {
@@ -2593,7 +3156,6 @@ body {
 .print-actions button.secondary {
     background: #666;
 }
-
 @media print {
     body {
         padding: 0;
@@ -2645,12 +3207,12 @@ body {
             </div>
             <div class="offer-details">
                 <table>
-                   <tr><td>Bezeichnung</td><td>${escapeHtml(selectedProduct.bezeichnung || "")}</td></tr>
-<tr><td>Reifen</td><td>${escapeHtml(selectedProduct.marke || "")}</td></tr>
-<tr><td>Dimension</td><td>${escapeHtml(selectedProduct.dimension || "")}</td></tr>
-<tr><td>Teilenummer</td><td>${escapeHtml(selectedProduct.teilenummer || "")}</td></tr>
-${(internalMode || adminMode) && selectedProduct.nettopreis ? `<tr><td>Netto Preis</td><td>${escapeHtml(selectedProduct.nettopreis)} CHF</td></tr>` : ``}   
-</table>
+                    <tr><td>Bezeichnung</td><td>${escapeHtml(selectedProduct.bezeichnung || "")}</td></tr>
+                    <tr><td>Reifen</td><td>${escapeHtml(selectedProduct.marke || "")}</td></tr>
+                    <tr><td>Dimension</td><td>${escapeHtml(selectedProduct.dimension || "")}</td></tr>
+                    <tr><td>Teilenummer</td><td>${escapeHtml(selectedProduct.teilenummer || "")}</td></tr>
+                    ${(internalMode || adminMode) && selectedProduct.nettopreis ? `<tr><td>Netto Preis</td><td>${escapeHtml(selectedProduct.nettopreis)} CHF</td></tr>` : ``}
+                </table>
 
                 <div class="price-box">
                     <div class="price-label">Preis pro Satz inkl. Montage / Preise inkl. MwSt.</div>
@@ -2745,8 +3307,8 @@ async function sendMail() {
     formData.append("Produkt", selectedProduct?.bezeichnung || "");
     formData.append("Reifen", `${selectedProduct?.marke || ""} ${selectedProduct?.dimension || ""}`.trim());
     formData.append("Preis", selectedProduct?.preis ? `${selectedProduct.preis} CHF` : "");
-formData.append("Netto Preis", selectedProduct?.nettopreis ? `${selectedProduct.nettopreis} CHF` : "");
-formData.append("InternerModus", internalMode ? "Ja" : "Nein");
+    formData.append("Netto Preis", selectedProduct?.nettopreis ? `${selectedProduct.nettopreis} CHF` : "");
+    formData.append("InternerModus", internalMode ? "Ja" : "Nein");
     formData.append("Auftragsnummer", interneAuftragsnummer || "");
     formData.append("Kundenname intern", internerKundenname || "");
     formData.append("Ordernummer / Fahrgestellnummer", interneOrderOderFIN || "");
@@ -2836,14 +3398,13 @@ function toggleImageZoom(img) {
 
     img.classList.toggle("zoomed");
 }
+
 document.addEventListener("keydown", function(event) {
     if (event.key === "Enter") {
         const activeElement = document.activeElement;
         if (!activeElement) return;
 
-        if (
-            ["tireDirektInput", "tireBreiteInput", "tireQuerschnittInput", "tireZollInput"].includes(activeElement.id)
-        ) {
+        if (["tireDirektInput", "tireBreiteInput", "tireQuerschnittInput", "tireZollInput"].includes(activeElement.id)) {
             event.preventDefault();
             applyTireSearch();
         }
@@ -2859,10 +3420,22 @@ document.addEventListener("keydown", function(event) {
         }
     }
 });
+
 window.onclick = function(event) {
     const modal = document.getElementById("modal");
+    const addTireModal = document.getElementById("addTireModal");
+    const editTireModal = document.getElementById("editTireModal");
+
     if (event.target === modal) {
         closeModal();
+    }
+
+    if (event.target === addTireModal) {
+        closeAddTireModal();
+    }
+
+    if (event.target === editTireModal) {
+        closeEditTireModal();
     }
 };
 </script>
