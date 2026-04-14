@@ -318,7 +318,11 @@ body.mini-mode .back-home-link:hover {
     opacity: 0.55;
     filter: grayscale(100%);
 }
-
+.product.inactive-tire {
+    opacity: 0.6;
+    filter: grayscale(100%);
+    background: #fafafa;
+}
 .product.sold-out .product-title,
 .product.sold-out .product-brand,
 .product.sold-out .product-dimension,
@@ -894,6 +898,7 @@ body.mini-mode .internal-login-btn:hover {
     }
 }
 </style>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 </head>
 <body>
 
@@ -1013,9 +1018,26 @@ body.mini-mode .internal-login-btn:hover {
             </div>
 
             <div>
-                <label for="newTireHersteller">Hersteller *</label>
-                <input id="newTireHersteller" type="text" placeholder="z. B. Pirelli">
-            </div>
+    <label for="newTireHerstellerSelect">Hersteller *</label>
+    <select id="newTireHerstellerSelect" onchange="toggleNewTireOtherBrand()">
+        <option value="">Bitte wählen</option>
+        <option value="Bridgestone">Bridgestone</option>
+        <option value="Continental">Continental</option>
+        <option value="Dunlop">Dunlop</option>
+        <option value="Goodyear">Goodyear</option>
+        <option value="Hankook">Hankook</option>
+        <option value="Michelin">Michelin</option>
+        <option value="Nexen">Nexen</option>
+        <option value="Pirelli">Pirelli</option>
+        <option value="Yokohama">Yokohama</option>
+        <option value="Andere">Andere</option>
+    </select>
+</div>
+
+<div id="newTireHerstellerOtherWrap" style="display:none;">
+    <label for="newTireHerstellerOther">Anderer Hersteller *</label>
+    <input id="newTireHerstellerOther" type="text" placeholder="Hersteller eingeben">
+</div>
 
             <div>
                 <label for="newTireProfil">Profil *</label>
@@ -1081,11 +1103,6 @@ body.mini-mode .internal-login-btn:hover {
                 <input id="newTireVkPreis" type="text" placeholder="z. B. 180">
             </div>
 
-            <div style="grid-column:1 / -1;">
-                <label for="newTireBild">Bild URL</label>
-                <input id="newTireBild" type="text" placeholder="https://...">
-            </div>
-
             <div>
                 <label for="newTireAktiv">Aktiv *</label>
                 <select id="newTireAktiv">
@@ -1127,11 +1144,27 @@ body.mini-mode .internal-login-btn:hover {
                 </select>
             </div>
 
-            <div>
-                <label for="editTireHersteller">Hersteller *</label>
-                <input id="editTireHersteller" type="text" placeholder="z. B. Pirelli">
-            </div>
+           <div>
+    <label for="editTireHerstellerSelect">Hersteller *</label>
+    <select id="editTireHerstellerSelect" onchange="toggleEditTireOtherBrand()">
+        <option value="">Bitte wählen</option>
+        <option value="Bridgestone">Bridgestone</option>
+        <option value="Continental">Continental</option>
+        <option value="Dunlop">Dunlop</option>
+        <option value="Goodyear">Goodyear</option>
+        <option value="Hankook">Hankook</option>
+        <option value="Michelin">Michelin</option>
+        <option value="Nexen">Nexen</option>
+        <option value="Pirelli">Pirelli</option>
+        <option value="Yokohama">Yokohama</option>
+        <option value="Andere">Andere</option>
+    </select>
+</div>
 
+<div id="editTireHerstellerOtherWrap" style="display:none;">
+    <label for="editTireHerstellerOther">Anderer Hersteller *</label>
+    <input id="editTireHerstellerOther" type="text" placeholder="Hersteller eingeben">
+</div>
             <div>
                 <label for="editTireProfil">Profil *</label>
                 <input id="editTireProfil" type="text" placeholder="z. B. SottoZero 3">
@@ -1196,11 +1229,6 @@ body.mini-mode .internal-login-btn:hover {
                 <input id="editTireVkPreis" type="text" placeholder="z. B. 180">
             </div>
 
-            <div style="grid-column:1 / -1;">
-                <label for="editTireBild">Bild URL</label>
-                <input id="editTireBild" type="text" placeholder="https://...">
-            </div>
-
             <div>
                 <label for="editTireAktiv">Aktiv *</label>
                 <select id="editTireAktiv">
@@ -1229,6 +1257,36 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw66JGYiZlVn7Bt
 const heroImageStart = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/WINTER%20Ix3.jpg?raw=true";
 const heroImageBMW = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/2026-bmw-ix3-snow-driving-04.jpg?raw=true";
 const heroImageMINI = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/MINI%20Countrymann.jpg?raw=true";
+const TIRE_IMAGE_BASE = "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/";
+
+const tireImageMap = {
+    "bridgestone_sommer": TIRE_IMAGE_BASE + "bridgestone_Sommer.jpg",
+    "bridgestone_winter": TIRE_IMAGE_BASE + "bridgestone_Winter.jpg",
+
+    "continental_sommer": TIRE_IMAGE_BASE + "continental_Sommer.jpg",
+    "continental_winter": TIRE_IMAGE_BASE + "continental_Winter.jpg",
+
+    "dunlop_sommer": TIRE_IMAGE_BASE + "dunlop_Sommer.jpg",
+    "dunlop_winter": TIRE_IMAGE_BASE + "dunlop_Winter.jpg",
+
+    "goodyear_sommer": TIRE_IMAGE_BASE + "goodyear_Sommer.jpg",
+    "goodyear_winter": TIRE_IMAGE_BASE + "goodyear_Winter.jpg",
+
+    "hankook_sommer": TIRE_IMAGE_BASE + "hankook_Sommer.jpg",
+    "hankook_winter": TIRE_IMAGE_BASE + "hankook_Winter.jpg",
+
+    "michelin_sommer": TIRE_IMAGE_BASE + "michelin_Sommer.jpg",
+    "michelin_winter": TIRE_IMAGE_BASE + "michelin_Winter.jpg",
+
+    "nexen_sommer": TIRE_IMAGE_BASE + "nexen_Sommer.jpg",
+    "nexen_winter": TIRE_IMAGE_BASE + "nexen_Winter.jpg",
+
+    "pirelli_winter": TIRE_IMAGE_BASE + "pirelli_Winter.jpg",
+    "pirelli_sommer": TIRE_IMAGE_BASE + "pirelli_Sommer.jpg",
+
+    "yokohama_sommer": TIRE_IMAGE_BASE + "yokohama_Sommer.jpg",
+    "yokohama_winter": TIRE_IMAGE_BASE + "yokohama_Winter.jpg"
+};
 
 let produkte = [];
 let mapping = [];
@@ -1269,6 +1327,7 @@ let adminReifenFilter = {
     suche: "",
     standort: "",
     reifentyp: "",
+    aktivStatus: "",
     nurAnLager: false
 };
 
@@ -1374,6 +1433,23 @@ function getTireQuantityOptions(maxQty) {
     if (qty >= 4) options.push(4);
 
     return options;
+}
+
+function getAutomaticTireImage(hersteller, reifentyp) {
+    const brand = clean(hersteller).toLowerCase();
+    const type = clean(reifentyp).toLowerCase();
+
+    let normalizedType = "";
+
+    if (type === "sommer") normalizedType = "sommer";
+    if (type === "winter") normalizedType = "winter";
+
+    if (!brand || !normalizedType) {
+        return "";
+    }
+
+    const key = `${brand}_${normalizedType}`;
+    return tireImageMap[key] || "";
 }
 
 function parseDirectTireInput(input) {
@@ -1497,28 +1573,39 @@ function getFilteredAdminReifen() {
             standort === adminReifenFilter.standort;
 
         const matchReifentyp =
-            !adminReifenFilter.reifentyp ||
-            reifentyp === adminReifenFilter.reifentyp;
+    !adminReifenFilter.reifentyp ||
+    reifentyp === adminReifenFilter.reifentyp;
 
-        const matchLager =
-            !adminReifenFilter.nurAnLager ||
-            anzahl > 0;
+const matchAktiv =
+    !adminReifenFilter.aktivStatus ||
+    aktiv === adminReifenFilter.aktivStatus;
 
-        return matchSuche && matchStandort && matchReifentyp && matchLager;
+const matchLager =
+    !adminReifenFilter.nurAnLager ||
+    anzahl > 0;
+
+return matchSuche && matchStandort && matchReifentyp && matchAktiv && matchLager;
     });
 
     results.sort((a, b) => {
-        const herstellerA = clean(a["Hersteller"]);
-        const herstellerB = clean(b["Hersteller"]);
-        const profilA = clean(a["Profil"]);
-        const profilB = clean(b["Profil"]);
+    const aktivA = clean(a["Aktiv"]) === "Ja" ? 0 : 1;
+    const aktivB = clean(b["Aktiv"]) === "Ja" ? 0 : 1;
 
-        if (herstellerA !== herstellerB) {
-            return herstellerA.localeCompare(herstellerB, "de");
-        }
+    if (aktivA !== aktivB) {
+        return aktivA - aktivB;
+    }
 
-        return profilA.localeCompare(profilB, "de");
-    });
+    const herstellerA = clean(a["Hersteller"]);
+    const herstellerB = clean(b["Hersteller"]);
+    const profilA = clean(a["Profil"]);
+    const profilB = clean(b["Profil"]);
+
+    if (herstellerA !== herstellerB) {
+        return herstellerA.localeCompare(herstellerB, "de");
+    }
+
+    return profilA.localeCompare(profilB, "de");
+});
 
     return results;
 }
@@ -1527,6 +1614,7 @@ function applyAdminReifenFilter() {
     adminReifenFilter.suche = clean(document.getElementById("adminReifenSuche")?.value);
     adminReifenFilter.standort = clean(document.getElementById("adminReifenStandort")?.value);
     adminReifenFilter.reifentyp = clean(document.getElementById("adminReifenTyp")?.value);
+    adminReifenFilter.aktivStatus = clean(document.getElementById("adminReifenAktiv")?.value);
     adminReifenFilter.nurAnLager = !!document.getElementById("adminReifenNurLager")?.checked;
     render();
 }
@@ -1535,6 +1623,7 @@ function resetAdminReifenFilter() {
     adminReifenFilter.suche = "";
     adminReifenFilter.standort = "";
     adminReifenFilter.reifentyp = "";
+    adminReifenFilter.aktivStatus = "";
     adminReifenFilter.nurAnLager = false;
     render();
 }
@@ -1791,7 +1880,7 @@ const reifentypen = [...new Set(
     <button class="button" type="button" onclick="openAddTireModal()">Neuen Reifen hinzufügen</button>
 </div>
 
-<div class="tire-search-fields" style="grid-template-columns: 2fr 1fr 1fr auto auto auto;">
+<div class="tire-search-fields" style="grid-template-columns: 2fr 1fr 1fr 1fr auto auto auto;">
     <div class="tire-search-field">
         <label for="adminReifenSuche">Suche</label>
         <input id="adminReifenSuche" type="text" placeholder="z. B. 225/45 R18, Pirelli, SottoZero, Teilenummer" value="${escapeHtml(adminReifenFilter.suche)}">
@@ -1813,6 +1902,15 @@ const reifentypen = [...new Set(
         </select>
     </div>
 
+    <div class="tire-search-field">
+        <label for="adminReifenAktiv">Status</label>
+        <select id="adminReifenAktiv">
+            <option value="">Alle</option>
+            <option value="Ja" ${adminReifenFilter.aktivStatus === "Ja" ? "selected" : ""}>Nur aktiv</option>
+            <option value="Nein" ${adminReifenFilter.aktivStatus === "Nein" ? "selected" : ""}>Nur inaktiv</option>
+        </select>
+    </div>
+
     <div class="tire-search-field" style="display:flex; align-items:center; gap:8px; min-height:42px;">
         <input id="adminReifenNurLager" type="checkbox" ${adminReifenFilter.nurAnLager ? "checked" : ""} style="width:auto; margin:0;">
         <label for="adminReifenNurLager" style="margin:0;">Nur an Lager</label>
@@ -1822,23 +1920,30 @@ const reifentypen = [...new Set(
     <button class="button button-secondary" type="button" onclick="resetAdminReifenFilter()">Zurücksetzen</button>
 </div>
             <div class="products-wrap">
-                <div class="products-header">
-                    <h2 class="products-title">Reifen Gesamtübersicht</h2>
-                    <div class="products-subline">
-                        <div>Treffer: ${results.length}</div>
-                        <div>Administrator Ansicht</div>
-                    </div>
-                </div>
+               <div class="products-header">
+    <h2 class="products-title">Reifen Gesamtübersicht</h2>
+    <div class="products-subline">
+        <div>
+            Treffer: <b>${results.length}</b> |
+            Aktiv: <span style="color:#2e7d32; font-weight:700;">${results.filter(r => clean(r["Aktiv"]) === "Ja").length}</span> |
+            Inaktiv: <span style="color:#c62828; font-weight:700;">${results.filter(r => clean(r["Aktiv"]) !== "Ja").length}</span>
+        </div>
+        <div>Administrator Ansicht</div>
+    </div>
+</div>
     `;
 
     if (results.length === 0) {
-        html += `<div class="empty-note">Für diese Filter wurden keine aktiven Reifen gefunden.</div>`;
+html += `<div class="empty-note">Für diese Filter wurden keine Reifen gefunden.</div>`;
     }
 
     results.forEach(r => {
-        const bild = clean(r["Bild"]) || "https://via.placeholder.com/220x140?text=Reifen";
         const hersteller = clean(r["Hersteller"]);
         const reifentyp = clean(r["Reifentyp"]);
+        const bild = clean(r["Bild"]) || getAutomaticTireImage(hersteller, reifentyp);
+        const bildHtml = bild
+            ? `<img src="${escapeHtml(bild)}" alt="${escapeHtml(hersteller)}" class="clickable-image" onclick="toggleImageZoom(this)">`
+            : `<div style="width:210px; height:170px; display:flex; align-items:center; justify-content:center; border:1px solid #ddd; background:#f7f7f7; color:#888; font-size:14px; text-align:center; padding:12px; box-sizing:border-box;">Kein Bild vorhanden</div>`;
         const profil = clean(r["Profil"]);
         const lastindex = clean(r["Lastindex"]);
         const geschwindigkeitsindex = clean(r["Geschwindigkeitsindex"]);
@@ -1858,10 +1963,10 @@ const reifentypen = [...new Set(
         const isSpecialPrice = ekNum !== null && vkNum !== null && ekNum > vkNum;
 
         html += `
-            <div class="product">
+           <div class="product ${aktiv !== "Ja" ? "inactive-tire" : ""}">
                 <div class="product-left">
-                    <img src="${escapeHtml(bild)}" alt="${escapeHtml(hersteller)}" class="clickable-image" onclick="toggleImageZoom(this)">
-                    <div class="product-info">
+${bildHtml}
+<div class="product-info">
                         ${reifentyp ? `<div class="product-brand">${escapeHtml(reifentyp)}reifen</div>` : ``}
                         ${hersteller ? `<div class="product-title">${escapeHtml(hersteller)}</div>` : ``}
                         ${profil ? `<div class="product-brand">${escapeHtml(profil)}</div>` : ``}
@@ -1871,7 +1976,12 @@ const reifentypen = [...new Set(
                         ${standort ? `<div class="product-detail"><b>Standort:</b> ${escapeHtml(standort)}</div>` : ``}
                         ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
                         ${dot ? `<div class="tire-dot" style="${isDotOlderThan3Years(dot) ? 'color:#c62828; font-weight:700;' : 'color:#1f1f1f; font-weight:700;'}"><b>DOT:</b> ${escapeHtml(dot)}</div>` : ``}
-                        <div class="product-detail"><b>Aktiv:</b> ${escapeHtml(aktiv || "Nein")}</div>
+                        <div class="product-detail">
+    <b>Status:</b>
+    <span style="font-weight:700; color:${aktiv === "Ja" ? "#2e7d32" : "#c62828"};">
+        ${aktiv === "Ja" ? "Aktiv" : "Inaktiv"}
+    </span>
+</div>
                     </div>
                 </div>
 
@@ -1883,12 +1993,19 @@ const reifentypen = [...new Set(
                         <b>EK Preis:</b> ${escapeHtml(ekpreis || "-")}
                     </div>
 
-                    <button
-                        class="button"
-                        type="button"
-                        style="margin-top:12px;"
-                        onclick="openEditTireModal('${jsSafe(rowId)}')"
-                    >Bearbeiten</button>
+                   <div style="display:flex; flex-direction:column; gap:10px; margin-top:12px;">
+    <button
+        class="button"
+        type="button"
+        onclick="openEditTireModal('${jsSafe(rowId)}')"
+    >Bearbeiten</button>
+
+    <button
+        class="button button-secondary"
+        type="button"
+        onclick="printTireLabel('${jsSafe(rowId)}')"
+    >Etikette drucken</button>
+</div>
                 </div>
             </div>
         `;
@@ -2331,9 +2448,12 @@ const reifentypen = [...new Set(
             }
 
             tireResults.forEach(r => {
-                const bild = clean(r["Bild"]) || "https://via.placeholder.com/220x140?text=Reifen";
                 const hersteller = clean(r["Hersteller"]);
                 const reifentyp = clean(r["Reifentyp"]);
+                const bild = clean(r["Bild"]) || getAutomaticTireImage(hersteller, reifentyp);
+                const bildHtml = bild
+                    ? `<img src="${escapeHtml(bild)}" alt="${escapeHtml(hersteller)}" class="clickable-image" onclick="toggleImageZoom(this)">`
+                    : `<div style="width:210px; height:170px; display:flex; align-items:center; justify-content:center; border:1px solid #ddd; background:#f7f7f7; color:#888; font-size:14px; text-align:center; padding:12px; box-sizing:border-box;">Kein Bild vorhanden</div>`;
                 const profil = clean(r["Profil"]);
                 const lastindex = clean(r["Lastindex"]);
                 const geschwindigkeitsindex = clean(r["Geschwindigkeitsindex"]);
@@ -2353,7 +2473,7 @@ const reifentypen = [...new Set(
                 html += `
                     <div class="product">
                         <div class="product-left">
-                            <img src="${escapeHtml(bild)}" alt="${escapeHtml(hersteller)}" class="clickable-image" onclick="toggleImageZoom(this)">
+                            ${bildHtml}
                             <div class="product-info">
                                 ${reifentyp ? `<div class="product-brand">${escapeHtml(reifentyp)}reifen</div>` : ``}
                                 ${hersteller ? `<div class="product-title">${escapeHtml(hersteller)}</div>` : ``}
@@ -2709,7 +2829,28 @@ function openEditTireModal(rowId) {
 
     document.getElementById("editTireStandort").value = clean(tire["Standort"]);
     document.getElementById("editTireReifentyp").value = clean(tire["Reifentyp"]);
-    document.getElementById("editTireHersteller").value = clean(tire["Hersteller"]);
+    const currentHersteller = clean(tire["Hersteller"]);
+const knownBrands = [
+    "Bridgestone",
+    "Continental",
+    "Dunlop",
+    "Goodyear",
+    "Hankook",
+    "Michelin",
+    "Nexen",
+    "Pirelli",
+    "Yokohama"
+];
+
+if (knownBrands.includes(currentHersteller)) {
+    document.getElementById("editTireHerstellerSelect").value = currentHersteller;
+    document.getElementById("editTireHerstellerOther").value = "";
+    document.getElementById("editTireHerstellerOtherWrap").style.display = "none";
+} else {
+    document.getElementById("editTireHerstellerSelect").value = "Andere";
+    document.getElementById("editTireHerstellerOther").value = currentHersteller;
+    document.getElementById("editTireHerstellerOtherWrap").style.display = "block";
+}
     document.getElementById("editTireProfil").value = clean(tire["Profil"]);
     document.getElementById("editTireBreite").value = clean(tire["Profilbreite"]);
     document.getElementById("editTireQuerschnitt").value = clean(tire["Querschnitt"]);
@@ -2722,7 +2863,6 @@ function openEditTireModal(rowId) {
     document.getElementById("editTireAnzahl").value = clean(tire["Anzahl"]);
     document.getElementById("editTireEkPreis").value = clean(tire["EK Preis"]);
     document.getElementById("editTireVkPreis").value = clean(tire["VK Preis"]);
-    document.getElementById("editTireBild").value = clean(tire["Bild"]);
     document.getElementById("editTireAktiv").value = clean(tire["Aktiv"]) || "Ja";
 
     document.getElementById("editTireModal").style.display = "flex";
@@ -2731,6 +2871,9 @@ function openEditTireModal(rowId) {
 function closeEditTireModal() {
     document.getElementById("editTireModal").style.display = "none";
     editingTireId = "";
+    document.getElementById("editTireHerstellerSelect").value = "";
+    document.getElementById("editTireHerstellerOther").value = "";
+    document.getElementById("editTireHerstellerOtherWrap").style.display = "none";
 }
 
 async function saveEditedTire() {
@@ -2743,7 +2886,9 @@ async function saveEditedTire() {
 
     const standort = clean(document.getElementById("editTireStandort").value);
     const reifentyp = clean(document.getElementById("editTireReifentyp").value);
-    const hersteller = clean(document.getElementById("editTireHersteller").value);
+    const herstellerSelect = clean(document.getElementById("editTireHerstellerSelect").value);
+const herstellerOther = clean(document.getElementById("editTireHerstellerOther")?.value);
+const hersteller = herstellerSelect === "Andere" ? herstellerOther : herstellerSelect;
     const profil = clean(document.getElementById("editTireProfil").value);
     const profilbreite = clean(document.getElementById("editTireBreite").value);
     const querschnitt = clean(document.getElementById("editTireQuerschnitt").value);
@@ -2756,7 +2901,7 @@ async function saveEditedTire() {
     const anzahl = clean(document.getElementById("editTireAnzahl").value);
     const ekpreis = clean(document.getElementById("editTireEkPreis").value);
     const vkpreis = clean(document.getElementById("editTireVkPreis").value);
-    const bild = clean(document.getElementById("editTireBild").value);
+   const bild = getAutomaticTireImage(hersteller, reifentyp);
     const aktiv = clean(document.getElementById("editTireAktiv").value);
 
     if (!standort || !reifentyp || !hersteller || !profil || !profilbreite || !querschnitt || !zoll || !teilenummer || !anzahl || !vkpreis || !aktiv) {
@@ -2884,12 +3029,33 @@ async function deleteTire() {
 }
 function closeAddTireModal() {
     document.getElementById("addTireModal").style.display = "none";
+    document.getElementById("newTireHerstellerSelect").value = "";
+    document.getElementById("newTireHerstellerOther").value = "";
+    document.getElementById("newTireHerstellerOtherWrap").style.display = "none";
+}
+function toggleNewTireOtherBrand() {
+    const select = document.getElementById("newTireHerstellerSelect");
+    const otherWrap = document.getElementById("newTireHerstellerOtherWrap");
+
+    if (!select || !otherWrap) return;
+
+    otherWrap.style.display = select.value === "Andere" ? "block" : "none";
 }
 
+function toggleEditTireOtherBrand() {
+    const select = document.getElementById("editTireHerstellerSelect");
+    const otherWrap = document.getElementById("editTireHerstellerOtherWrap");
+
+    if (!select || !otherWrap) return;
+
+    otherWrap.style.display = select.value === "Andere" ? "block" : "none";
+}
 function clearAddTireForm() {
     document.getElementById("newTireStandort").value = "";
     document.getElementById("newTireReifentyp").value = "";
-    document.getElementById("newTireHersteller").value = "";
+    document.getElementById("newTireHerstellerSelect").value = "";
+document.getElementById("newTireHerstellerOther").value = "";
+document.getElementById("newTireHerstellerOtherWrap").style.display = "none";
     document.getElementById("newTireProfil").value = "";
     document.getElementById("newTireBreite").value = "";
     document.getElementById("newTireQuerschnitt").value = "";
@@ -2902,7 +3068,6 @@ function clearAddTireForm() {
     document.getElementById("newTireAnzahl").value = "1";
     document.getElementById("newTireEkPreis").value = "";
     document.getElementById("newTireVkPreis").value = "";
-    document.getElementById("newTireBild").value = "";
     document.getElementById("newTireAktiv").value = "Ja";
 }
 
@@ -2911,7 +3076,9 @@ async function saveNewTire() {
 
     const standort = clean(document.getElementById("newTireStandort").value);
     const reifentyp = clean(document.getElementById("newTireReifentyp").value);
-    const hersteller = clean(document.getElementById("newTireHersteller").value);
+    const herstellerSelect = clean(document.getElementById("newTireHerstellerSelect").value);
+const herstellerOther = clean(document.getElementById("newTireHerstellerOther")?.value);
+const hersteller = herstellerSelect === "Andere" ? herstellerOther : herstellerSelect;
     const profil = clean(document.getElementById("newTireProfil").value);
     const profilbreite = clean(document.getElementById("newTireBreite").value);
     const querschnitt = clean(document.getElementById("newTireQuerschnitt").value);
@@ -2924,7 +3091,7 @@ async function saveNewTire() {
     const anzahl = clean(document.getElementById("newTireAnzahl").value);
     const ekpreis = clean(document.getElementById("newTireEkPreis").value);
     const vkpreis = clean(document.getElementById("newTireVkPreis").value);
-    const bild = clean(document.getElementById("newTireBild").value);
+    const bild = getAutomaticTireImage(hersteller, reifentyp);
     const aktiv = clean(document.getElementById("newTireAktiv").value);
 
     if (!standort || !reifentyp || !hersteller || !profil || !profilbreite || !querschnitt || !zoll || !teilenummer || !anzahl || !vkpreis || !aktiv) {
@@ -2987,6 +3154,10 @@ if (result && result.status === "OK") {
     alert("Neuer Reifen wurde gespeichert.");
     closeAddTireModal();
     render();
+
+    if (newRow.ID) {
+        printTireLabel(newRow.ID);
+    }
 } else {
     alert("Fehler: " + resultText);
 }
@@ -3438,6 +3609,199 @@ window.onclick = function(event) {
         closeEditTireModal();
     }
 };
+    function buildTireLabelHtml(tire) {
+    const hersteller = clean(tire["Hersteller"]);
+    const profil = clean(tire["Profil"]);
+    const groesse = formatTireSize(tire);
+    const lastindex = clean(tire["Lastindex"]);
+    const geschwindigkeitsindex = clean(tire["Geschwindigkeitsindex"]);
+    const runflat = normalizeYesNo(tire["Runflat"]);
+    const dot = clean(tire["DOT"]);
+    const standort = standortToLabel(clean(tire["Standort"]));
+    const teilenummer = clean(tire["Teilenummer"]);
+    const reifentyp = clean(tire["Reifentyp"]);
+    const anzahl = clean(tire["Anzahl"]);
+    const aktiv = clean(tire["Aktiv"]);
+
+    return `
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Reifen Etikette</title>
+<style>
+@page {
+    size: 100mm 73mm;
+    margin: 0;
+}
+
+html, body {
+    width: 100mm;
+    height: 73mm;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: white;
+}
+
+.label-wrap {
+    width: 100mm;
+    height: 73mm;
+    box-sizing: border-box;
+    padding: 4mm 5mm 4mm 5mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    overflow: hidden;
+}
+
+.label-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2mm;
+}
+
+.label-title {
+    font-size: 15pt;
+    font-weight: 700;
+    line-height: 1.05;
+}
+
+.label-status {
+    font-size: 9pt;
+    font-weight: 700;
+    padding: 1mm 2mm;
+    border: 1px solid #000;
+}
+
+.label-line {
+    font-size: 10pt;
+    line-height: 1.2;
+    margin-bottom: 1.2mm;
+}
+
+.label-size {
+    font-size: 14pt;
+    font-weight: 700;
+    margin-bottom: 1.2mm;
+}
+
+.label-part {
+    font-size: 11pt;
+    font-weight: 700;
+    margin-bottom: 1mm;
+}
+
+.label-barcode-wrap {
+    margin-top: 2mm;
+    text-align: center;
+}
+
+.label-barcode {
+    width: 100%;
+    max-width: 88mm;
+    height: 16mm;
+}
+
+.label-part-text {
+    font-size: 9pt;
+    margin-top: 1mm;
+    letter-spacing: 0.5px;
+}
+
+.print-actions {
+    position: fixed;
+    right: 10px;
+    top: 10px;
+    display: flex;
+    gap: 8px;
+}
+
+.print-actions button {
+    border: none;
+    background: #1c69d4;
+    color: white;
+    padding: 10px 14px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.print-actions button.secondary {
+    background: #666;
+}
+
+@media print {
+    .print-actions {
+        display: none;
+    }
+}
+</style>
+</head>
+<body>
+<div class="print-actions">
+    <button onclick="window.print()">Drucken</button>
+    <button class="secondary" onclick="window.close()">Schliessen</button>
+</div>
+
+<div class="label-wrap">
+    <div class="label-top">
+        <div class="label-title">${escapeHtml(hersteller)}</div>
+        <div class="label-status">${escapeHtml(aktiv === "Ja" ? "AKTIV" : "INAKTIV")}</div>
+    </div>
+
+    ${profil ? `<div class="label-line"><b>Profil:</b> ${escapeHtml(profil)}</div>` : ``}
+    ${reifentyp ? `<div class="label-line"><b>Typ:</b> ${escapeHtml(reifentyp)}</div>` : ``}
+    <div class="label-size">${escapeHtml(groesse)} ${escapeHtml(lastindex)}${escapeHtml(geschwindigkeitsindex)}</div>
+
+    ${runflat ? `<div class="label-line"><b>Runflat:</b> ${escapeHtml(runflat)}</div>` : ``}
+    ${dot ? `<div class="label-line"><b>DOT:</b> ${escapeHtml(dot)}</div>` : ``}
+    ${standort ? `<div class="label-line"><b>Standort:</b> ${escapeHtml(standort)}</div>` : ``}
+    ${anzahl ? `<div class="label-line"><b>Anzahl:</b> ${escapeHtml(anzahl)}</div>` : ``}
+
+    <div class="label-part">Teilenummer: ${escapeHtml(teilenummer)}</div>
+
+    <div class="label-barcode-wrap">
+        <svg id="barcode" class="label-barcode"></svg>
+        <div class="label-part-text">${escapeHtml(teilenummer)}</div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
+<script>
+if (${JSON.stringify(!!teilenummer)}) {
+    JsBarcode("#barcode", ${JSON.stringify(teilenummer)}, {
+        format: "CODE128",
+        displayValue: false,
+        margin: 0,
+        width: 1.4,
+        height: 42
+    });
+}
+<\/script>
+</body>
+</html>
+`;
+}
+
+function printTireLabel(rowId) {
+    const tire = reifen.find(r => clean(r["ID"]) === clean(rowId));
+
+    if (!tire) {
+        alert("Reifen nicht gefunden.");
+        return;
+    }
+
+    const printWindow = window.open("", "_blank", "width=900,height=700");
+    if (!printWindow) {
+        alert("Das Etikett konnte nicht geöffnet werden. Bitte Popups erlauben.");
+        return;
+    }
+
+    printWindow.document.open();
+    printWindow.document.write(buildTireLabelHtml(tire));
+    printWindow.document.close();
+}
 </script>
 </body>
 </html>
