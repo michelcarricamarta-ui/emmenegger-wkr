@@ -991,8 +991,8 @@ const urlProdukte = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcy
 const urlMapping = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Zuordnung";
 const urlFahrzeuge = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Fahrzeuge";
 const urlReifen = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Reifen";
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztR-ddxWo3_NPUjr4W6dIfYhR3v7OlZTBzZ42VV26OwBFBdFZtbnpginzFX3DRj_Cnuw/exec";
-
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw66JGYiZlVn7BtxsqYHiG0l_5n_gFlZZBDir6wLINdXG7T3ZSEhIZ3gcp0YKRPj214QA/exec";
+    
 const heroImageStart = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/WINTER%20Ix3.jpg?raw=true";
 const heroImageBMW = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/2026-bmw-ix3-snow-driving-04.jpg?raw=true";
 const heroImageMINI = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/MINI%20Countrymann.jpg?raw=true";
@@ -1275,43 +1275,34 @@ function resetAdminReifenFilter() {
     render();
 }
     async function updateSheetValue(sheet, keyField, keyValue, updates) {
-
     try {
-
         const response = await fetch(APPS_SCRIPT_URL, {
-
             method: "POST",
-
+            headers: {
+                "Content-Type": "text/plain;charset=utf-8"
+            },
             body: JSON.stringify({
                 sheet,
                 keyField,
                 keyValue,
                 updates
-            })
-
+            }),
+            redirect: "follow"
         });
 
         const result = await response.text();
 
         if (result === "OK") {
-
             alert("Gespeichert");
-
         } else {
-
             alert("Fehler: " + result);
-
         }
 
     } catch (err) {
-
-        alert("Speichern fehlgeschlagen");
-
+        alert("Speichern fehlgeschlagen: " + err.message);
         console.error(err);
-
     }
-
-}   
+}
 function getFilteredReifen() {
     let profilbreite = clean(tireSearch.profilbreite);
     let querschnitt = clean(tireSearch.querschnitt);
