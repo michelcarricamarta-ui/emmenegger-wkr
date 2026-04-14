@@ -1013,9 +1013,26 @@ body.mini-mode .internal-login-btn:hover {
             </div>
 
             <div>
-                <label for="newTireHersteller">Hersteller *</label>
-                <input id="newTireHersteller" type="text" placeholder="z. B. Pirelli">
-            </div>
+    <label for="newTireHerstellerSelect">Hersteller *</label>
+    <select id="newTireHerstellerSelect" onchange="toggleNewTireOtherBrand()">
+        <option value="">Bitte wählen</option>
+        <option value="Bridgestone">Bridgestone</option>
+        <option value="Continental">Continental</option>
+        <option value="Dunlop">Dunlop</option>
+        <option value="Goodyear">Goodyear</option>
+        <option value="Hankook">Hankook</option>
+        <option value="Michelin">Michelin</option>
+        <option value="Nexen">Nexen</option>
+        <option value="Pirelli">Pirelli</option>
+        <option value="Yokohama">Yokohama</option>
+        <option value="Andere">Andere</option>
+    </select>
+</div>
+
+<div id="newTireHerstellerOtherWrap" style="display:none;">
+    <label for="newTireHerstellerOther">Anderer Hersteller *</label>
+    <input id="newTireHerstellerOther" type="text" placeholder="Hersteller eingeben">
+</div>
 
             <div>
                 <label for="newTireProfil">Profil *</label>
@@ -1122,11 +1139,27 @@ body.mini-mode .internal-login-btn:hover {
                 </select>
             </div>
 
-            <div>
-                <label for="editTireHersteller">Hersteller *</label>
-                <input id="editTireHersteller" type="text" placeholder="z. B. Pirelli">
-            </div>
+           <div>
+    <label for="editTireHerstellerSelect">Hersteller *</label>
+    <select id="editTireHerstellerSelect" onchange="toggleEditTireOtherBrand()">
+        <option value="">Bitte wählen</option>
+        <option value="Bridgestone">Bridgestone</option>
+        <option value="Continental">Continental</option>
+        <option value="Dunlop">Dunlop</option>
+        <option value="Goodyear">Goodyear</option>
+        <option value="Hankook">Hankook</option>
+        <option value="Michelin">Michelin</option>
+        <option value="Nexen">Nexen</option>
+        <option value="Pirelli">Pirelli</option>
+        <option value="Yokohama">Yokohama</option>
+        <option value="Andere">Andere</option>
+    </select>
+</div>
 
+<div id="editTireHerstellerOtherWrap" style="display:none;">
+    <label for="editTireHerstellerOther">Anderer Hersteller *</label>
+    <input id="editTireHerstellerOther" type="text" placeholder="Hersteller eingeben">
+</div>
             <div>
                 <label for="editTireProfil">Profil *</label>
                 <input id="editTireProfil" type="text" placeholder="z. B. SottoZero 3">
@@ -2752,7 +2785,28 @@ function openEditTireModal(rowId) {
 
     document.getElementById("editTireStandort").value = clean(tire["Standort"]);
     document.getElementById("editTireReifentyp").value = clean(tire["Reifentyp"]);
-    document.getElementById("editTireHersteller").value = clean(tire["Hersteller"]);
+    const currentHersteller = clean(tire["Hersteller"]);
+const knownBrands = [
+    "Bridgestone",
+    "Continental",
+    "Dunlop",
+    "Goodyear",
+    "Hankook",
+    "Michelin",
+    "Nexen",
+    "Pirelli",
+    "Yokohama"
+];
+
+if (knownBrands.includes(currentHersteller)) {
+    document.getElementById("editTireHerstellerSelect").value = currentHersteller;
+    document.getElementById("editTireHerstellerOther").value = "";
+    document.getElementById("editTireHerstellerOtherWrap").style.display = "none";
+} else {
+    document.getElementById("editTireHerstellerSelect").value = "Andere";
+    document.getElementById("editTireHerstellerOther").value = currentHersteller;
+    document.getElementById("editTireHerstellerOtherWrap").style.display = "block";
+}
     document.getElementById("editTireProfil").value = clean(tire["Profil"]);
     document.getElementById("editTireBreite").value = clean(tire["Profilbreite"]);
     document.getElementById("editTireQuerschnitt").value = clean(tire["Querschnitt"]);
@@ -2773,6 +2827,9 @@ function openEditTireModal(rowId) {
 function closeEditTireModal() {
     document.getElementById("editTireModal").style.display = "none";
     editingTireId = "";
+    document.getElementById("editTireHerstellerSelect").value = "";
+    document.getElementById("editTireHerstellerOther").value = "";
+    document.getElementById("editTireHerstellerOtherWrap").style.display = "none";
 }
 
 async function saveEditedTire() {
@@ -2785,7 +2842,9 @@ async function saveEditedTire() {
 
     const standort = clean(document.getElementById("editTireStandort").value);
     const reifentyp = clean(document.getElementById("editTireReifentyp").value);
-    const hersteller = clean(document.getElementById("editTireHersteller").value);
+    const herstellerSelect = clean(document.getElementById("editTireHerstellerSelect").value);
+const herstellerOther = clean(document.getElementById("editTireHerstellerOther")?.value);
+const hersteller = herstellerSelect === "Andere" ? herstellerOther : herstellerSelect;
     const profil = clean(document.getElementById("editTireProfil").value);
     const profilbreite = clean(document.getElementById("editTireBreite").value);
     const querschnitt = clean(document.getElementById("editTireQuerschnitt").value);
@@ -2926,12 +2985,33 @@ async function deleteTire() {
 }
 function closeAddTireModal() {
     document.getElementById("addTireModal").style.display = "none";
+    document.getElementById("newTireHerstellerSelect").value = "";
+    document.getElementById("newTireHerstellerOther").value = "";
+    document.getElementById("newTireHerstellerOtherWrap").style.display = "none";
+}
+function toggleNewTireOtherBrand() {
+    const select = document.getElementById("newTireHerstellerSelect");
+    const otherWrap = document.getElementById("newTireHerstellerOtherWrap");
+
+    if (!select || !otherWrap) return;
+
+    otherWrap.style.display = select.value === "Andere" ? "block" : "none";
 }
 
+function toggleEditTireOtherBrand() {
+    const select = document.getElementById("editTireHerstellerSelect");
+    const otherWrap = document.getElementById("editTireHerstellerOtherWrap");
+
+    if (!select || !otherWrap) return;
+
+    otherWrap.style.display = select.value === "Andere" ? "block" : "none";
+}
 function clearAddTireForm() {
     document.getElementById("newTireStandort").value = "";
     document.getElementById("newTireReifentyp").value = "";
-    document.getElementById("newTireHersteller").value = "";
+    document.getElementById("newTireHerstellerSelect").value = "";
+document.getElementById("newTireHerstellerOther").value = "";
+document.getElementById("newTireHerstellerOtherWrap").style.display = "none";
     document.getElementById("newTireProfil").value = "";
     document.getElementById("newTireBreite").value = "";
     document.getElementById("newTireQuerschnitt").value = "";
@@ -2952,7 +3032,9 @@ async function saveNewTire() {
 
     const standort = clean(document.getElementById("newTireStandort").value);
     const reifentyp = clean(document.getElementById("newTireReifentyp").value);
-    const hersteller = clean(document.getElementById("newTireHersteller").value);
+    const herstellerSelect = clean(document.getElementById("newTireHerstellerSelect").value);
+const herstellerOther = clean(document.getElementById("newTireHerstellerOther")?.value);
+const hersteller = herstellerSelect === "Andere" ? herstellerOther : herstellerSelect;
     const profil = clean(document.getElementById("newTireProfil").value);
     const profilbreite = clean(document.getElementById("newTireBreite").value);
     const querschnitt = clean(document.getElementById("newTireQuerschnitt").value);
