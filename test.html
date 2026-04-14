@@ -1322,7 +1322,7 @@ const tireLogoMap = {
     "michelin": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Michelin_Logo.jpg",
     "nexen": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Nexen_Logo.jpg",
     "pirelli": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Pirelli_Logo.jpg",
-    "yokohama": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Yokohama_Logo.jpg",
+  "yokohama": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Yokohama_Logo.jpg",
 "goodyear": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Goodyear_Logo.jpg",
 
 };
@@ -3675,8 +3675,7 @@ window.onclick = function(event) {
     const teilenummer = clean(tire["Teilenummer"]);
     const reifentyp = clean(tire["Reifentyp"]);
     const anzahl = clean(tire["Anzahl"]);
-    const aktiv = clean(tire["Aktiv"]);
-    const logo = getTireBrandLogo(hersteller);
+ const logo = getTireBrandLogo(hersteller);
 
     return `
 <!DOCTYPE html>
@@ -3703,7 +3702,7 @@ html, body {
     width: 100mm;
     height: 73mm;
     box-sizing: border-box;
-    padding: 4mm 5mm 4mm 5mm;
+    padding: 4mm 5mm 3mm 5mm;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -3715,30 +3714,12 @@ html, body {
     justify-content: space-between;
     align-items: flex-start;
     gap: 4mm;
-    margin-bottom: 2.5mm;
+    margin-bottom: 2mm;
 }
 
 .label-brand-block {
     flex: 1;
     min-width: 0;
-}
-
-.label-logo-wrap {
-    width: 42mm;
-    height: 12mm;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    margin-bottom: 1.2mm;
-    overflow: hidden;
-}
-
-.label-logo {
-    width: 42mm;
-    height: 12mm;
-    object-fit: contain;
-    object-position: left center;
-    display: block;
 }
 
 .label-title {
@@ -3754,12 +3735,24 @@ html, body {
     line-height: 1.15;
 }
 
-.label-status {
-    font-size: 9pt;
-    font-weight: 700;
-    padding: 1mm 2mm;
-    border: 1px solid #000;
-    white-space: nowrap;
+.label-logo-wrap {
+    width: 24mm;
+    height: 10mm;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.label-logo {
+    max-width: 24mm;
+    max-height: 10mm;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    object-position: right top;
+    display: block;
 }
 
 .label-line {
@@ -3781,24 +3774,23 @@ html, body {
 }
 
 .label-barcode-wrap {
-    margin-top: 3mm;
-    padding-top: 1.5mm;
+    margin-top: 1.5mm;
+    padding-top: 1mm;
     text-align: center;
     border-top: 1px solid #d9d9d9;
 }
 
 .label-barcode {
-    width: 100%;
-    max-width: 84mm;
-    height: 14mm;
+    width: 70mm;
+    height: 10mm;
     display: block;
     margin: 0 auto;
 }
 
 .label-part-text {
-    font-size: 9pt;
-    margin-top: 1.2mm;
-    letter-spacing: 0.6px;
+    font-size: 8pt;
+    margin-top: 0.8mm;
+    letter-spacing: 0.4px;
     font-weight: 700;
 }
 
@@ -3839,19 +3831,17 @@ html, body {
 <div class="label-wrap">
     <div class="label-top">
     <div class="label-brand-block">
-        ${
-            logo
-                ? `<div class="label-logo-wrap">
-                        <img src="${escapeHtml(logo)}" alt="${escapeHtml(hersteller)}" class="label-logo">
-                   </div>`
-                : `<div class="label-title">${escapeHtml(hersteller)}</div>`
-        }
-
-        ${logo ? `` : ``}
+        <div class="label-title">${escapeHtml(hersteller)}</div>
         ${profil ? `<div class="label-profile">${escapeHtml(profil)}</div>` : ``}
     </div>
 
-    <div class="label-status">${escapeHtml(aktiv === "Ja" ? "AKTIV" : "INAKTIV")}</div>
+    ${
+        logo
+            ? `<div class="label-logo-wrap">
+                    <img src="${escapeHtml(logo)}" alt="${escapeHtml(hersteller)}" class="label-logo">
+               </div>`
+            : ``
+    }
 </div>
     ${reifentyp ? `<div class="label-line"><b>Typ:</b> ${escapeHtml(reifentyp)}</div>` : ``}
     <div class="label-size">${escapeHtml(groesse)} ${escapeHtml(lastindex)}${escapeHtml(geschwindigkeitsindex)}</div>
@@ -3872,13 +3862,13 @@ html, body {
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
 <script>
 if (${JSON.stringify(!!teilenummer)}) {
-    JsBarcode("#barcode", ${JSON.stringify(teilenummer)}, {
-        format: "CODE128",
-        displayValue: false,
-        margin: 0,
-        width: 1.7,
-        height: 34
-    });
+   JsBarcode("#barcode", ${JSON.stringify(teilenummer)}, {
+    format: "CODE128",
+    displayValue: false,
+    margin: 0,
+    width: 1.15,
+    height: 26
+});
 }
 <\/script>
 </body>
