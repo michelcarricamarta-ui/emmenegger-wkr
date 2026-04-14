@@ -1629,24 +1629,57 @@ if (adminMode && state.adminSection === "reifen_list") {
 
                 <div class="product-right">
                     <div class="price-caption">Angebotspreis</div>
-                    ${hauptpreis ? `<div class="tire-price-main">${escapeHtml(hauptpreis)} CHF</div>` : `<div class="tire-price-main">Preis offen</div>`}
-                    <div class="tire-price-note">inkl. MwSt.</div>
-                    <button
-                        class="button"
-                        type="button"
-                        onclick="openModal(
-                            '${jsSafe((hersteller || '') + ((hersteller && profil) ? ' ' : '') + (profil || ''))}',
-                            '${jsSafe(reifentyp)}',
-                            '${jsSafe(groesse)}',
-                            '${jsSafe(hauptpreis)}',
-                            'tv-g-fp@emmeneggerag.ch',
-                            '${jsSafe(bild)}',
-                            '${jsSafe(teilenummer)}',
-                            '${jsSafe("DOT: " + dot + (anzahl ? " | Anzahl: " + anzahl : "") + (runflat ? " | Runflat: " + runflat : ""))}',
-                            '${jsSafe("Standort: " + standort)}',
-                            ''
-                        )"
-                    >Auswählen</button>
+${
+    editingField === `reifen-angebot-${jsSafe(teilenummer)}`
+        ? `
+        <div class="product-detail" style="text-align:right;">
+            <input
+                id="edit-reifen-angebot-${jsSafe(teilenummer)}"
+                type="text"
+                value="${escapeHtml(angebotspreis)}"
+                style="width:120px; padding:6px 8px; border:1px solid #cfcfcf; border-radius:6px; text-align:right;"
+            >
+            <button
+                class="button"
+                type="button"
+                style="min-width:auto; padding:6px 10px; margin-left:8px; font-size:13px;"
+                onclick="saveEdit('Reifen','Teilenummer','${jsSafe(teilenummer)}','Angebotspreis','edit-reifen-angebot-${jsSafe(teilenummer)}')"
+            >Speichern</button>
+            <button
+                class="button button-secondary"
+                type="button"
+                style="min-width:auto; padding:6px 10px; margin-left:6px; font-size:13px;"
+                onclick="cancelEdit()"
+            >Abbrechen</button>
+        </div>
+        `
+        : `
+        <div class="tire-price-main">${hauptpreis ? `${escapeHtml(hauptpreis)} CHF` : `Preis offen`}</div>
+        <button
+            class="button button-secondary"
+            type="button"
+            style="min-width:auto; padding:6px 10px; margin-top:8px; font-size:13px;"
+            onclick="startEdit('reifen-angebot-${jsSafe(teilenummer)}')"
+        >Angebotspreis bearbeiten</button>
+        `
+}
+<div class="tire-price-note">inkl. MwSt.</div>
+<button
+    class="button"
+    type="button"
+    onclick="openModal(
+        '${jsSafe((hersteller || '') + ((hersteller && profil) ? ' ' : '') + (profil || ''))}',
+        '${jsSafe(reifentyp)}',
+        '${jsSafe(groesse)}',
+        '${jsSafe(hauptpreis)}',
+        'tv-g-fp@emmeneggerag.ch',
+        '${jsSafe(bild)}',
+        '${jsSafe(teilenummer)}',
+        '${jsSafe("DOT: " + dot + (anzahl ? " | Anzahl: " + anzahl : "") + (runflat ? " | Runflat: " + runflat : ""))}',
+        '${jsSafe("Standort: " + standort)}',
+        ''
+    )"
+>Auswählen</button>
                 </div>
             </div>
         `;
