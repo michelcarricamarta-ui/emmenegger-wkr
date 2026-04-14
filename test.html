@@ -1572,7 +1572,7 @@ if (adminMode && state.adminSection === "reifen_list") {
         const teilenummer = clean(r["Teilenummer"]);
         const groesse = formatTireSize(r);
 
-        const hauptpreis = angebotspreis || verkaufspreis;
+        const hauptpreis = vkpreis;
 
         html += `
             <div class="product">
@@ -1629,21 +1629,22 @@ if (adminMode && state.adminSection === "reifen_list") {
 
                 <div class="product-right">
                     <div class="price-caption">Angebotspreis</div>
+<div class="price-caption">VK Preis</div>
 ${
-    editingField === `reifen-angebot-${jsSafe(teilenummer)}`
+    editingField === `reifen-vk-${jsSafe(teilenummer)}`
         ? `
         <div class="product-detail" style="text-align:right;">
             <input
-                id="edit-reifen-angebot-${jsSafe(teilenummer)}"
+                id="edit-reifen-vk-${jsSafe(teilenummer)}"
                 type="text"
-                value="${escapeHtml(angebotspreis)}"
+                value="${escapeHtml(vkpreis)}"
                 style="width:120px; padding:6px 8px; border:1px solid #cfcfcf; border-radius:6px; text-align:right;"
             >
             <button
                 class="button"
                 type="button"
                 style="min-width:auto; padding:6px 10px; margin-left:8px; font-size:13px;"
-                onclick="saveEdit('Reifen','Teilenummer','${jsSafe(teilenummer)}','Angebotspreis','edit-reifen-angebot-${jsSafe(teilenummer)}')"
+                onclick="saveEdit('Reifen','Teilenummer','${jsSafe(teilenummer)}','VK Preis','edit-reifen-vk-${jsSafe(teilenummer)}')"
             >Speichern</button>
             <button
                 class="button button-secondary"
@@ -1659,11 +1660,48 @@ ${
             class="button button-secondary"
             type="button"
             style="min-width:auto; padding:6px 10px; margin-top:8px; font-size:13px;"
-            onclick="startEdit('reifen-angebot-${jsSafe(teilenummer)}')"
-        >Angebotspreis bearbeiten</button>
+            onclick="startEdit('reifen-vk-${jsSafe(teilenummer)}')"
+        >VK Preis bearbeiten</button>
         `
 }
 <div class="tire-price-note">inkl. MwSt.</div>
+${
+    editingField === `reifen-ek-${jsSafe(teilenummer)}`
+        ? `
+        <div class="product-detail" style="text-align:right; margin-top:8px;">
+            <b>EK Preis:</b>
+            <input
+                id="edit-reifen-ek-${jsSafe(teilenummer)}"
+                type="text"
+                value="${escapeHtml(ekpreis)}"
+                style="width:120px; padding:6px 8px; border:1px solid #cfcfcf; border-radius:6px; text-align:right; margin-left:8px;"
+            >
+            <button
+                class="button"
+                type="button"
+                style="min-width:auto; padding:6px 10px; margin-left:8px; font-size:13px;"
+                onclick="saveEdit('Reifen','Teilenummer','${jsSafe(teilenummer)}','EK Preis','edit-reifen-ek-${jsSafe(teilenummer)}')"
+            >Speichern</button>
+            <button
+                class="button button-secondary"
+                type="button"
+                style="min-width:auto; padding:6px 10px; margin-left:6px; font-size:13px;"
+                onclick="cancelEdit()"
+            >Abbrechen</button>
+        </div>
+        `
+        : `
+        <div class="product-detail" style="text-align:right; margin-top:8px;">
+            <b>EK Preis:</b> ${escapeHtml(ekpreis || "-")}
+            <button
+                class="button button-secondary"
+                type="button"
+                style="min-width:auto; padding:6px 10px; margin-left:10px; font-size:13px;"
+                onclick="startEdit('reifen-ek-${jsSafe(teilenummer)}')"
+            >EK Preis bearbeiten</button>
+        </div>
+        `
+}
 <button
     class="button"
     type="button"
