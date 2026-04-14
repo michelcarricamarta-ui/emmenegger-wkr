@@ -647,7 +647,11 @@ body.mini-mode .internal-login-btn:hover {
     min-height: 90px;
     resize: vertical;
 }
-
+#newTireBemerkung,
+#editTireBemerkung {
+    min-height: 80px;
+    resize: vertical;
+}
 .modal-actions {
     display: flex;
     gap: 10px;
@@ -1102,6 +1106,18 @@ body.mini-mode .internal-login-btn:hover {
                 <label for="newTireVkPreis">VK Preis *</label>
                 <input id="newTireVkPreis" type="text" placeholder="z. B. 180">
             </div>
+<div>
+    <label for="newTireBemerkung">Bemerkung</label>
+    <textarea id="newTireBemerkung" placeholder="Freie Bemerkung"></textarea>
+</div>
+
+<div>
+    <label for="newTireBemerkungSichtbar">Bemerkung sichtbar im internen Modus</label>
+    <select id="newTireBemerkungSichtbar">
+        <option value="Nein" selected>Nein</option>
+        <option value="Ja">Ja</option>
+    </select>
+</div>
 
             <div>
                 <label for="newTireAktiv">Aktiv *</label>
@@ -1228,7 +1244,18 @@ body.mini-mode .internal-login-btn:hover {
                 <label for="editTireVkPreis">VK Preis *</label>
                 <input id="editTireVkPreis" type="text" placeholder="z. B. 180">
             </div>
+<div>
+    <label for="editTireBemerkung">Bemerkung</label>
+    <textarea id="editTireBemerkung" placeholder="Freie Bemerkung"></textarea>
+</div>
 
+<div>
+    <label for="editTireBemerkungSichtbar">Bemerkung sichtbar im internen Modus</label>
+    <select id="editTireBemerkungSichtbar">
+        <option value="Nein">Nein</option>
+        <option value="Ja">Ja</option>
+    </select>
+</div>
             <div>
                 <label for="editTireAktiv">Aktiv *</label>
                 <select id="editTireAktiv">
@@ -1287,7 +1314,18 @@ const tireImageMap = {
     "yokohama_sommer": TIRE_IMAGE_BASE + "yokohama_Sommer.jpg",
     "yokohama_winter": TIRE_IMAGE_BASE + "yokohama_Winter.jpg"
 };
+const tireLogoMap = {
+    "bridgestone": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Bridgestone_Logo.jpg",
+    "continental": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Continental_Logo.jpg",
+    "dunlop": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Dunlop_Logo.jpg",
+    "hankook": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Hankook_Logo.jpg",
+    "michelin": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Michelin_Logo.jpg",
+    "nexen": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Nexen_Logo.jpg",
+    "pirelli": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Pirelli_Logo.jpg",
+  "yokohama": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Yokohama_Logo.jpg",
+"goodyear": "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/Goodyear_Logo.jpg",
 
+};
 let produkte = [];
 let mapping = [];
 let fahrzeuge = [];
@@ -1452,6 +1490,10 @@ function getAutomaticTireImage(hersteller, reifentyp) {
     return tireImageMap[key] || "";
 }
 
+function getTireBrandLogo(hersteller) {
+    const brand = clean(hersteller).toLowerCase();
+    return tireLogoMap[brand] || "";
+}
 function parseDirectTireInput(input) {
     const raw = clean(input).toUpperCase();
     if (!raw) {
@@ -2864,11 +2906,15 @@ if (knownBrands.includes(currentHersteller)) {
     document.getElementById("editTireEkPreis").value = clean(tire["EK Preis"]);
     document.getElementById("editTireVkPreis").value = clean(tire["VK Preis"]);
     document.getElementById("editTireAktiv").value = clean(tire["Aktiv"]) || "Ja";
+    document.getElementById("editTireBemerkung").value = clean(tire["Bemerkung"]);
+document.getElementById("editTireBemerkungSichtbar").value = clean(tire["Bemerkung sichtbar"]) || "Nein";
 
     document.getElementById("editTireModal").style.display = "flex";
 }
 
 function closeEditTireModal() {
+    document.getElementById("editTireBemerkung").value = "";
+document.getElementById("editTireBemerkungSichtbar").value = "Nein";
     document.getElementById("editTireModal").style.display = "none";
     editingTireId = "";
     document.getElementById("editTireHerstellerSelect").value = "";
@@ -2903,6 +2949,8 @@ const hersteller = herstellerSelect === "Andere" ? herstellerOther : herstellerS
     const vkpreis = clean(document.getElementById("editTireVkPreis").value);
    const bild = getAutomaticTireImage(hersteller, reifentyp);
     const aktiv = clean(document.getElementById("editTireAktiv").value);
+    const bemerkung = clean(document.getElementById("editTireBemerkung").value);
+const bemerkungSichtbar = clean(document.getElementById("editTireBemerkungSichtbar").value);
 
     if (!standort || !reifentyp || !hersteller || !profil || !profilbreite || !querschnitt || !zoll || !teilenummer || !anzahl || !vkpreis || !aktiv) {
         alert("Bitte alle Pflichtfelder ausfüllen.");
@@ -2938,7 +2986,9 @@ const hersteller = herstellerSelect === "Andere" ? herstellerOther : herstellerS
                     "EK Preis": ekpreis,
                     "VK Preis": vkpreis,
                     "Bild": bild,
-                    "Aktiv": aktiv
+                    "Aktiv": aktiv,
+"Bemerkung": bemerkung,
+"Bemerkung sichtbar": bemerkungSichtbar
                 }
             }),
             redirect: "follow"
@@ -2966,6 +3016,8 @@ const hersteller = herstellerSelect === "Andere" ? herstellerOther : herstellerS
                 row["VK Preis"] = vkpreis;
                 row["Bild"] = bild;
                 row["Aktiv"] = aktiv;
+                row["Bemerkung"] = bemerkung;
+row["Bemerkung sichtbar"] = bemerkungSichtbar;
             }
 
             alert("Reifen wurde aktualisiert.");
@@ -3051,6 +3103,8 @@ function toggleEditTireOtherBrand() {
     otherWrap.style.display = select.value === "Andere" ? "block" : "none";
 }
 function clearAddTireForm() {
+    document.getElementById("newTireBemerkung").value = "";
+document.getElementById("newTireBemerkungSichtbar").value = "Nein";
     document.getElementById("newTireStandort").value = "";
     document.getElementById("newTireReifentyp").value = "";
     document.getElementById("newTireHerstellerSelect").value = "";
@@ -3621,7 +3675,7 @@ window.onclick = function(event) {
     const teilenummer = clean(tire["Teilenummer"]);
     const reifentyp = clean(tire["Reifentyp"]);
     const anzahl = clean(tire["Anzahl"]);
-    const aktiv = clean(tire["Aktiv"]);
+ const logo = getTireBrandLogo(hersteller);
 
     return `
 <!DOCTYPE html>
@@ -3648,7 +3702,7 @@ html, body {
     width: 100mm;
     height: 73mm;
     box-sizing: border-box;
-    padding: 4mm 5mm 4mm 5mm;
+    padding: 4mm 5mm 3mm 5mm;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -3659,20 +3713,46 @@ html, body {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    gap: 4mm;
     margin-bottom: 2mm;
+}
+
+.label-brand-block {
+    flex: 1;
+    min-width: 0;
 }
 
 .label-title {
     font-size: 15pt;
     font-weight: 700;
     line-height: 1.05;
+    margin-bottom: 1mm;
 }
 
-.label-status {
-    font-size: 9pt;
+.label-profile {
+    font-size: 10pt;
     font-weight: 700;
-    padding: 1mm 2mm;
-    border: 1px solid #000;
+    line-height: 1.15;
+}
+
+.label-logo-wrap {
+    width: 24mm;
+    height: 10mm;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.label-logo {
+    max-width: 24mm;
+    max-height: 10mm;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    object-position: right top;
+    display: block;
 }
 
 .label-line {
@@ -3694,20 +3774,24 @@ html, body {
 }
 
 .label-barcode-wrap {
-    margin-top: 2mm;
+    margin-top: 1.5mm;
+    padding-top: 1mm;
     text-align: center;
+    border-top: 1px solid #d9d9d9;
 }
 
 .label-barcode {
-    width: 100%;
-    max-width: 88mm;
-    height: 16mm;
+    width: 70mm;
+    height: 10mm;
+    display: block;
+    margin: 0 auto;
 }
 
 .label-part-text {
-    font-size: 9pt;
-    margin-top: 1mm;
-    letter-spacing: 0.5px;
+    font-size: 8pt;
+    margin-top: 0.8mm;
+    letter-spacing: 0.4px;
+    font-weight: 700;
 }
 
 .print-actions {
@@ -3746,11 +3830,19 @@ html, body {
 
 <div class="label-wrap">
     <div class="label-top">
+    <div class="label-brand-block">
         <div class="label-title">${escapeHtml(hersteller)}</div>
-        <div class="label-status">${escapeHtml(aktiv === "Ja" ? "AKTIV" : "INAKTIV")}</div>
+        ${profil ? `<div class="label-profile">${escapeHtml(profil)}</div>` : ``}
     </div>
 
-    ${profil ? `<div class="label-line"><b>Profil:</b> ${escapeHtml(profil)}</div>` : ``}
+    ${
+        logo
+            ? `<div class="label-logo-wrap">
+                    <img src="${escapeHtml(logo)}" alt="${escapeHtml(hersteller)}" class="label-logo">
+               </div>`
+            : ``
+    }
+</div>
     ${reifentyp ? `<div class="label-line"><b>Typ:</b> ${escapeHtml(reifentyp)}</div>` : ``}
     <div class="label-size">${escapeHtml(groesse)} ${escapeHtml(lastindex)}${escapeHtml(geschwindigkeitsindex)}</div>
 
@@ -3770,13 +3862,13 @@ html, body {
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
 <script>
 if (${JSON.stringify(!!teilenummer)}) {
-    JsBarcode("#barcode", ${JSON.stringify(teilenummer)}, {
-        format: "CODE128",
-        displayValue: false,
-        margin: 0,
-        width: 1.4,
-        height: 42
-    });
+   JsBarcode("#barcode", ${JSON.stringify(teilenummer)}, {
+    format: "CODE128",
+    displayValue: false,
+    margin: 0,
+    width: 1.15,
+    height: 26
+});
 }
 <\/script>
 </body>
