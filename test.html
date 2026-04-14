@@ -1079,6 +1079,25 @@ function parsePriceValue(value) {
     return Number.isFinite(numeric) ? numeric : null;
 }
 
+function isDotOlderThan3Years(dotValue) {
+    const dot = clean(dotValue);
+    const match = dot.match(/^(\d{2})\/(\d{2})$/);
+
+    if (!match) return false;
+
+    const week = parseInt(match[1], 10);
+    const year = 2000 + parseInt(match[2], 10);
+
+    if (!week || !year) return false;
+
+    const dotDate = new Date(year, 0, 1 + (week - 1) * 7);
+    const today = new Date();
+
+    const diffYears = (today - dotDate) / (1000 * 60 * 60 * 24 * 365.25);
+
+    return diffYears > 3;
+}
+
 function standortToLabel(value) {
     return value === "GEB"
         ? "Gebenstorf"
@@ -1104,6 +1123,7 @@ function formatTireSize(row) {
     if (!breite || !quer || !zoll) return "";
     return `${breite}/${quer} R${zoll}`;
 }
+    
 function getTireQuantityOptions(maxQty) {
     const qty = parseInt(clean(maxQty), 10) || 0;
     const options = [];
@@ -1557,22 +1577,38 @@ if (adminMode && state.adminSection === "reifen_list") {
     }
 
     results.forEach(r => {
-        const bild = clean(r["Bild"]) || "https://via.placeholder.com/220x140?text=Reifen";
-const hersteller = clean(r["Hersteller"]);
-const reifentyp = clean(r["Reifentyp"]);
-const profil = clean(r["Profil"]);
-const lastindex = clean(r["Lastindex"]);
-const geschwindigkeitsindex = clean(r["GeschwindigkeitsIndex"] || r["Geschwindigkeitsindex"]);
-const runflat = normalizeYesNo(r["Runflat"]);
-const dot = clean(r["DOT"]);
-const anzahl = clean(r["Anzahl"]);
-const standort = standortToLabel(clean(r["Standort"]));
-const ekpreis = clean(r["EK Preis"]);
-const vkpreis = clean(r["VK Preis"]);
-const teilenummer = clean(r["Teilenummer"]);
-const groesse = formatTireSize(r);
+    const bild = clean(r["Bild"]) || "https://via.placeholder.com/220x140?text=Reifen";
+    const hersteller = clean(r["Hersteller"]);
+    const reifentyp = clean(r["Reifentyp"]);
+    const profil = clean(r["Profil"]);
+    const lastindex = clean(r["Lastindex"]);
+    const geschwindigkeitsindex = clean(r["GeschwindigkeitsIndex"] || r["Geschwindigkeitsindex"]);
+    const runflat = normalizeYesNo(r["Runflat"]);
+    const dot = clean(r["DOT"]);
+    const anzahl = clean(r["Anzahl"]);
+    const standort = standortToLabel(clean(r["Standort"]));
+    const ekpreis = clean(r["EK Preis"]);
+    const vkpreis = clean(r["VK Preis"]);
+    const teilenummer = clean(r["Teilenummer"]);
+    const groesse = formatTireSize(r);
 
-const hauptpreis = vkpreis;
+    const hauptpreis = vkpreis;
+
+    let dotYear = null;
+    if (dot) {
+        const dotMatch = dot.match(/(\d{2})[^\d]?(\d{2})$/);
+        if (dotMatch) {
+            const yearTwoDigits = parseInt(dotMatch[2], 10);
+            dotYear = 2000 + yearTwoDigits;
+        }
+    }
+
+    const currentYear = new Date().getFullYear();
+    const isOldDot = dotYear !== null && (currentYear - dotYear) >= 3;
+
+const ekNum = parsePriceValue(ekpreis);
+const vkNum = parsePriceValue(vkpreis);
+const isSpecialPrice = ekNum !== null && vkNum !== null && ekNum > vkNum;
 
         html += `
             <div class="product">
@@ -1623,13 +1659,13 @@ const hauptpreis = vkpreis;
 }
                         ${standort ? `<div class="product-detail"><b>Standort:</b> ${escapeHtml(standort)}</div>` : ``}
                         ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
-                        ${dot ? `<div class="tire-dot"><b>DOT:</b> ${escapeHtml(dot)}</div>` : ``}
+                        ${dot ? `<div class="tire-dot" style="${isDotOlderThan3Years(dot) ? 'color:#c62828; font-weight:700;' : 'color:#1f1f1f; font-weight:700;'}"><b>DOT:</b> ${escapeHtml(dot)}</div>` : ``}
                     </div>
                 </div>
 
                 <div class="product-right">
-                    <div class="price-caption">VK Preis</div>
-${
+                    
+                    ${
     editingField === `reifen-vk-${jsSafe(teilenummer)}`
         ? `
         <div class="product-detail" style="text-align:right;">
@@ -1654,7 +1690,8 @@ ${
         </div>
         `
         : `
-        <div class="tire-price-main">${hauptpreis ? `${escapeHtml(hauptpreis)} CHF` : `Preis offen`}</div>
+        ${isSpecialPrice ? `<div class="price-caption" style="color:#c62828; font-weight:700;">Angebotspreis wegen DOT</div>` : `<div class="price-caption">VK Preis</div>`}
+        <div class="tire-price-main" style="${isSpecialPrice ? 'color:#c62828; font-weight:700;' : ''}">${hauptpreis ? `${escapeHtml(hauptpreis)} CHF` : `Preis offen`}</div>
         <button
             class="button button-secondary"
             type="button"
@@ -2165,12 +2202,12 @@ const empfaengerMail = clean(r["EmpfängerMail"] || r["EmpfaengerMail"]);
     const dot = clean(r["DOT"]);
     const anzahl = clean(r["Anzahl"]);
     const standort = standortToLabel(clean(r["Standort"]));
-    const angebotspreis = clean(r["Angebotspreis"]);
-    const verkaufspreis = clean(r["Verkaufspreis"]);
+    const ekpreis = clean(r["EK Preis"]);
+const vkpreis = clean(r["VK Preis"]);
     const teilenummer = clean(r["Teilenummer"]);
     const groesse = formatTireSize(r);
 
-    const hauptpreis = angebotspreis || verkaufspreis;
+    const hauptpreis = vkpreis;
     const hauptpreisNum = parsePriceValue(hauptpreis) || 0;
     const qtyOptions = getTireQuantityOptions(anzahl);
 
@@ -2190,7 +2227,7 @@ const empfaengerMail = clean(r["EmpfängerMail"] || r["EmpfaengerMail"]);
     ${anzahl ? `<div class="product-detail"><b>An Lager:</b> ${escapeHtml(anzahl)}</div>` : ``}
     ${standort ? `<div class="product-detail"><b>Standort:</b> ${escapeHtml(standort)}</div>` : ``}
     ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
-   ${dot ? `<div class="tire-dot"><b>DOT:</b> ${escapeHtml(dot)}</div>` : ``}
+   ${dot ? `<div class="tire-dot" style="${isDotOlderThan3Years(dot) ? 'color:#c62828; font-weight:700;' : 'color:#1f1f1f; font-weight:700;'}"><b>DOT:</b> ${escapeHtml(dot)}</div>` : ``}
 </div>
             </div>
 
