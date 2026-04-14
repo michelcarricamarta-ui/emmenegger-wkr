@@ -1081,11 +1081,6 @@ body.mini-mode .internal-login-btn:hover {
                 <input id="newTireVkPreis" type="text" placeholder="z. B. 180">
             </div>
 
-            <div style="grid-column:1 / -1;">
-                <label for="newTireBild">Bild URL</label>
-                <input id="newTireBild" type="text" placeholder="https://...">
-            </div>
-
             <div>
                 <label for="newTireAktiv">Aktiv *</label>
                 <select id="newTireAktiv">
@@ -1196,11 +1191,6 @@ body.mini-mode .internal-login-btn:hover {
                 <input id="editTireVkPreis" type="text" placeholder="z. B. 180">
             </div>
 
-            <div style="grid-column:1 / -1;">
-                <label for="editTireBild">Bild URL</label>
-                <input id="editTireBild" type="text" placeholder="https://...">
-            </div>
-
             <div>
                 <label for="editTireAktiv">Aktiv *</label>
                 <select id="editTireAktiv">
@@ -1229,6 +1219,36 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw66JGYiZlVn7Bt
 const heroImageStart = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/WINTER%20Ix3.jpg?raw=true";
 const heroImageBMW = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/2026-bmw-ix3-snow-driving-04.jpg?raw=true";
 const heroImageMINI = "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/MINI%20Countrymann.jpg?raw=true";
+const TIRE_IMAGE_BASE = "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/";
+
+const tireImageMap = {
+    "bridgestone_sommer": TIRE_IMAGE_BASE + "bridgestone_Sommer.jpg",
+    "bridgestone_winter": TIRE_IMAGE_BASE + "bridgestone_Winter.jpg",
+
+    "continental_sommer": TIRE_IMAGE_BASE + "continental_Sommer.jpg",
+    "continental_winter": TIRE_IMAGE_BASE + "continental_Winter.jpg",
+
+    "dunlop_sommer": TIRE_IMAGE_BASE + "dunlop_Sommer.jpg",
+    "dunlop_winter": TIRE_IMAGE_BASE + "dunlop_Winter.jpg",
+
+    "goodyear_sommer": TIRE_IMAGE_BASE + "goodyear_Sommer.jpg",
+    "goodyear_winter": TIRE_IMAGE_BASE + "goodyear_Winter.jpg",
+
+    "hankook_sommer": TIRE_IMAGE_BASE + "hankook_Sommer.jpg",
+    "hankook_winter": TIRE_IMAGE_BASE + "hankook_Winter.jpg",
+
+    "michelin_sommer": TIRE_IMAGE_BASE + "michelin_Sommer.jpg",
+    "michelin_winter": TIRE_IMAGE_BASE + "michelin_Winter.jpg",
+
+    "nexen_sommer": TIRE_IMAGE_BASE + "nexen_Sommer.jpg",
+    "nexen_winter": TIRE_IMAGE_BASE + "nexen_Winter.jpg",
+
+    "pirelli_winter": TIRE_IMAGE_BASE + "pirelli_Winter.jpg",
+    "pirelli_sommer": TIRE_IMAGE_BASE + "pirelli_Sommer.jpg",
+
+    "yokohama_sommer": TIRE_IMAGE_BASE + "yokohama_Sommer.jpg",
+    "yokohama_winter": TIRE_IMAGE_BASE + "yokohama_Winter.jpg"
+};
 
 let produkte = [];
 let mapping = [];
@@ -1374,6 +1394,23 @@ function getTireQuantityOptions(maxQty) {
     if (qty >= 4) options.push(4);
 
     return options;
+}
+
+function getAutomaticTireImage(hersteller, reifentyp) {
+    const brand = clean(hersteller).toLowerCase();
+    const type = clean(reifentyp).toLowerCase();
+
+    let normalizedType = "";
+
+    if (type === "sommer") normalizedType = "sommer";
+    if (type === "winter") normalizedType = "winter";
+
+    if (!brand || !normalizedType) {
+        return "";
+    }
+
+    const key = `${brand}_${normalizedType}`;
+    return tireImageMap[key] || "";
 }
 
 function parseDirectTireInput(input) {
@@ -1836,9 +1873,12 @@ const reifentypen = [...new Set(
     }
 
     results.forEach(r => {
-        const bild = clean(r["Bild"]) || "https://via.placeholder.com/220x140?text=Reifen";
         const hersteller = clean(r["Hersteller"]);
         const reifentyp = clean(r["Reifentyp"]);
+        const bild = clean(r["Bild"]) || getAutomaticTireImage(hersteller, reifentyp);
+        const bildHtml = bild
+            ? `<img src="${escapeHtml(bild)}" alt="${escapeHtml(hersteller)}" class="clickable-image" onclick="toggleImageZoom(this)">`
+            : `<div style="width:210px; height:170px; display:flex; align-items:center; justify-content:center; border:1px solid #ddd; background:#f7f7f7; color:#888; font-size:14px; text-align:center; padding:12px; box-sizing:border-box;">Kein Bild vorhanden</div>`;
         const profil = clean(r["Profil"]);
         const lastindex = clean(r["Lastindex"]);
         const geschwindigkeitsindex = clean(r["Geschwindigkeitsindex"]);
@@ -1860,8 +1900,8 @@ const reifentypen = [...new Set(
         html += `
             <div class="product">
                 <div class="product-left">
-                    <img src="${escapeHtml(bild)}" alt="${escapeHtml(hersteller)}" class="clickable-image" onclick="toggleImageZoom(this)">
-                    <div class="product-info">
+${bildHtml}
+<div class="product-info">
                         ${reifentyp ? `<div class="product-brand">${escapeHtml(reifentyp)}reifen</div>` : ``}
                         ${hersteller ? `<div class="product-title">${escapeHtml(hersteller)}</div>` : ``}
                         ${profil ? `<div class="product-brand">${escapeHtml(profil)}</div>` : ``}
@@ -2331,9 +2371,12 @@ const reifentypen = [...new Set(
             }
 
             tireResults.forEach(r => {
-                const bild = clean(r["Bild"]) || "https://via.placeholder.com/220x140?text=Reifen";
                 const hersteller = clean(r["Hersteller"]);
                 const reifentyp = clean(r["Reifentyp"]);
+                const bild = clean(r["Bild"]) || getAutomaticTireImage(hersteller, reifentyp);
+                const bildHtml = bild
+                    ? `<img src="${escapeHtml(bild)}" alt="${escapeHtml(hersteller)}" class="clickable-image" onclick="toggleImageZoom(this)">`
+                    : `<div style="width:210px; height:170px; display:flex; align-items:center; justify-content:center; border:1px solid #ddd; background:#f7f7f7; color:#888; font-size:14px; text-align:center; padding:12px; box-sizing:border-box;">Kein Bild vorhanden</div>`;
                 const profil = clean(r["Profil"]);
                 const lastindex = clean(r["Lastindex"]);
                 const geschwindigkeitsindex = clean(r["Geschwindigkeitsindex"]);
@@ -2353,7 +2396,7 @@ const reifentypen = [...new Set(
                 html += `
                     <div class="product">
                         <div class="product-left">
-                            <img src="${escapeHtml(bild)}" alt="${escapeHtml(hersteller)}" class="clickable-image" onclick="toggleImageZoom(this)">
+                            ${bildHtml}
                             <div class="product-info">
                                 ${reifentyp ? `<div class="product-brand">${escapeHtml(reifentyp)}reifen</div>` : ``}
                                 ${hersteller ? `<div class="product-title">${escapeHtml(hersteller)}</div>` : ``}
@@ -2722,7 +2765,6 @@ function openEditTireModal(rowId) {
     document.getElementById("editTireAnzahl").value = clean(tire["Anzahl"]);
     document.getElementById("editTireEkPreis").value = clean(tire["EK Preis"]);
     document.getElementById("editTireVkPreis").value = clean(tire["VK Preis"]);
-    document.getElementById("editTireBild").value = clean(tire["Bild"]);
     document.getElementById("editTireAktiv").value = clean(tire["Aktiv"]) || "Ja";
 
     document.getElementById("editTireModal").style.display = "flex";
@@ -2756,7 +2798,7 @@ async function saveEditedTire() {
     const anzahl = clean(document.getElementById("editTireAnzahl").value);
     const ekpreis = clean(document.getElementById("editTireEkPreis").value);
     const vkpreis = clean(document.getElementById("editTireVkPreis").value);
-    const bild = clean(document.getElementById("editTireBild").value);
+   const bild = getAutomaticTireImage(hersteller, reifentyp);
     const aktiv = clean(document.getElementById("editTireAktiv").value);
 
     if (!standort || !reifentyp || !hersteller || !profil || !profilbreite || !querschnitt || !zoll || !teilenummer || !anzahl || !vkpreis || !aktiv) {
@@ -2902,7 +2944,6 @@ function clearAddTireForm() {
     document.getElementById("newTireAnzahl").value = "1";
     document.getElementById("newTireEkPreis").value = "";
     document.getElementById("newTireVkPreis").value = "";
-    document.getElementById("newTireBild").value = "";
     document.getElementById("newTireAktiv").value = "Ja";
 }
 
@@ -2924,7 +2965,7 @@ async function saveNewTire() {
     const anzahl = clean(document.getElementById("newTireAnzahl").value);
     const ekpreis = clean(document.getElementById("newTireEkPreis").value);
     const vkpreis = clean(document.getElementById("newTireVkPreis").value);
-    const bild = clean(document.getElementById("newTireBild").value);
+    const bild = getAutomaticTireImage(hersteller, reifentyp);
     const aktiv = clean(document.getElementById("newTireAktiv").value);
 
     if (!standort || !reifentyp || !hersteller || !profil || !profilbreite || !querschnitt || !zoll || !teilenummer || !anzahl || !vkpreis || !aktiv) {
