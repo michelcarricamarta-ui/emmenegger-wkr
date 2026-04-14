@@ -1466,8 +1466,6 @@ function resetAdminWkrFilter() {
 
 function getFilteredAdminReifen() {
     let results = reifen.filter(r => {
-        if (!isActiveTire(r["Aktiv"])) return false;
-
         const hersteller = clean(r["Hersteller"]);
         const profil = clean(r["Profil"]);
         const teilenummer = clean(r["Teilenummer"]);
@@ -1478,7 +1476,52 @@ function getFilteredAdminReifen() {
         const lastindex = clean(r["Lastindex"]);
         const geschwindigkeitsindex = clean(r["Geschwindigkeitsindex"]);
         const anzahl = parseInt(clean(r["Anzahl"]), 10) || 0;
+        const aktiv = clean(r["Aktiv"]);
 
+        const suchtext = adminReifenFilter.suche.toLowerCase();
+
+        const matchSuche =
+            !suchtext ||
+            hersteller.toLowerCase().includes(suchtext) ||
+            profil.toLowerCase().includes(suchtext) ||
+            teilenummer.toLowerCase().includes(suchtext) ||
+            standort.toLowerCase().includes(suchtext) ||
+            groesse.toLowerCase().includes(suchtext) ||
+            reifentyp.toLowerCase().includes(suchtext) ||
+            dot.toLowerCase().includes(suchtext) ||
+            aktiv.toLowerCase().includes(suchtext) ||
+            `${lastindex}${geschwindigkeitsindex}`.toLowerCase().includes(suchtext);
+
+        const matchStandort =
+            !adminReifenFilter.standort ||
+            standort === adminReifenFilter.standort;
+
+        const matchReifentyp =
+            !adminReifenFilter.reifentyp ||
+            reifentyp === adminReifenFilter.reifentyp;
+
+        const matchLager =
+            !adminReifenFilter.nurAnLager ||
+            anzahl > 0;
+
+        return matchSuche && matchStandort && matchReifentyp && matchLager;
+    });
+
+    results.sort((a, b) => {
+        const herstellerA = clean(a["Hersteller"]);
+        const herstellerB = clean(b["Hersteller"]);
+        const profilA = clean(a["Profil"]);
+        const profilB = clean(b["Profil"]);
+
+        if (herstellerA !== herstellerB) {
+            return herstellerA.localeCompare(herstellerB, "de");
+        }
+
+        return profilA.localeCompare(profilB, "de");
+    });
+
+    return results;
+}
         const suchtext = adminReifenFilter.suche.toLowerCase();
 
         const matchSuche =
@@ -1770,18 +1813,16 @@ function render() {
     const results = getFilteredAdminReifen();
 
     const standorte = [...new Set(
-        reifen
-            .filter(r => isActiveTire(r["Aktiv"]))
-            .map(r => clean(r["Standort"]))
-            .filter(Boolean)
-    )];
+    reifen
+        .map(r => clean(r["Standort"]))
+        .filter(Boolean)
+)];
 
-    const reifentypen = [...new Set(
-        reifen
-            .filter(r => isActiveTire(r["Aktiv"]))
-            .map(r => clean(r["Reifentyp"]))
-            .filter(Boolean)
-    )];
+const reifentypen = [...new Set(
+    reifen
+        .map(r => clean(r["Reifentyp"]))
+        .filter(Boolean)
+)];
 
     html += `
         <div class="tire-search-wrap">
