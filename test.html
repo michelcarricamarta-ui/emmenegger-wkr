@@ -1522,50 +1522,7 @@ function getFilteredAdminReifen() {
 
     return results;
 }
-        const suchtext = adminReifenFilter.suche.toLowerCase();
-
-        const matchSuche =
-            !suchtext ||
-            hersteller.toLowerCase().includes(suchtext) ||
-            profil.toLowerCase().includes(suchtext) ||
-            teilenummer.toLowerCase().includes(suchtext) ||
-            standort.toLowerCase().includes(suchtext) ||
-            groesse.toLowerCase().includes(suchtext) ||
-            reifentyp.toLowerCase().includes(suchtext) ||
-            dot.toLowerCase().includes(suchtext) ||
-            `${lastindex}${geschwindigkeitsindex}`.toLowerCase().includes(suchtext);
-
-        const matchStandort =
-            !adminReifenFilter.standort ||
-            standort === adminReifenFilter.standort;
-
-        const matchReifentyp =
-            !adminReifenFilter.reifentyp ||
-            reifentyp === adminReifenFilter.reifentyp;
-
-        const matchLager =
-            !adminReifenFilter.nurAnLager ||
-            anzahl > 0;
-
-        return matchSuche && matchStandort && matchReifentyp && matchLager;
-    });
-
-    results.sort((a, b) => {
-        const herstellerA = clean(a["Hersteller"]);
-        const herstellerB = clean(b["Hersteller"]);
-        const profilA = clean(a["Profil"]);
-        const profilB = clean(b["Profil"]);
-
-        if (herstellerA !== herstellerB) {
-            return herstellerA.localeCompare(herstellerB, "de");
-        }
-
-        return profilA.localeCompare(profilB, "de");
-    });
-
-    return results;
-}
-
+        
 function applyAdminReifenFilter() {
     adminReifenFilter.suche = clean(document.getElementById("adminReifenSuche")?.value);
     adminReifenFilter.standort = clean(document.getElementById("adminReifenStandort")?.value);
@@ -1828,7 +1785,7 @@ const reifentypen = [...new Set(
         <div class="tire-search-wrap">
             <div class="tire-search-title">Gesamte Reifen-Übersicht</div>
             <div class="tire-search-subtitle">
-                Alle aktiven Reifen aus der Reifenliste mit Filter nach Dimension, Hersteller, Profil, Teilenummer, Reifentyp oder Standort.
+                Alle Reifen aus der Reifenliste mit Filter nach Dimension, Hersteller, Profil, Teilenummer, Reifentyp oder Standort.
             </div>
 
             <div class="tire-search-fields" style="grid-template-columns: 2fr 1fr 1fr auto auto auto;">
