@@ -2735,12 +2735,7 @@ async function saveNewTire() {
         return;
     }
 
-    const exists = reifen.some(r => clean(r["Teilenummer"]).toLowerCase() === teilenummer.toLowerCase());
-    if (exists) {
-        alert("Diese Teilenummer existiert bereits.");
-        return;
-    }
-
+  
     isSavingNewTire = true;
 
     const newRow = {
@@ -2777,16 +2772,27 @@ async function saveNewTire() {
             redirect: "follow"
         });
 
-        const result = await response.text();
+        const resultText = await response.text();
 
-        if (result === "OK") {
-            reifen.push(newRow);
-            alert("Neuer Reifen wurde gespeichert.");
-            closeAddTireModal();
-            render();
-        } else {
-            alert("Fehler: " + result);
-        }
+let result;
+try {
+    result = JSON.parse(resultText);
+} catch (e) {
+    result = null;
+}
+
+if (result && result.status === "OK") {
+    if (result.id) {
+        newRow.ID = result.id;
+    }
+
+    reifen.push(newRow);
+    alert("Neuer Reifen wurde gespeichert.");
+    closeAddTireModal();
+    render();
+} else {
+    alert("Fehler: " + resultText);
+}
     } catch (err) {
         alert("Speichern fehlgeschlagen: " + err.message);
         console.error(err);
