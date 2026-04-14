@@ -1738,13 +1738,12 @@ function render() {
                     </div>
                 </div>
 
-                <div style="max-width:900px; margin:0 auto;">
-                    <div style="font-size:22px; font-weight:700; margin-bottom:14px;">Reifen</div>
-                    <div style="display:flex; flex-direction:column; gap:12px;">
-                        <button class="button button-secondary" type="button" onclick="selectAdminSection('reifen_list')">Gesamte Reifen-Übersicht</button>
-                        <button class="button" type="button" onclick="openAddTireModal()">Neuen Reifen hinzufügen</button>
-                    </div>
-                </div>
+               <div style="max-width:900px; margin:0 auto;">
+    <div style="font-size:22px; font-weight:700; margin-bottom:14px;">Reifen</div>
+    <div style="display:flex; flex-direction:column; gap:12px;">
+        <button class="button button-secondary" type="button" onclick="selectAdminSection('reifen_list')">Gesamte Reifen-Übersicht</button>
+    </div>
+</div>
             </div>
         `;
     }
@@ -1788,37 +1787,40 @@ const reifentypen = [...new Set(
                 Alle Reifen aus der Reifenliste mit Filter nach Dimension, Hersteller, Profil, Teilenummer, Reifentyp oder Standort.
             </div>
 
-            <div class="tire-search-fields" style="grid-template-columns: 2fr 1fr 1fr auto auto auto;">
-                <div class="tire-search-field">
-                    <label for="adminReifenSuche">Suche</label>
-                    <input id="adminReifenSuche" type="text" placeholder="z. B. 225/45 R18, Pirelli, SottoZero, Teilenummer" value="${escapeHtml(adminReifenFilter.suche)}">
-                </div>
+            <div style="display:flex; justify-content:flex-end; margin-bottom:16px;">
+    <button class="button" type="button" onclick="openAddTireModal()">Neuen Reifen hinzufügen</button>
+</div>
 
-                <div class="tire-search-field">
-                    <label for="adminReifenStandort">Standort</label>
-                    <select id="adminReifenStandort">
-                        <option value="">Alle</option>
-                        ${standorte.map(s => `<option value="${escapeHtml(s)}" ${adminReifenFilter.standort === s ? "selected" : ""}>${escapeHtml(standortToLabel(s))}</option>`).join("")}
-                    </select>
-                </div>
+<div class="tire-search-fields" style="grid-template-columns: 2fr 1fr 1fr auto auto auto;">
+    <div class="tire-search-field">
+        <label for="adminReifenSuche">Suche</label>
+        <input id="adminReifenSuche" type="text" placeholder="z. B. 225/45 R18, Pirelli, SottoZero, Teilenummer" value="${escapeHtml(adminReifenFilter.suche)}">
+    </div>
 
-                <div class="tire-search-field">
-                    <label for="adminReifenTyp">Reifentyp</label>
-                    <select id="adminReifenTyp">
-                        <option value="">Alle</option>
-                        ${reifentypen.map(t => `<option value="${escapeHtml(t)}" ${adminReifenFilter.reifentyp === t ? "selected" : ""}>${escapeHtml(t)}</option>`).join("")}
-                    </select>
-                </div>
+    <div class="tire-search-field">
+        <label for="adminReifenStandort">Standort</label>
+        <select id="adminReifenStandort">
+            <option value="">Alle</option>
+            ${standorte.map(s => `<option value="${escapeHtml(s)}" ${adminReifenFilter.standort === s ? "selected" : ""}>${escapeHtml(standortToLabel(s))}</option>`).join("")}
+        </select>
+    </div>
 
-                <div class="tire-search-field" style="display:flex; align-items:center; gap:8px; min-height:42px;">
-                    <input id="adminReifenNurLager" type="checkbox" ${adminReifenFilter.nurAnLager ? "checked" : ""} style="width:auto; margin:0;">
-                    <label for="adminReifenNurLager" style="margin:0;">Nur an Lager</label>
-                </div>
+    <div class="tire-search-field">
+        <label for="adminReifenTyp">Reifentyp</label>
+        <select id="adminReifenTyp">
+            <option value="">Alle</option>
+            ${reifentypen.map(t => `<option value="${escapeHtml(t)}" ${adminReifenFilter.reifentyp === t ? "selected" : ""}>${escapeHtml(t)}</option>`).join("")}
+        </select>
+    </div>
 
-                <button class="button" type="button" onclick="applyAdminReifenFilter()">Suchen</button>
-                <button class="button button-secondary" type="button" onclick="resetAdminReifenFilter()">Zurücksetzen</button>
-            </div>
+    <div class="tire-search-field" style="display:flex; align-items:center; gap:8px; min-height:42px;">
+        <input id="adminReifenNurLager" type="checkbox" ${adminReifenFilter.nurAnLager ? "checked" : ""} style="width:auto; margin:0;">
+        <label for="adminReifenNurLager" style="margin:0;">Nur an Lager</label>
+    </div>
 
+    <button class="button" type="button" onclick="applyAdminReifenFilter()">Suchen</button>
+    <button class="button button-secondary" type="button" onclick="resetAdminReifenFilter()">Zurücksetzen</button>
+</div>
             <div class="products-wrap">
                 <div class="products-header">
                     <h2 class="products-title">Reifen Gesamtübersicht</h2>
