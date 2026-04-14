@@ -898,6 +898,7 @@ body.mini-mode .internal-login-btn:hover {
     }
 }
 </style>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 </head>
 <body>
 
@@ -1992,12 +1993,19 @@ ${bildHtml}
                         <b>EK Preis:</b> ${escapeHtml(ekpreis || "-")}
                     </div>
 
-                    <button
-                        class="button"
-                        type="button"
-                        style="margin-top:12px;"
-                        onclick="openEditTireModal('${jsSafe(rowId)}')"
-                    >Bearbeiten</button>
+                   <div style="display:flex; flex-direction:column; gap:10px; margin-top:12px;">
+    <button
+        class="button"
+        type="button"
+        onclick="openEditTireModal('${jsSafe(rowId)}')"
+    >Bearbeiten</button>
+
+    <button
+        class="button button-secondary"
+        type="button"
+        onclick="printTireLabel('${jsSafe(rowId)}')"
+    >Etikette drucken</button>
+</div>
                 </div>
             </div>
         `;
@@ -3146,6 +3154,10 @@ if (result && result.status === "OK") {
     alert("Neuer Reifen wurde gespeichert.");
     closeAddTireModal();
     render();
+
+    if (newRow.ID) {
+        printTireLabel(newRow.ID);
+    }
 } else {
     alert("Fehler: " + resultText);
 }
@@ -3597,6 +3609,199 @@ window.onclick = function(event) {
         closeEditTireModal();
     }
 };
+    function buildTireLabelHtml(tire) {
+    const hersteller = clean(tire["Hersteller"]);
+    const profil = clean(tire["Profil"]);
+    const groesse = formatTireSize(tire);
+    const lastindex = clean(tire["Lastindex"]);
+    const geschwindigkeitsindex = clean(tire["Geschwindigkeitsindex"]);
+    const runflat = normalizeYesNo(tire["Runflat"]);
+    const dot = clean(tire["DOT"]);
+    const standort = standortToLabel(clean(tire["Standort"]));
+    const teilenummer = clean(tire["Teilenummer"]);
+    const reifentyp = clean(tire["Reifentyp"]);
+    const anzahl = clean(tire["Anzahl"]);
+    const aktiv = clean(tire["Aktiv"]);
+
+    return `
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Reifen Etikette</title>
+<style>
+@page {
+    size: 100mm 73mm;
+    margin: 0;
+}
+
+html, body {
+    width: 100mm;
+    height: 73mm;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: white;
+}
+
+.label-wrap {
+    width: 100mm;
+    height: 73mm;
+    box-sizing: border-box;
+    padding: 4mm 5mm 4mm 5mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    overflow: hidden;
+}
+
+.label-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2mm;
+}
+
+.label-title {
+    font-size: 15pt;
+    font-weight: 700;
+    line-height: 1.05;
+}
+
+.label-status {
+    font-size: 9pt;
+    font-weight: 700;
+    padding: 1mm 2mm;
+    border: 1px solid #000;
+}
+
+.label-line {
+    font-size: 10pt;
+    line-height: 1.2;
+    margin-bottom: 1.2mm;
+}
+
+.label-size {
+    font-size: 14pt;
+    font-weight: 700;
+    margin-bottom: 1.2mm;
+}
+
+.label-part {
+    font-size: 11pt;
+    font-weight: 700;
+    margin-bottom: 1mm;
+}
+
+.label-barcode-wrap {
+    margin-top: 2mm;
+    text-align: center;
+}
+
+.label-barcode {
+    width: 100%;
+    max-width: 88mm;
+    height: 16mm;
+}
+
+.label-part-text {
+    font-size: 9pt;
+    margin-top: 1mm;
+    letter-spacing: 0.5px;
+}
+
+.print-actions {
+    position: fixed;
+    right: 10px;
+    top: 10px;
+    display: flex;
+    gap: 8px;
+}
+
+.print-actions button {
+    border: none;
+    background: #1c69d4;
+    color: white;
+    padding: 10px 14px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.print-actions button.secondary {
+    background: #666;
+}
+
+@media print {
+    .print-actions {
+        display: none;
+    }
+}
+</style>
+</head>
+<body>
+<div class="print-actions">
+    <button onclick="window.print()">Drucken</button>
+    <button class="secondary" onclick="window.close()">Schliessen</button>
+</div>
+
+<div class="label-wrap">
+    <div class="label-top">
+        <div class="label-title">${escapeHtml(hersteller)}</div>
+        <div class="label-status">${escapeHtml(aktiv === "Ja" ? "AKTIV" : "INAKTIV")}</div>
+    </div>
+
+    ${profil ? `<div class="label-line"><b>Profil:</b> ${escapeHtml(profil)}</div>` : ``}
+    ${reifentyp ? `<div class="label-line"><b>Typ:</b> ${escapeHtml(reifentyp)}</div>` : ``}
+    <div class="label-size">${escapeHtml(groesse)} ${escapeHtml(lastindex)}${escapeHtml(geschwindigkeitsindex)}</div>
+
+    ${runflat ? `<div class="label-line"><b>Runflat:</b> ${escapeHtml(runflat)}</div>` : ``}
+    ${dot ? `<div class="label-line"><b>DOT:</b> ${escapeHtml(dot)}</div>` : ``}
+    ${standort ? `<div class="label-line"><b>Standort:</b> ${escapeHtml(standort)}</div>` : ``}
+    ${anzahl ? `<div class="label-line"><b>Anzahl:</b> ${escapeHtml(anzahl)}</div>` : ``}
+
+    <div class="label-part">Teilenummer: ${escapeHtml(teilenummer)}</div>
+
+    <div class="label-barcode-wrap">
+        <svg id="barcode" class="label-barcode"></svg>
+        <div class="label-part-text">${escapeHtml(teilenummer)}</div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
+<script>
+if (${JSON.stringify(!!teilenummer)}) {
+    JsBarcode("#barcode", ${JSON.stringify(teilenummer)}, {
+        format: "CODE128",
+        displayValue: false,
+        margin: 0,
+        width: 1.4,
+        height: 42
+    });
+}
+<\/script>
+</body>
+</html>
+`;
+}
+
+function printTireLabel(rowId) {
+    const tire = reifen.find(r => clean(r["ID"]) === clean(rowId));
+
+    if (!tire) {
+        alert("Reifen nicht gefunden.");
+        return;
+    }
+
+    const printWindow = window.open("", "_blank", "width=900,height=700");
+    if (!printWindow) {
+        alert("Das Etikett konnte nicht geöffnet werden. Bitte Popups erlauben.");
+        return;
+    }
+
+    printWindow.document.open();
+    printWindow.document.write(buildTireLabelHtml(tire));
+    printWindow.document.close();
+}
 </script>
 </body>
 </html>
