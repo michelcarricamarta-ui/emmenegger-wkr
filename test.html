@@ -1558,21 +1558,21 @@ if (adminMode && state.adminSection === "reifen_list") {
 
     results.forEach(r => {
         const bild = clean(r["Bild"]) || "https://via.placeholder.com/220x140?text=Reifen";
-        const hersteller = clean(r["Hersteller"]);
-        const reifentyp = clean(r["Reifentyp"]);
-        const profil = clean(r["Profil"]);
-        const lastindex = clean(r["Lastindex"]);
-        const geschwindigkeitsindex = clean(r["GeschwindigkeitsIndex"] || r["Geschwindigkeitsindex"]);
-        const runflat = normalizeYesNo(r["Runflat"]);
-        const dot = clean(r["DOT"]);
-        const anzahl = clean(r["Anzahl"]);
-        const standort = standortToLabel(clean(r["Standort"]));
-        const angebotspreis = clean(r["Angebotspreis"]);
-        const verkaufspreis = clean(r["Verkaufspreis"]);
-        const teilenummer = clean(r["Teilenummer"]);
-        const groesse = formatTireSize(r);
+const hersteller = clean(r["Hersteller"]);
+const reifentyp = clean(r["Reifentyp"]);
+const profil = clean(r["Profil"]);
+const lastindex = clean(r["Lastindex"]);
+const geschwindigkeitsindex = clean(r["GeschwindigkeitsIndex"] || r["Geschwindigkeitsindex"]);
+const runflat = normalizeYesNo(r["Runflat"]);
+const dot = clean(r["DOT"]);
+const anzahl = clean(r["Anzahl"]);
+const standort = standortToLabel(clean(r["Standort"]));
+const ekpreis = clean(r["EK Preis"]);
+const vkpreis = clean(r["VK Preis"]);
+const teilenummer = clean(r["Teilenummer"]);
+const groesse = formatTireSize(r);
 
-        const hauptpreis = vkpreis;
+const hauptpreis = vkpreis;
 
         html += `
             <div class="product">
@@ -1628,8 +1628,7 @@ if (adminMode && state.adminSection === "reifen_list") {
                 </div>
 
                 <div class="product-right">
-                    <div class="price-caption">Angebotspreis</div>
-<div class="price-caption">VK Preis</div>
+                    <div class="price-caption">VK Preis</div>
 ${
     editingField === `reifen-vk-${jsSafe(teilenummer)}`
         ? `
