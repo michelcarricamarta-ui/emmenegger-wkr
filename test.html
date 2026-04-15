@@ -3315,9 +3315,16 @@ async function saveNewWkr() {
             redirect: "follow"
         });
 
-        const resultText = await response.text();
+                const resultText = await response.text();
 
-        if (resultText === "OK") {
+        let result;
+        try {
+            result = JSON.parse(resultText);
+        } catch (e) {
+            result = null;
+        }
+
+        if (result && result.status === "OK") {
             produkte.push({
                 "Marke": marke,
                 "Standort": standort,
