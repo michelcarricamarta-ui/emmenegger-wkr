@@ -2163,13 +2163,17 @@ ${bildHtml}
         )];
 
         html += `
-            <div class="tire-search-wrap">
-                <div class="tire-search-title">Gesamte WKR-Übersicht</div>
-                <div class="tire-search-subtitle">
-                    Alle Winterkompletträder aus der Produkteliste mit Filter nach Teilenummer, Bezeichnung, Marke oder Standort.
-                </div>
+    <div class="tire-search-wrap">
+        <div class="tire-search-title">Gesamte WKR-Übersicht</div>
+        <div class="tire-search-subtitle">
+            Alle Winterkompletträder aus der Produkteliste mit Filter nach Teilenummer, Bezeichnung, Marke oder Standort.
+        </div>
 
-                <div class="tire-search-fields" style="grid-template-columns: 2fr 1fr 1fr auto auto auto;">
+        <div style="display:flex; justify-content:flex-end; margin-bottom:16px;">
+            <button class="button" type="button" onclick="openAddWkrModal()">Neues WKR hinzufügen</button>
+        </div>
+
+        <div class="tire-search-fields" style="grid-template-columns: 2fr 1fr 1fr auto auto auto;">
                     <div class="tire-search-field">
                         <label for="adminWkrSuche">Suche</label>
                         <input id="adminWkrSuche" type="text" placeholder="Teilenummer, Bezeichnung, Reifenmarke, Dimension" value="${escapeHtml(adminWkrFilter.suche)}">
