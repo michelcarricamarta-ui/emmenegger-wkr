@@ -2270,11 +2270,27 @@ ${bildHtml}
                     </div>
 
                     <div class="product-right">
-                        <div class="price-caption">Pro Satz inkl. Montage</div>
-                        ${priceHtml}
-                        <div class="price-note">Preise inkl. MwSt.</div>
-                        ${nettopreis ? `<div class="price-note"><b>Netto Preis:</b> ${escapeHtml(nettopreis)} CHF</div>` : ``}
-                        <div class="${lager > 0 ? "status-green" : "status-grey"}">Lagerbestand: ${lager}</div>
+    <div class="price-caption">Pro Satz inkl. Montage</div>
+    ${priceHtml}
+    <div class="price-note">Preise inkl. MwSt.</div>
+    ${nettopreis ? `<div class="price-note"><b>Netto Preis:</b> ${escapeHtml(nettopreis)} CHF</div>` : ``}
+    <div class="${lager > 0 ? "status-green" : "status-grey"}">Lagerbestand: ${lager}</div>
+    <div class="delivery-note">${lager > 0 ? "Sofort verfügbar" : "Auf Bestellung"}</div>
+
+    <div style="display:flex; flex-direction:column; gap:10px; margin-top:12px;">
+        <button
+            class="button"
+            type="button"
+            onclick="openEditWkrModal('${jsSafe(teilenummer)}')"
+        >Bearbeiten</button>
+
+        <button
+            class="button button-secondary"
+            type="button"
+            onclick="printWkrLabel('${jsSafe(teilenummer)}')"
+        >Etikette drucken</button>
+    </div>
+</div>
                         <button class="button" type="button" onclick="openModal('${jsSafe(bezeichnung)}','${jsSafe(markeReifen)}','${jsSafe(dimension)}','${jsSafe(angebot || vp)}','${jsSafe(empfaengerMail)}','${jsSafe(bild)}','${jsSafe(teilenummer)}','${jsSafe(hinweistext)}','${jsSafe(verkaufshinweis)}','${jsSafe(nettopreis)}')">Auswählen</button>
                     </div>
                 </div>
