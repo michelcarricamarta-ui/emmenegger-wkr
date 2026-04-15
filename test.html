@@ -3553,7 +3553,7 @@ async function deleteTire() {
 
         const resultText = await response.text();
 
-        if (resultText === "OK") {
+       if (resultText === "OK" || resultText.includes('"status":"OK"')) {
             reifen = reifen.filter(r => clean(r["ID"]) !== clean(editingTireId));
             alert("Reifen wurde gelöscht.");
             closeEditTireModal();
