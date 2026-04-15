@@ -4399,7 +4399,24 @@ function printTireLabel(rowId) {
         alert("Reifen nicht gefunden.");
         return;
     }
+function printWkrLabel(tn) {
+    const wkr = produkte.find(p => clean(p["TN"]) === clean(tn));
 
+    if (!wkr) {
+        alert("WKR nicht gefunden.");
+        return;
+    }
+
+    const printWindow = window.open("", "_blank", "width=900,height=700");
+    if (!printWindow) {
+        alert("Das Etikett konnte nicht geöffnet werden. Bitte Popups erlauben.");
+        return;
+    }
+
+    printWindow.document.open();
+    printWindow.document.write(buildWkrLabelHtml(wkr));
+    printWindow.document.close();
+}
     const printWindow = window.open("", "_blank", "width=900,height=700");
     if (!printWindow) {
         alert("Das Etikett konnte nicht geöffnet werden. Bitte Popups erlauben.");
