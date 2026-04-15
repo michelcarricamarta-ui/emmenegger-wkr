@@ -1360,12 +1360,107 @@ body.mini-mode .internal-login-btn:hover {
 
         <div class="required-note">* Pflichtfelder</div>
 
-        <div class="modal-actions">
+               <div class="modal-actions">
             <button class="button button-secondary" type="button" onclick="closeAddWkrModal()">Schliessen</button>
             <button class="button" type="button" onclick="saveNewWkr()">WKR speichern</button>
         </div>
     </div>
 </div>
+
+<div id="editWkrModal" class="modal">
+    <div class="modal-content" style="width:820px; max-width:100%;">
+        <div class="modal-title">Winterkomplettrad bearbeiten</div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+            <div>
+                <label for="editWkrMarke">Marke *</label>
+                <select id="editWkrMarke">
+                    <option value="">Bitte wählen</option>
+                    <option value="BMW">BMW</option>
+                    <option value="MINI">MINI</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="editWkrStandort">Standort *</label>
+                <select id="editWkrStandort">
+                    <option value="">Bitte wählen</option>
+                    <option value="GEB">Gebenstorf</option>
+                    <option value="HET">Hettenschwil</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="editWkrBezeichnung">Bezeichnung *</label>
+                <input id="editWkrBezeichnung" type="text" placeholder="Bezeichnung">
+            </div>
+
+            <div>
+                <label for="editWkrReifen">Reifenmarke</label>
+                <input id="editWkrReifen" type="text" placeholder="z. B. Pirelli">
+            </div>
+
+            <div>
+                <label for="editWkrDimension">Dimension</label>
+                <input id="editWkrDimension" type="text" placeholder="Dimension">
+            </div>
+
+            <div>
+                <label for="editWkrTN">Teilenummer (TN) *</label>
+                <input id="editWkrTN" type="text" placeholder="TN">
+            </div>
+
+            <div>
+                <label for="editWkrLager">Lagerbestand</label>
+                <input id="editWkrLager" type="number" min="0" placeholder="0">
+            </div>
+
+            <div>
+                <label for="editWkrBild">Bild</label>
+                <input id="editWkrBild" type="text" placeholder="Bild URL">
+            </div>
+
+            <div>
+                <label for="editWkrVP">VP</label>
+                <input id="editWkrVP" type="text" placeholder="z. B. 2490">
+            </div>
+
+            <div>
+                <label for="editWkrAngebotspreis">Angebotspreis</label>
+                <input id="editWkrAngebotspreis" type="text" placeholder="z. B. 2190">
+            </div>
+
+            <div>
+                <label for="editWkrNettopreis">Nettopreis</label>
+                <input id="editWkrNettopreis" type="text" placeholder="z. B. 1850">
+            </div>
+
+            <div>
+                <label for="editWkrEmpfaengerMail">Empfänger Mail</label>
+                <input id="editWkrEmpfaengerMail" type="email" placeholder="z. B. tv-g-fp@emmeneggerag.ch">
+            </div>
+
+            <div style="grid-column:1 / -1;">
+                <label for="editWkrHinweistext">Hinweistext</label>
+                <textarea id="editWkrHinweistext" placeholder="Freier Hinweistext"></textarea>
+            </div>
+
+            <div style="grid-column:1 / -1;">
+                <label for="editWkrVerkaufshinweis">Verkaufshinweis</label>
+                <textarea id="editWkrVerkaufshinweis" placeholder="Interner / externer Hinweis"></textarea>
+            </div>
+        </div>
+
+        <div class="required-note">* Pflichtfelder</div>
+
+        <div class="modal-actions">
+            <button class="button button-secondary" type="button" onclick="closeEditWkrModal()">Schliessen</button>
+            <button class="button button-secondary" type="button" onclick="deleteWkr()">WKR löschen</button>
+            <button class="button" type="button" onclick="saveEditedWkr()">Änderungen speichern</button>
+        </div>
+    </div>
+</div>
+
 <script>
 const urlProdukte = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Produkte";
 const urlMapping = "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Zuordnung";
@@ -2997,7 +3092,37 @@ function openAddWkrModal() {
 function closeAddWkrModal() {
     document.getElementById("addWkrModal").style.display = "none";
 }
+function closeEditWkrModal() {
+    document.getElementById("editWkrModal").style.display = "none";
+}
 
+function openEditWkrModal(tn) {
+    const row = produkte.find(p => clean(p["TN"]) === clean(tn));
+
+    if (!row) {
+        alert("WKR nicht gefunden.");
+        return;
+    }
+
+    editingWkrTN = clean(row["TN"]);
+
+    document.getElementById("editWkrMarke").value = clean(row["Marke"]);
+    document.getElementById("editWkrStandort").value = clean(row["Standort"]);
+    document.getElementById("editWkrBezeichnung").value = clean(row["Bezeichnung"]);
+    document.getElementById("editWkrReifen").value = clean(row["Reifen"]);
+    document.getElementById("editWkrDimension").value = clean(row["Dimension"]);
+    document.getElementById("editWkrTN").value = clean(row["TN"]);
+    document.getElementById("editWkrLager").value = clean(row["Lager"]);
+    document.getElementById("editWkrBild").value = clean(row["Bild"]);
+    document.getElementById("editWkrVP").value = clean(row["VP"]);
+    document.getElementById("editWkrAngebotspreis").value = clean(row["Angebotspreis"]);
+    document.getElementById("editWkrNettopreis").value = clean(row["Nettopreis"]);
+    document.getElementById("editWkrEmpfaengerMail").value = clean(row["EmpfängerMail"] || row["EmpfaengerMail"]);
+    document.getElementById("editWkrHinweistext").value = clean(row["Hinweistext"]);
+    document.getElementById("editWkrVerkaufshinweis").value = clean(row["Verkaufshinweis"]);
+
+    document.getElementById("editWkrModal").style.display = "flex";
+}
 async function saveNewWkr() {
     if (isSavingNewWkr) return;
 
