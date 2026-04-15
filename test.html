@@ -3094,6 +3094,7 @@ function closeAddWkrModal() {
 }
 function closeEditWkrModal() {
     document.getElementById("editWkrModal").style.display = "none";
+    editingWkrTN = "";
 }
 
 function openEditWkrModal(tn) {
@@ -3119,10 +3120,141 @@ function openEditWkrModal(tn) {
     document.getElementById("editWkrNettopreis").value = clean(row["Nettopreis"]);
     document.getElementById("editWkrEmpfaengerMail").value = clean(row["EmpfängerMail"] || row["EmpfaengerMail"]);
     document.getElementById("editWkrHinweistext").value = clean(row["Hinweistext"]);
-    document.getElementById("editWkrVerkaufshinweis").value = clean(row["Verkaufshinweis"]);
+        document.getElementById("editWkrVerkaufshinweis").value = clean(row["Verkaufshinweis"]);
 
     document.getElementById("editWkrModal").style.display = "flex";
 }
+
+async function saveEditedWkr() {
+    if (!editingWkrTN) {
+        alert("Keine WKR-Teilenummer vorhanden.");
+        return;
+    }
+
+    const marke = clean(document.getElementById("editWkrMarke").value);
+    const standort = clean(document.getElementById("editWkrStandort").value);
+    const bezeichnung = clean(document.getElementById("editWkrBezeichnung").value);
+    const reifen = clean(document.getElementById("editWkrReifen").value);
+    const dimension = clean(document.getElementById("editWkrDimension").value);
+    const tn = clean(document.getElementById("editWkrTN").value);
+    const lager = clean(document.getElementById("editWkrLager").value);
+    const bild = clean(document.getElementById("editWkrBild").value);
+    const vp = clean(document.getElementById("editWkrVP").value);
+    const angebotspreis = clean(document.getElementById("editWkrAngebotspreis").value);
+    const nettopreis = clean(document.getElementById("editWkrNettopreis").value);
+    const empfaengerMail = clean(document.getElementById("editWkrEmpfaengerMail").value);
+    const hinweistext = clean(document.getElementById("editWkrHinweistext").value);
+    const verkaufshinweis = clean(document.getElementById("editWkrVerkaufshinweis").value);
+
+    if (!marke || !standort || !bezeichnung || !tn) {
+        alert("Bitte alle Pflichtfelder ausfüllen.");
+        return;
+    }
+
+    try {
+        const response = await fetch(APPS_SCRIPT_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "text/plain;charset=utf-8"
+            },
+            body: JSON.stringify({
+                sheet: "Produkte",
+                keyField: "TN",
+                keyValue: editingWkrTN,
+                updates: {
+                    "Marke": marke,
+                    "Standort": standort,
+                    "Bezeichnung": bezeichnung,
+                    "Reifen": reifen,
+                    "Dimension": dimension,
+                    "TN": tn,
+                    "Lager": lager,
+                    "Bild": bild,
+                    "VP": vp,
+                    "Angebotspreis": angebotspreis,
+                    "Nettopreis": nettopreis,
+                    "EmpfaengerMail": empfaengerMail,
+                    "Hinweistext": hinweistext,
+                    "Verkaufshinweis": verkaufshinweis
+                }
+            }),
+            redirect: "follow"
+        });
+
+        const resultText = await response.text();
+
+        if (resultText === "OK") {
+            const row = produkte.find(p => clean(p["TN"]) === clean(editingWkrTN));
+            if (row) {
+                row["Marke"] = marke;
+                row["Standort"] = standort;
+                row["Bezeichnung"] = bezeichnung;
+                row["Reifen"] = reifen;
+                row["Dimension"] = dimension;
+                row["TN"] = tn;
+                row["Lager"] = lager;
+                row["Bild"] = bild;
+                row["VP"] = vp;
+                row["Angebotspreis"] = angebotspreis;
+                row["Nettopreis"] = nettopreis;
+                row["EmpfaengerMail"] = empfaengerMail;
+                row["Hinweistext"] = hinweistext;
+                row["Verkaufshinweis"] = verkaufshinweis;
+            }
+
+            editingWkrTN = tn;
+            alert("WKR wurde aktualisiert.");
+            closeEditWkrModal();
+            render();
+        } else {
+            alert("Fehler: " + resultText);
+        }
+    } catch (err) {
+        alert("Speichern fehlgeschlagen: " + err.message);
+        console.error(err);
+    }
+}
+
+async function deleteWkr() {
+    if (!editingWkrTN) {
+        alert("Keine WKR-Teilenummer vorhanden.");
+        return;
+    }
+
+    const confirmed = confirm("Möchtest du dieses WKR wirklich löschen?");
+    if (!confirmed) return;
+
+    try {
+        const response = await fetch(APPS_SCRIPT_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "text/plain;charset=utf-8"
+            },
+            body: JSON.stringify({
+                action: "deleteRow",
+                sheet: "Produkte",
+                keyField: "TN",
+                keyValue: editingWkrTN
+            }),
+            redirect: "follow"
+        });
+
+        const resultText = await response.text();
+
+        if (resultText === "OK") {
+            produkte = produkte.filter(p => clean(p["TN"]) !== clean(editingWkrTN));
+            alert("WKR wurde gelöscht.");
+            closeEditWkrModal();
+            render();
+        } else {
+            alert("Fehler: " + resultText);
+        }
+    } catch (err) {
+        alert("Löschen fehlgeschlagen: " + err.message);
+        console.error(err);
+    }
+}
+
 async function saveNewWkr() {
     if (isSavingNewWkr) return;
 
