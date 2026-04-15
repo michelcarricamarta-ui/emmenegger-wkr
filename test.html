@@ -1317,15 +1317,20 @@ body.mini-mode .internal-login-btn:hover {
                 <input id="newWkrTN" type="text" placeholder="TN">
             </div>
 
-            <div>
-                <label for="newWkrLager">Lagerbestand</label>
-                <input id="newWkrLager" type="number" min="0" value="0" placeholder="0">
-            </div>
+           <div>
+    <label for="newWkrLager">Lagerbestand</label>
+    <input id="newWkrLager" type="number" min="0" value="0" placeholder="0">
+</div>
 
-            <div>
-                <label for="newWkrBild">Bild</label>
-                <input id="newWkrBild" type="text" placeholder="Bild URL">
-            </div>
+<div>
+    <label for="newWkrLagerort">Lagerort</label>
+    <input id="newWkrLagerort" type="text" placeholder="z. B. Regal A3 / Platz 12">
+</div>
+
+<div>
+    <label for="newWkrBild">Bild</label>
+    <input id="newWkrBild" type="text" placeholder="Bild URL">
+</div>
 
             <div>
                 <label for="newWkrVP">VP</label>
@@ -1411,14 +1416,19 @@ body.mini-mode .internal-login-btn:hover {
             </div>
 
             <div>
-                <label for="editWkrLager">Lagerbestand</label>
-                <input id="editWkrLager" type="number" min="0" placeholder="0">
-            </div>
+    <label for="editWkrLager">Lagerbestand</label>
+    <input id="editWkrLager" type="number" min="0" placeholder="0">
+</div>
 
-            <div>
-                <label for="editWkrBild">Bild</label>
-                <input id="editWkrBild" type="text" placeholder="Bild URL">
-            </div>
+<div>
+    <label for="editWkrLagerort">Lagerort</label>
+    <input id="editWkrLagerort" type="text" placeholder="z. B. Regal A3 / Platz 12">
+</div>
+
+<div>
+    <label for="editWkrBild">Bild</label>
+    <input id="editWkrBild" type="text" placeholder="Bild URL">
+</div>
 
             <div>
                 <label for="editWkrVP">VP</label>
@@ -2205,8 +2215,9 @@ ${bildHtml}
                         ${(groesse || lastindex || geschwindigkeitsindex) ? `<div class="product-dimension">${escapeHtml(groesse)} ${escapeHtml(lastindex)}${escapeHtml(geschwindigkeitsindex)}</div>` : ``}
                         ${runflat ? `<div class="product-detail"><b>Runflat:</b> ${escapeHtml(runflat)}</div>` : ``}
                         <div class="product-detail"><b>An Lager:</b> ${escapeHtml(anzahl || "0")}</div>
-                        ${standort ? `<div class="product-detail"><b>Standort:</b> ${escapeHtml(standort)}</div>` : ``}
-                        ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
+                        <div class="product-detail"><b>Standort:</b> ${escapeHtml(standort)}</div>
+${lagerort ? `<div class="product-detail"><b>Lagerort:</b> ${escapeHtml(lagerort)}</div>` : ``}
+${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
                         ${dot ? `<div class="tire-dot" style="${isDotOlderThan3Years(dot) ? 'color:#c62828; font-weight:700;' : 'color:#1f1f1f; font-weight:700;'}"><b>DOT:</b> ${escapeHtml(dot)}</div>` : ``}
                         <div class="product-detail">
     <b>Status:</b>
@@ -2321,7 +2332,8 @@ ${bildHtml}
             const bezeichnung = clean(r["Bezeichnung"]);
             const marke = clean(r["Marke"]);
             const standort = standortToLabel(clean(r["Standort"]));
-            const markeReifen = clean(r["Reifen"]);
+const lagerort = clean(r["Lagerort"]);
+const markeReifen = clean(r["Reifen"]);
             const dimension = clean(r["Dimension"]);
             const hinweistext = clean(r["Hinweistext"]);
             const verkaufshinweis = clean(r["Verkaufshinweis"]);
@@ -3075,7 +3087,8 @@ function openAddTireModal() {
     document.getElementById("newWkrDimension").value = "";
     document.getElementById("newWkrTN").value = "";
     document.getElementById("newWkrLager").value = "0";
-    document.getElementById("newWkrBild").value = "";
+document.getElementById("newWkrLagerort").value = "";
+document.getElementById("newWkrBild").value = "";
     document.getElementById("newWkrVP").value = "";
     document.getElementById("newWkrAngebotspreis").value = "";
     document.getElementById("newWkrNettopreis").value = "";
@@ -3113,8 +3126,9 @@ function openEditWkrModal(tn) {
     document.getElementById("editWkrReifen").value = clean(row["Reifen"]);
     document.getElementById("editWkrDimension").value = clean(row["Dimension"]);
     document.getElementById("editWkrTN").value = clean(row["TN"]);
-    document.getElementById("editWkrLager").value = clean(row["Lager"]);
-    document.getElementById("editWkrBild").value = clean(row["Bild"]);
+document.getElementById("editWkrLager").value = clean(row["Lager"]);
+document.getElementById("editWkrLagerort").value = clean(row["Lagerort"]);
+document.getElementById("editWkrBild").value = clean(row["Bild"]);
     document.getElementById("editWkrVP").value = clean(row["VP"]);
     document.getElementById("editWkrAngebotspreis").value = clean(row["Angebotspreis"]);
     document.getElementById("editWkrNettopreis").value = clean(row["Nettopreis"]);
@@ -3137,8 +3151,9 @@ async function saveEditedWkr() {
     const reifen = clean(document.getElementById("editWkrReifen").value);
     const dimension = clean(document.getElementById("editWkrDimension").value);
     const tn = clean(document.getElementById("editWkrTN").value);
-    const lager = clean(document.getElementById("editWkrLager").value);
-    const bild = clean(document.getElementById("editWkrBild").value);
+const lager = clean(document.getElementById("editWkrLager").value);
+const lagerort = clean(document.getElementById("editWkrLagerort").value);
+const bild = clean(document.getElementById("editWkrBild").value);
     const vp = clean(document.getElementById("editWkrVP").value);
     const angebotspreis = clean(document.getElementById("editWkrAngebotspreis").value);
     const nettopreis = clean(document.getElementById("editWkrNettopreis").value);
@@ -3168,8 +3183,9 @@ async function saveEditedWkr() {
                     "Reifen": reifen,
                     "Dimension": dimension,
                     "TN": tn,
-                    "Lager": lager,
-                    "Bild": bild,
+"Lager": lager,
+"Lagerort": lagerort,
+"Bild": bild,
                     "VP": vp,
                     "Angebotspreis": angebotspreis,
                     "Nettopreis": nettopreis,
@@ -3192,8 +3208,9 @@ async function saveEditedWkr() {
                 row["Reifen"] = reifen;
                 row["Dimension"] = dimension;
                 row["TN"] = tn;
-                row["Lager"] = lager;
-                row["Bild"] = bild;
+row["Lager"] = lager;
+row["Lagerort"] = lagerort;
+row["Bild"] = bild;
                 row["VP"] = vp;
                 row["Angebotspreis"] = angebotspreis;
                 row["Nettopreis"] = nettopreis;
@@ -3264,8 +3281,9 @@ async function saveNewWkr() {
     const reifenmarke = clean(document.getElementById("newWkrReifen").value);
     const dimension = clean(document.getElementById("newWkrDimension").value);
     const tn = clean(document.getElementById("newWkrTN").value);
-    const lager = clean(document.getElementById("newWkrLager").value);
-    const bild = clean(document.getElementById("newWkrBild").value);
+const lager = clean(document.getElementById("newWkrLager").value);
+const lagerort = clean(document.getElementById("newWkrLagerort").value);
+const bild = clean(document.getElementById("newWkrBild").value);
     const vp = clean(document.getElementById("newWkrVP").value);
     const angebotspreis = clean(document.getElementById("newWkrAngebotspreis").value);
     const nettopreis = clean(document.getElementById("newWkrNettopreis").value);
@@ -3302,8 +3320,9 @@ async function saveNewWkr() {
                     "Reifen": reifenmarke,
                     "Dimension": dimension,
                     "TN": tn,
-                    "Lager": lager,
-                    "Bild": bild,
+"Lager": lager,
+"Lagerort": lagerort,
+"Bild": bild,
                     "VP": vp,
                     "Angebotspreis": angebotspreis,
                     "Nettopreis": nettopreis,
