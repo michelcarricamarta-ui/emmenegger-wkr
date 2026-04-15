@@ -2331,7 +2331,7 @@ ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenumm
             const bild = clean(r["Bild"]) || "https://via.placeholder.com/220x140?text=Rad";
             const bezeichnung = clean(r["Bezeichnung"]);
             const marke = clean(r["Marke"]);
-            const standort = standortToLabel(clean(r["Standort"]));
+const standort = standortToLabel(clean(r["Standort"]));
 const lagerort = clean(r["Lagerort"]);
 const markeReifen = clean(r["Reifen"]);
             const dimension = clean(r["Dimension"]);
@@ -2370,7 +2370,8 @@ const markeReifen = clean(r["Reifen"]);
                 <div class="product-brand">${escapeHtml(marke)} / ${escapeHtml(markeReifen)}</div>
                 <div class="product-dimension">${escapeHtml(dimension)}</div>
                 <div class="product-detail"><b>Standort:</b> ${escapeHtml(standort)}</div>
-                ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
+${lagerort ? `<div class="product-detail"><b>Lagerort:</b> ${escapeHtml(lagerort)}</div>` : ``}
+${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
                 ${hinweistext ? `<div class="product-hinweis">${escapeHtml(hinweistext)}</div>` : ``}
                 ${verkaufshinweis ? `<div class="product-detail"><b>Hinweis:</b> ${escapeHtml(verkaufshinweis)}</div>` : ``}
             </div>
