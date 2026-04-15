@@ -2255,43 +2255,44 @@ ${bildHtml}
             }
 
             html += `
-                <div class="product">
-                    <div class="product-left">
-                        <img src="${escapeHtml(bild)}" alt="${escapeHtml(bezeichnung)}" class="clickable-image" onclick="toggleImageZoom(this)">
-                        <div class="product-info">
-                            <div class="product-title">${escapeHtml(bezeichnung)}</div>
-                            <div class="product-brand">${escapeHtml(marke)} / ${escapeHtml(markeReifen)}</div>
-                            <div class="product-dimension">${escapeHtml(dimension)}</div>
-                            <div class="product-detail"><b>Standort:</b> ${escapeHtml(standort)}</div>
-                            ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
-                            ${hinweistext ? `<div class="product-hinweis">${escapeHtml(hinweistext)}</div>` : ``}
-                            ${verkaufshinweis ? `<div class="product-detail"><b>Hinweis:</b> ${escapeHtml(verkaufshinweis)}</div>` : ``}
-                        </div>
-                    </div>
+    <div class="product">
+        <div class="product-left">
+            <img src="${escapeHtml(bild)}" alt="${escapeHtml(bezeichnung)}" class="clickable-image" onclick="toggleImageZoom(this)">
+            <div class="product-info">
+                <div class="product-title">${escapeHtml(bezeichnung)}</div>
+                <div class="product-brand">${escapeHtml(marke)} / ${escapeHtml(markeReifen)}</div>
+                <div class="product-dimension">${escapeHtml(dimension)}</div>
+                <div class="product-detail"><b>Standort:</b> ${escapeHtml(standort)}</div>
+                ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
+                ${hinweistext ? `<div class="product-hinweis">${escapeHtml(hinweistext)}</div>` : ``}
+                ${verkaufshinweis ? `<div class="product-detail"><b>Hinweis:</b> ${escapeHtml(verkaufshinweis)}</div>` : ``}
+            </div>
+        </div>
 
-                    <div class="product-right">
-    <div class="price-caption">Pro Satz inkl. Montage</div>
-    ${priceHtml}
-    <div class="price-note">Preise inkl. MwSt.</div>
-    ${nettopreis ? `<div class="price-note"><b>Netto Preis:</b> ${escapeHtml(nettopreis)} CHF</div>` : ``}
-    <div class="${lager > 0 ? "status-green" : "status-grey"}">Lagerbestand: ${lager}</div>
-    <div class="delivery-note">${lager > 0 ? "Sofort verfügbar" : "Auf Bestellung"}</div>
+        <div class="product-right">
+            <div class="price-caption">Pro Satz inkl. Montage</div>
+            ${priceHtml}
+            <div class="price-note">Preise inkl. MwSt.</div>
+            ${nettopreis ? `<div class="price-note"><b>Netto Preis:</b> ${escapeHtml(nettopreis)} CHF</div>` : ``}
+            <div class="${lager > 0 ? "status-green" : "status-grey"}">Lagerbestand: ${lager}</div>
+            <div class="delivery-note">${lager > 0 ? "Sofort verfügbar" : "Auf Bestellung"}</div>
 
-    <div style="display:flex; flex-direction:column; gap:10px; margin-top:12px;">
-        <button
-            class="button"
-            type="button"
-            onclick="openEditWkrModal('${jsSafe(teilenummer)}')"
-        >Bearbeiten</button>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-top:12px;">
+                <button
+                    class="button"
+                    type="button"
+                    onclick="openEditWkrModal('${jsSafe(teilenummer)}')"
+                >Bearbeiten</button>
 
-        <button
-            class="button button-secondary"
-            type="button"
-            onclick="printWkrLabel('${jsSafe(teilenummer)}')"
-        >Etikette drucken</button>
+                <button
+                    class="button button-secondary"
+                    type="button"
+                    onclick="printWkrLabel('${jsSafe(teilenummer)}')"
+                >Etikette drucken</button>
+            </div>
+        </div>
     </div>
-</div>
-            `;
+`;
         });
 
         html += `</div></div>`;
