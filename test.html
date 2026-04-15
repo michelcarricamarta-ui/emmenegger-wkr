@@ -1176,7 +1176,99 @@ body.mini-mode .internal-login-btn:hover {
         <option value="Andere">Andere</option>
     </select>
 </div>
+<div id="editWkrModal" class="modal">
+    <div class="modal-content" style="width:820px; max-width:100%;">
+        <div class="modal-title">Winterkomplettrad bearbeiten</div>
 
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+            <div>
+                <label for="editWkrMarke">Marke *</label>
+                <select id="editWkrMarke">
+                    <option value="">Bitte wählen</option>
+                    <option value="BMW">BMW</option>
+                    <option value="MINI">MINI</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="editWkrStandort">Standort *</label>
+                <select id="editWkrStandort">
+                    <option value="">Bitte wählen</option>
+                    <option value="GEB">Gebenstorf</option>
+                    <option value="HET">Hettenschwil</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="editWkrBezeichnung">Bezeichnung *</label>
+                <input id="editWkrBezeichnung" type="text" placeholder="Bezeichnung">
+            </div>
+
+            <div>
+                <label for="editWkrReifen">Reifenmarke</label>
+                <input id="editWkrReifen" type="text" placeholder="z. B. Pirelli">
+            </div>
+
+            <div>
+                <label for="editWkrDimension">Dimension</label>
+                <input id="editWkrDimension" type="text" placeholder="Dimension">
+            </div>
+
+            <div>
+                <label for="editWkrTN">Teilenummer (TN) *</label>
+                <input id="editWkrTN" type="text" placeholder="TN">
+            </div>
+
+            <div>
+                <label for="editWkrLager">Lagerbestand</label>
+                <input id="editWkrLager" type="number" min="0" placeholder="0">
+            </div>
+
+            <div>
+                <label for="editWkrBild">Bild</label>
+                <input id="editWkrBild" type="text" placeholder="Bild URL">
+            </div>
+
+            <div>
+                <label for="editWkrVP">VP</label>
+                <input id="editWkrVP" type="text" placeholder="z. B. 2490">
+            </div>
+
+            <div>
+                <label for="editWkrAngebotspreis">Angebotspreis</label>
+                <input id="editWkrAngebotspreis" type="text" placeholder="z. B. 2190">
+            </div>
+
+            <div>
+                <label for="editWkrNettopreis">Nettopreis</label>
+                <input id="editWkrNettopreis" type="text" placeholder="z. B. 1850">
+            </div>
+
+            <div>
+                <label for="editWkrEmpfaengerMail">Empfänger Mail</label>
+                <input id="editWkrEmpfaengerMail" type="email" placeholder="z. B. tv-g-fp@emmeneggerag.ch">
+            </div>
+
+            <div style="grid-column:1 / -1;">
+                <label for="editWkrHinweistext">Hinweistext</label>
+                <textarea id="editWkrHinweistext" placeholder="Freier Hinweistext"></textarea>
+            </div>
+
+            <div style="grid-column:1 / -1;">
+                <label for="editWkrVerkaufshinweis">Verkaufshinweis</label>
+                <textarea id="editWkrVerkaufshinweis" placeholder="Interner / externer Hinweis"></textarea>
+            </div>
+        </div>
+
+        <div class="required-note">* Pflichtfelder</div>
+
+        <div class="modal-actions">
+            <button class="button button-secondary" type="button" onclick="closeEditWkrModal()">Schliessen</button>
+            <button class="button button-secondary" type="button" onclick="deleteWkr()">WKR löschen</button>
+            <button class="button" type="button" onclick="saveEditedWkr()">Änderungen speichern</button>
+        </div>
+    </div>
+</div>
 <div id="editTireHerstellerOtherWrap" style="display:none;">
     <label for="editTireHerstellerOther">Anderer Hersteller *</label>
     <input id="editTireHerstellerOther" type="text" placeholder="Hersteller eingeben">
@@ -2120,67 +2212,53 @@ ${bildHtml}
         if (results.length === 0) {
             html += `<div class="empty-note">Für diese Filter wurden keine Produkte gefunden.</div>`;
         }
+results.forEach(r => {
+    const lager = parseInt(clean(r["Lager"]), 10) || 0;
+    const bild = clean(r["Bild"]) || "https://via.placeholder.com/220x140?text=Rad";
+    const bezeichnung = clean(r["Bezeichnung"]);
+    const marke = clean(r["Marke"]);
+    const standort = standortToLabel(clean(r["Standort"]));
+    const markeReifen = clean(r["Reifen"]);
+    const dimension = clean(r["Dimension"]);
+    const hinweistext = clean(r["Hinweistext"]);
+    const verkaufshinweis = clean(r["Verkaufshinweis"]);
+    const teilenummer = clean(r["TN"]);
+    const vp = clean(r["VP"]);
+    const angebot = clean(r["Angebotspreis"]);
+    const nettopreis = clean(r["Nettopreis"]);
+    const empfaengerMail = clean(r["EmpfängerMail"] || r["EmpfaengerMail"]);
 
-        results.forEach(r => {
-            const lager = parseInt(clean(r["Lager"]), 10) || 0;
-            const bild = clean(r["Bild"]) || "https://via.placeholder.com/220x140?text=Rad";
-            const bezeichnung = clean(r["Bezeichnung"]);
-            const marke = clean(r["Marke"]);
-            const standort = standortToLabel(clean(r["Standort"]));
-            const markeReifen = clean(r["Reifen"]);
-            const dimension = clean(r["Dimension"]);
-            const hinweistext = clean(r["Hinweistext"]);
-            const verkaufshinweis = clean(r["Verkaufshinweis"]);
-            const teilenummer = clean(r["TN"]);
-            const vp = clean(r["VP"]);
-            const angebot = clean(r["Angebotspreis"]);
-            const nettopreis = clean(r["Nettopreis"]);
-            const empfaengerMail = clean(r["EmpfängerMail"] || r["EmpfaengerMail"]);
-
-            const vpNum = parsePriceValue(vp);
-            const angebotNum = parsePriceValue(angebot);
-
-            let priceHtml = ``;
-
-            if (angebotNum !== null && angebotNum > 0 && vpNum !== null && vpNum > 0 && angebotNum < vpNum) {
-                priceHtml = `
-                    <div class="new-price">${escapeHtml(angebot)} CHF</div>
-                    <div class="old-price">UPE: ${escapeHtml(vp)} CHF</div>
-                `;
-            } else if (angebotNum !== null && angebotNum > 0) {
-                priceHtml = `<div class="new-price">${escapeHtml(angebot)} CHF</div>`;
-            } else if (vpNum !== null && vpNum > 0) {
-                priceHtml = `<div class="new-price">${escapeHtml(vp)} CHF</div>`;
-            } else {
-                priceHtml = `<div class="new-price">Preis offen</div>`;
-            }
-
-            html += `
-                <div class="product">
-                    <div class="product-left">
-                        <img src="${escapeHtml(bild)}" alt="${escapeHtml(bezeichnung)}" class="clickable-image" onclick="toggleImageZoom(this)">
-                        <div class="product-info">
-                            <div class="product-title">${escapeHtml(bezeichnung)}</div>
-                            <div class="product-brand">${escapeHtml(marke)} / ${escapeHtml(markeReifen)}</div>
-                            <div class="product-dimension">${escapeHtml(dimension)}</div>
-                            <div class="product-detail"><b>Standort:</b> ${escapeHtml(standort)}</div>
-                            ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
-                            ${hinweistext ? `<div class="product-hinweis">${escapeHtml(hinweistext)}</div>` : ``}
-                            ${verkaufshinweis ? `<div class="product-detail"><b>Hinweis:</b> ${escapeHtml(verkaufshinweis)}</div>` : ``}
-                        </div>
-                    </div>
-
-                    <div class="product-right">
-                        <div class="price-caption">Pro Satz inkl. Montage</div>
-                        ${priceHtml}
-                        <div class="price-note">Preise inkl. MwSt.</div>
-                        ${nettopreis ? `<div class="price-note"><b>Netto Preis:</b> ${escapeHtml(nettopreis)} CHF</div>` : ``}
-                        <div class="${lager > 0 ? "status-green" : "status-grey"}">Lagerbestand: ${lager}</div>
-                        <button class="button" type="button" onclick="openModal('${jsSafe(bezeichnung)}','${jsSafe(markeReifen)}','${jsSafe(dimension)}','${jsSafe(angebot || vp)}','${jsSafe(empfaengerMail)}','${jsSafe(bild)}','${jsSafe(teilenummer)}','${jsSafe(hinweistext)}','${jsSafe(verkaufshinweis)}','${jsSafe(nettopreis)}')">Auswählen</button>
-                    </div>
+    html += `
+        <div class="product">
+            <div class="product-left">
+                <img src="${escapeHtml(bild)}" alt="${escapeHtml(bezeichnung)}" class="clickable-image" onclick="toggleImageZoom(this)">
+                <div class="product-info">
+                    <div class="product-title">${escapeHtml(bezeichnung)}</div>
+                    <div class="product-brand">${escapeHtml(marke)} / ${escapeHtml(markeReifen)}</div>
+                    <div class="product-dimension">${escapeHtml(dimension)}</div>
+                    ${hinweistext ? `<div class="product-hinweis">${escapeHtml(hinweistext)}</div>` : ``}
+                    ${verkaufshinweis ? `<div class="product-detail"><b>Hinweis:</b> ${escapeHtml(verkaufshinweis)}</div>` : ``}
+                    ${teilenummer ? `<div class="product-partnr">Teilenummer: ${escapeHtml(teilenummer)}</div>` : ``}
                 </div>
-            `;
-        });
+            </div>
+
+            <div class="product-right">
+                <div class="price-caption">Pro Satz inkl. Montage</div>
+                ${priceHtml}
+                <div class="price-note">Preise inkl. MwSt.</div>
+                ${nettopreis ? `<div class="price-note"><b>Netto Preis:</b> ${escapeHtml(nettopreis)} CHF</div>` : ``}
+                <div class="${lager > 0 ? "status-green" : "status-grey"}">Lagerbestand: ${lager}</div>
+
+                <!-- Admin-Buttons -->
+                <div style="display:flex; flex-direction:column; gap:10px; margin-top:12px;">
+                    <button class="button" type="button" onclick="openEditWkrModal('${jsSafe(r['ID'])}')">Bearbeiten</button>
+                    <button class="button button-secondary" type="button" onclick="deleteWkr('${jsSafe(r['ID'])}')">WKR löschen</button>
+                </div>
+            </div>
+        </div>
+    `;
+});
+ 
 
         html += `</div></div>`;
     }
@@ -3894,6 +3972,10 @@ function printTireLabel(rowId) {
     printWindow.document.write(buildTireLabelHtml(tire));
     printWindow.document.close();
 }
+    function openEditWkrModal(rowId) { ... }      // gesamte Funktion wie oben
+function closeEditWkrModal() { ... }
+async function saveEditedWkr() { ... }
+async function deleteWkr() { ... }
 </script>
 </body>
 </html>
