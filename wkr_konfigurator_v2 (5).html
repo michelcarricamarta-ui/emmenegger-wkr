@@ -176,7 +176,7 @@ body {
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   font-family: var(--font-body); font-size: 14px; font-weight: 600;
-  padding: 11px 20px; border-radius: var(--radius-sm); border: none;
+  padding: 11px 20px; border-radius: 3px; border: none;
   cursor: pointer; transition: var(--transition); text-decoration: none; white-space: nowrap;
 }
 .btn-primary { background: var(--accent); color: white; }
@@ -1622,19 +1622,37 @@ function renderWkrFlow(){
   const tnList=[...new Set(mapping.filter(x=>clean(x["Marke"])===state.marke&&clean(x["Reihe"])===state.reihe&&clean(x["Modell"])===state.modell&&motorMatch(x["Motor"],state.motor)).map(x=>clean(x["TN"])).filter(Boolean))];
   const results=produkte.filter(p=>clean(p["Standort"])===state.standort&&clean(p["Marke"])===state.marke&&tnList.includes(clean(p["TN"])));
 
-  html+=`<div class="summary-box">
-    <div class="summary-data">
-      <div class="label">Ihre Auswahl</div>
-      <div class="summary-pills">
-        <span class="summary-pill">${e(state.marke)}</span>
-        <span class="summary-pill">${e(standortLabel(state.standort))}</span>
-        <span class="summary-pill">${e(state.reihe)}</span>
-        <span class="summary-pill">${e(fzCode)}</span>
-        <span class="summary-pill">${e(state.motor)}</span>
-      </div>
+  html+=`<div class="summary-box" style="flex-direction:column; gap:12px;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="label" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);">Ihre Auswahl</div>
       <button class="btn btn-secondary btn-sm" onclick="resetSelection()">✎ Auswahl ändern</button>
     </div>
-    <div class="summary-image"><img src="${e(fzBild)}" alt="${e(fzCode)}"></div>
+    <div style="display:flex; align-items:center; gap:0; flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface-2);border:1px solid var(--border);border-radius:3px;">
+        <span style="font-size:18px;">🚗</span>
+        <div><div style="font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;">Marke</div><div style="font-size:14px;font-weight:700;">${e(state.marke)}</div></div>
+      </div>
+      <div style="color:var(--text-muted);padding:0 6px;">›</div>
+      <div style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface-2);border:1px solid var(--border);border-radius:3px;">
+        <span style="font-size:18px;">📍</span>
+        <div><div style="font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;">Standort</div><div style="font-size:14px;font-weight:700;">${e(standortLabel(state.standort))}</div></div>
+      </div>
+      <div style="color:var(--text-muted);padding:0 6px;">›</div>
+      <div style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface-2);border:1px solid var(--border);border-radius:3px;">
+        <span style="font-size:18px;">📋</span>
+        <div><div style="font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;">Reihe</div><div style="font-size:14px;font-weight:700;">${e(state.reihe)}</div></div>
+      </div>
+      <div style="color:var(--text-muted);padding:0 6px;">›</div>
+      <div style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface-2);border:1px solid var(--border);border-radius:3px;">
+        <span style="font-size:18px;">🚘</span>
+        <div><div style="font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;">Modell</div><div style="font-size:14px;font-weight:700;">${e(fzCode)}</div></div>
+      </div>
+      <div style="color:var(--text-muted);padding:0 6px;">›</div>
+      <div style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--accent);border:1px solid var(--accent);border-radius:3px;">
+        <span style="font-size:18px;">⚙️</span>
+        <div><div style="font-size:10px;color:rgba(255,255,255,0.75);font-weight:700;text-transform:uppercase;">Motor</div><div style="font-size:14px;font-weight:700;color:white;">${e(state.motor)}</div></div>
+      </div>
+    </div>
   </div>`;
 
   html+=`<div class="products-section">
