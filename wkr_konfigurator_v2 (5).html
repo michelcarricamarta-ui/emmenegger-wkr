@@ -2165,54 +2165,63 @@ function exportReifenCSV(){
   a.download = `Reifen_Export_${new Date().toLocaleDateString("de-CH").replace(/\./g,"-")}.csv`;
   a.click();
 }
-
 /* ============================================================
    EXPORT: XLSX (SheetJS)
    ============================================================ */
 function exportWkrXLSX(){
   if(typeof XLSX==="undefined"){ alert("Excel-Bibliothek nicht geladen. Bitte Seite neu laden."); return; }
   const data = getWkrExportData();
-  const headers = ["Marke","Standort","Bezeichnung","Reifen","Dimension","TN","Lager","Lagerort","VP","Angebotspreis","Nettopreis"];
-  const rows = data.map(p => headers.map(h => {
-    if(["Lager","VP","Angebotspreis","Nettopreis"].includes(h)){
-      const n = parsePrice(p[h]);
-      return n!==null ? n : clean(p[h]);
-    }
-    return clean(p[h]);
-  }));
+  const headers = ["Marke","Standort","Bezeichnung","Reifen","Dimension","TN","Lager","Lagerort","VP","Angebotspreis","Nettopreis","Gezählt","Differenz","Bemerkung Inventur"];
+  const rows = data.map(p => {
+    const lagerNum = parsePrice(p["Lager"]);
+    return headers.map(h => {
+      if(h==="Gezählt" || h==="Differenz" || h==="Bemerkung Inventur") return "";
+      if(["Lager","VP","Angebotspreis","Nettopreis"].includes(h)){
+        const n = parsePrice(p[h]);
+        return n!==null ? n : clean(p[h]);
+      }
+      return clean(p[h]);
+    });
+  });
   const aoa = [headers, ...rows];
   const ws = XLSX.utils.aoa_to_sheet(aoa);
 
-  // Spaltenbreiten
+  // Differenz-Formeln einfügen: =Gezählt - Lager  (Spalte M = Gezählt, L = Lager wäre falsch → siehe unten)
+  // Spalten-Index (0-basiert): Lager=6 (G), Gezählt=11 (L), Differenz=12 (M)
+  // A=1, B=2, C=3, D=4, E=5, F=6, G=7 (Lager), H=8, I=9, J=10, K=11, L=12 (Gezählt), M=13 (Differenz)
+  for(let i=0; i<rows.length; i++){
+    const rowNr = i + 2; // Header = Zeile 1, Daten starten bei 2
+    const diffAddr = XLSX.utils.encode_cell({r:i+1, c:12}); // Spalte M = Differenz
+    ws[diffAddr] = { t:"n", f:`L${rowNr}-G${rowNr}` };
+  }
+
   ws["!cols"] = [
-    {wch:8},{wch:10},{wch:35},{wch:18},{wch:18},{wch:14},{wch:8},{wch:18},{wch:12},{wch:14},{wch:12}
+    {wch:8},{wch:10},{wch:35},{wch:18},{wch:18},{wch:14},{wch:8},{wch:18},{wch:12},{wch:14},{wch:12},
+    {wch:10},{wch:10},{wch:30}
   ];
 
-  // Header-Style (manuelle Attribute, SheetJS Community rendert nur Breite/Zahl; Stil bleibt für Read-Kompatibilität)
   const range = XLSX.utils.decode_range(ws["!ref"]);
   for(let c=range.s.c; c<=range.e.c; c++){
     const addr = XLSX.utils.encode_cell({r:0, c});
     if(ws[addr]) ws[addr].s = {font:{bold:true}};
   }
 
-  // Autofilter auf Header-Zeile
   ws["!autofilter"] = { ref: XLSX.utils.encode_range({s:{r:0,c:range.s.c},e:{r:range.e.r,c:range.e.c}}) };
-
-  // Freeze Header
   ws["!freeze"] = { xSplit: 0, ySplit: 1 };
 
   const wb = XLSX.utils.book_new();
   const standort = clean(document.getElementById("exportWkrStandort")?.value) || "Alle";
   XLSX.utils.book_append_sheet(wb, ws, `WKR_${standort}`);
   const datum = new Date().toLocaleDateString("de-CH").replace(/\./g,"-");
-  XLSX.writeFile(wb, `WKR_Export_${datum}.xlsx`);
+  XLSX.writeFile(wb, `WKR_Inventur_${datum}.xlsx`);
 }
 
 function exportReifenXLSX(){
   if(typeof XLSX==="undefined"){ alert("Excel-Bibliothek nicht geladen. Bitte Seite neu laden."); return; }
   const data = getReifenExportData();
-  const headers = ["Standort","Reifentyp","Hersteller","Profil","Profilbreite","Querschnitt","Zoll","Lastindex","Geschwindigkeitsindex","Runflat","DOT","Teilenummer","Anzahl","Lagerort","EK Preis","VK Preis","Aktiv","Bemerkung"];
+  const headers = ["Standort","Reifentyp","Hersteller","Profil","Profilbreite","Querschnitt","Zoll","Lastindex","Geschwindigkeitsindex","Runflat","DOT","Teilenummer","Anzahl","Lagerort","EK Preis","VK Preis","Aktiv","Bemerkung","Gezählt","Differenz","Bemerkung Inventur"];
   const rows = data.map(r => headers.map(h => {
+    if(h==="Gezählt" || h==="Differenz" || h==="Bemerkung Inventur") return "";
     if(["Anzahl","EK Preis","VK Preis"].includes(h)){
       const n = parsePrice(r[h]);
       return n!==null ? n : clean(r[h]);
@@ -2222,8 +2231,17 @@ function exportReifenXLSX(){
   const aoa = [headers, ...rows];
   const ws = XLSX.utils.aoa_to_sheet(aoa);
 
+  // Differenz-Formel: =Gezählt - Anzahl
+  // Spalten: Anzahl=13 (M), Gezählt=19 (S), Differenz=20 (T)
+  for(let i=0; i<rows.length; i++){
+    const rowNr = i + 2;
+    const diffAddr = XLSX.utils.encode_cell({r:i+1, c:19}); // Spalte T = Differenz
+    ws[diffAddr] = { t:"n", f:`S${rowNr}-M${rowNr}` };
+  }
+
   ws["!cols"] = [
-    {wch:10},{wch:11},{wch:14},{wch:22},{wch:11},{wch:11},{wch:7},{wch:10},{wch:10},{wch:9},{wch:9},{wch:16},{wch:8},{wch:18},{wch:10},{wch:10},{wch:7},{wch:30}
+    {wch:10},{wch:11},{wch:14},{wch:22},{wch:11},{wch:11},{wch:7},{wch:10},{wch:10},{wch:9},{wch:9},{wch:16},{wch:8},{wch:18},{wch:10},{wch:10},{wch:7},{wch:30},
+    {wch:10},{wch:10},{wch:30}
   ];
 
   const range = XLSX.utils.decode_range(ws["!ref"]);
@@ -2239,7 +2257,7 @@ function exportReifenXLSX(){
   const standort = clean(document.getElementById("exportReifenStandort")?.value) || "Alle";
   XLSX.utils.book_append_sheet(wb, ws, `Reifen_${standort}`);
   const datum = new Date().toLocaleDateString("de-CH").replace(/\./g,"-");
-  XLSX.writeFile(wb, `Reifen_Export_${datum}.xlsx`);
+  XLSX.writeFile(wb, `Reifen_Inventur_${datum}.xlsx`);
 }
 
 /* ============================================================
@@ -2251,15 +2269,14 @@ function printWkrInventur(){
   const lagerort = clean(document.getElementById("exportWkrLagerort")?.value);
   const w = window.open("","_blank");
   if(!w) return;
-  const rows = data.map(p => `<tr><td>${e(clean(p["Marke"]))}</td><td>${e(standortLabel(clean(p["Standort"])))}</td><td>${e(clean(p["Bezeichnung"]))}</td><td>${e(clean(p["Reifen"]))}</td><td>${e(clean(p["Dimension"]))}</td><td>${e(clean(p["TN"]))}</td><td style="text-align:center;font-weight:700;color:${(parseInt(clean(p["Lager"]),10)||0)>0?"#16a34a":"#dc2626"}">${e(clean(p["Lager"]))}</td><td>${e(clean(p["Lagerort"]))}</td></tr>`).join("");
+  const rows = data.map(p => `<tr><td>${e(clean(p["Marke"]))}</td><td>${e(standortLabel(clean(p["Standort"])))}</td><td>${e(clean(p["Bezeichnung"]))}</td><td>${e(clean(p["Reifen"]))}</td><td>${e(clean(p["Dimension"]))}</td><td>${e(clean(p["TN"]))}</td><td style="text-align:center;font-weight:700;color:${(parseInt(clean(p["Lager"]),10)||0)>0?"#16a34a":"#dc2626"}">${e(clean(p["Lager"]))}</td><td>${e(clean(p["Lagerort"]))}</td><td class="count-cell"></td><td class="count-cell"></td><td class="note-cell"></td></tr>`).join("");
   const filterInfo = [
     standort ? `Standort: ${standortLabel(standort)}` : "Alle Standorte",
     lagerort ? `Lagerort enthält: "${lagerort}"` : null
   ].filter(Boolean).join(" — ");
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>WKR Inventur</title><style>body{font-family:Arial,sans-serif;padding:20px;font-size:12px;}h2{margin-bottom:4px;}p{color:#666;margin-bottom:16px;}table{width:100%;border-collapse:collapse;}th{background:#1c69d4;color:white;padding:8px;text-align:left;font-size:11px;}td{padding:6px 8px;border-bottom:1px solid #eee;}tr:nth-child(even){background:#f9f9f9;}.actions{margin-bottom:16px;}button{background:#1c69d4;color:white;border:none;padding:8px 14px;cursor:pointer;margin-right:8px;}@media print{.actions{display:none;}}</style></head><body><div class="actions"><button onclick="window.print()">Drucken</button><button onclick="window.close()">Schliessen</button></div><h2>WKR Inventurliste</h2><p>${filterInfo} — Datum: ${new Date().toLocaleDateString("de-CH")} — Einträge: ${data.length}</p><table><thead><tr><th>Marke</th><th>Standort</th><th>Bezeichnung</th><th>Reifen</th><th>Dimension</th><th>Teilenummer</th><th>Lager</th><th>Lagerort</th></tr></thead><tbody>${rows}</tbody></table></body></html>`);
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>WKR Inventur</title><style>body{font-family:Arial,sans-serif;padding:20px;font-size:12px;}h2{margin-bottom:4px;}p{color:#666;margin-bottom:16px;}table{width:100%;border-collapse:collapse;}th{background:#1c69d4;color:white;padding:8px 6px;text-align:left;font-size:11px;}td{padding:8px 6px;border-bottom:1px solid #ccc;}tr:nth-child(even){background:#f9f9f9;}.count-cell{width:60px;border-right:1px dashed #999;background:#fffbe8;}.note-cell{width:140px;background:#fffbe8;}.count-head{background:#d97706 !important;}.actions{margin-bottom:16px;}button{background:#1c69d4;color:white;border:none;padding:8px 14px;cursor:pointer;margin-right:8px;}.legend{margin-top:8px;font-size:11px;color:#777;}@media print{.actions{display:none;}body{padding:10mm;}table{page-break-inside:auto;}tr{page-break-inside:avoid;page-break-after:auto;}}</style></head><body><div class="actions"><button onclick="window.print()">Drucken</button><button onclick="window.close()">Schliessen</button></div><h2>WKR Inventurliste</h2><p>${filterInfo} — Datum: ${new Date().toLocaleDateString("de-CH")} — Einträge: ${data.length}</p><div class="legend">Die gelb hinterlegten Spalten sind für die physische Zählung vor Ort — Gezählt, Differenz und Bemerkungen einfach von Hand eintragen.</div><table><thead><tr><th>Marke</th><th>Standort</th><th>Bezeichnung</th><th>Reifen</th><th>Dimension</th><th>Teilenummer</th><th>Lager (Soll)</th><th>Lagerort</th><th class="count-head">Gezählt</th><th class="count-head">Differenz</th><th class="count-head">Bemerkung</th></tr></thead><tbody>${rows}</tbody></table></body></html>`);
   w.document.close();
 }
-
 function printReifenInventur(){
   const data = getReifenExportData();
   const standort = clean(document.getElementById("exportReifenStandort")?.value);
@@ -2267,13 +2284,13 @@ function printReifenInventur(){
   const dotFilter= clean(document.getElementById("exportReifenDot")?.value);
   const w = window.open("","_blank");
   if(!w) return;
-  const rows = data.map(r => `<tr><td>${e(standortLabel(clean(r["Standort"])))}</td><td>${e(clean(r["Reifentyp"]))}</td><td>${e(clean(r["Hersteller"]))}</td><td>${e(clean(r["Profil"]))}</td><td>${e(tireSize(r))}</td><td>${e(clean(r["Teilenummer"]))}</td><td style="text-align:center;font-weight:700;color:${(parseInt(clean(r["Anzahl"]),10)||0)>0?"#16a34a":"#dc2626"}">${e(clean(r["Anzahl"]))}</td><td>${e(clean(r["Lagerort"]))}</td><td style="color:${isDotOld(r["DOT"])?"#dc2626":"#333"};font-weight:${isDotOld(r["DOT"])?"700":"normal"};">${e(clean(r["DOT"]))}${isDotOld(r["DOT"])?" ⚠":""}</td><td>${e(clean(r["Aktiv"])==="Ja"?"✓":"✗")}</td><td>${e(clean(r["Bemerkung"]))}</td></tr>`).join("");
+  const rows = data.map(r => `<tr><td>${e(standortLabel(clean(r["Standort"])))}</td><td>${e(clean(r["Reifentyp"]))}</td><td>${e(clean(r["Hersteller"]))}</td><td>${e(clean(r["Profil"]))}</td><td>${e(tireSize(r))}</td><td>${e(clean(r["Teilenummer"]))}</td><td style="text-align:center;font-weight:700;color:${(parseInt(clean(r["Anzahl"]),10)||0)>0?"#16a34a":"#dc2626"}">${e(clean(r["Anzahl"]))}</td><td>${e(clean(r["Lagerort"]))}</td><td style="color:${isDotOld(r["DOT"])?"#dc2626":"#333"};font-weight:${isDotOld(r["DOT"])?"700":"normal"};">${e(clean(r["DOT"]))}${isDotOld(r["DOT"])?" ⚠":""}</td><td>${e(clean(r["Aktiv"])==="Ja"?"✓":"✗")}</td><td class="count-cell"></td><td class="count-cell"></td><td class="note-cell"></td></tr>`).join("");
   const filterInfo = [
     standort ? `Standort: ${standortLabel(standort)}` : "Alle Standorte",
     lagerort ? `Lagerort enthält: "${lagerort}"` : null,
     dotFilter==="alt" ? "Nur DOT > 3 Jahre" : dotFilter==="neu" ? "Nur DOT ≤ 3 Jahre" : null
   ].filter(Boolean).join(" — ");
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Reifen Inventur</title><style>body{font-family:Arial,sans-serif;padding:20px;font-size:11px;}h2{margin-bottom:4px;}p{color:#666;margin-bottom:16px;}table{width:100%;border-collapse:collapse;}th{background:#1c69d4;color:white;padding:8px;text-align:left;font-size:10px;}td{padding:5px 7px;border-bottom:1px solid #eee;}tr:nth-child(even){background:#f9f9f9;}.actions{margin-bottom:16px;}button{background:#1c69d4;color:white;border:none;padding:8px 14px;cursor:pointer;margin-right:8px;}@media print{.actions{display:none;}}</style></head><body><div class="actions"><button onclick="window.print()">Drucken</button><button onclick="window.close()">Schliessen</button></div><h2>Reifen Inventurliste</h2><p>${filterInfo} — Datum: ${new Date().toLocaleDateString("de-CH")} — Einträge: ${data.length}</p><table><thead><tr><th>Standort</th><th>Typ</th><th>Hersteller</th><th>Profil</th><th>Grösse</th><th>Teilenummer</th><th>Anzahl</th><th>Lagerort</th><th>DOT</th><th>Aktiv</th><th>Bemerkung</th></tr></thead><tbody>${rows}</tbody></table></body></html>`);
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Reifen Inventur</title><style>body{font-family:Arial,sans-serif;padding:20px;font-size:11px;}h2{margin-bottom:4px;}p{color:#666;margin-bottom:16px;}table{width:100%;border-collapse:collapse;}th{background:#1c69d4;color:white;padding:7px 5px;text-align:left;font-size:10px;}td{padding:7px 5px;border-bottom:1px solid #ccc;}tr:nth-child(even){background:#f9f9f9;}.count-cell{width:50px;border-right:1px dashed #999;background:#fffbe8;}.note-cell{width:120px;background:#fffbe8;}.count-head{background:#d97706 !important;}.actions{margin-bottom:16px;}button{background:#1c69d4;color:white;border:none;padding:8px 14px;cursor:pointer;margin-right:8px;}.legend{margin-top:8px;font-size:11px;color:#777;}@media print{.actions{display:none;}body{padding:10mm;}table{page-break-inside:auto;}tr{page-break-inside:avoid;page-break-after:auto;}}</style></head><body><div class="actions"><button onclick="window.print()">Drucken</button><button onclick="window.close()">Schliessen</button></div><h2>Reifen Inventurliste</h2><p>${filterInfo} — Datum: ${new Date().toLocaleDateString("de-CH")} — Einträge: ${data.length}</p><div class="legend">Die gelb hinterlegten Spalten sind für die physische Zählung vor Ort — Gezählt, Differenz und Bemerkungen einfach von Hand eintragen.</div><table><thead><tr><th>Standort</th><th>Typ</th><th>Hersteller</th><th>Profil</th><th>Grösse</th><th>Teilenummer</th><th>Anzahl (Soll)</th><th>Lagerort</th><th>DOT</th><th>Aktiv</th><th class="count-head">Gezählt</th><th class="count-head">Differenz</th><th class="count-head">Bemerkung</th></tr></thead><tbody>${rows}</tbody></table></body></html>`);
   w.document.close();
 }
 
