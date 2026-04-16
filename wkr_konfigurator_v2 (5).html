@@ -2311,6 +2311,11 @@ function closeAddWkrModal(){ document.getElementById("addWkrModal").classList.re
 function clearWkrForm(prefix){
   ["Marke","Standort","Bezeichnung","Reifen","Dimension","TN","Lagerort","Bild","VP","Angebotspreis","Nettopreis","EmpfaengerMail","Hinweistext","Verkaufshinweis"].forEach(f=>{const el=document.getElementById(`${prefix}Wkr${f}`);if(el)el.value="";});
   const lager=document.getElementById(`${prefix}WkrLager`);if(lager)lager.value="0";
+  const misch=document.getElementById(`${prefix}WkrMisch`);if(misch)misch.checked=false;
+  const tnWrap=document.getElementById(`${prefix}WkrTNWrap`);if(tnWrap)tnWrap.style.display="block";
+  const mischWrap=document.getElementById(`${prefix}WkrMischWrap`);if(mischWrap)mischWrap.style.display="none";
+  const va=document.getElementById(`${prefix}WkrTNVA`);if(va)va.value="";
+  const ha=document.getElementById(`${prefix}WkrTNHA`);if(ha)ha.value="";
 }
 function openEditWkrModal(tn){
   const row=produkte.find(p=>clean(p["TN"])===clean(tn));
