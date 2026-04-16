@@ -660,41 +660,24 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
   .filter-grid.wide { grid-template-columns: 1fr; }
   .modal-box { padding: 20px; }
 }
-@media print {
-   @media (max-width: 600px) {
-  /* Topbar */
+@media (min-width: 601px) {
+  #menuToggle { display: none !important; }
+  #mobileMenu { display: none !important; }
+}
+
+@media (max-width: 600px) {
   .topbar-inner { padding: 0 12px; height: 56px; }
   .topbar-logo img { height: 28px; }
-  .lang-switcher { display: none; }
-  .back-btn span { display: none; }
-  .back-btn { padding: 6px 10px; }
-  .login-btn { font-size: 11px; padding: 6px 8px; }
-
-  /* App shell */
   .app-shell { padding: 0 12px 40px; }
-
-  /* Hero */
   .hero { height: 200px; border-radius: 10px; margin: 12px 0 20px; }
   .hero-content { left: 16px; bottom: 16px; right: 16px; }
   .hero-content h1 { font-size: 20px; }
   .hero-content p { font-size: 13px; }
-
-  /* Auswahl-Karten */
   .card-grid { gap: 10px; }
   .sel-card { min-width: calc(50% - 5px); min-height: 70px; padding: 16px 12px; font-size: 14px; }
   .brand-card { min-width: calc(50% - 5px); min-height: 110px; }
   .model-card { width: calc(50% - 5px); min-height: 170px; }
   .model-card img { height: 100px; }
-
-  /* Summary Box */
-  .summary-box { flex-direction: column; padding: 12px; }
-  .summary-image { display: none; }
-
-  /* Auswahl horizontal scroll auf Mobile */
-  .summary-box > div:last-child { overflow-x: auto; padding-bottom: 4px; }
-  .summary-box > div:last-child > div:first-child { flex-wrap: nowrap; min-width: max-content; }
-
-  /* Produkt Liste */
   .product-item { flex-direction: column; gap: 12px; padding: 20px 0; }
   .product-image-wrap { width: 100%; }
   .product-image-wrap img { width: 100%; height: 200px; }
@@ -702,27 +685,17 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
   .product-actions { flex-direction: row; flex-wrap: wrap; }
   .price-main { font-size: 22px; }
   .products-title { font-size: 20px; }
-
-  /* Buttons */
-  .btn-lg { font-size: 14px; padding: 11px 16px; }
   .btn { font-size: 13px; }
-
-  /* Modals */
   .modal-box { padding: 16px; border-radius: 12px; }
   .modal-title { font-size: 18px; }
   .form-grid { grid-template-columns: 1fr; }
   .modal-actions { flex-direction: column; }
   .modal-actions .btn { min-width: unset; }
-@media (min-width: 601px) {
-  #menuToggle { display: none !important; }
-  #mobileMenu { display: none !important; }
+  #menuToggle { display: flex !important; }
+  #desktopActions { display: none !important; }
 }
-  /* Topbar Actions — weniger Buttons zeigen */
-#menuToggle { display: flex !important; }
-#desktopActions { display: none !important; }
 
-/* Desktop: Hamburger verstecken */
-}
+@media print {
   .topbar, .back-btn, .mode-banner, .info-section, .admin-sidebar, .search-section { display: none !important; }
 }
 </style>
