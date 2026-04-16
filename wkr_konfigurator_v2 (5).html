@@ -1270,6 +1270,7 @@ async function submitAdminLogin(){
   const emailInput = document.getElementById("adminEmail");
   const passwordInput = document.getElementById("adminPassword");
   const errorBox = document.getElementById("adminLoginError");
+  const successBox = document.getElementById("adminLoginSuccess");
 
   const email = emailInput ? emailInput.value.trim() : "";
   const password = passwordInput ? passwordInput.value : "";
@@ -1277,6 +1278,10 @@ async function submitAdminLogin(){
   if (errorBox) {
     errorBox.style.display = "none";
     errorBox.textContent = "";
+  }
+  if (successBox) {
+    successBox.style.display = "none";
+    successBox.textContent = "";
   }
 
   if (!email || !password) {
@@ -1287,6 +1292,54 @@ async function submitAdminLogin(){
     return;
   }
 
+  try {
+    if (!window.firebaseAuth || !window.firebaseSignInWithEmailAndPassword) {
+      throw new Error("Firebase ist noch nicht geladen.");
+    }
+
+    await window.firebaseSetPersistence(window.firebaseAuth, window.firebaseBrowserLocalPersistence);
+    await window.firebaseSignInWithEmailAndPassword(window.firebaseAuth, email, password);
+
+    window.isFirebaseAdminLoggedIn = true;
+    adminMode = true;
+    internalMode = false;
+    state.internalSection = null;
+    state.adminSection = "dashboard";
+
+    const publicBtn = document.getElementById("publicViewBtn");
+    if (publicBtn) publicBtn.style.display = "inline-block";
+
+    const logoutBtn = document.getElementById("adminLogoutBtn");
+    if (logoutBtn) logoutBtn.style.display = "inline-block";
+
+    const publicBtnMobile = document.getElementById("publicViewBtnMobile");
+    if (publicBtnMobile) publicBtnMobile.style.display = "inline-block";
+
+    showModeBanner("admin");
+
+    const internalFields = document.getElementById("internalFields");
+    if (internalFields) internalFields.style.display = "none";
+
+    closeAdminLoginModal();
+    render();
+
+  } catch (err) {
+    let msg = "Login fehlgeschlagen.";
+
+    if (err && err.code === "auth/invalid-credential") msg = "E-Mail oder Passwort ist falsch.";
+    if (err && err.code === "auth/user-not-found") msg = "Benutzer wurde nicht gefunden.";
+    if (err && err.code === "auth/wrong-password") msg = "E-Mail oder Passwort ist falsch.";
+    if (err && err.code === "auth/invalid-email") msg = "Ungültige E-Mail-Adresse.";
+    if (err && err.code === "auth/too-many-requests") msg = "Zu viele Versuche. Bitte später nochmals probieren.";
+
+    if (errorBox) {
+      errorBox.textContent = msg;
+      errorBox.style.display = "block";
+    } else {
+      alert(msg);
+    }
+  }
+}
   try {
     if (!window.firebaseAuth || !window.firebaseSignInWithEmailAndPassword) {
       throw new Error("Firebase ist noch nicht geladen.");
@@ -1349,26 +1402,26 @@ async function deactivateAllModes(){
   state.adminSection = null;
 
   const publicBtn = document.getElementById("publicViewBtn");
-if (publicBtn) publicBtn.style.display = "none";
+  if (publicBtn) publicBtn.style.display = "none";
 
-const logoutBtn = document.getElementById("adminLogoutBtn");
-if (logoutBtn) logoutBtn.style.display = "none";
+  const logoutBtn = document.getElementById("adminLogoutBtn");
+  if (logoutBtn) logoutBtn.style.display = "none";
 
-const publicBtnMobile = document.getElementById("publicViewBtnMobile");
-if (publicBtnMobile) publicBtnMobile.style.display = "none";
+  const publicBtnMobile = document.getElementById("publicViewBtnMobile");
+  if (publicBtnMobile) publicBtnMobile.style.display = "none";
 
-const internalFields = document.getElementById("internalFields");
-if (internalFields) internalFields.style.display = "none";
+  const internalFields = document.getElementById("internalFields");
+  if (internalFields) internalFields.style.display = "none";
 
-const banner = document.getElementById("modeBanner");
-if (banner) {
-  banner.style.display = "none";
-  banner.className = "mode-banner";
-  banner.textContent = "";
-}
+  const banner = document.getElementById("modeBanner");
+  if (banner) {
+    banner.style.display = "none";
+    banner.className = "mode-banner";
+    banner.textContent = "";
+  }
 
-closeAllModals();
-render();
+  closeAllModals();
+  render();
 }
 function showModeBanner(type){
   const el=document.getElementById("modeBanner");
@@ -1386,23 +1439,30 @@ function applyFirebaseAdminState(){
     }
 
     const publicBtn = document.getElementById("publicViewBtn");
-if (publicBtn) publicBtn.style.display = "inline-block";
+    if (publicBtn) publicBtn.style.display = "inline-block";
 
-const logoutBtn = document.getElementById("adminLogoutBtn");
-if (logoutBtn) logoutBtn.style.display = "inline-block";
+    const logoutBtn = document.getElementById("adminLogoutBtn");
+    if (logoutBtn) logoutBtn.style.display = "inline-block";
 
-const publicBtnMobile = document.getElementById("publicViewBtnMobile");
-if (publicBtnMobile) publicBtnMobile.style.display = "inline-block";
+    const publicBtnMobile = document.getElementById("publicViewBtnMobile");
+    if (publicBtnMobile) publicBtnMobile.style.display = "inline-block";
 
-const internalFields = document.getElementById("internalFields");
-if (internalFields) internalFields.style.display = "none";
+    const internalFields = document.getElementById("internalFields");
+    if (internalFields) internalFields.style.display = "none";
 
     showModeBanner("admin");
   } else {
-    if (adminMode) {
-      adminMode = false;
-      state.adminSection = null;
-    }
+    adminMode = false;
+    state.adminSection = null;
+
+    const publicBtn = document.getElementById("publicViewBtn");
+    if (publicBtn) publicBtn.style.display = "none";
+
+    const logoutBtn = document.getElementById("adminLogoutBtn");
+    if (logoutBtn) logoutBtn.style.display = "none";
+
+    const publicBtnMobile = document.getElementById("publicViewBtnMobile");
+    if (publicBtnMobile) publicBtnMobile.style.display = "none";
   }
 
   render();
