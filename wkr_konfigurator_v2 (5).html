@@ -769,6 +769,7 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
     <button id="internalLoginBtn" class="login-btn" onclick="activateInternalMode()"><span data-i18n="internal_login">Interner Login</span></button>
     <button id="adminLoginBtn" class="login-btn" onclick="activateAdminMode()"><span data-i18n="admin_login">Admin Login</span></button>
     <button id="publicViewBtn" class="login-btn" onclick="deactivateAllModes()" style="display:none;"><span data-i18n="public_view">Öffentlich</span></button>
+     <div id="userBadge" style="display:none; align-items:center; gap:6px; padding:6px 12px; background:var(--surface-3); border:1px solid var(--border); border-radius:var(--radius-sm); font-size:12px; font-weight:600; color:var(--text-secondary); white-space:nowrap;"></div>
     <button id="adminLogoutBtn" class="login-btn" onclick="logoutAdmin()" style="display:none;">Logout</button>
   </div>
 </div>
@@ -1124,6 +1125,7 @@ let adminWkrFilter    = { suche:"",marke:"",standort:"",nurAnLager:false };
 let adminReifenFilter = { suche:"",standort:"",reifentyp:"",aktivStatus:"",nurAnLager:false };
 let selectedProduct = null, editingTireId = "", editingWkrTN = "";
 let _saving = { newTire:false,editTire:false,deleteTire:false,newWkr:false,deleteWkr:false };
+   let currentUser = null;  // { email, name, standort, rolle, aktiv }
 
 /* ============================================================
    HELPERS
@@ -1271,8 +1273,15 @@ async function submitAdminLogin(){
       throw new Error("Firebase ist noch nicht geladen.");
     }
 
-    await window.firebaseSetPersistence(window.firebaseAuth, window.firebaseBrowserLocalPersistence);
-await window.firebaseSignInWithEmailAndPassword(window.firebaseAuth, email, password);
+   await window.firebaseSetPersistence(window.firebaseAuth, window.firebaseBrowserLocalPersistence);
+    await window.firebaseSignInWithEmailAndPassword(window.firebaseAuth, email, password);
+
+    // Benutzer-Info aus Benutzer-Sheet laden
+    const userOk = await loadUserInfo(email);
+    if (!userOk) {
+      await window.firebaseSignOut(window.firebaseAuth);
+      return;
+    }
 
     adminMode = true;
     internalMode = false;
@@ -1304,11 +1313,13 @@ await window.firebaseSignInWithEmailAndPassword(window.firebaseAuth, email, pass
   }
 }
 async function deactivateAllModes(){
+  currentUser = null;
+  updateUserBadge();
   try {
     if (window.firebaseAuth && window.firebaseSignOut && window.isFirebaseAdminLoggedIn) {
       await window.firebaseSignOut(window.firebaseAuth);
     }
-  } catch (err) {
+  } catch (err) { ... }
     console.error("Fehler beim Logout:", err);
   }
 
@@ -1337,8 +1348,20 @@ function showModeBanner(type){
   el.className=`mode-banner ${type}`;
   el.textContent=type==="admin"?t("admin_mode_active"):t("internal_mode_active");
 }
-function applyFirebaseAdminState(){
+async function applyFirebaseAdminState(){
   if (window.isFirebaseAdminLoggedIn) {
+    // User-Info nur laden, wenn noch nicht geladen
+    if (!currentUser && window.firebaseAuth?.currentUser?.email) {
+      const ok = await loadUserInfo(window.firebaseAuth.currentUser.email);
+      if (!ok) {
+        await window.firebaseSignOut(window.firebaseAuth);
+        window.isFirebaseAdminLoggedIn = false;
+        adminMode = false;
+        render();
+        return;
+      }
+    }
+
     adminMode = true;
     internalMode = false;
     state.internalSection = null;
@@ -2565,6 +2588,41 @@ async function deleteWkr(){
 /* ============================================================
    API HELPER
    ============================================================ */
+   /* ============================================================
+   USER INFO (aus Benutzer-Sheet)
+   ============================================================ */
+async function loadUserInfo(email){
+  try {
+    const res = await postToScript({ action: "getUserInfo", email: email });
+    if (res && res.status === "OK" && res.user) {
+      currentUser = res.user;
+      updateUserBadge();
+      return true;
+    } else if (res && res.status === "NOT_FOUND") {
+      alert("Diese E-Mail ist nicht als Benutzer registriert.\nBitte beim Administrator melden.");
+      return false;
+    } else if (res && res.status === "INACTIVE") {
+      alert("Dieser Benutzer ist deaktiviert.");
+      return false;
+    }
+    return false;
+  } catch(err) {
+    console.error("User-Info-Fehler:", err);
+    return false;
+  }
+}
+
+function updateUserBadge(){
+  const badge = document.getElementById("userBadge");
+  if (!badge) return;
+  if (currentUser) {
+    const rolleBadge = currentUser.rolle === "SuperAdmin" ? "🌟 SuperAdmin" : "Admin";
+    badge.innerHTML = `👤 <b>${e(currentUser.name)}</b> · ${e(currentUser.standort)} · <span style="opacity:0.8;">${rolleBadge}</span>`;
+    badge.style.display = "inline-flex";
+  } else {
+    badge.style.display = "none";
+  }
+}
 async function postToScript(payload){
   const response=await fetch(APPS_SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload),redirect:"follow"});
   const text=await response.text();
