@@ -1622,36 +1622,35 @@ function renderWkrFlow(){
   const tnList=[...new Set(mapping.filter(x=>clean(x["Marke"])===state.marke&&clean(x["Reihe"])===state.reihe&&clean(x["Modell"])===state.modell&&motorMatch(x["Motor"],state.motor)).map(x=>clean(x["TN"])).filter(Boolean))];
   const results=produkte.filter(p=>clean(p["Standort"])===state.standort&&clean(p["Marke"])===state.marke&&tnList.includes(clean(p["TN"])));
 
-  html+=`<div class="summary-box" style="flex-direction:column; gap:12px;">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <div class="label" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);">Ihre Auswahl</div>
+  html+=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:16px 20px;margin-bottom:28px;box-shadow:var(--shadow-sm);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);">Ihre Auswahl</span>
       <button class="btn btn-secondary btn-sm" onclick="resetSelection()">✎ Auswahl ändern</button>
     </div>
-    <div style="display:flex; align-items:center; gap:0; flex-wrap:wrap;">
-      <div style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface-2);border:1px solid var(--border);border-radius:3px;">
-        <span style="font-size:18px;">🚗</span>
-        <div><div style="font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;">Marke</div><div style="font-size:14px;font-weight:700;">${e(state.marke)}</div></div>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:20px;">
+      <div style="display:flex;align-items:stretch;gap:0;flex-wrap:wrap;border:1px solid var(--border);border-radius:3px;overflow:hidden;">
+        <div style="padding:10px 18px;border-right:1px solid var(--border);background:var(--surface-2);">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:2px;">Marke</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text-primary);">${e(state.marke)}</div>
+        </div>
+        <div style="padding:10px 18px;border-right:1px solid var(--border);background:var(--surface-2);">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:2px;">Standort</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text-primary);">${e(standortLabel(state.standort))}</div>
+        </div>
+        <div style="padding:10px 18px;border-right:1px solid var(--border);background:var(--surface-2);">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:2px;">Reihe</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text-primary);">${e(state.reihe)}</div>
+        </div>
+        <div style="padding:10px 18px;border-right:1px solid var(--border);background:var(--surface-2);">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:2px;">Modell</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text-primary);">${e(fzCode)}</div>
+        </div>
+        <div style="padding:10px 18px;background:var(--surface-2);">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:2px;">Motor</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text-primary);">${e(state.motor)}</div>
+        </div>
       </div>
-      <div style="color:var(--text-muted);padding:0 6px;">›</div>
-      <div style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface-2);border:1px solid var(--border);border-radius:3px;">
-        <span style="font-size:18px;">📍</span>
-        <div><div style="font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;">Standort</div><div style="font-size:14px;font-weight:700;">${e(standortLabel(state.standort))}</div></div>
-      </div>
-      <div style="color:var(--text-muted);padding:0 6px;">›</div>
-      <div style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface-2);border:1px solid var(--border);border-radius:3px;">
-        <span style="font-size:18px;">📋</span>
-        <div><div style="font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;">Reihe</div><div style="font-size:14px;font-weight:700;">${e(state.reihe)}</div></div>
-      </div>
-      <div style="color:var(--text-muted);padding:0 6px;">›</div>
-      <div style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface-2);border:1px solid var(--border);border-radius:3px;">
-        <span style="font-size:18px;">🚘</span>
-        <div><div style="font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;">Modell</div><div style="font-size:14px;font-weight:700;">${e(fzCode)}</div></div>
-      </div>
-      <div style="color:var(--text-muted);padding:0 6px;">›</div>
-      <div style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--accent);border:1px solid var(--accent);border-radius:3px;">
-        <span style="font-size:18px;">⚙️</span>
-        <div><div style="font-size:10px;color:rgba(255,255,255,0.75);font-weight:700;text-transform:uppercase;">Motor</div><div style="font-size:14px;font-weight:700;color:white;">${e(state.motor)}</div></div>
-      </div>
+      <img src="${e(fzBild)}" alt="${e(fzCode)}" style="height:80px;width:auto;object-fit:contain;border-radius:3px;flex-shrink:0;">
     </div>
   </div>`;
 
