@@ -6,6 +6,7 @@
 <title>WKR Konfigurator</title>
 
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 /* ============================================================
    CSS VARIABLES & THEME
@@ -2013,17 +2014,18 @@ function renderAdminWkrList(){
    RENDER: INVENTUR / EXPORT
    ============================================================ */
 function renderAdminInventur(){
-  const standorte = ["","GEB","HET"];
   return `<div class="admin-content-header">
     <div class="admin-content-title">Inventur & Export</div>
-    <div class="admin-content-sub">Excel-Export oder Druckliste nach Standort filtern</div>
+    <div class="admin-content-sub">Excel-Export oder Druckliste nach Standort und weiteren Kriterien filtern</div>
   </div>
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px;">
 
+    <!-- WKR EXPORT -->
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;">
       <div style="font-size:16px;font-weight:700;margin-bottom:4px;">🛞 WKR Export</div>
-      <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Winterkompletträder als Excel/CSV exportieren</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Winterkompletträder als Excel oder Druckliste exportieren</div>
+
       <div class="filter-field" style="margin-bottom:12px;">
         <label>Standort</label>
         <select id="exportWkrStandort">
@@ -2032,7 +2034,8 @@ function renderAdminInventur(){
           <option value="HET">Hettenschwil</option>
         </select>
       </div>
-      <div class="filter-field" style="margin-bottom:16px;">
+
+      <div class="filter-field" style="margin-bottom:12px;">
         <label>Lager</label>
         <select id="exportWkrLager">
           <option value="">Alle</option>
@@ -2040,15 +2043,24 @@ function renderAdminInventur(){
           <option value="kein">Nur ohne Lager</option>
         </select>
       </div>
-      <div style="display:flex;gap:8px;">
-        <button class="btn btn-primary btn-sm" onclick="exportWkrCSV()">⬇ Excel/CSV</button>
+
+      <div class="filter-field" style="margin-bottom:16px;">
+        <label>Lagerort (enthält …)</label>
+        <input id="exportWkrLagerort" type="text" placeholder="z. B. Regal A3">
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-primary btn-sm" onclick="exportWkrXLSX()">⬇ Excel (.xlsx)</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportWkrCSV()">⬇ CSV</button>
         <button class="btn btn-secondary btn-sm" onclick="printWkrInventur()">🖨 Drucken</button>
       </div>
     </div>
 
+    <!-- REIFEN EXPORT -->
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;">
       <div style="font-size:16px;font-weight:700;margin-bottom:4px;">⚫ Reifen Export</div>
-      <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Reifen als Excel/CSV exportieren</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Reifen als Excel oder Druckliste exportieren</div>
+
       <div class="filter-field" style="margin-bottom:12px;">
         <label>Standort</label>
         <select id="exportReifenStandort">
@@ -2057,7 +2069,8 @@ function renderAdminInventur(){
           <option value="HET">Hettenschwil</option>
         </select>
       </div>
-      <div class="filter-field" style="margin-bottom:16px;">
+
+      <div class="filter-field" style="margin-bottom:12px;">
         <label>Status</label>
         <select id="exportReifenStatus">
           <option value="">Alle</option>
@@ -2065,8 +2078,24 @@ function renderAdminInventur(){
           <option value="Nein">Nur inaktive</option>
         </select>
       </div>
-      <div style="display:flex;gap:8px;">
-        <button class="btn btn-primary btn-sm" onclick="exportReifenCSV()">⬇ Excel/CSV</button>
+
+      <div class="filter-field" style="margin-bottom:12px;">
+        <label>Lagerort (enthält …)</label>
+        <input id="exportReifenLagerort" type="text" placeholder="z. B. Regal B2">
+      </div>
+
+      <div class="filter-field" style="margin-bottom:16px;">
+        <label>DOT-Alter</label>
+        <select id="exportReifenDot">
+          <option value="">Alle</option>
+          <option value="alt">Nur älter als 3 Jahre</option>
+          <option value="neu">Nur jünger als 3 Jahre</option>
+        </select>
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-primary btn-sm" onclick="exportReifenXLSX()">⬇ Excel (.xlsx)</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportReifenCSV()">⬇ CSV</button>
         <button class="btn btn-secondary btn-sm" onclick="printReifenInventur()">🖨 Drucken</button>
       </div>
     </div>
@@ -2074,25 +2103,45 @@ function renderAdminInventur(){
   </div>`;
 }
 
+/* ============================================================
+   EXPORT: DATA FILTERING
+   ============================================================ */
 function getWkrExportData(){
   const standort = clean(document.getElementById("exportWkrStandort")?.value);
-  const lager = clean(document.getElementById("exportWkrLager")?.value);
+  const lager    = clean(document.getElementById("exportWkrLager")?.value);
+  const lagerort = clean(document.getElementById("exportWkrLagerort")?.value).toLowerCase();
   return produkte.filter(p => {
     const l = parseInt(clean(p["Lager"]),10)||0;
+    const loMatch = !lagerort || clean(p["Lagerort"]).toLowerCase().includes(lagerort);
     return (!standort || clean(p["Standort"])===standort)
-      && (lager===""||( lager==="lager"&&l>0)||(lager==="kein"&&l<=0));
+      && (lager===""||(lager==="lager"&&l>0)||(lager==="kein"&&l<=0))
+      && loMatch;
   });
 }
 
 function getReifenExportData(){
   const standort = clean(document.getElementById("exportReifenStandort")?.value);
-  const status = clean(document.getElementById("exportReifenStatus")?.value);
-  return reifen.filter(r =>
-    (!standort || clean(r["Standort"])===standort)
-    && (!status || clean(r["Aktiv"])===status)
-  );
+  const status   = clean(document.getElementById("exportReifenStatus")?.value);
+  const lagerort = clean(document.getElementById("exportReifenLagerort")?.value).toLowerCase();
+  const dotFilter= clean(document.getElementById("exportReifenDot")?.value);
+  return reifen.filter(r => {
+    const loMatch = !lagerort || clean(r["Lagerort"]).toLowerCase().includes(lagerort);
+    let dotMatch = true;
+    if(dotFilter){
+      const dot = clean(r["DOT"]);
+      const isOld = dot && isDotOld(dot);
+      if(dotFilter==="alt") dotMatch = isOld;
+      if(dotFilter==="neu") dotMatch = !!dot && !isOld;
+    }
+    return (!standort || clean(r["Standort"])===standort)
+      && (!status   || clean(r["Aktiv"])===status)
+      && loMatch && dotMatch;
+  });
 }
 
+/* ============================================================
+   EXPORT: CSV
+   ============================================================ */
 function exportWkrCSV(){
   const data = getWkrExportData();
   const headers = ["Marke","Standort","Bezeichnung","Reifen","Dimension","TN","Lager","Lagerort","VP","Angebotspreis","Nettopreis"];
@@ -2107,7 +2156,7 @@ function exportWkrCSV(){
 
 function exportReifenCSV(){
   const data = getReifenExportData();
-  const headers = ["Standort","Reifentyp","Hersteller","Profil","Profilbreite","Querschnitt","Zoll","Lastindex","Geschwindigkeitsindex","Runflat","DOT","Teilenummer","Anzahl","EK Preis","VK Preis","Aktiv"];
+  const headers = ["Standort","Reifentyp","Hersteller","Profil","Profilbreite","Querschnitt","Zoll","Lastindex","Geschwindigkeitsindex","Runflat","DOT","Teilenummer","Anzahl","Lagerort","EK Preis","VK Preis","Aktiv","Bemerkung"];
   const rows = data.map(r => headers.map(h => `"${clean(r[h]).replace(/"/g,'""')}"`).join(";"));
   const csv = "\uFEFF" + headers.join(";") + "\n" + rows.join("\n");
   const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
@@ -2116,26 +2165,135 @@ function exportReifenCSV(){
   a.download = `Reifen_Export_${new Date().toLocaleDateString("de-CH").replace(/\./g,"-")}.csv`;
   a.click();
 }
+/* ============================================================
+   EXPORT: XLSX (SheetJS)
+   ============================================================ */
+function exportWkrXLSX(){
+  if(typeof XLSX==="undefined"){ alert("Excel-Bibliothek nicht geladen. Bitte Seite neu laden."); return; }
+  const data = getWkrExportData();
+  const headers = ["Marke","Standort","Bezeichnung","Reifen","Dimension","TN","Lager","Lagerort","VP","Angebotspreis","Nettopreis","Gezählt","Differenz","Bemerkung Inventur"];
+  const rows = data.map(p => {
+    const lagerNum = parsePrice(p["Lager"]);
+    return headers.map(h => {
+      if(h==="Gezählt" || h==="Differenz" || h==="Bemerkung Inventur") return "";
+      if(["Lager","VP","Angebotspreis","Nettopreis"].includes(h)){
+        const n = parsePrice(p[h]);
+        return n!==null ? n : clean(p[h]);
+      }
+      return clean(p[h]);
+    });
+  });
+  const aoa = [headers, ...rows];
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
 
+  // Differenz-Formeln einfügen: =Gezählt - Lager  (Spalte M = Gezählt, L = Lager wäre falsch → siehe unten)
+  // Spalten-Index (0-basiert): Lager=6 (G), Gezählt=11 (L), Differenz=12 (M)
+  // A=1, B=2, C=3, D=4, E=5, F=6, G=7 (Lager), H=8, I=9, J=10, K=11, L=12 (Gezählt), M=13 (Differenz)
+  for(let i=0; i<rows.length; i++){
+    const rowNr = i + 2; // Header = Zeile 1, Daten starten bei 2
+    const diffAddr = XLSX.utils.encode_cell({r:i+1, c:12}); // Spalte M = Differenz
+    ws[diffAddr] = { t:"n", f:`L${rowNr}-G${rowNr}` };
+  }
+
+  ws["!cols"] = [
+    {wch:8},{wch:10},{wch:35},{wch:18},{wch:18},{wch:14},{wch:8},{wch:18},{wch:12},{wch:14},{wch:12},
+    {wch:10},{wch:10},{wch:30}
+  ];
+
+  const range = XLSX.utils.decode_range(ws["!ref"]);
+  for(let c=range.s.c; c<=range.e.c; c++){
+    const addr = XLSX.utils.encode_cell({r:0, c});
+    if(ws[addr]) ws[addr].s = {font:{bold:true}};
+  }
+
+  ws["!autofilter"] = { ref: XLSX.utils.encode_range({s:{r:0,c:range.s.c},e:{r:range.e.r,c:range.e.c}}) };
+  ws["!freeze"] = { xSplit: 0, ySplit: 1 };
+
+  const wb = XLSX.utils.book_new();
+  const standort = clean(document.getElementById("exportWkrStandort")?.value) || "Alle";
+  XLSX.utils.book_append_sheet(wb, ws, `WKR_${standort}`);
+  const datum = new Date().toLocaleDateString("de-CH").replace(/\./g,"-");
+  XLSX.writeFile(wb, `WKR_Inventur_${datum}.xlsx`);
+}
+
+function exportReifenXLSX(){
+  if(typeof XLSX==="undefined"){ alert("Excel-Bibliothek nicht geladen. Bitte Seite neu laden."); return; }
+  const data = getReifenExportData();
+  const headers = ["Standort","Reifentyp","Hersteller","Profil","Profilbreite","Querschnitt","Zoll","Lastindex","Geschwindigkeitsindex","Runflat","DOT","Teilenummer","Anzahl","Lagerort","EK Preis","VK Preis","Aktiv","Bemerkung","Gezählt","Differenz","Bemerkung Inventur"];
+  const rows = data.map(r => headers.map(h => {
+    if(h==="Gezählt" || h==="Differenz" || h==="Bemerkung Inventur") return "";
+    if(["Anzahl","EK Preis","VK Preis"].includes(h)){
+      const n = parsePrice(r[h]);
+      return n!==null ? n : clean(r[h]);
+    }
+    return clean(r[h]);
+  }));
+  const aoa = [headers, ...rows];
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+  // Differenz-Formel: =Gezählt - Anzahl
+  // Spalten: Anzahl=13 (M), Gezählt=19 (S), Differenz=20 (T)
+  for(let i=0; i<rows.length; i++){
+    const rowNr = i + 2;
+    const diffAddr = XLSX.utils.encode_cell({r:i+1, c:19}); // Spalte T = Differenz
+    ws[diffAddr] = { t:"n", f:`S${rowNr}-M${rowNr}` };
+  }
+
+  ws["!cols"] = [
+    {wch:10},{wch:11},{wch:14},{wch:22},{wch:11},{wch:11},{wch:7},{wch:10},{wch:10},{wch:9},{wch:9},{wch:16},{wch:8},{wch:18},{wch:10},{wch:10},{wch:7},{wch:30},
+    {wch:10},{wch:10},{wch:30}
+  ];
+
+  const range = XLSX.utils.decode_range(ws["!ref"]);
+  for(let c=range.s.c; c<=range.e.c; c++){
+    const addr = XLSX.utils.encode_cell({r:0, c});
+    if(ws[addr]) ws[addr].s = {font:{bold:true}};
+  }
+
+  ws["!autofilter"] = { ref: XLSX.utils.encode_range({s:{r:0,c:range.s.c},e:{r:range.e.r,c:range.e.c}}) };
+  ws["!freeze"] = { xSplit: 0, ySplit: 1 };
+
+  const wb = XLSX.utils.book_new();
+  const standort = clean(document.getElementById("exportReifenStandort")?.value) || "Alle";
+  XLSX.utils.book_append_sheet(wb, ws, `Reifen_${standort}`);
+  const datum = new Date().toLocaleDateString("de-CH").replace(/\./g,"-");
+  XLSX.writeFile(wb, `Reifen_Inventur_${datum}.xlsx`);
+}
+
+/* ============================================================
+   EXPORT: PRINT
+   ============================================================ */
 function printWkrInventur(){
   const data = getWkrExportData();
   const standort = clean(document.getElementById("exportWkrStandort")?.value);
+  const lagerort = clean(document.getElementById("exportWkrLagerort")?.value);
   const w = window.open("","_blank");
   if(!w) return;
-  const rows = data.map(p => `<tr><td>${e(clean(p["Marke"]))}</td><td>${e(standortLabel(clean(p["Standort"])))}</td><td>${e(clean(p["Bezeichnung"]))}</td><td>${e(clean(p["Reifen"]))}</td><td>${e(clean(p["Dimension"]))}</td><td>${e(clean(p["TN"]))}</td><td style="text-align:center;font-weight:700;color:${(parseInt(clean(p["Lager"]),10)||0)>0?"#16a34a":"#dc2626"}">${e(clean(p["Lager"]))}</td><td>${e(clean(p["Lagerort"]))}</td></tr>`).join("");
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>WKR Inventur</title><style>body{font-family:Arial,sans-serif;padding:20px;font-size:12px;}h2{margin-bottom:4px;}p{color:#666;margin-bottom:16px;}table{width:100%;border-collapse:collapse;}th{background:#1c69d4;color:white;padding:8px;text-align:left;font-size:11px;}td{padding:6px 8px;border-bottom:1px solid #eee;}tr:nth-child(even){background:#f9f9f9;}.actions{margin-bottom:16px;}button{background:#1c69d4;color:white;border:none;padding:8px 14px;cursor:pointer;margin-right:8px;}@media print{.actions{display:none;}}</style></head><body><div class="actions"><button onclick="window.print()">Drucken</button><button onclick="window.close()">Schliessen</button></div><h2>WKR Inventurliste</h2><p>Standort: ${standort?standortLabel(standort):"Alle"} — Datum: ${new Date().toLocaleDateString("de-CH")}</p><table><thead><tr><th>Marke</th><th>Standort</th><th>Bezeichnung</th><th>Reifen</th><th>Dimension</th><th>Teilenummer</th><th>Lager</th><th>Lagerort</th></tr></thead><tbody>${rows}</tbody></table></body></html>`);
+  const rows = data.map(p => `<tr><td>${e(clean(p["Marke"]))}</td><td>${e(standortLabel(clean(p["Standort"])))}</td><td>${e(clean(p["Bezeichnung"]))}</td><td>${e(clean(p["Reifen"]))}</td><td>${e(clean(p["Dimension"]))}</td><td>${e(clean(p["TN"]))}</td><td style="text-align:center;font-weight:700;color:${(parseInt(clean(p["Lager"]),10)||0)>0?"#16a34a":"#dc2626"}">${e(clean(p["Lager"]))}</td><td>${e(clean(p["Lagerort"]))}</td><td class="count-cell"></td><td class="count-cell"></td><td class="note-cell"></td></tr>`).join("");
+  const filterInfo = [
+    standort ? `Standort: ${standortLabel(standort)}` : "Alle Standorte",
+    lagerort ? `Lagerort enthält: "${lagerort}"` : null
+  ].filter(Boolean).join(" — ");
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>WKR Inventur</title><style>body{font-family:Arial,sans-serif;padding:20px;font-size:12px;}h2{margin-bottom:4px;}p{color:#666;margin-bottom:16px;}table{width:100%;border-collapse:collapse;}th{background:#1c69d4;color:white;padding:8px 6px;text-align:left;font-size:11px;}td{padding:8px 6px;border-bottom:1px solid #ccc;}tr:nth-child(even){background:#f9f9f9;}.count-cell{width:60px;border-right:1px dashed #999;background:#fffbe8;}.note-cell{width:140px;background:#fffbe8;}.count-head{background:#d97706 !important;}.actions{margin-bottom:16px;}button{background:#1c69d4;color:white;border:none;padding:8px 14px;cursor:pointer;margin-right:8px;}.legend{margin-top:8px;font-size:11px;color:#777;}@media print{.actions{display:none;}body{padding:10mm;}table{page-break-inside:auto;}tr{page-break-inside:avoid;page-break-after:auto;}}</style></head><body><div class="actions"><button onclick="window.print()">Drucken</button><button onclick="window.close()">Schliessen</button></div><h2>WKR Inventurliste</h2><p>${filterInfo} — Datum: ${new Date().toLocaleDateString("de-CH")} — Einträge: ${data.length}</p><div class="legend">Die gelb hinterlegten Spalten sind für die physische Zählung vor Ort — Gezählt, Differenz und Bemerkungen einfach von Hand eintragen.</div><table><thead><tr><th>Marke</th><th>Standort</th><th>Bezeichnung</th><th>Reifen</th><th>Dimension</th><th>Teilenummer</th><th>Lager (Soll)</th><th>Lagerort</th><th class="count-head">Gezählt</th><th class="count-head">Differenz</th><th class="count-head">Bemerkung</th></tr></thead><tbody>${rows}</tbody></table></body></html>`);
   w.document.close();
 }
-
 function printReifenInventur(){
   const data = getReifenExportData();
   const standort = clean(document.getElementById("exportReifenStandort")?.value);
+  const lagerort = clean(document.getElementById("exportReifenLagerort")?.value);
+  const dotFilter= clean(document.getElementById("exportReifenDot")?.value);
   const w = window.open("","_blank");
   if(!w) return;
-  const rows = data.map(r => `<tr><td>${e(standortLabel(clean(r["Standort"])))}</td><td>${e(clean(r["Reifentyp"]))}</td><td>${e(clean(r["Hersteller"]))}</td><td>${e(clean(r["Profil"]))}</td><td>${e(tireSize(r))}</td><td>${e(clean(r["Teilenummer"]))}</td><td style="text-align:center;font-weight:700;color:${(parseInt(clean(r["Anzahl"]),10)||0)>0?"#16a34a":"#dc2626"}">${e(clean(r["Anzahl"]))}</td><td>${e(clean(r["DOT"]))}</td><td>${e(clean(r["Aktiv"])==="Ja"?"✓":"✗")}</td></tr>`).join("");
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Reifen Inventur</title><style>body{font-family:Arial,sans-serif;padding:20px;font-size:12px;}h2{margin-bottom:4px;}p{color:#666;margin-bottom:16px;}table{width:100%;border-collapse:collapse;}th{background:#1c69d4;color:white;padding:8px;text-align:left;font-size:11px;}td{padding:6px 8px;border-bottom:1px solid #eee;}tr:nth-child(even){background:#f9f9f9;}.actions{margin-bottom:16px;}button{background:#1c69d4;color:white;border:none;padding:8px 14px;cursor:pointer;margin-right:8px;}@media print{.actions{display:none;}}</style></head><body><div class="actions"><button onclick="window.print()">Drucken</button><button onclick="window.close()">Schliessen</button></div><h2>Reifen Inventurliste</h2><p>Standort: ${standort?standortLabel(standort):"Alle"} — Datum: ${new Date().toLocaleDateString("de-CH")}</p><table><thead><tr><th>Standort</th><th>Typ</th><th>Hersteller</th><th>Profil</th><th>Grösse</th><th>Teilenummer</th><th>Anzahl</th><th>DOT</th><th>Aktiv</th></tr></thead><tbody>${rows}</tbody></table></body></html>`);
+  const rows = data.map(r => `<tr><td>${e(standortLabel(clean(r["Standort"])))}</td><td>${e(clean(r["Reifentyp"]))}</td><td>${e(clean(r["Hersteller"]))}</td><td>${e(clean(r["Profil"]))}</td><td>${e(tireSize(r))}</td><td>${e(clean(r["Teilenummer"]))}</td><td style="text-align:center;font-weight:700;color:${(parseInt(clean(r["Anzahl"]),10)||0)>0?"#16a34a":"#dc2626"}">${e(clean(r["Anzahl"]))}</td><td>${e(clean(r["Lagerort"]))}</td><td style="color:${isDotOld(r["DOT"])?"#dc2626":"#333"};font-weight:${isDotOld(r["DOT"])?"700":"normal"};">${e(clean(r["DOT"]))}${isDotOld(r["DOT"])?" ⚠":""}</td><td>${e(clean(r["Aktiv"])==="Ja"?"✓":"✗")}</td><td class="count-cell"></td><td class="count-cell"></td><td class="note-cell"></td></tr>`).join("");
+  const filterInfo = [
+    standort ? `Standort: ${standortLabel(standort)}` : "Alle Standorte",
+    lagerort ? `Lagerort enthält: "${lagerort}"` : null,
+    dotFilter==="alt" ? "Nur DOT > 3 Jahre" : dotFilter==="neu" ? "Nur DOT ≤ 3 Jahre" : null
+  ].filter(Boolean).join(" — ");
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Reifen Inventur</title><style>body{font-family:Arial,sans-serif;padding:20px;font-size:11px;}h2{margin-bottom:4px;}p{color:#666;margin-bottom:16px;}table{width:100%;border-collapse:collapse;}th{background:#1c69d4;color:white;padding:7px 5px;text-align:left;font-size:10px;}td{padding:7px 5px;border-bottom:1px solid #ccc;}tr:nth-child(even){background:#f9f9f9;}.count-cell{width:50px;border-right:1px dashed #999;background:#fffbe8;}.note-cell{width:120px;background:#fffbe8;}.count-head{background:#d97706 !important;}.actions{margin-bottom:16px;}button{background:#1c69d4;color:white;border:none;padding:8px 14px;cursor:pointer;margin-right:8px;}.legend{margin-top:8px;font-size:11px;color:#777;}@media print{.actions{display:none;}body{padding:10mm;}table{page-break-inside:auto;}tr{page-break-inside:avoid;page-break-after:auto;}}</style></head><body><div class="actions"><button onclick="window.print()">Drucken</button><button onclick="window.close()">Schliessen</button></div><h2>Reifen Inventurliste</h2><p>${filterInfo} — Datum: ${new Date().toLocaleDateString("de-CH")} — Einträge: ${data.length}</p><div class="legend">Die gelb hinterlegten Spalten sind für die physische Zählung vor Ort — Gezählt, Differenz und Bemerkungen einfach von Hand eintragen.</div><table><thead><tr><th>Standort</th><th>Typ</th><th>Hersteller</th><th>Profil</th><th>Grösse</th><th>Teilenummer</th><th>Anzahl (Soll)</th><th>Lagerort</th><th>DOT</th><th>Aktiv</th><th class="count-head">Gezählt</th><th class="count-head">Differenz</th><th class="count-head">Bemerkung</th></tr></thead><tbody>${rows}</tbody></table></body></html>`);
   w.document.close();
 }
+
 function renderAdminWkrItem(r){
   const lager=parseInt(clean(r["Lager"]),10)||0;
   const bild=clean(r["Bild"])||"https://via.placeholder.com/220x140?text=Rad";
