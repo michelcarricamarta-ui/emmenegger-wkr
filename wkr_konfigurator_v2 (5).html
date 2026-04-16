@@ -992,7 +992,118 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
     </div>
   </div>
 </div>
+<!-- New Vororder Modal -->
+<div id="newVororderModal" class="modal-overlay">
+  <div class="modal-box wide">
+    <div class="modal-title">Neue Vororder erfassen</div>
+    <div class="modal-subtitle" id="newVororderSubtitle"></div>
 
+    <div style="background:var(--surface-2);border-left:3px solid var(--accent);padding:10px 14px;margin-bottom:16px;border-radius:0 6px 6px 0;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:4px;">Kundendaten</div>
+    </div>
+    <div class="form-grid">
+      <div class="form-field"><label>Kundenname *</label><input id="newVoKundenname" type="text" placeholder="Vorname Nachname"></div>
+      <div class="form-field"><label>Debitornr</label><input id="newVoDebitornr" type="text" placeholder="z.B. 54020"></div>
+      <div class="form-field"><label>Adressnr</label><input id="newVoAdressnr" type="text" placeholder="z.B. 33132"></div>
+      <div class="form-field"><label>Kunden E-Mail</label><input id="newVoEmail" type="email" placeholder="optional"></div>
+      <div class="form-field full">
+        <label>Rechnung an</label>
+        <select id="newVoRechnungAn">
+          <option value="">Bitte wählen</option>
+          <option value="An Kunde">An Kunde</option>
+          <option value="Im Leasing (Intern)">Im Leasing (Intern)</option>
+          <option value="Spezialpreis">Spezialpreis</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="background:var(--surface-2);border-left:3px solid var(--accent);padding:10px 14px;margin:18px 0 12px;border-radius:0 6px 6px 0;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:4px;">Fahrzeug</div>
+    </div>
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Marke *</label>
+        <select id="newVoMarke" onchange="onVoMarkeChange()">
+          <option value="">Bitte wählen</option>
+          <option value="BMW">BMW</option>
+          <option value="MINI">MINI</option>
+          <option value="Andere">Andere</option>
+        </select>
+      </div>
+      <div class="form-field"><label>Fahrzeug-Modell *</label><input id="newVoFahrzeug" type="text" placeholder="z.B. BMW X1 20d xDrive"></div>
+      <div class="form-field"><label>Reihe</label><input id="newVoReihe" type="text" placeholder="z.B. U11"></div>
+      <div class="form-field"><label>Modell-Code</label><input id="newVoModell" type="text" placeholder="z.B. F48"></div>
+      <div class="form-field"><label>Motor</label><input id="newVoMotor" type="text" placeholder="z.B. 20d xDrive"></div>
+      <div class="form-field"><label>Fahrgestellnr.</label><input id="newVoFIN" type="text" placeholder="FIN (optional)"></div>
+      <div class="form-field"><label>Ordernr.</label><input id="newVoOrdernr" type="text" placeholder="optional"></div>
+      <div class="form-field"><label>Vertragsnr.</label><input id="newVoVertragsnr" type="text" placeholder="optional"></div>
+      <div class="form-field"><label>Auftrag</label><input id="newVoAuftrag" type="text" placeholder="z.B. 50916"></div>
+      <div class="form-field"><label>Ablieferung</label><input id="newVoAblieferung" type="date"></div>
+    </div>
+
+    <div style="background:var(--surface-2);border-left:3px solid var(--accent);padding:10px 14px;margin:18px 0 12px;border-radius:0 6px 6px 0;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:4px;">Produkt</div>
+    </div>
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Typ *</label>
+        <select id="newVoTyp">
+          <option value="">Bitte wählen</option>
+          <option value="WKR">WKR</option>
+          <option value="Reifen">Reifen</option>
+          <option value="Zubehör">Zubehör</option>
+        </select>
+      </div>
+      <div class="form-field"><label>Anzahl *</label><input id="newVoAnzahl" type="number" min="1" value="4"></div>
+      <div class="form-field full">
+        <label>Teilenummer (TN) — <span style="font-weight:400;color:var(--text-muted);">wenn aus Lager, sonst frei</span></label>
+        <input id="newVoTN" type="text" list="voTnOptions" placeholder="TN eingeben oder aus Liste wählen" oninput="onVoTnChange()">
+        <datalist id="voTnOptions"></datalist>
+      </div>
+      <div class="form-field"><label>Bezeichnung</label><input id="newVoBezeichnung" type="text" placeholder="z.B. V-Speiche 474"></div>
+      <div class="form-field"><label>Dimension</label><input id="newVoDimension" type="text" placeholder="z.B. 225/45R18"></div>
+      <div class="form-field"><label>VK (CHF)</label><input id="newVoVK" type="text" placeholder="optional"></div>
+      <div class="form-field"><label>Konditionen</label><input id="newVoKonditionen" type="text" placeholder="z.B. 0.2"></div>
+    </div>
+
+    <div style="background:var(--surface-2);border-left:3px solid var(--accent);padding:10px 14px;margin:18px 0 12px;border-radius:0 6px 6px 0;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:4px;">Bearbeitung</div>
+    </div>
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Bearbeitungs-Standort *</label>
+        <select id="newVoStandort">
+          <option value="GEB">Gebenstorf</option>
+          <option value="HET">Hettenschwil</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Status *</label>
+        <select id="newVoStatus">
+          <option value="Vororder offen">Vororder offen (Kunde wählt noch)</option>
+          <option value="Erfasst" selected>Erfasst (mit Reservierung)</option>
+          <option value="Bestellt">Bestellt</option>
+          <option value="Kein Interesse">Kein Interesse (nur Statistik)</option>
+        </select>
+      </div>
+      <div class="form-field full"><label>Bemerkungen</label><textarea id="newVoBemerkungen" placeholder="Zusätzliche Notizen"></textarea></div>
+    </div>
+
+    <p class="required-note">* Pflichtfelder · Bei Status "Erfasst" + TN + WKR wird der Bestand automatisch reserviert.</p>
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeNewVororderModal()">Schliessen</button>
+      <button class="btn btn-primary" onclick="saveNewVororder()">Vororder speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Vororder Detail Modal -->
+<div id="vororderDetailModal" class="modal-overlay">
+  <div class="modal-box wide">
+    <div id="voDetailContent"></div>
+  </div>
+</div>
 <!-- ============================================================
      JAVASCRIPT
      ============================================================ -->
@@ -2080,7 +2191,7 @@ function renderAdminVororder(){
       </div>
       <div style="display:flex;gap:8px;">
         <button class="btn btn-secondary btn-sm" onclick="reloadVororder()">🔄 Neu laden</button>
-        <button class="btn btn-primary btn-sm" onclick="alert('Neue Vororder — folgt in Teil 3c')">+ Neue Vororder</button>
+        <button class="btn btn-primary btn-sm" onclick="openNewVororderModal()">+ Neue Vororder</button>
       </div>
     </div>
   </div>`;
@@ -2185,7 +2296,7 @@ function renderAdminVororder(){
         <td style="padding:10px 12px;font-size:12px;">${e(formatVororderDate(v["Ablieferung"]))||"—"}</td>
         ${isSuperAdmin ? `<td style="padding:10px 12px;text-align:center;">${standort ? `<span style="font-size:11px;background:var(--surface-3);padding:2px 8px;border-radius:3px;font-weight:600;">${e(standort)}</span>` : "—"}</td>` : ""}
         <td style="padding:10px 12px;text-align:right;">
-          <button class="btn btn-secondary btn-sm" onclick="alert('Detail-Ansicht — folgt in Teil 3c')" style="padding:5px 10px;font-size:11px;">Details</button>
+         <button class="btn btn-secondary btn-sm" onclick="openVororderDetail('${js(clean(v["ID"]))}')" style="padding:5px 10px;font-size:11px;">Details</button>
         </td>
       </tr>`;
     });
@@ -2842,6 +2953,362 @@ async function reloadVororder(){
   render();
   await loadVororder();
   render();
+}
+   /* ============================================================
+   VORORDER: Modal-Handling (Neu erfassen)
+   ============================================================ */
+let _vororderSaving = false;
+
+function openNewVororderModal(){
+  // Felder zurücksetzen
+  ["newVoKundenname","newVoDebitornr","newVoAdressnr","newVoEmail","newVoFahrzeug","newVoReihe","newVoModell","newVoMotor","newVoFIN","newVoOrdernr","newVoVertragsnr","newVoAuftrag","newVoAblieferung","newVoTN","newVoBezeichnung","newVoDimension","newVoVK","newVoKonditionen","newVoBemerkungen"].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = "";
+  });
+  document.getElementById("newVoMarke").value = "";
+  document.getElementById("newVoRechnungAn").value = "";
+  document.getElementById("newVoTyp").value = "";
+  document.getElementById("newVoAnzahl").value = "4";
+  document.getElementById("newVoStandort").value = currentUser?.standort || "GEB";
+  document.getElementById("newVoStatus").value = "Erfasst";
+
+  // Subtitle
+  const sub = document.getElementById("newVororderSubtitle");
+  if (sub) sub.textContent = `Erfasser: ${currentUser?.name || "—"} · Standort: ${standortLabel(currentUser?.standort || "")}`;
+
+  // TN-Vorschläge aus Produkte-Liste füllen
+  fillVoTnOptions();
+
+  document.getElementById("newVororderModal").classList.add("open");
+}
+
+function closeNewVororderModal(){
+  document.getElementById("newVororderModal").classList.remove("open");
+}
+
+function fillVoTnOptions(){
+  const datalist = document.getElementById("voTnOptions");
+  if (!datalist) return;
+  const marke = clean(document.getElementById("newVoMarke")?.value);
+  const standort = clean(document.getElementById("newVoStandort")?.value);
+  const filtered = produkte.filter(p => {
+    if (marke && marke !== "Andere" && clean(p["Marke"]) !== marke) return false;
+    if (standort && clean(p["Standort"]) !== standort) return false;
+    return true;
+  });
+  datalist.innerHTML = filtered.map(p => {
+    const tn = clean(p["TN"]);
+    const lager = parseInt(clean(p["Lager"]),10)||0;
+    const reserviert = parseInt(clean(p["Reserviert"]),10)||0;
+    const verfuegbar = lager - reserviert;
+    const label = `${clean(p["Bezeichnung"])} · ${clean(p["Dimension"])} · Verfügbar: ${verfuegbar}/${lager}`;
+    return `<option value="${e(tn)}">${e(label)}</option>`;
+  }).join("");
+}
+
+function onVoMarkeChange(){
+  fillVoTnOptions();
+}
+
+function onVoTnChange(){
+  const tn = clean(document.getElementById("newVoTN")?.value);
+  if (!tn) return;
+  const prod = produkte.find(p => clean(p["TN"]) === tn);
+  if (prod) {
+    const bezEl = document.getElementById("newVoBezeichnung");
+    const dimEl = document.getElementById("newVoDimension");
+    const vkEl = document.getElementById("newVoVK");
+    const typEl = document.getElementById("newVoTyp");
+    if (bezEl && !bezEl.value) bezEl.value = clean(prod["Bezeichnung"]);
+    if (dimEl && !dimEl.value) dimEl.value = clean(prod["Dimension"]);
+    if (vkEl && !vkEl.value)   vkEl.value  = clean(prod["Angebotspreis"]) || clean(prod["VP"]);
+    if (typEl && !typEl.value) typEl.value = "WKR";
+  }
+}
+
+async function saveNewVororder(){
+  if (_vororderSaving) return;
+
+  const kundenname = clean(document.getElementById("newVoKundenname").value);
+  const typ = clean(document.getElementById("newVoTyp").value);
+  const anzahl = parseInt(clean(document.getElementById("newVoAnzahl").value),10) || 0;
+  const marke = clean(document.getElementById("newVoMarke").value);
+  const fahrzeug = clean(document.getElementById("newVoFahrzeug").value);
+  const standort = clean(document.getElementById("newVoStandort").value);
+  const status = clean(document.getElementById("newVoStatus").value);
+  const tn = clean(document.getElementById("newVoTN").value);
+
+  if (!kundenname || !typ || !anzahl || !marke || !fahrzeug || !standort || !status) {
+    alert("Bitte Pflichtfelder ausfüllen: Kundenname, Typ, Anzahl, Marke, Fahrzeug, Standort, Status");
+    return;
+  }
+
+  // Bestandswarnung bei WKR mit TN
+  if (status === "Erfasst" && typ === "WKR" && tn) {
+    const prod = produkte.find(p => clean(p["TN"]) === tn);
+    if (prod) {
+      const lager = parseInt(clean(prod["Lager"]),10) || 0;
+      const reserviert = parseInt(clean(prod["Reserviert"]),10) || 0;
+      const verfuegbar = lager - reserviert;
+      if (anzahl > verfuegbar) {
+        if (!confirm(`⚠ Warnung: Verfügbar sind nur ${verfuegbar} Stück (Lager: ${lager}, bereits reserviert: ${reserviert}).\nTrotzdem ${anzahl} Stück reservieren?`)) {
+          return;
+        }
+      }
+    }
+  }
+
+  const row = {
+    "Kundenname": kundenname,
+    "Debitornr": clean(document.getElementById("newVoDebitornr").value),
+    "Adressnr": clean(document.getElementById("newVoAdressnr").value),
+    "KundenEmail": clean(document.getElementById("newVoEmail").value),
+    "RechnungAn": clean(document.getElementById("newVoRechnungAn").value),
+    "Marke": marke,
+    "Fahrzeug": fahrzeug,
+    "Reihe": clean(document.getElementById("newVoReihe").value),
+    "Modell": clean(document.getElementById("newVoModell").value),
+    "Motor": clean(document.getElementById("newVoMotor").value),
+    "Fahrgestellnr": clean(document.getElementById("newVoFIN").value),
+    "Ordernr": clean(document.getElementById("newVoOrdernr").value),
+    "Vertragsnr": clean(document.getElementById("newVoVertragsnr").value),
+    "Auftrag": clean(document.getElementById("newVoAuftrag").value),
+    "Ablieferung": clean(document.getElementById("newVoAblieferung").value),
+    "Typ": typ,
+    "TN": tn,
+    "Bezeichnung": clean(document.getElementById("newVoBezeichnung").value),
+    "Dimension": clean(document.getElementById("newVoDimension").value),
+    "Anzahl": anzahl,
+    "VK": clean(document.getElementById("newVoVK").value),
+    "Konditionen": clean(document.getElementById("newVoKonditionen").value),
+    "Standort_Bearbeitung": standort,
+    "Status": status,
+    "Erfasser": currentUser?.name || currentUser?.email || "Unknown",
+    "Bemerkungen": clean(document.getElementById("newVoBemerkungen").value)
+  };
+
+  _vororderSaving = true;
+  try {
+    const res = await postToScript({ action: "vororderAdd", row: row });
+    if (res && res.status === "OK") {
+      alert(`✅ Vororder ${res.id} erfolgreich gespeichert.`);
+      closeNewVororderModal();
+      await reloadVororder();
+      // Auch Produkte neu laden, damit der aktualisierte Reserviert-Wert gezeigt wird
+      try {
+        const p = await fetch(URLS.produkte).then(r=>r.json());
+        if (Array.isArray(p)) produkte = p;
+      } catch(e){}
+      render();
+    } else {
+      alert("Fehler beim Speichern: " + JSON.stringify(res));
+    }
+  } catch(err) {
+    alert("Fehler: " + err.message);
+  } finally {
+    _vororderSaving = false;
+  }
+}
+
+/* ============================================================
+   VORORDER: Detail-Ansicht
+   ============================================================ */
+function openVororderDetail(id){
+  const vo = vororder.find(v => clean(v["ID"]) === clean(id));
+  if (!vo) { alert("Vororder nicht gefunden."); return; }
+
+  const content = document.getElementById("voDetailContent");
+  if (!content) return;
+
+  const allStatuses = ["Vororder offen","Kundenauswahl","Erfasst","Bestellt","Eingetroffen","Eingelagert","Verrechnet","Abgeschlossen","Abgesagt","Kein Interesse"];
+  const currentStatus = clean(vo["Status"]);
+  const historie = clean(vo["HistorieLog"]);
+
+  content.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;gap:12px;">
+      <div>
+        <div class="modal-title" style="margin-bottom:4px;">Vororder ${e(clean(vo["ID"]))}</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          ${vororderStatusBadge(currentStatus)}
+          <span style="font-size:12px;color:var(--text-muted);">Erfasst am ${e(formatVororderDate(vo["ErfasstAm"]))} · ${e(clean(vo["Erfasser"]))}</span>
+        </div>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="closeVororderDetail()">✕ Schliessen</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+      <div style="background:var(--surface-2);border-radius:8px;padding:14px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Kunde</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${e(clean(vo["Kundenname"]))||"—"}</div>
+        ${clean(vo["Debitornr"])?`<div style="font-size:12px;">Debitor: ${e(clean(vo["Debitornr"]))}</div>`:""}
+        ${clean(vo["Adressnr"])?`<div style="font-size:12px;">Adresse: ${e(clean(vo["Adressnr"]))}</div>`:""}
+        ${clean(vo["KundenEmail"])?`<div style="font-size:12px;">E-Mail: ${e(clean(vo["KundenEmail"]))}</div>`:""}
+        ${clean(vo["RechnungAn"])?`<div style="font-size:12px;margin-top:6px;">💰 ${e(clean(vo["RechnungAn"]))}</div>`:""}
+      </div>
+      <div style="background:var(--surface-2);border-radius:8px;padding:14px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Fahrzeug</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${e(clean(vo["Fahrzeug"]))||"—"}</div>
+        ${clean(vo["Fahrgestellnr"])?`<div style="font-size:12px;font-family:monospace;">FIN: ${e(clean(vo["Fahrgestellnr"]))}</div>`:""}
+        ${clean(vo["Ordernr"])?`<div style="font-size:12px;font-family:monospace;">Order: ${e(clean(vo["Ordernr"]))}</div>`:""}
+        ${clean(vo["Auftrag"])?`<div style="font-size:12px;">Auftrag: ${e(clean(vo["Auftrag"]))}</div>`:""}
+        ${clean(vo["Ablieferung"])?`<div style="font-size:12px;margin-top:6px;">📅 Ablieferung: ${e(formatVororderDate(vo["Ablieferung"]))}</div>`:""}
+      </div>
+    </div>
+
+    <div style="background:var(--surface-2);border-radius:8px;padding:14px;margin-bottom:16px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Produkt</div>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+        <span style="background:var(--accent);color:white;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:700;">${e(clean(vo["Typ"]))||"—"}</span>
+        <span style="font-weight:700;">${e(clean(vo["Bezeichnung"]))||"—"}</span>
+        ${clean(vo["Dimension"])?`<span>${e(clean(vo["Dimension"]))}</span>`:""}
+        ${clean(vo["TN"])?`<span style="font-family:monospace;background:var(--surface-3);padding:2px 8px;border-radius:3px;font-size:12px;">${e(clean(vo["TN"]))}</span>`:""}
+        <span>Anzahl: <b>${e(clean(vo["Anzahl"]))||"—"}</b></span>
+        ${clean(vo["VK"])?`<span>VK: <b>${e(clean(vo["VK"]))} CHF</b></span>`:""}
+        <span style="margin-left:auto;font-size:12px;color:${clean(vo["ReservierungAktiv"])==="Ja"?"var(--success)":"var(--text-muted)"};">
+          ${clean(vo["ReservierungAktiv"])==="Ja"?"✅ Reserviert":"◯ Keine Reservierung"}
+        </span>
+      </div>
+    </div>
+
+    <div style="background:var(--warning-bg);border:1px solid var(--warning);border-radius:8px;padding:14px;margin-bottom:16px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--warning);margin-bottom:10px;">Status ändern</div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <select id="voDetailStatus" style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-weight:600;">
+          ${allStatuses.map(s => `<option value="${e(s)}" ${s===currentStatus?"selected":""}>${e(s)}</option>`).join("")}
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="saveVororderStatus('${js(clean(vo["ID"]))}')">Status speichern</button>
+        ${clean(vo["Typ"])==="WKR"&&clean(vo["Status"])==="Eingetroffen"?`<button class="btn btn-secondary btn-sm" onclick="printVororderLabel('${js(clean(vo["ID"]))}')">🏷️ Etikette drucken</button>`:""}
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">
+        Bei Status-Wechsel werden Reservierung und Lager automatisch aktualisiert.
+      </div>
+    </div>
+
+    ${clean(vo["Bemerkungen"])?`<div style="background:var(--surface-2);border-radius:8px;padding:14px;margin-bottom:16px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:6px;">Bemerkungen</div>
+      <div style="white-space:pre-line;font-size:13px;">${e(clean(vo["Bemerkungen"]))}</div>
+    </div>`:""}
+
+    ${historie?`<div style="background:var(--surface-2);border-radius:8px;padding:14px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:8px;">Historie</div>
+      <div style="font-size:11px;font-family:monospace;white-space:pre-line;line-height:1.6;color:var(--text-secondary);">${e(historie)}</div>
+    </div>`:""}
+  `;
+
+  document.getElementById("vororderDetailModal").classList.add("open");
+}
+
+function closeVororderDetail(){
+  document.getElementById("vororderDetailModal").classList.remove("open");
+}
+
+async function saveVororderStatus(id){
+  const newStatus = clean(document.getElementById("voDetailStatus")?.value);
+  if (!newStatus) return;
+  const vo = vororder.find(v => clean(v["ID"]) === clean(id));
+  if (!vo) return;
+  if (clean(vo["Status"]) === newStatus) { alert("Status ist bereits " + newStatus); return; }
+
+  const user = currentUser?.name || currentUser?.email || "Unknown";
+
+  try {
+    const res = await postToScript({
+      action: "vororderUpdate",
+      id: id,
+      user: user,
+      updates: { Status: newStatus }
+    });
+    if (res && res.status === "OK") {
+      alert(`✅ Status geändert zu: ${newStatus}`);
+      closeVororderDetail();
+      await reloadVororder();
+      // Produkte neu laden für aktuellen Reserviert-Wert
+      try {
+        const p = await fetch(URLS.produkte).then(r=>r.json());
+        if (Array.isArray(p)) produkte = p;
+      } catch(e){}
+      render();
+    } else {
+      alert("Fehler: " + JSON.stringify(res));
+    }
+  } catch(err) {
+    alert("Fehler: " + err.message);
+  }
+}
+
+/* ============================================================
+   VORORDER: Etikette drucken
+   ============================================================ */
+function printVororderLabel(id){
+  const vo = vororder.find(v => clean(v["ID"]) === clean(id));
+  if (!vo) { alert("Vororder nicht gefunden."); return; }
+
+  const kunde = clean(vo["Kundenname"]);
+  const fahrzeug = clean(vo["Fahrzeug"]);
+  const fin = clean(vo["Fahrgestellnr"]);
+  const auftrag = clean(vo["Auftrag"]);
+  const ablieferung = formatVororderDate(vo["Ablieferung"]);
+  const typ = clean(vo["Typ"]);
+  const bezeichnung = clean(vo["Bezeichnung"]);
+  const dimension = clean(vo["Dimension"]);
+  const tn = clean(vo["TN"]);
+  const anzahl = clean(vo["Anzahl"]);
+  const voId = clean(vo["ID"]);
+
+  const w = window.open("","_blank","width=900,height=700");
+  if(!w){alert("Popup blockiert.");return;}
+
+  w.document.write(`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Vororder-Etikette</title><style>
+    @page{size:100mm 73mm;margin:0;}
+    html,body{width:100mm;height:73mm;margin:0;padding:0;font-family:Arial,sans-serif;background:white;}
+    .wrap{width:100mm;height:73mm;box-sizing:border-box;padding:4mm 5mm;}
+    .hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1.5px solid #1c69d4;padding-bottom:1.5mm;margin-bottom:2mm;}
+    .hdr-left{flex:1;}
+    .hdr-right{font-size:8pt;color:#555;text-align:right;}
+    .id{font-size:9pt;font-weight:700;color:#1c69d4;font-family:monospace;}
+    .kunde{font-size:12pt;font-weight:700;line-height:1.1;}
+    .fahrzeug{font-size:10pt;font-weight:700;margin-bottom:1mm;}
+    .line{font-size:8.5pt;margin-bottom:0.8mm;line-height:1.3;}
+    .line b{font-weight:700;}
+    .tn-box{background:#f0f5ff;border-left:2px solid #1c69d4;padding:1.5mm 2mm;margin:1.5mm 0;font-size:9pt;font-weight:700;}
+    .barcode-wrap{margin-top:2mm;text-align:center;border-top:1px solid #ddd;padding-top:1mm;}
+    .barcode{width:70mm;height:9mm;display:block;margin:0 auto;}
+    .tn-text{font-size:7.5pt;margin-top:0.5mm;font-weight:700;}
+    .actions{position:fixed;right:10px;top:10px;display:flex;gap:8px;}
+    .actions button{border:none;background:#1c69d4;color:white;padding:10px 14px;font-size:13px;cursor:pointer;}
+    .actions button.sec{background:#666;}
+    @media print{.actions{display:none;}}
+  </style></head><body>
+    <div class="actions">
+      <button onclick="window.print()">Drucken</button>
+      <button class="sec" onclick="window.close()">Schliessen</button>
+    </div>
+    <div class="wrap">
+      <div class="hdr">
+        <div class="hdr-left">
+          <div class="id">${e(voId)}</div>
+        </div>
+        <div class="hdr-right">
+          ${ablieferung?`<div><b>Abl.:</b> ${e(ablieferung)}</div>`:""}
+          ${auftrag?`<div>Auftrag ${e(auftrag)}</div>`:""}
+        </div>
+      </div>
+      <div class="kunde">${e(kunde)}</div>
+      <div class="fahrzeug">${e(fahrzeug)}</div>
+      ${fin?`<div class="line"><b>FIN:</b> ${e(fin)}</div>`:""}
+      ${bezeichnung?`<div class="line"><b>Produkt:</b> ${e(bezeichnung)}${dimension?" · "+e(dimension):""}</div>`:""}
+      ${anzahl?`<div class="line"><b>Anzahl:</b> ${e(anzahl)} × ${e(typ)}</div>`:""}
+      ${tn?`<div class="tn-box">TN: ${e(tn)}</div>`:""}
+      <div class="barcode-wrap">
+        <svg id="barcode" class="barcode"></svg>
+        <div class="tn-text">${e(voId)}</div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
+    <script>
+      JsBarcode("#barcode", ${JSON.stringify(voId)}, {format:"CODE128",displayValue:false,margin:0,width:1.3,height:24});
+    <\/script>
+  </body></html>`);
+  w.document.close();
 }
 async function loadUserInfo(email){
   try {
