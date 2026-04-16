@@ -1147,27 +1147,6 @@ async function resetAdminPassword(){
     if (errorBox) { errorBox.textContent = msg; errorBox.style.display = "block"; }
   }
 }
-async function resetAdminPassword(){
-  const email = document.getElementById("adminEmail")?.value.trim();
-  const err = document.getElementById("adminLoginError");
-  const ok  = document.getElementById("adminLoginSuccess");
-  if(err){ err.style.display="none"; err.textContent=""; }
-  if(ok){  ok.style.display="none";  ok.textContent=""; }
-  if(!email){
-    if(err){ err.textContent="Bitte zuerst E-Mail eingeben."; err.style.display="block"; }
-    return;
-  }
-  try{
-    const {sendPasswordResetEmail} = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js");
-    await sendPasswordResetEmail(window.firebaseAuth, email);
-    if(ok){ ok.textContent="Reset-Link wurde gesendet. Bitte E-Mail prüfen."; ok.style.display="block"; }
-  }catch(e){
-    let msg="Fehler beim Senden.";
-    if(e.code==="auth/user-not-found") msg="Kein Konto mit dieser E-Mail.";
-    if(e.code==="auth/invalid-email")  msg="Ungültige E-Mail-Adresse.";
-    if(err){ err.textContent=msg; err.style.display="block"; }
-  }
-}
 async function submitAdminLogin(){
   const emailInput = document.getElementById("adminEmail");
   const passwordInput = document.getElementById("adminPassword");
@@ -1718,7 +1697,6 @@ function renderWkrProduct(r){
     <div class="product-image-wrap"><img src="${e(bild)}" alt="${e(bezeichnung)}" onclick="toggleZoom(this)"></div>
     <div class="product-info">
       <div class="product-name">${e(bezeichnung)}</div>
-      <div class="product-sub">${e(marke)}</div>
       <div class="product-sub">${e(markeReifen)}</div>
       <div class="product-sub" style="font-weight:700;">${e(dimension)}</div>
       ${hinweistext?`<div class="product-note">${e(hinweistext)}</div>`:""}
