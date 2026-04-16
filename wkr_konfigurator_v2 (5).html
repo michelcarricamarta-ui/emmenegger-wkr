@@ -1126,6 +1126,10 @@ let adminReifenFilter = { suche:"",standort:"",reifentyp:"",aktivStatus:"",nurAn
 let selectedProduct = null, editingTireId = "", editingWkrTN = "";
 let _saving = { newTire:false,editTire:false,deleteTire:false,newWkr:false,deleteWkr:false };
    let currentUser = null;  // { email, name, standort, rolle, aktiv }
+   let vororder = [];
+let vororderLoaded = false;
+let vororderLoading = false;
+let vororderFilter = { suche:"", status:"", typ:"", standort:"" };
 
 /* ============================================================
    HELPERS
@@ -1564,6 +1568,12 @@ function renderAdminSidebar(){
         <span class="nav-icon">⚫</span> ${e(t("admin_tires_all"))}
      </button>
     </div>
+    <div class="admin-nav-section">
+      <div class="admin-nav-label">Vororder</div>
+      <button class="admin-nav-item ${sec==="vororder"?"active":""}" onclick="selectAdminSection('vororder')">
+        <span class="nav-icon">📋</span> Vororder-Übersicht
+      </button>
+    </div>
 <div class="admin-nav-section">
       <div class="admin-nav-label">Tools</div>
       <button class="admin-nav-item ${sec==="inventur"?"active":""}" onclick="selectAdminSection('inventur')">
@@ -1665,6 +1675,11 @@ function render(){
       contentHtml = `<div class="admin-content">${renderAdminReifenList()}</div>`;
     } else if (state.adminSection === "wkr_list") {
       contentHtml = `<div class="admin-content">${renderAdminWkrList()}</div>`;
+       } else if (state.adminSection === "vororder") {
+      contentHtml = `<div class="admin-content">${renderAdminVororder()}</div>`;
+      if (!vororderLoaded && !vororderLoading) {
+        loadVororder().then(() => render());
+      }
        } else if (state.adminSection === "inventur") {
       contentHtml = `<div class="admin-content">${renderAdminInventur()}</div>`;
     } else if (state.adminSection === "wkr_model") {
@@ -2036,6 +2051,150 @@ function renderAdminWkrList(){
 /* ============================================================
    RENDER: INVENTUR / EXPORT
    ============================================================ */
+   /* ============================================================
+   RENDER: VORORDER ÜBERSICHT
+   ============================================================ */
+function renderAdminVororder(){
+  const isSuperAdmin = currentUser?.rolle === "SuperAdmin";
+  const userStandort = currentUser?.standort || "";
+  const results = getFilteredVororder();
+
+  // Stats
+  const stats = {
+    offen: results.filter(v => ["Vororder offen","Kundenauswahl","Erfasst","Bestellt"].includes(clean(v["Status"]))).length,
+    eingetroffen: results.filter(v => ["Eingetroffen","Eingelagert"].includes(clean(v["Status"]))).length,
+    abgeschlossen: results.filter(v => ["Verrechnet","Abgeschlossen"].includes(clean(v["Status"]))).length,
+    abgesagt: results.filter(v => ["Abgesagt","Kein Interesse"].includes(clean(v["Status"]))).length
+  };
+
+  const statusOptions = ["Vororder offen","Kundenauswahl","Erfasst","Bestellt","Eingetroffen","Eingelagert","Verrechnet","Abgeschlossen","Abgesagt","Kein Interesse"];
+
+  let html = `<div class="admin-content-header">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div class="admin-content-title">Vororder-Übersicht</div>
+        <div class="admin-content-sub">
+          ${isSuperAdmin ? `Alle Standorte sichtbar (SuperAdmin)` : `Standort: ${standortLabel(userStandort)}`}
+          · ${results.length} Einträge
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-secondary btn-sm" onclick="reloadVororder()">🔄 Neu laden</button>
+        <button class="btn btn-primary btn-sm" onclick="alert('Neue Vororder — folgt in Teil 3c')">+ Neue Vororder</button>
+      </div>
+    </div>
+  </div>`;
+
+  // Status-Stats
+  html += `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px;">
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#92400e;margin-bottom:4px;">Offen</div>
+      <div style="font-size:22px;font-weight:700;color:#92400e;">${stats.offen}</div>
+    </div>
+    <div style="background:#ecfccb;border:1px solid #bef264;border-radius:8px;padding:14px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#3f6212;margin-bottom:4px;">Eingetroffen</div>
+      <div style="font-size:22px;font-weight:700;color:#3f6212;">${stats.eingetroffen}</div>
+    </div>
+    <div style="background:#f3f4f6;border:1px solid #d1d5db;border-radius:8px;padding:14px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#374151;margin-bottom:4px;">Abgeschlossen</div>
+      <div style="font-size:22px;font-weight:700;color:#374151;">${stats.abgeschlossen}</div>
+    </div>
+    <div style="background:#fee2e2;border:1px solid #fecaca;border-radius:8px;padding:14px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#7f1d1d;margin-bottom:4px;">Abgesagt / Kein Int.</div>
+      <div style="font-size:22px;font-weight:700;color:#7f1d1d;">${stats.abgesagt}</div>
+    </div>
+  </div>`;
+
+  // Filter
+  html += `<div class="search-section" style="margin-top:0;">
+    <div class="filter-grid" style="grid-template-columns:2fr 1fr 1fr ${isSuperAdmin ? "1fr" : ""} auto auto;">
+      <div class="filter-field">
+        <label>Suche</label>
+        <input id="voSuche" type="text" placeholder="Kunde, Fahrzeug, ID, Auftrag, FIN …" value="${e(vororderFilter.suche)}">
+      </div>
+      <div class="filter-field">
+        <label>Status</label>
+        <select id="voStatus">
+          <option value="">Alle</option>
+          ${statusOptions.map(st => `<option value="${e(st)}" ${vororderFilter.status===st?"selected":""}>${e(st)}</option>`).join("")}
+        </select>
+      </div>
+      <div class="filter-field">
+        <label>Typ</label>
+        <select id="voTyp">
+          <option value="">Alle</option>
+          <option value="WKR" ${vororderFilter.typ==="WKR"?"selected":""}>WKR</option>
+          <option value="Reifen" ${vororderFilter.typ==="Reifen"?"selected":""}>Reifen</option>
+          <option value="Zubehör" ${vororderFilter.typ==="Zubehör"?"selected":""}>Zubehör</option>
+        </select>
+      </div>
+      ${isSuperAdmin ? `<div class="filter-field">
+        <label>Standort</label>
+        <select id="voStandort">
+          <option value="">Alle Standorte</option>
+          <option value="GEB" ${vororderFilter.standort==="GEB"?"selected":""}>Gebenstorf</option>
+          <option value="HET" ${vororderFilter.standort==="HET"?"selected":""}>Hettenschwil</option>
+        </select>
+      </div>` : ""}
+      <button class="btn btn-primary btn-sm" onclick="applyVororderFilter()">Suchen</button>
+      <button class="btn btn-secondary btn-sm" onclick="resetVororderFilter()">Reset</button>
+    </div>
+  </div>`;
+
+  // Liste
+  if (!vororderLoaded && vororderLoading) {
+    html += `<div class="empty-state"><div class="empty-icon">⏳</div>Vororder werden geladen...</div>`;
+  } else if (!results.length) {
+    html += `<div class="empty-state"><div class="empty-icon">📋</div>Keine Vororders gefunden.<br><span style="font-size:12px;color:var(--text-muted);">${vororderLoaded ? "Versuche einen anderen Filter oder erfasse eine neue Vororder." : "Noch keine Daten geladen."}</span></div>`;
+  } else {
+    html += `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;margin-top:14px;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr style="background:var(--surface-3);">
+            <th style="padding:10px 12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">ID</th>
+            <th style="padding:10px 12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Status</th>
+            <th style="padding:10px 12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Kunde</th>
+            <th style="padding:10px 12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Fahrzeug</th>
+            <th style="padding:10px 12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Typ / TN</th>
+            <th style="padding:10px 12px;text-align:center;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Anzahl</th>
+            <th style="padding:10px 12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Ablieferung</th>
+            ${isSuperAdmin ? `<th style="padding:10px 12px;text-align:center;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Standort</th>` : ""}
+            <th style="padding:10px 12px;text-align:right;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Aktion</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+    results.forEach(v => {
+      const standort = clean(v["Standort_Bearbeitung"]);
+      html += `<tr style="border-top:1px solid var(--border);">
+        <td style="padding:10px 12px;font-weight:600;color:var(--text-primary);font-family:monospace;">${e(clean(v["ID"]))}</td>
+        <td style="padding:10px 12px;">${vororderStatusBadge(v["Status"])}</td>
+        <td style="padding:10px 12px;">
+          <div style="font-weight:600;color:var(--text-primary);">${e(clean(v["Kundenname"]))||"<em style='color:var(--text-muted);'>—</em>"}</div>
+          ${clean(v["Debitornr"]) ? `<div style="font-size:11px;color:var(--text-muted);">Deb: ${e(clean(v["Debitornr"]))}</div>` : ""}
+        </td>
+        <td style="padding:10px 12px;">
+          <div>${e(clean(v["Fahrzeug"]))||"—"}</div>
+          ${clean(v["Fahrgestellnr"]) ? `<div style="font-size:11px;color:var(--text-muted);font-family:monospace;">FIN: ${e(clean(v["Fahrgestellnr"]))}</div>` : ""}
+        </td>
+        <td style="padding:10px 12px;">
+          <div><span style="font-size:11px;background:var(--surface-3);padding:2px 6px;border-radius:3px;font-weight:600;">${e(clean(v["Typ"]))||"—"}</span></div>
+          ${clean(v["TN"]) ? `<div style="font-size:11px;color:var(--text-muted);margin-top:3px;font-family:monospace;">${e(clean(v["TN"]))}</div>` : ""}
+        </td>
+        <td style="padding:10px 12px;text-align:center;font-weight:600;">${e(clean(v["Anzahl"]))||"—"}</td>
+        <td style="padding:10px 12px;font-size:12px;">${e(formatVororderDate(v["Ablieferung"]))||"—"}</td>
+        ${isSuperAdmin ? `<td style="padding:10px 12px;text-align:center;">${standort ? `<span style="font-size:11px;background:var(--surface-3);padding:2px 8px;border-radius:3px;font-weight:600;">${e(standort)}</span>` : "—"}</td>` : ""}
+        <td style="padding:10px 12px;text-align:right;">
+          <button class="btn btn-secondary btn-sm" onclick="alert('Detail-Ansicht — folgt in Teil 3c')" style="padding:5px 10px;font-size:11px;">Details</button>
+        </td>
+      </tr>`;
+    });
+
+    html += `</tbody></table></div>`;
+  }
+
+  return html;
+}
 function renderAdminInventur(){
   return `<div class="admin-content-header">
     <div class="admin-content-title">Inventur & Export</div>
@@ -2591,6 +2750,99 @@ async function deleteWkr(){
    /* ============================================================
    USER INFO (aus Benutzer-Sheet)
    ============================================================ */
+   /* ============================================================
+   VORORDER: Laden + Helpers
+   ============================================================ */
+async function loadVororder(){
+  if (vororderLoading) return;
+  vororderLoading = true;
+  try {
+    const res = await postToScript({ action: "vororderList" });
+    if (res && res.status === "OK" && Array.isArray(res.data)) {
+      vororder = res.data;
+      vororderLoaded = true;
+    }
+  } catch(err) {
+    console.error("Vororder-Ladefehler:", err);
+  } finally {
+    vororderLoading = false;
+  }
+}
+
+function getFilteredVororder(){
+  // SuperAdmin darf auch nach Standort filtern, Normal-Admin nur eigenen Standort
+  const userStandort = currentUser?.standort || "";
+  const isSuperAdmin = currentUser?.rolle === "SuperAdmin";
+  const standortFilter = isSuperAdmin ? vororderFilter.standort : userStandort;
+
+  return vororder.filter(v => {
+    const s = (vororderFilter.suche || "").toLowerCase();
+    if (standortFilter && clean(v["Standort_Bearbeitung"]) !== standortFilter) return false;
+    if (vororderFilter.status && clean(v["Status"]) !== vororderFilter.status) return false;
+    if (vororderFilter.typ && clean(v["Typ"]) !== vororderFilter.typ) return false;
+    if (s) {
+      const hit = ["Kundenname","Fahrzeug","ID","Auftrag","Fahrgestellnr","TN","Debitornr"]
+        .some(f => clean(v[f]).toLowerCase().includes(s));
+      if (!hit) return false;
+    }
+    return true;
+  }).sort((a,b) => {
+    // Sortierung: Offene zuerst, dann nach Datum absteigend
+    const openStatuses = ["Vororder offen","Kundenauswahl","Erfasst","Bestellt","Eingetroffen","Eingelagert"];
+    const aOpen = openStatuses.indexOf(clean(a["Status"])) !== -1 ? 0 : 1;
+    const bOpen = openStatuses.indexOf(clean(b["Status"])) !== -1 ? 0 : 1;
+    if (aOpen !== bOpen) return aOpen - bOpen;
+    return clean(b["ErfasstAm"]).localeCompare(clean(a["ErfasstAm"]));
+  });
+}
+
+function vororderStatusBadge(status){
+  const s = clean(status);
+  const styles = {
+    "Vororder offen":  "background:#fef3c7;color:#92400e;",
+    "Kundenauswahl":   "background:#dbeafe;color:#1e40af;",
+    "Erfasst":         "background:#e0e7ff;color:#3730a3;",
+    "Bestellt":        "background:#cffafe;color:#0e7490;",
+    "Eingetroffen":    "background:#d1fae5;color:#065f46;",
+    "Eingelagert":     "background:#ecfccb;color:#3f6212;",
+    "Verrechnet":      "background:#f3f4f6;color:#374151;",
+    "Abgeschlossen":   "background:#f3f4f6;color:#6b7280;",
+    "Abgesagt":        "background:#fecaca;color:#991b1b;",
+    "Kein Interesse":  "background:#fee2e2;color:#7f1d1d;"
+  };
+  const style = styles[s] || "background:#f3f4f6;color:#374151;";
+  return `<span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;${style}">${e(s || "—")}</span>`;
+}
+
+function formatVororderDate(iso){
+  if (!iso) return "";
+  try {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return clean(iso);
+    return d.toLocaleDateString("de-CH", { day:"2-digit", month:"2-digit", year:"numeric" });
+  } catch(e) { return clean(iso); }
+}
+
+function applyVororderFilter(){
+  vororderFilter.suche = clean(document.getElementById("voSuche")?.value);
+  vororderFilter.status = clean(document.getElementById("voStatus")?.value);
+  vororderFilter.typ = clean(document.getElementById("voTyp")?.value);
+  vororderFilter.standort = clean(document.getElementById("voStandort")?.value);
+  render();
+}
+
+function resetVororderFilter(){
+  vororderFilter = { suche:"", status:"", typ:"", standort:"" };
+  render();
+}
+
+async function reloadVororder(){
+  vororderLoaded = false;
+  vororder = [];
+  render();
+  await loadVororder();
+  render();
+}
 async function loadUserInfo(email){
   try {
     const res = await postToScript({ action: "getUserInfo", email: email });
