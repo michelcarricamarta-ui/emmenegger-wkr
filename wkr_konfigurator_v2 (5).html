@@ -728,11 +728,8 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
 
     <div id="adminLoginError" style="display:none; margin-top:12px; color:#dc2626; font-size:13px;"></div>
     <div id="adminLoginSuccess" style="display:none; margin-top:12px; color:#16a34a; font-size:13px;"></div>
-
-    <div style="margin-top:10px; text-align:right;">
-      <button type="button" onclick="resetAdminPassword()" style="background:none; border:none; color:var(--accent); font-size:12px; cursor:pointer; text-decoration:underline; padding:0;">
-        Passwort vergessen?
-      </button>
+    <div style="margin-top:8px; text-align:right;">
+      <button type="button" onclick="resetAdminPassword()" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;text-decoration:underline;padding:0;">Passwort vergessen?</button>
     </div>
 
     <div class="modal-actions">
@@ -1150,7 +1147,27 @@ async function resetAdminPassword(){
     if (errorBox) { errorBox.textContent = msg; errorBox.style.display = "block"; }
   }
 }
-
+async function resetAdminPassword(){
+  const email = document.getElementById("adminEmail")?.value.trim();
+  const err = document.getElementById("adminLoginError");
+  const ok  = document.getElementById("adminLoginSuccess");
+  if(err){ err.style.display="none"; err.textContent=""; }
+  if(ok){  ok.style.display="none";  ok.textContent=""; }
+  if(!email){
+    if(err){ err.textContent="Bitte zuerst E-Mail eingeben."; err.style.display="block"; }
+    return;
+  }
+  try{
+    const {sendPasswordResetEmail} = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js");
+    await sendPasswordResetEmail(window.firebaseAuth, email);
+    if(ok){ ok.textContent="Reset-Link wurde gesendet. Bitte E-Mail prüfen."; ok.style.display="block"; }
+  }catch(e){
+    let msg="Fehler beim Senden.";
+    if(e.code==="auth/user-not-found") msg="Kein Konto mit dieser E-Mail.";
+    if(e.code==="auth/invalid-email")  msg="Ungültige E-Mail-Adresse.";
+    if(err){ err.textContent=msg; err.style.display="block"; }
+  }
+}
 async function submitAdminLogin(){
   const emailInput = document.getElementById("adminEmail");
   const passwordInput = document.getElementById("adminPassword");
@@ -1271,8 +1288,10 @@ function applyFirebaseAdminState(){
 }
 
 window.applyFirebaseAdminState = applyFirebaseAdminState;
-// Logout-Funktion: Platzhalter — noch ohne Implementierung
-function logoutAdmin(){ /* TODO: Funktion noch nicht aktiv */ }
+async function logoutAdmin(){
+  if(!confirm("Wirklich ausloggen?")) return;
+  await deactivateAllModes();
+}
 /* ============================================================
    NAVIGATION
    ============================================================ */
@@ -1431,7 +1450,7 @@ function renderAdminSidebar(){
 
     <div class="admin-nav-section" style="margin-top:auto; border-top:1px solid var(--border); padding-top:8px;">
       <div class="admin-nav-label">Konto</div>
-      <button class="admin-nav-item" onclick="" style="color:var(--error); opacity:0.7; cursor:not-allowed;">
+      <button class="admin-nav-item" onclick="logoutAdmin()" style="color:var(--error);">
         <span class="nav-icon">🚪</span> Logout
       </button>
     </div>
