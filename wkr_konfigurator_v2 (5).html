@@ -683,16 +683,15 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
   .model-card img { height: 90px; }
   .model-card .model-name { font-size: 13px; }
 
-  /* AUSWAHL BOX */
-  .summary-box { padding: 10px 12px; border-radius: 6px; }
-/* AUSWAHL BOX — Fahrzeugauswahl */
-  .summary-box > div:last-child { flex-direction: column; gap: 10px; }
-  .summary-box > div:last-child > div:first-child { flex-wrap: wrap; width: 100%; }
-  .summary-box > div:last-child > div:first-child > div { padding: 8px 12px; flex: 1; min-width: calc(50% - 1px); }
-  .summary-box > div:last-child img { width: 100% !important; height: 140px !important; object-fit: contain; border-radius: 6px; }
-  .summary-box > div:first-child { flex-direction: column; gap: 8px; align-items: flex-start; }
-  .summary-box > div:first-child > div { flex-direction: column; gap: 6px; width: 100%; }
-  .summary-box > div:first-child button { width: 100%; justify-content: center; }
+ /* AUSWAHL BOX */
+  .auswahl-box { padding: 12px !important; }
+  .auswahl-header { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
+  .auswahl-header > div { flex-direction: column !important; width: 100% !important; gap: 6px !important; }
+  .auswahl-header button { width: 100% !important; justify-content: center !important; }
+  .auswahl-body { flex-direction: column !important; gap: 10px !important; }
+  .auswahl-felder { width: 100% !important; }
+  .auswahl-felder > div { flex: 1 !important; min-width: calc(50% - 1px) !important; padding: 8px 12px !important; }
+  .auswahl-box img { width: 100% !important; height: 130px !important; object-fit: contain !important; border-radius: 6px !important; }
   /* PRODUKT LISTE */
   .products-title { font-size: 17px; }
   .products-meta { font-size: 11px; }
@@ -1737,16 +1736,16 @@ function renderWkrFlow(){
   const tnList=[...new Set(mapping.filter(x=>clean(x["Marke"])===state.marke&&clean(x["Reihe"])===state.reihe&&clean(x["Modell"])===state.modell&&motorMatch(x["Motor"],state.motor)).map(x=>clean(x["TN"])).filter(Boolean))];
   const results=produkte.filter(p=>clean(p["Standort"])===state.standort&&clean(p["Marke"])===state.marke&&tnList.includes(clean(p["TN"])));
 
-  html+=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:16px 20px;margin-bottom:28px;box-shadow:var(--shadow-sm);">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+  html+=`<div class="auswahl-box" style="background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:16px 20px;margin-bottom:28px;box-shadow:var(--shadow-sm);">
+    <div class="auswahl-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
       <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);">Ihre Auswahl</span>
       <div style="display:flex;gap:8px;">
         <button class="btn btn-secondary btn-sm" onclick="shareConfig()">🔗 Teilen</button>
         <button class="btn btn-secondary btn-sm" onclick="resetSelection()">✎ Auswahl ändern</button>
       </div>
     </div>
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:20px;">
-      <div style="display:flex;align-items:stretch;gap:0;flex-wrap:wrap;border:1px solid var(--border);border-radius:3px;overflow:hidden;">
+    <div class="auswahl-body" style="display:flex;align-items:flex-start;justify-content:space-between;gap:20px;">
+      <div class="auswahl-felder" style="display:flex;align-items:stretch;gap:0;flex-wrap:wrap;border:1px solid var(--border);border-radius:3px;overflow:hidden;">
         <div style="padding:10px 18px;border-right:1px solid var(--border);background:var(--surface-2);">
           <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:2px;">Marke</div>
           <div style="font-size:14px;font-weight:700;color:var(--text-primary);">${e(state.marke)}</div>
