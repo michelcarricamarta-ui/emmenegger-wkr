@@ -1319,7 +1319,7 @@ async function deactivateAllModes(){
     if (window.firebaseAuth && window.firebaseSignOut && window.isFirebaseAdminLoggedIn) {
       await window.firebaseSignOut(window.firebaseAuth);
     }
-  } catch (err) { ... }
+} catch (err) {
     console.error("Fehler beim Logout:", err);
   }
 
