@@ -942,18 +942,7 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
       <div class="form-field"><label>Bezeichnung *</label><input id="newWkrBezeichnung" type="text" placeholder="Bezeichnung"></div>
       <div class="form-field"><label>Reifenmarke</label><input id="newWkrReifen" type="text" placeholder="z. B. Pirelli"></div>
       <div class="form-field"><label>Dimension</label><input id="newWkrDimension" type="text" placeholder="Dimension"></div>
-      <div class="form-field full">
-  <label>Mischbereifung?</label>
-  <div class="filter-checkbox" style="margin-top:4px;">
-    <input type="checkbox" id="newWkrMisch" onchange="toggleMischTN('new')">
-    <label for="newWkrMisch">Ja — VA und HA haben verschiedene Teilenummern</label>
-  </div>
-</div>
-<div class="form-field" id="newWkrTNWrap"><label>Teilenummer (TN) *</label><input id="newWkrTN" type="text" placeholder="z.B. 5A71A86"></div>
-<div id="newWkrMischWrap" style="display:none;grid-column:1/-1;display:none;grid-template-columns:1fr 1fr;gap:14px;">
-  <div class="form-field"><label>TN Vorderachse (VA) *</label><input id="newWkrTNVA" type="text" placeholder="z.B. 5A71A86"></div>
-  <div class="form-field"><label>TN Hinterachse (HA) *</label><input id="newWkrTNHA" type="text" placeholder="z.B. 5A71A89"></div>
-</div>
+      <div class="form-field"><label>Teilenummer (TN) *</label><input id="newWkrTN" type="text" placeholder="TN"></div>
       <div class="form-field"><label>Lagerbestand</label><input id="newWkrLager" type="number" min="0" value="0"></div>
       <div class="form-field"><label>Lagerort</label><input id="newWkrLagerort" type="text" placeholder="Regal A3 / Platz 12"></div>
       <div class="form-field full"><label>Bild URL</label><input id="newWkrBild" type="text" placeholder="https://..."></div>
@@ -982,18 +971,7 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
       <div class="form-field"><label>Bezeichnung *</label><input id="editWkrBezeichnung" type="text" placeholder="Bezeichnung"></div>
       <div class="form-field"><label>Reifenmarke</label><input id="editWkrReifen" type="text" placeholder="z. B. Pirelli"></div>
       <div class="form-field"><label>Dimension</label><input id="editWkrDimension" type="text" placeholder="Dimension"></div>
-      <div class="form-field full">
-  <label>Mischbereifung?</label>
-  <div class="filter-checkbox" style="margin-top:4px;">
-    <input type="checkbox" id="editWkrMisch" onchange="toggleMischTN('edit')">
-    <label for="editWkrMisch">Ja — VA und HA haben verschiedene Teilenummern</label>
-  </div>
-</div>
-<div class="form-field" id="editWkrTNWrap"><label>Teilenummer (TN) *</label><input id="editWkrTN" type="text" placeholder="z.B. 5A71A86"></div>
-<div id="editWkrMischWrap" style="display:none;grid-column:1/-1;grid-template-columns:1fr 1fr;gap:14px;">
-  <div class="form-field"><label>TN Vorderachse (VA) *</label><input id="editWkrTNVA" type="text" placeholder="z.B. 5A71A86"></div>
-  <div class="form-field"><label>TN Hinterachse (HA) *</label><input id="editWkrTNHA" type="text" placeholder="z.B. 5A71A89"></div>
-</div>
+      <div class="form-field"><label>Teilenummer (TN) *</label><input id="editWkrTN" type="text" placeholder="TN"></div>
       <div class="form-field"><label>Lagerbestand</label><input id="editWkrLager" type="number" min="0"></div>
       <div class="form-field"><label>Lagerort</label><input id="editWkrLagerort" type="text" placeholder="Regal A3 / Platz 12"></div>
       <div class="form-field full"><label>Bild URL</label><input id="editWkrBild" type="text" placeholder="https://..."></div>
@@ -1270,7 +1248,6 @@ async function submitAdminLogin(){
   const emailInput = document.getElementById("adminEmail");
   const passwordInput = document.getElementById("adminPassword");
   const errorBox = document.getElementById("adminLoginError");
-  const successBox = document.getElementById("adminLoginSuccess");
 
   const email = emailInput ? emailInput.value.trim() : "";
   const password = passwordInput ? passwordInput.value : "";
@@ -1278,10 +1255,6 @@ async function submitAdminLogin(){
   if (errorBox) {
     errorBox.style.display = "none";
     errorBox.textContent = "";
-  }
-  if (successBox) {
-    successBox.style.display = "none";
-    successBox.textContent = "";
   }
 
   if (!email || !password) {
@@ -1297,36 +1270,17 @@ async function submitAdminLogin(){
       throw new Error("Firebase ist noch nicht geladen.");
     }
 
-    await window.firebaseSetPersistence(
-      window.firebaseAuth,
-      window.firebaseBrowserLocalPersistence
-    );
+    await window.firebaseSetPersistence(window.firebaseAuth, window.firebaseBrowserLocalPersistence);
+await window.firebaseSignInWithEmailAndPassword(window.firebaseAuth, email, password);
 
-    await window.firebaseSignInWithEmailAndPassword(
-      window.firebaseAuth,
-      email,
-      password
-    );
-
-    window.isFirebaseAdminLoggedIn = true;
     adminMode = true;
     internalMode = false;
     state.internalSection = null;
     state.adminSection = "dashboard";
 
-    const publicBtn = document.getElementById("publicViewBtn");
-    if (publicBtn) publicBtn.style.display = "inline-block";
-
-    const logoutBtn = document.getElementById("adminLogoutBtn");
-    if (logoutBtn) logoutBtn.style.display = "inline-block";
-
-    const publicBtnMobile = document.getElementById("publicViewBtnMobile");
-    if (publicBtnMobile) publicBtnMobile.style.display = "inline-block";
-
+    document.getElementById("publicViewBtn").style.display = "inline-block";
     showModeBanner("admin");
-
-    const internalFields = document.getElementById("internalFields");
-    if (internalFields) internalFields.style.display = "none";
+    document.getElementById("internalFields").style.display = "none";
 
     closeAdminLoginModal();
     render();
@@ -1368,18 +1322,8 @@ async function deactivateAllModes(){
   const publicBtn = document.getElementById("publicViewBtn");
   if (publicBtn) publicBtn.style.display = "none";
 
-  const logoutBtn = document.getElementById("adminLogoutBtn");
-  if (logoutBtn) logoutBtn.style.display = "none";
-
-  const publicBtnMobile = document.getElementById("publicViewBtnMobile");
-  if (publicBtnMobile) publicBtnMobile.style.display = "none";
-
-  const internalFields = document.getElementById("internalFields");
-  if (internalFields) internalFields.style.display = "none";
-
   const banner = document.getElementById("modeBanner");
   if (banner) {
-    banner.style.display = "none";
     banner.className = "mode-banner";
     banner.textContent = "";
   }
@@ -1405,28 +1349,15 @@ function applyFirebaseAdminState(){
     const publicBtn = document.getElementById("publicViewBtn");
     if (publicBtn) publicBtn.style.display = "inline-block";
 
-    const logoutBtn = document.getElementById("adminLogoutBtn");
-    if (logoutBtn) logoutBtn.style.display = "inline-block";
-
-    const publicBtnMobile = document.getElementById("publicViewBtnMobile");
-    if (publicBtnMobile) publicBtnMobile.style.display = "inline-block";
-
     const internalFields = document.getElementById("internalFields");
     if (internalFields) internalFields.style.display = "none";
 
     showModeBanner("admin");
   } else {
-    adminMode = false;
-    state.adminSection = null;
-
-    const publicBtn = document.getElementById("publicViewBtn");
-    if (publicBtn) publicBtn.style.display = "none";
-
-    const logoutBtn = document.getElementById("adminLogoutBtn");
-    if (logoutBtn) logoutBtn.style.display = "none";
-
-    const publicBtnMobile = document.getElementById("publicViewBtnMobile");
-    if (publicBtnMobile) publicBtnMobile.style.display = "none";
+    if (adminMode) {
+      adminMode = false;
+      state.adminSection = null;
+    }
   }
 
   render();
@@ -1440,24 +1371,6 @@ async function logoutAdmin(){
    function toggleMobileMenu(){
   const m = document.getElementById("mobileMenu");
   m.style.display = m.style.display === "flex" ? "none" : "flex";
-}
-   function toggleMischTN(prefix){
-  const cb = document.getElementById(`${prefix}WkrMisch`);
-  const single = document.getElementById(`${prefix}WkrTNWrap`);
-  const misch = document.getElementById(`${prefix}WkrMischWrap`);
-  if(cb.checked){
-    single.style.display = "none";
-    misch.style.display = "grid";
-  } else {
-    single.style.display = "block";
-    misch.style.display = "none";
-  }
-}
-
-function formatTN(tn){
-  if(!tn.includes("_")) return tn;
-  const parts = tn.split("_");
-  return `VA: ${parts[0]} / HA: ${parts[1]}`;
 }
 /* ============================================================
    NAVIGATION
@@ -1929,7 +1842,7 @@ function renderWkrProduct(r){
       <div class="product-sub" style="font-weight:700;">${e(dimension)}</div>
       ${hinweistext?`<div class="product-note">${e(hinweistext)}</div>`:""}
       ${verkaufshinweis?`<div class="product-detail-row"><b>Hinweis:</b> ${e(verkaufshinweis)}</div>`:""}
-      ${teilenummer?`<div class="product-partnr">${teilenummer.includes("_")?`VA: ${e(teilenummer.split("_")[0])} / HA: ${e(teilenummer.split("_")[1])}`:`Teilenr.: ${e(teilenummer)}`}</div>`:""}
+      ${teilenummer?`<div class="product-partnr">Teilenr.: ${e(teilenummer)}</div>`:""}
     </div>
     <div class="product-right">
       <div class="price-label">${e(t("price_set"))}</div>
@@ -2016,7 +1929,7 @@ function renderTireProduct(r,isInternal){
       <div class="product-detail-row"><b>An Lager:</b> ${e(anzahl||"0")}</div>
       <div class="product-detail-row"><b>Standort:</b> ${e(standort)}</div>
       ${lagerort?`<div class="product-detail-row"><b>Lagerort:</b> ${e(lagerort)}</div>`:""}
-      ${teilenummer?`<div class="product-partnr">${teilenummer.includes("_")?`VA: ${e(teilenummer.split("_")[0])} / HA: ${e(teilenummer.split("_")[1])}`:`Teilenr.: ${e(teilenummer)}`}</div>`:""}
+      ${teilenummer?`<div class="product-partnr">Teilenr.: ${e(teilenummer)}</div>`:""}
       ${dotHtml}
       ${isAdmin?`<div class="product-detail-row"><b>Status:</b> <span class="${aktiv==="Ja"?"badge badge-success":"badge badge-error"}">${aktiv==="Ja"?"Aktiv":"Inaktiv"}</span></div>`:""}
       ${isAdmin&&bemerkung&&bemerkungSichtbar==="Ja"?`<div class="product-note">${e(bemerkung)}</div>`:""}
@@ -2255,7 +2168,7 @@ function renderAdminWkrItem(r){
       <div class="product-sub" style="font-weight:700;">${e(dimension)}</div>
       <div class="product-detail-row"><b>Standort:</b> ${e(standort)}</div>
       ${lagerort?`<div class="product-detail-row"><b>Lagerort:</b> ${e(lagerort)}</div>`:""}
-      ${teilenummer?`<div class="product-partnr">${teilenummer.includes("_")?`VA: ${e(teilenummer.split("_")[0])} / HA: ${e(teilenummer.split("_")[1])}`:`Teilenr.: ${e(teilenummer)}`}</div>`:""}
+      ${teilenummer?`<div class="product-partnr">Teilenr.: ${e(teilenummer)}</div>`:""}
       ${hinweistext?`<div class="product-note">${e(hinweistext)}</div>`:""}
       ${verkaufshinweis?`<div class="product-detail-row"><b>Hinweis:</b> ${e(verkaufshinweis)}</div>`:""}
     </div>
@@ -2358,11 +2271,6 @@ function closeAddWkrModal(){ document.getElementById("addWkrModal").classList.re
 function clearWkrForm(prefix){
   ["Marke","Standort","Bezeichnung","Reifen","Dimension","TN","Lagerort","Bild","VP","Angebotspreis","Nettopreis","EmpfaengerMail","Hinweistext","Verkaufshinweis"].forEach(f=>{const el=document.getElementById(`${prefix}Wkr${f}`);if(el)el.value="";});
   const lager=document.getElementById(`${prefix}WkrLager`);if(lager)lager.value="0";
-  const misch=document.getElementById(`${prefix}WkrMisch`);if(misch)misch.checked=false;
-  const tnWrap=document.getElementById(`${prefix}WkrTNWrap`);if(tnWrap)tnWrap.style.display="block";
-  const mischWrap=document.getElementById(`${prefix}WkrMischWrap`);if(mischWrap)mischWrap.style.display="none";
-  const va=document.getElementById(`${prefix}WkrTNVA`);if(va)va.value="";
-  const ha=document.getElementById(`${prefix}WkrTNHA`);if(ha)ha.value="";
 }
 function openEditWkrModal(tn){
   const row=produkte.find(p=>clean(p["TN"])===clean(tn));
@@ -2373,20 +2281,7 @@ function openEditWkrModal(tn){
   document.getElementById("editWkrBezeichnung").value=clean(row["Bezeichnung"]);
   document.getElementById("editWkrReifen").value=clean(row["Reifen"]);
   document.getElementById("editWkrDimension").value=clean(row["Dimension"]);
-  const tn = clean(row["TN"]);
-const isMisch = tn.includes("_");
-document.getElementById("editWkrMisch").checked = isMisch;
-if(isMisch){
-  const parts = tn.split("_");
-  document.getElementById("editWkrTNVA").value = parts[0];
-  document.getElementById("editWkrTNHA").value = parts[1]||"";
-  document.getElementById("editWkrTNWrap").style.display = "none";
-  document.getElementById("editWkrMischWrap").style.display = "grid";
-} else {
-  document.getElementById("editWkrTN").value = tn;
-  document.getElementById("editWkrTNWrap").style.display = "block";
-  document.getElementById("editWkrMischWrap").style.display = "none";
-}
+  document.getElementById("editWkrTN").value=clean(row["TN"]);
   document.getElementById("editWkrLager").value=clean(row["Lager"]);
   document.getElementById("editWkrLagerort").value=clean(row["Lagerort"]);
   document.getElementById("editWkrBild").value=clean(row["Bild"]);
@@ -2476,10 +2371,7 @@ async function saveNewWkr(){
   const bezeichnung=clean(document.getElementById("newWkrBezeichnung").value);
   const reifenmarke=clean(document.getElementById("newWkrReifen").value);
   const dimension=clean(document.getElementById("newWkrDimension").value);
-  const isMisch = document.getElementById("newWkrMisch")?.checked;
-const tn = isMisch
-  ? clean(document.getElementById("newWkrTNVA").value) + "_" + clean(document.getElementById("newWkrTNHA").value)
-  : clean(document.getElementById("newWkrTN").value);
+  const tn=clean(document.getElementById("newWkrTN").value);
   const lager=clean(document.getElementById("newWkrLager").value);
   const lagerort=clean(document.getElementById("newWkrLagerort").value);
   const bild=clean(document.getElementById("newWkrBild").value);
@@ -2500,10 +2392,7 @@ async function saveEditedWkr(){
   const marke=clean(document.getElementById("editWkrMarke").value);
   const standort=clean(document.getElementById("editWkrStandort").value);
   const bezeichnung=clean(document.getElementById("editWkrBezeichnung").value);
-  const isMisch = document.getElementById("editWkrMisch")?.checked;
-const tn = isMisch
-  ? clean(document.getElementById("editWkrTNVA").value) + "_" + clean(document.getElementById("editWkrTNHA").value)
-  : clean(document.getElementById("editWkrTN").value);
+  const tn=clean(document.getElementById("editWkrTN").value);
   if(!marke||!standort||!bezeichnung||!tn){alert("Pflichtfelder ausfüllen.");return;}
   const updates={"Marke":marke,"Standort":standort,"Bezeichnung":bezeichnung,"Reifen":clean(document.getElementById("editWkrReifen").value),"Dimension":clean(document.getElementById("editWkrDimension").value),"TN":tn,"Lager":clean(document.getElementById("editWkrLager").value),"Lagerort":clean(document.getElementById("editWkrLagerort").value),"Bild":clean(document.getElementById("editWkrBild").value),"VP":clean(document.getElementById("editWkrVP").value),"Angebotspreis":clean(document.getElementById("editWkrAngebotspreis").value),"Nettopreis":clean(document.getElementById("editWkrNettopreis").value),"EmpfaengerMail":clean(document.getElementById("editWkrEmpfaengerMail").value),"Hinweistext":clean(document.getElementById("editWkrHinweistext").value),"Verkaufshinweis":clean(document.getElementById("editWkrVerkaufshinweis").value)};
   try{const res=await postToScript({sheet:"Produkte",keyField:"TN",keyValue:editingWkrTN,updates});if(res==="OK"||(res&&res.status==="OK")){const row=produkte.find(p=>clean(p["TN"])===clean(editingWkrTN));if(row)Object.assign(row,updates);editingWkrTN=tn;alert("WKR aktualisiert.");closeEditWkrModal();render();}else{alert("Fehler: "+JSON.stringify(res));}}catch(err){alert("Fehler: "+err.message);}
