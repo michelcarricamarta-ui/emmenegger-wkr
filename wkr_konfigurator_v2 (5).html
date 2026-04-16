@@ -2276,17 +2276,7 @@ function printReifenInventur(){
   w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Reifen Inventur</title><style>body{font-family:Arial,sans-serif;padding:20px;font-size:11px;}h2{margin-bottom:4px;}p{color:#666;margin-bottom:16px;}table{width:100%;border-collapse:collapse;}th{background:#1c69d4;color:white;padding:8px;text-align:left;font-size:10px;}td{padding:5px 7px;border-bottom:1px solid #eee;}tr:nth-child(even){background:#f9f9f9;}.actions{margin-bottom:16px;}button{background:#1c69d4;color:white;border:none;padding:8px 14px;cursor:pointer;margin-right:8px;}@media print{.actions{display:none;}}</style></head><body><div class="actions"><button onclick="window.print()">Drucken</button><button onclick="window.close()">Schliessen</button></div><h2>Reifen Inventurliste</h2><p>${filterInfo} — Datum: ${new Date().toLocaleDateString("de-CH")} — Einträge: ${data.length}</p><table><thead><tr><th>Standort</th><th>Typ</th><th>Hersteller</th><th>Profil</th><th>Grösse</th><th>Teilenummer</th><th>Anzahl</th><th>Lagerort</th><th>DOT</th><th>Aktiv</th><th>Bemerkung</th></tr></thead><tbody>${rows}</tbody></table></body></html>`);
   w.document.close();
 }
-}
 
-function printReifenInventur(){
-  const data = getReifenExportData();
-  const standort = clean(document.getElementById("exportReifenStandort")?.value);
-  const w = window.open("","_blank");
-  if(!w) return;
-  const rows = data.map(r => `<tr><td>${e(standortLabel(clean(r["Standort"])))}</td><td>${e(clean(r["Reifentyp"]))}</td><td>${e(clean(r["Hersteller"]))}</td><td>${e(clean(r["Profil"]))}</td><td>${e(tireSize(r))}</td><td>${e(clean(r["Teilenummer"]))}</td><td style="text-align:center;font-weight:700;color:${(parseInt(clean(r["Anzahl"]),10)||0)>0?"#16a34a":"#dc2626"}">${e(clean(r["Anzahl"]))}</td><td>${e(clean(r["DOT"]))}</td><td>${e(clean(r["Aktiv"])==="Ja"?"✓":"✗")}</td></tr>`).join("");
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Reifen Inventur</title><style>body{font-family:Arial,sans-serif;padding:20px;font-size:12px;}h2{margin-bottom:4px;}p{color:#666;margin-bottom:16px;}table{width:100%;border-collapse:collapse;}th{background:#1c69d4;color:white;padding:8px;text-align:left;font-size:11px;}td{padding:6px 8px;border-bottom:1px solid #eee;}tr:nth-child(even){background:#f9f9f9;}.actions{margin-bottom:16px;}button{background:#1c69d4;color:white;border:none;padding:8px 14px;cursor:pointer;margin-right:8px;}@media print{.actions{display:none;}}</style></head><body><div class="actions"><button onclick="window.print()">Drucken</button><button onclick="window.close()">Schliessen</button></div><h2>Reifen Inventurliste</h2><p>Standort: ${standort?standortLabel(standort):"Alle"} — Datum: ${new Date().toLocaleDateString("de-CH")}</p><table><thead><tr><th>Standort</th><th>Typ</th><th>Hersteller</th><th>Profil</th><th>Grösse</th><th>Teilenummer</th><th>Anzahl</th><th>DOT</th><th>Aktiv</th></tr></thead><tbody>${rows}</tbody></table></body></html>`);
-  w.document.close();
-}
 function renderAdminWkrItem(r){
   const lager=parseInt(clean(r["Lager"]),10)||0;
   const bild=clean(r["Bild"])||"https://via.placeholder.com/220x140?text=Rad";
