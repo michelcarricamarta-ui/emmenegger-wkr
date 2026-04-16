@@ -727,6 +727,13 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
     </div>
 
     <div id="adminLoginError" style="display:none; margin-top:12px; color:#dc2626; font-size:13px;"></div>
+    <div id="adminLoginSuccess" style="display:none; margin-top:12px; color:#16a34a; font-size:13px;"></div>
+
+    <div style="margin-top:10px; text-align:right;">
+      <button type="button" onclick="resetAdminPassword()" style="background:none; border:none; color:var(--accent); font-size:12px; cursor:pointer; text-decoration:underline; padding:0;">
+        Passwort vergessen?
+      </button>
+    </div>
 
     <div class="modal-actions">
       <button class="btn btn-secondary" type="button" onclick="closeAdminLoginModal()">Schliessen</button>
@@ -1101,11 +1108,46 @@ function activateAdminMode(){
    function closeAdminLoginModal(){
   const modal = document.getElementById("adminLoginModal");
   const errorBox = document.getElementById("adminLoginError");
+  const successBox = document.getElementById("adminLoginSuccess");
 
   if (modal) modal.classList.remove("open");
-  if (errorBox) {
-    errorBox.style.display = "none";
-    errorBox.textContent = "";
+  if (errorBox) { errorBox.style.display = "none"; errorBox.textContent = ""; }
+  if (successBox) { successBox.style.display = "none"; successBox.textContent = ""; }
+}
+
+async function resetAdminPassword(){
+  const emailInput = document.getElementById("adminEmail");
+  const errorBox = document.getElementById("adminLoginError");
+  const successBox = document.getElementById("adminLoginSuccess");
+
+  const email = emailInput ? emailInput.value.trim() : "";
+
+  if (errorBox)  { errorBox.style.display = "none";  errorBox.textContent = ""; }
+  if (successBox){ successBox.style.display = "none"; successBox.textContent = ""; }
+
+  if (!email) {
+    if (errorBox) {
+      errorBox.textContent = "Bitte zuerst die E-Mail-Adresse eingeben.";
+      errorBox.style.display = "block";
+    }
+    if (emailInput) emailInput.focus();
+    return;
+  }
+
+  try {
+    if (!window.firebaseAuth) throw new Error("Firebase nicht bereit.");
+    const { sendPasswordResetEmail } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js");
+    await sendPasswordResetEmail(window.firebaseAuth, email);
+    if (successBox) {
+      successBox.textContent = "Reset-Link wurde an " + email + " gesendet. Bitte E-Mail prüfen.";
+      successBox.style.display = "block";
+    }
+  } catch(err) {
+    let msg = "Fehler beim Senden des Reset-Links.";
+    if (err && err.code === "auth/user-not-found")  msg = "Keine Konto mit dieser E-Mail gefunden.";
+    if (err && err.code === "auth/invalid-email")   msg = "Ungültige E-Mail-Adresse.";
+    if (err && err.code === "auth/too-many-requests") msg = "Zu viele Versuche. Bitte später nochmals.";
+    if (errorBox) { errorBox.textContent = msg; errorBox.style.display = "block"; }
   }
 }
 
@@ -1229,6 +1271,8 @@ function applyFirebaseAdminState(){
 }
 
 window.applyFirebaseAdminState = applyFirebaseAdminState;
+// Logout-Funktion: Platzhalter — noch ohne Implementierung
+function logoutAdmin(){ /* TODO: Funktion noch nicht aktiv */ }
 /* ============================================================
    NAVIGATION
    ============================================================ */
@@ -1382,6 +1426,13 @@ function renderAdminSidebar(){
       <div class="admin-nav-label">Reifen</div>
       <button class="admin-nav-item ${sec==="reifen_list"?"active":""}" onclick="selectAdminSection('reifen_list')">
         <span class="nav-icon">⚫</span> ${e(t("admin_tires_all"))}
+      </button>
+    </div>
+
+    <div class="admin-nav-section" style="margin-top:auto; border-top:1px solid var(--border); padding-top:8px;">
+      <div class="admin-nav-label">Konto</div>
+      <button class="admin-nav-item" onclick="" style="color:var(--error); opacity:0.7; cursor:not-allowed;">
+        <span class="nav-icon">🚪</span> Logout
       </button>
     </div>
   </div>`;
