@@ -1719,8 +1719,8 @@ function renderWkrProduct(r){
     <div class="product-info">
       <div class="product-name">${e(bezeichnung)}</div>
       <div class="product-sub">${e(marke)}</div>
-      ${markeReifen?`<div class="product-sub">${e(markeReifen)}</div>`:""}
-      ${dimension?`<div class="product-sub" style="font-weight:700;">${e(dimension)}</div>`:""}
+      <div class="product-sub">${e(markeReifen)}</div>
+      <div class="product-sub" style="font-weight:700;">${e(dimension)}</div>
       ${hinweistext?`<div class="product-note">${e(hinweistext)}</div>`:""}
       ${verkaufshinweis?`<div class="product-detail-row"><b>Hinweis:</b> ${e(verkaufshinweis)}</div>`:""}
       ${teilenummer?`<div class="product-partnr">Teilenr.: ${e(teilenummer)}</div>`:""}
