@@ -643,56 +643,97 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
 /* ============================================================
    RESPONSIVE (non-admin)
    ============================================================ */
-@media (max-width: 900px) {
+@media (min-width: 601px) {
+  #menuToggle { display: none !important; }
+  #mobileMenu { display: none !important; }
+}
+   @media (max-width: 900px) {
   .product-item { flex-direction: column; }
   .product-right { width: 100%; text-align: left; }
   .summary-box { flex-direction: column; align-items: flex-start; }
   .filter-grid.wide { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 600px) {
-  .topbar-inner { padding: 0 16px; }
-  .app-shell { padding: 0 16px 40px; }
-  .hero { height: 240px; }
-  .hero-content { left: 24px; bottom: 24px; right: 24px; }
-  .hero-content h1 { font-size: 26px; }
-  .product-image-wrap img, .product-image-wrap { width: 100%; max-width: 280px; height: auto; }
-  .form-grid { grid-template-columns: 1fr; }
-  .filter-grid.wide { grid-template-columns: 1fr; }
-  .modal-box { padding: 20px; }
-}
-@media (min-width: 601px) {
-  #menuToggle { display: none !important; }
-  #mobileMenu { display: none !important; }
-}
-
-@media (max-width: 600px) {
-  .topbar-inner { padding: 0 12px; height: 56px; }
-  .topbar-logo img { height: 28px; }
-  .app-shell { padding: 0 12px 40px; }
-  .hero { height: 200px; border-radius: 10px; margin: 12px 0 20px; }
-  .hero-content { left: 16px; bottom: 16px; right: 16px; }
-  .hero-content h1 { font-size: 20px; }
-  .hero-content p { font-size: 13px; }
-  .card-grid { gap: 10px; }
-  .sel-card { min-width: calc(50% - 5px); min-height: 70px; padding: 16px 12px; font-size: 14px; }
-  .brand-card { min-width: calc(50% - 5px); min-height: 110px; }
-  .model-card { width: calc(50% - 5px); min-height: 170px; }
-  .model-card img { height: 100px; }
-  .product-item { flex-direction: column; gap: 12px; padding: 20px 0; }
-  .product-image-wrap { width: 100%; }
-  .product-image-wrap img { width: 100%; height: 200px; }
-  .product-right { width: 100%; text-align: left; }
-  .product-actions { flex-direction: row; flex-wrap: wrap; }
-  .price-main { font-size: 22px; }
-  .products-title { font-size: 20px; }
-  .btn { font-size: 13px; }
-  .modal-box { padding: 16px; border-radius: 12px; }
-  .modal-title { font-size: 18px; }
-  .form-grid { grid-template-columns: 1fr; }
-  .modal-actions { flex-direction: column; }
-  .modal-actions .btn { min-width: unset; }
-  #menuToggle { display: flex !important; }
+  /* TOPBAR */
+  .topbar-inner { padding: 0 12px; height: 52px; }
+  .topbar-logo img { height: 24px; }
+  .back-btn { padding: 6px 8px; font-size: 12px; }
+  .back-btn span { display: none; }
+  #darkToggle { width: 32px; height: 32px; font-size: 14px; }
+  #menuToggle { display: flex !important; width: 32px; height: 32px; }
   #desktopActions { display: none !important; }
+
+  /* LAYOUT */
+  .app-shell { padding: 0 12px 60px; }
+
+  /* HERO */
+  .hero { height: 180px; border-radius: 8px; margin: 10px 0 16px; }
+  .hero-content { left: 14px; bottom: 14px; right: 14px; }
+  .hero-content h1 { font-size: 18px; margin-bottom: 4px; }
+  .hero-content p { font-size: 12px; }
+
+  /* AUSWAHL KARTEN — 2 pro Zeile */
+  .section-title { font-size: 18px; margin: 24px 0 16px; }
+  .card-grid { gap: 8px; padding: 0; }
+  .sel-card { min-width: calc(50% - 4px); min-height: 64px; padding: 14px 10px; font-size: 13px; border-radius: 8px; }
+  .brand-card { min-width: calc(50% - 4px); min-height: 100px; padding: 16px 12px; }
+  .brand-card img { height: 36px; }
+  .brand-card .brand-name { font-size: 13px; }
+  .model-card { width: calc(50% - 4px); min-height: 160px; padding: 12px; }
+  .model-card img { height: 90px; }
+  .model-card .model-name { font-size: 13px; }
+
+  /* AUSWAHL BOX */
+  .summary-box { padding: 10px 12px; border-radius: 6px; }
+
+  /* PRODUKT LISTE */
+  .products-title { font-size: 17px; }
+  .products-meta { font-size: 11px; }
+  .product-item { flex-direction: column; gap: 10px; padding: 16px 0; }
+  .product-image-wrap { width: 100% !important; }
+  .product-image-wrap img { width: 100% !important; height: 200px !important; max-width: 100% !important; object-fit: contain; }
+  .product-no-image { width: 100%; }
+  .product-info { width: 100%; }
+  .product-right { width: 100% !important; text-align: left; }
+  .product-name { font-size: 15px; }
+  .product-sub { font-size: 13px; }
+  .price-main { font-size: 24px; }
+  .price-label { margin-top: 8px; }
+  .product-actions { flex-direction: row; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .product-actions .btn { flex: 1; min-width: 120px; }
+  .product-partnr { font-size: 12px; }
+
+  /* INFO SECTION */
+  .info-section { padding: 20px; margin-top: 30px; }
+  .info-section h2 { font-size: 18px; }
+  .info-section p { font-size: 13px; }
+
+  /* MODALS */
+  .modal-overlay { padding: 10px; align-items: flex-end; }
+  .modal-box { padding: 20px 16px; border-radius: 16px 16px 0 0; max-height: 92vh; }
+  .modal-box.wide { max-width: 100%; }
+  .modal-title { font-size: 17px; }
+  .form-grid { grid-template-columns: 1fr; gap: 10px; }
+  .modal-actions { flex-direction: column; gap: 8px; }
+  .modal-actions .btn { min-width: unset; width: 100%; }
+
+  /* FILTER */
+  .filter-grid { grid-template-columns: 1fr 1fr !important; }
+  .search-section { padding: 16px; border-radius: 10px; }
+  .search-section-title { font-size: 18px; }
+
+  /* ADMIN */
+  .admin-shell { margin: 0 -12px; }
+  .admin-content { padding: 12px; }
+  .admin-quick-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .admin-quick-card { padding: 12px; gap: 8px; }
+  .admin-quick-card .qc-icon { font-size: 18px; }
+  .admin-quick-card .qc-title { font-size: 12px; }
+  .admin-quick-card .qc-sub { font-size: 11px; }
+
+  /* MOBILE MENU */
+  #mobileMenu { top: 52px; }
+  #mobileMenu .login-btn { width: 100%; text-align: left; padding: 10px 12px; font-size: 13px; }
 }
 
 @media print {
