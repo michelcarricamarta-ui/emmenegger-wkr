@@ -71,7 +71,8 @@
    RESET & BASE
    ============================================================ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
+body { overflow-x: hidden; }
 body {
   font-family: var(--font-body);
   background: var(--bg);
@@ -176,7 +177,7 @@ body {
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   font-family: var(--font-body); font-size: 14px; font-weight: 600;
-  padding: 11px 20px; border-radius: var(--radius-sm); border: none;
+  padding: 11px 20px; border-radius: 3px; border: none;
   cursor: pointer; transition: var(--transition); text-decoration: none; white-space: nowrap;
 }
 .btn-primary { background: var(--accent); color: white; }
@@ -660,6 +661,63 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
   .modal-box { padding: 20px; }
 }
 @media print {
+   @media (max-width: 600px) {
+  /* Topbar */
+  .topbar-inner { padding: 0 12px; height: 56px; }
+  .topbar-logo img { height: 28px; }
+  .lang-switcher { display: none; }
+  .back-btn span { display: none; }
+  .back-btn { padding: 6px 10px; }
+  .login-btn { font-size: 11px; padding: 6px 8px; }
+
+  /* App shell */
+  .app-shell { padding: 0 12px 40px; }
+
+  /* Hero */
+  .hero { height: 200px; border-radius: 10px; margin: 12px 0 20px; }
+  .hero-content { left: 16px; bottom: 16px; right: 16px; }
+  .hero-content h1 { font-size: 20px; }
+  .hero-content p { font-size: 13px; }
+
+  /* Auswahl-Karten */
+  .card-grid { gap: 10px; }
+  .sel-card { min-width: calc(50% - 5px); min-height: 70px; padding: 16px 12px; font-size: 14px; }
+  .brand-card { min-width: calc(50% - 5px); min-height: 110px; }
+  .model-card { width: calc(50% - 5px); min-height: 170px; }
+  .model-card img { height: 100px; }
+
+  /* Summary Box */
+  .summary-box { flex-direction: column; padding: 12px; }
+  .summary-image { display: none; }
+
+  /* Auswahl horizontal scroll auf Mobile */
+  .summary-box > div:last-child { overflow-x: auto; padding-bottom: 4px; }
+  .summary-box > div:last-child > div:first-child { flex-wrap: nowrap; min-width: max-content; }
+
+  /* Produkt Liste */
+  .product-item { flex-direction: column; gap: 12px; padding: 20px 0; }
+  .product-image-wrap { width: 100%; }
+  .product-image-wrap img { width: 100%; height: 200px; }
+  .product-right { width: 100%; text-align: left; }
+  .product-actions { flex-direction: row; flex-wrap: wrap; }
+  .price-main { font-size: 22px; }
+  .products-title { font-size: 20px; }
+
+  /* Buttons */
+  .btn-lg { font-size: 14px; padding: 11px 16px; }
+  .btn { font-size: 13px; }
+
+  /* Modals */
+  .modal-box { padding: 16px; border-radius: 12px; }
+  .modal-title { font-size: 18px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .modal-actions { flex-direction: column; }
+  .modal-actions .btn { min-width: unset; }
+
+  /* Topbar Actions — weniger Buttons zeigen */
+#menuToggle { display: flex !important; }
+#desktopActions { display: none !important; }
+}
   .topbar, .back-btn, .mode-banner, .info-section, .admin-sidebar, .search-section { display: none !important; }
 }
 </style>
@@ -673,18 +731,32 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
       <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" alt="Emmenegger Logo">
     </div>
     <div class="topbar-actions">
-      <button id="backHomeBtn" class="back-btn" onclick="goToHome()">← <span data-i18n="back_home">Startseite</span></button>
-      <div class="lang-switcher">
-        <button class="lang-btn active" onclick="setLang('de')">DE</button>
-        <button class="lang-btn" onclick="setLang('fr')">FR</button>
-        <button class="lang-btn" onclick="setLang('en')">EN</button>
-      </div>
-      <button id="darkToggle" class="icon-btn" onclick="toggleDark()" title="Dunkelmodus">🌙</button>
-      <button id="internalLoginBtn" class="login-btn" onclick="activateInternalMode()"><span data-i18n="internal_login">Interner Login</span></button>
-      <button id="adminLoginBtn" class="login-btn" onclick="activateAdminMode()"><span data-i18n="admin_login">Admin Login</span></button>
-      <button id="publicViewBtn" class="login-btn" onclick="deactivateAllModes()" style="display:none;"><span data-i18n="public_view">Öffentlich</span></button>
-       <button id="adminLogoutBtn" class="login-btn" onclick="logoutAdmin()" style="display:none;">Logout</button>
+  <button id="backHomeBtn" class="back-btn" onclick="goToHome()">← <span data-i18n="back_home">Startseite</span></button>
+  <button id="darkToggle" class="icon-btn" onclick="toggleDark()" title="Dunkelmodus">🌙</button>
+  <button class="icon-btn" onclick="toggleMobileMenu()" id="menuToggle" style="display:none;font-size:20px;width:40px;height:40px;">☰</button>
+  <div id="desktopActions" style="display:flex;align-items:center;gap:8px;">
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="setLang('de')">DE</button>
+      <button class="lang-btn" onclick="setLang('fr')">FR</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
     </div>
+    <button id="internalLoginBtn" class="login-btn" onclick="activateInternalMode()"><span data-i18n="internal_login">Interner Login</span></button>
+    <button id="adminLoginBtn" class="login-btn" onclick="activateAdminMode()"><span data-i18n="admin_login">Admin Login</span></button>
+    <button id="publicViewBtn" class="login-btn" onclick="deactivateAllModes()" style="display:none;"><span data-i18n="public_view">Öffentlich</span></button>
+    <button id="adminLogoutBtn" class="login-btn" onclick="logoutAdmin()" style="display:none;">Logout</button>
+  </div>
+</div>
+<!-- Mobile Menu -->
+<div id="mobileMenu" style="display:none;position:fixed;top:56px;width:100%;left:0;right:0;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px;z-index:99;box-shadow:var(--shadow-md);flex-direction:column;gap:8px;">
+  <div class="lang-switcher" style="width:fit-content;">
+    <button class="lang-btn active" onclick="setLang('de')">DE</button>
+    <button class="lang-btn" onclick="setLang('fr')">FR</button>
+    <button class="lang-btn" onclick="setLang('en')">EN</button>
+  </div>
+  <button class="login-btn" onclick="activateInternalMode();toggleMobileMenu()"><span data-i18n="internal_login">Interner Login</span></button>
+  <button class="login-btn" onclick="activateAdminMode();toggleMobileMenu()"><span data-i18n="admin_login">Admin Login</span></button>
+  <button id="publicViewBtnMobile" class="login-btn" onclick="deactivateAllModes();toggleMobileMenu()" style="display:none;"><span data-i18n="public_view">Öffentlich</span></button>
+</div>
   </div>
 </header>
 
@@ -1271,6 +1343,10 @@ async function logoutAdmin(){
   if(!confirm("Wirklich ausloggen?")) return;
   await deactivateAllModes();
 }
+   function toggleMobileMenu(){
+  const m = document.getElementById("mobileMenu");
+  m.style.display = m.style.display === "flex" ? "none" : "flex";
+}
 /* ============================================================
    NAVIGATION
    ============================================================ */
@@ -1294,7 +1370,20 @@ function selectReihe(r){ state.reihe=r; state.modell=state.motor=null; render();
 function selectModell(m){ state.modell=m; state.motor=null; render(); }
 function selectMotor(m){ state.motor=m; render(); }
 function resetSelection(){ state.standort=state.marke=state.reihe=state.modell=state.motor=null; selectedProduct=null; closeAllModals(); render(); }
-
+function shareConfig(){
+  const params = new URLSearchParams();
+  if(state.marke)    params.set("marke", state.marke);
+  if(state.standort) params.set("standort", state.standort);
+  if(state.reihe)    params.set("reihe", state.reihe);
+  if(state.modell)   params.set("modell", state.modell);
+  if(state.motor)    params.set("motor", state.motor);
+  const url = window.location.href.split("?")[0] + "?" + params.toString();
+  navigator.clipboard.writeText(url).then(()=>{
+    alert("Link wurde kopiert! Einfach einfügen und teilen.");
+  }).catch(()=>{
+    prompt("Link zum Kopieren:", url);
+  });
+}
 /* ============================================================
    HERO & BRAND THEME
    ============================================================ */
@@ -1622,19 +1711,39 @@ function renderWkrFlow(){
   const tnList=[...new Set(mapping.filter(x=>clean(x["Marke"])===state.marke&&clean(x["Reihe"])===state.reihe&&clean(x["Modell"])===state.modell&&motorMatch(x["Motor"],state.motor)).map(x=>clean(x["TN"])).filter(Boolean))];
   const results=produkte.filter(p=>clean(p["Standort"])===state.standort&&clean(p["Marke"])===state.marke&&tnList.includes(clean(p["TN"])));
 
-  html+=`<div class="summary-box">
-    <div class="summary-data">
-      <div class="label">Ihre Auswahl</div>
-      <div class="summary-pills">
-        <span class="summary-pill">${e(state.marke)}</span>
-        <span class="summary-pill">${e(standortLabel(state.standort))}</span>
-        <span class="summary-pill">${e(state.reihe)}</span>
-        <span class="summary-pill">${e(fzCode)}</span>
-        <span class="summary-pill">${e(state.motor)}</span>
+  html+=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:16px 20px;margin-bottom:28px;box-shadow:var(--shadow-sm);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);">Ihre Auswahl</span>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-secondary btn-sm" onclick="shareConfig()">🔗 Teilen</button>
+        <button class="btn btn-secondary btn-sm" onclick="resetSelection()">✎ Auswahl ändern</button>
       </div>
-      <button class="btn btn-secondary btn-sm" onclick="resetSelection()">✎ Auswahl ändern</button>
     </div>
-    <div class="summary-image"><img src="${e(fzBild)}" alt="${e(fzCode)}"></div>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:20px;">
+      <div style="display:flex;align-items:stretch;gap:0;flex-wrap:wrap;border:1px solid var(--border);border-radius:3px;overflow:hidden;">
+        <div style="padding:10px 18px;border-right:1px solid var(--border);background:var(--surface-2);">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:2px;">Marke</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text-primary);">${e(state.marke)}</div>
+        </div>
+        <div style="padding:10px 18px;border-right:1px solid var(--border);background:var(--surface-2);">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:2px;">Standort</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text-primary);">${e(standortLabel(state.standort))}</div>
+        </div>
+        <div style="padding:10px 18px;border-right:1px solid var(--border);background:var(--surface-2);">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:2px;">Reihe</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text-primary);">${e(state.reihe)}</div>
+        </div>
+        <div style="padding:10px 18px;border-right:1px solid var(--border);background:var(--surface-2);">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:2px;">Modell</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text-primary);">${e(fzCode)}</div>
+        </div>
+        <div style="padding:10px 18px;background:var(--surface-2);">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:2px;">Motor</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text-primary);">${e(state.motor)}</div>
+        </div>
+      </div>
+      <img src="${e(fzBild)}" alt="${e(fzCode)}" style="height:80px;width:auto;object-fit:contain;border-radius:3px;flex-shrink:0;">
+    </div>
   </div>`;
 
   html+=`<div class="products-section">
@@ -2278,7 +2387,18 @@ document.querySelectorAll(".modal-overlay").forEach(overlay=>{
 
 /* ============================================================
    INIT
-   ============================================================ */
+============================================================ */
+   function loadFromUrl(){
+  try {
+    const p = new URLSearchParams(window.location.search);
+    if(p.get("marke"))    state.marke    = p.get("marke");
+    if(p.get("standort")) state.standort = p.get("standort");
+    if(p.get("reihe"))    state.reihe    = p.get("reihe");
+    if(p.get("modell"))   state.modell   = p.get("modell");
+    if(p.get("motor"))    state.motor    = p.get("motor");
+  } catch(e){}
+}
+loadFromUrl();
 initTheme();
 
 Promise.all([
