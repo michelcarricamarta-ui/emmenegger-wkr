@@ -685,7 +685,14 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
 
   /* AUSWAHL BOX */
   .summary-box { padding: 10px 12px; border-radius: 6px; }
-
+/* AUSWAHL BOX — Fahrzeugauswahl */
+  .summary-box > div:last-child { flex-direction: column; gap: 10px; }
+  .summary-box > div:last-child > div:first-child { flex-wrap: wrap; width: 100%; }
+  .summary-box > div:last-child > div:first-child > div { padding: 8px 12px; flex: 1; min-width: calc(50% - 1px); }
+  .summary-box > div:last-child img { width: 100% !important; height: 140px !important; object-fit: contain; border-radius: 6px; }
+  .summary-box > div:first-child { flex-direction: column; gap: 8px; align-items: flex-start; }
+  .summary-box > div:first-child > div { flex-direction: column; gap: 6px; width: 100%; }
+  .summary-box > div:first-child button { width: 100%; justify-content: center; }
   /* PRODUKT LISTE */
   .products-title { font-size: 17px; }
   .products-meta { font-size: 11px; }
