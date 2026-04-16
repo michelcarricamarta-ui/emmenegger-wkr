@@ -1297,8 +1297,16 @@ async function submitAdminLogin(){
       throw new Error("Firebase ist noch nicht geladen.");
     }
 
-    await window.firebaseSetPersistence(window.firebaseAuth, window.firebaseBrowserLocalPersistence);
-    await window.firebaseSignInWithEmailAndPassword(window.firebaseAuth, email, password);
+    await window.firebaseSetPersistence(
+      window.firebaseAuth,
+      window.firebaseBrowserLocalPersistence
+    );
+
+    await window.firebaseSignInWithEmailAndPassword(
+      window.firebaseAuth,
+      email,
+      password
+    );
 
     window.isFirebaseAdminLoggedIn = true;
     adminMode = true;
@@ -1319,50 +1327,6 @@ async function submitAdminLogin(){
 
     const internalFields = document.getElementById("internalFields");
     if (internalFields) internalFields.style.display = "none";
-
-    closeAdminLoginModal();
-    render();
-
-  } catch (err) {
-    let msg = "Login fehlgeschlagen.";
-
-    if (err && err.code === "auth/invalid-credential") msg = "E-Mail oder Passwort ist falsch.";
-    if (err && err.code === "auth/user-not-found") msg = "Benutzer wurde nicht gefunden.";
-    if (err && err.code === "auth/wrong-password") msg = "E-Mail oder Passwort ist falsch.";
-    if (err && err.code === "auth/invalid-email") msg = "Ungültige E-Mail-Adresse.";
-    if (err && err.code === "auth/too-many-requests") msg = "Zu viele Versuche. Bitte später nochmals probieren.";
-
-    if (errorBox) {
-      errorBox.textContent = msg;
-      errorBox.style.display = "block";
-    } else {
-      alert(msg);
-    }
-  }
-}
-  try {
-    if (!window.firebaseAuth || !window.firebaseSignInWithEmailAndPassword) {
-      throw new Error("Firebase ist noch nicht geladen.");
-    }
-
-    await window.firebaseSetPersistence(window.firebaseAuth, window.firebaseBrowserLocalPersistence);
-await window.firebaseSignInWithEmailAndPassword(window.firebaseAuth, email, password);
-
-    adminMode = true;
-    internalMode = false;
-    state.internalSection = null;
-    state.adminSection = "dashboard";
-
-    document.getElementById("publicViewBtn").style.display = "inline-block";
-
-const logoutBtn = document.getElementById("adminLogoutBtn");
-if (logoutBtn) logoutBtn.style.display = "inline-block";
-
-const publicBtnMobile = document.getElementById("publicViewBtnMobile");
-if (publicBtnMobile) publicBtnMobile.style.display = "inline-block";
-
-showModeBanner("admin");
-document.getElementById("internalFields").style.display = "none";
 
     closeAdminLoginModal();
     render();
