@@ -1918,8 +1918,9 @@ function renderAdminWkrItem(r){
     <div class="product-image-wrap"><img src="${e(bild)}" alt="${e(bezeichnung)}" onclick="toggleZoom(this)"></div>
     <div class="product-info">
       <div class="product-name">${e(bezeichnung)}</div>
-    ${markeReifen?`<div class="product-sub">${e(markeReifen)}</div>`:""}
-    ${dimension?`<div class="product-sub" style="font-weight:700;">${e(dimension)}</div>`:""}
+      <div class="product-sub">${e(marke)}</div>
+      <div class="product-sub">${e(markeReifen)}</div>
+      <div class="product-sub" style="font-weight:700;">${e(dimension)}</div>
       <div class="product-detail-row"><b>Standort:</b> ${e(standort)}</div>
       ${lagerort?`<div class="product-detail-row"><b>Lagerort:</b> ${e(lagerort)}</div>`:""}
       ${teilenummer?`<div class="product-partnr">Teilenr.: ${e(teilenummer)}</div>`:""}
