@@ -1134,7 +1134,8 @@ async function submitAdminLogin(){
       throw new Error("Firebase ist noch nicht geladen.");
     }
 
-    await window.firebaseSignInWithEmailAndPassword(window.firebaseAuth, email, password);
+    await window.firebaseSetPersistence(window.firebaseAuth, window.firebaseBrowserLocalPersistence);
+await window.firebaseSignInWithEmailAndPassword(window.firebaseAuth, email, password);
 
     adminMode = true;
     internalMode = false;
@@ -2197,7 +2198,7 @@ Promise.all([
 </script>
    <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyADRZKpIOpebCWLG7lDFgxKb-LiIkzGeYk",
@@ -2213,9 +2214,11 @@ Promise.all([
   const firebaseAuth = getAuth(firebaseApp);
 
   window.firebaseAuth = firebaseAuth;
-  window.firebaseSignInWithEmailAndPassword = signInWithEmailAndPassword;
-  window.firebaseOnAuthStateChanged = onAuthStateChanged;
-  window.firebaseSignOut = signOut;
+window.firebaseSignInWithEmailAndPassword = signInWithEmailAndPassword;
+window.firebaseOnAuthStateChanged = onAuthStateChanged;
+window.firebaseSignOut = signOut;
+window.firebaseSetPersistence = setPersistence;
+window.firebaseBrowserLocalPersistence = browserLocalPersistence;
 </script>
 </body>
 </html>
