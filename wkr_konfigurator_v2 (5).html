@@ -307,7 +307,17 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
   transition: background 0.2s;
 }
 .lightbox-close:hover { background: rgba(255,255,255,0.3); }
-.product-image-wrap img.zoomed { /* replaced by lightbox */ }
+.product-image-wrap { overflow: visible; }
+.product-image-wrap img.zoomed {
+  transform: scale(2);
+  transform-origin: center center;
+  z-index: 50;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+  cursor: zoom-out;
+  border-radius: var(--radius-md);
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), box-shadow 0.3s ease;
+}
 .product-no-image { width: 210px; height: 170px; display: flex; align-items: center; justify-content: center; background: var(--surface-3); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-muted); font-size: 12px; text-align: center; padding: 12px; }
 .product-info { flex: 1; min-width: 0; }
 .product-tag { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; padding: 3px 8px; border-radius: 4px; margin-bottom: 8px; background: var(--surface-3); color: var(--text-muted); }
@@ -317,7 +327,7 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
 .product-detail-row { font-size: 13px; color: var(--text-secondary); margin-bottom: 5px; display: flex; gap: 6px; }
 .product-detail-row b { color: var(--text-primary); font-weight: 600; min-width: 80px; }
 .product-note { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-top: 10px; white-space: pre-line; background: var(--surface-2); border-left: 3px solid var(--border-strong); padding: 8px 12px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
-.product-partnr { font-size: 12px; color: var(--text-secondary); margin-top: 10px; font-family: var(--font-body); font-weight: 600; background: var(--surface-3); border: 1px solid var(--border); display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; letter-spacing: 0.3px; }
+.product-partnr { font-size: 13px; color: var(--text-primary); margin-top: 10px; font-family: var(--font-body); font-weight: 700; background: var(--surface-3); border: 1px solid var(--border-strong); display: inline-block; padding: 5px 12px; border-radius: var(--radius-sm); }
 .dot-warning { font-size: 12px; font-weight: 700; color: var(--error); margin-top: 8px; }
 .dot-ok { font-size: 12px; font-weight: 700; color: var(--success); margin-top: 8px; }
 .product-right { width: 220px; flex-shrink: 0; text-align: right; }
@@ -1487,7 +1497,7 @@ function renderWkrProduct(r){
       <div class="product-sub">${e(markeReifen)} · ${e(dimension)}</div>
       ${hinweistext?`<div class="product-note">${e(hinweistext)}</div>`:""}
       ${verkaufshinweis?`<div class="product-detail-row"><b>Hinweis:</b> ${e(verkaufshinweis)}</div>`:""}
-      ${teilenummer?`<div class="product-partnr"># ${e(teilenummer)}</div>`:""}
+      ${teilenummer?`<div class="product-partnr">Teilenr.: ${e(teilenummer)}</div>`:""}
     </div>
     <div class="product-right">
       <div class="price-label">${e(t("price_set"))}</div>
@@ -1574,7 +1584,7 @@ function renderTireProduct(r,isInternal){
       <div class="product-detail-row"><b>An Lager:</b> ${e(anzahl||"0")}</div>
       <div class="product-detail-row"><b>Standort:</b> ${e(standort)}</div>
       ${lagerort?`<div class="product-detail-row"><b>Lagerort:</b> ${e(lagerort)}</div>`:""}
-      ${teilenummer?`<div class="product-partnr"># ${e(teilenummer)}</div>`:""}
+      ${teilenummer?`<div class="product-partnr">Teilenr.: ${e(teilenummer)}</div>`:""}
       ${dotHtml}
       ${isAdmin?`<div class="product-detail-row"><b>Status:</b> <span class="${aktiv==="Ja"?"badge badge-success":"badge badge-error"}">${aktiv==="Ja"?"Aktiv":"Inaktiv"}</span></div>`:""}
       ${isAdmin&&bemerkung&&bemerkungSichtbar==="Ja"?`<div class="product-note">${e(bemerkung)}</div>`:""}
@@ -1685,7 +1695,7 @@ function renderAdminWkrItem(r){
       <div class="product-sub">${e(marke)} · ${e(markeReifen)} · ${e(dimension)}</div>
       <div class="product-detail-row"><b>Standort:</b> ${e(standort)}</div>
       ${lagerort?`<div class="product-detail-row"><b>Lagerort:</b> ${e(lagerort)}</div>`:""}
-      ${teilenummer?`<div class="product-partnr"># ${e(teilenummer)}</div>`:""}
+      ${teilenummer?`<div class="product-partnr">Teilenr.: ${e(teilenummer)}</div>`:""}
       ${hinweistext?`<div class="product-note">${e(hinweistext)}</div>`:""}
       ${verkaufshinweis?`<div class="product-detail-row"><b>Hinweis:</b> ${e(verkaufshinweis)}</div>`:""}
     </div>
@@ -1708,12 +1718,19 @@ function renderAdminWkrItem(r){
    IMAGE ZOOM
    ============================================================ */
 function toggleZoom(img){
-  const lb = document.createElement("div");
-  lb.className = "lightbox-overlay";
-  lb.innerHTML = `<button class="lightbox-close" onclick="this.parentElement.remove()">✕</button><img src="${img.src}" alt="${img.alt}">`;
-  lb.addEventListener("click", function(e){ if(e.target === lb) lb.remove(); });
-  document.addEventListener("keydown", function esc(e){ if(e.key==="Escape"){ lb.remove(); document.removeEventListener("keydown",esc); } });
-  document.body.appendChild(lb);
+  document.querySelectorAll(".zoomed").forEach(el => {
+    if(el !== img) el.classList.remove("zoomed");
+  });
+  const isOpen = img.classList.toggle("zoomed");
+  if(isOpen){
+    function closeOnOutside(e){
+      if(!img.contains(e.target)){
+        img.classList.remove("zoomed");
+        document.removeEventListener("click", closeOnOutside);
+      }
+    }
+    setTimeout(() => document.addEventListener("click", closeOnOutside), 50);
+  }
 }
 /* ============================================================
    MODAL: INQUIRY
@@ -2032,7 +2049,7 @@ function printWkrLabel(tn){
   const lager=clean(r["Lager"]);
   const w=window.open("","_blank","width=900,height=700");
   if(!w){alert("Popup blockiert.");return;}
-  w.document.write(`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>WKR Etikette</title><style>@page{size:100mm 73mm;margin:0;}html,body{width:100mm;height:73mm;margin:0;padding:0;font-family:Arial,sans-serif;background:white;}.wrap{width:100mm;height:73mm;box-sizing:border-box;padding:5mm;}.title{font-size:13pt;font-weight:700;margin-bottom:2mm;}.line{font-size:10pt;margin-bottom:1.5mm;}.tn{font-size:10pt;font-weight:700;margin-top:2mm;}.barcode-wrap{margin-top:2mm;text-align:center;border-top:1px solid #ddd;padding-top:1mm;}.barcode{width:70mm;height:10mm;display:block;margin:0 auto;}.tn-text{font-size:8pt;margin-top:0.8mm;font-weight:700;}.actions{position:fixed;right:10px;top:10px;display:flex;gap:8px;}.actions button{border:none;background:#1c69d4;color:white;padding:10px 14px;font-size:13px;cursor:pointer;}.actions button.sec{background:#666;}@media print{.actions{display:none;}}</style></head><body><div class="actions"><button onclick="window.print()">Drucken</button><button class="sec" onclick="window.close()">Schliessen</button></div><div class="wrap"><div class="title">${e(bezeichnung)}</div><div class="line">${e(markeReifen)} · ${e(dimension)}</div>${lager?`<div class="line"><b>Lagerbestand:</b> ${e(lager)}</div>`:""}<div class="tn"># ${e(teilenummer)}</div><div class="barcode-wrap"><svg id="barcode" class="barcode"></svg><div class="tn-text">${e(teilenummer)}</div></div></div><script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script><script>if(${JSON.stringify(!!teilenummer)})JsBarcode("#barcode",${JSON.stringify(teilenummer)},{format:"CODE128",displayValue:false,margin:0,width:1.15,height:26});<\/script></body></html>`);
+  w.document.write(`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>WKR Etikette</title><style>@page{size:100mm 73mm;margin:0;}html,body{width:100mm;height:73mm;margin:0;padding:0;font-family:Arial,sans-serif;background:white;}.wrap{width:100mm;height:73mm;box-sizing:border-box;padding:5mm;}.title{font-size:13pt;font-weight:700;margin-bottom:2mm;}.line{font-size:10pt;margin-bottom:1.5mm;}.tn{font-size:10pt;font-weight:700;margin-top:2mm;}.barcode-wrap{margin-top:2mm;text-align:center;border-top:1px solid #ddd;padding-top:1mm;}.barcode{width:70mm;height:10mm;display:block;margin:0 auto;}.tn-text{font-size:8pt;margin-top:0.8mm;font-weight:700;}.actions{position:fixed;right:10px;top:10px;display:flex;gap:8px;}.actions button{border:none;background:#1c69d4;color:white;padding:10px 14px;font-size:13px;cursor:pointer;}.actions button.sec{background:#666;}@media print{.actions{display:none;}}</style></head><body><div class="actions"><button onclick="window.print()">Drucken</button><button class="sec" onclick="window.close()">Schliessen</button></div><div class="wrap"><div class="title">${e(bezeichnung)}</div><div class="line">${e(markeReifen)} · ${e(dimension)}</div>${lager?`<div class="line"><b>Lagerbestand:</b> ${e(lager)}</div>`:""}<div class="tn">Teilenr.: ${e(teilenummer)}</div><div class="barcode-wrap"><svg id="barcode" class="barcode"></svg><div class="tn-text">${e(teilenummer)}</div></div></div><script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script><script>if(${JSON.stringify(!!teilenummer)})JsBarcode("#barcode",${JSON.stringify(teilenummer)},{format:"CODE128",displayValue:false,margin:0,width:1.15,height:26});<\/script></body></html>`);
   w.document.close();
 }
 
