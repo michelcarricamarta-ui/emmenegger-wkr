@@ -1180,7 +1180,34 @@ function showModeBanner(type){
   el.className=`mode-banner ${type}`;
   el.textContent=type==="admin"?t("admin_mode_active"):t("internal_mode_active");
 }
+function applyFirebaseAdminState(){
+  if (window.isFirebaseAdminLoggedIn) {
+    adminMode = true;
+    internalMode = false;
+    state.internalSection = null;
 
+    if (!state.adminSection) {
+      state.adminSection = "dashboard";
+    }
+
+    const publicBtn = document.getElementById("publicViewBtn");
+    if (publicBtn) publicBtn.style.display = "inline-block";
+
+    const internalFields = document.getElementById("internalFields");
+    if (internalFields) internalFields.style.display = "none";
+
+    showModeBanner("admin");
+  } else {
+    if (adminMode) {
+      adminMode = false;
+      state.adminSection = null;
+    }
+  }
+
+  render();
+}
+
+window.applyFirebaseAdminState = applyFirebaseAdminState;
 /* ============================================================
    NAVIGATION
    ============================================================ */
@@ -2191,7 +2218,11 @@ Promise.all([
   mapping=Array.isArray(m)?m:[];
   fahrzeuge=Array.isArray(f)?f:[];
   reifen=Array.isArray(r)?r:[];
+ if (window.isFirebaseAdminLoggedIn) {
+  applyFirebaseAdminState();
+} else {
   render();
+}
 }).catch(()=>{
   document.getElementById("app").innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div>Daten konnten nicht geladen werden. Bitte Seite neu laden.</div>`;
 });
@@ -2219,6 +2250,18 @@ window.firebaseOnAuthStateChanged = onAuthStateChanged;
 window.firebaseSignOut = signOut;
 window.firebaseSetPersistence = setPersistence;
 window.firebaseBrowserLocalPersistence = browserLocalPersistence;
+
+window.firebaseOnAuthStateChanged(firebaseAuth, (user) => {
+  if (user) {
+    window.isFirebaseAdminLoggedIn = true;
+  } else {
+    window.isFirebaseAdminLoggedIn = false;
+  }
+
+  if (typeof window.applyFirebaseAdminState === "function") {
+    window.applyFirebaseAdminState();
+  }
+});
 </script>
 </body>
 </html>
