@@ -1,0 +1,2047 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WKR Konfigurator</title>
+
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<style>
+/* ============================================================
+   CSS VARIABLES & THEME
+   ============================================================ */
+:root {
+  --bmw-blue: #1c69d4;
+  --bmw-blue-dark: #1557b0;
+  --mini-black: #111111;
+
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --surface-2: #f8f9fb;
+  --surface-3: #f0f2f5;
+  --border: #e2e6ed;
+  --border-strong: #c8cdd6;
+  --text-primary: #1a1d23;
+  --text-secondary: #5a6070;
+  --text-muted: #8a93a6;
+  --accent: #1c69d4;
+  --accent-hover: #1557b0;
+  --success: #16a34a;
+  --success-bg: #f0fdf4;
+  --error: #dc2626;
+  --error-bg: #fef2f2;
+  --warning: #d97706;
+  --warning-bg: #fffbeb;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.06);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --font-body: Arial, sans-serif;
+  --font-display: Arial, sans-serif;
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] {
+  --bg: #0f1117;
+  --surface: #1a1d26;
+  --surface-2: #1f2230;
+  --surface-3: #252838;
+  --border: #2e3245;
+  --border-strong: #3d4260;
+  --text-primary: #e8eaf0;
+  --text-secondary: #9ba3b8;
+  --text-muted: #6b7385;
+  --accent: #4d8ef0;
+  --accent-hover: #3a7de8;
+  --success: #22c55e;
+  --success-bg: #0d2618;
+  --error: #f87171;
+  --error-bg: #2d1010;
+  --warning: #fbbf24;
+  --warning-bg: #2d1f08;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.5);
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text-primary);
+  line-height: 1.6;
+  transition: background var(--transition), color var(--transition);
+  min-height: 100vh;
+}
+.topbar, .sel-card, .btn-primary, .btn-outline, .summary-pill, .section-title {
+  transition: background 0.35s ease, color 0.35s ease, border-color 0.35s ease, filter 0.35s ease;
+}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.app-shell {
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 0 32px 80px;
+}
+
+/* ============================================================
+   TOPBAR
+   ============================================================ */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition: background var(--transition);
+}
+.topbar-inner {
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.topbar-logo img { height: 36px; width: auto; display: block; }
+.topbar-actions { display: flex; align-items: center; gap: 8px; }
+.back-btn {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 600; color: var(--accent);
+  background: none; border: 1px solid var(--border);
+  padding: 7px 14px; border-radius: var(--radius-sm);
+  cursor: pointer; transition: var(--transition); white-space: nowrap;
+}
+.back-btn:hover { background: var(--surface-3); }
+.icon-btn {
+  width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition);
+  color: var(--text-secondary); font-size: 15px;
+}
+.icon-btn:hover { background: var(--surface-3); color: var(--text-primary); }
+.icon-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.login-btn {
+  font-size: 12px; font-weight: 600; color: var(--text-secondary);
+  background: var(--surface-2); border: 1px solid var(--border);
+  padding: 7px 12px; border-radius: var(--radius-sm);
+  cursor: pointer; transition: var(--transition);
+}
+.login-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--surface-3); }
+.mode-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 700; padding: 4px 10px;
+  border-radius: 20px; letter-spacing: 0.3px;
+}
+.mode-badge.internal { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
+.mode-badge.admin    { background: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
+[data-theme="dark"] .mode-badge.internal { background: #2d2000; color: #fbbf24; border-color: #92400e; }
+[data-theme="dark"] .mode-badge.admin    { background: #2d0a0a; color: #f87171; border-color: #7f1d1d; }
+
+/* ============================================================
+   HERO BANNER
+   ============================================================ */
+.hero {
+  position: relative; height: 340px;
+  border-radius: var(--radius-xl); overflow: hidden;
+  margin: 20px 0 32px; background-size: cover; background-position: center;
+  transition: background-image 0.5s ease;
+}
+.hero::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(105deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 60%, transparent 100%);
+}
+.hero-content {
+  position: absolute; left: 44px; bottom: 40px;
+  z-index: 2; color: white; max-width: 600px;
+}
+.hero-content h1 { font-family: var(--font-display); font-size: 36px; line-height: 1.15; margin-bottom: 10px; font-weight: 400; }
+.hero-content p   { font-size: 16px; opacity: 0.9; font-weight: 400; }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: var(--font-body); font-size: 14px; font-weight: 600;
+  padding: 11px 20px; border-radius: var(--radius-sm); border: none;
+  cursor: pointer; transition: var(--transition); text-decoration: none; white-space: nowrap;
+}
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.btn-secondary { background: var(--surface-3); color: var(--text-secondary); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--surface-2); color: var(--text-primary); }
+.btn-danger { background: var(--error-bg); color: var(--error); border: 1px solid var(--error); }
+.btn-danger:hover { background: var(--error); color: white; }
+.btn-disabled { background: var(--surface-3); color: var(--text-muted); cursor: not-allowed; pointer-events: none; border: 1px solid var(--border); }
+.btn-outline { background: transparent; color: var(--accent); border: 1.5px solid var(--accent); }
+.btn-outline:hover { background: var(--accent); color: white; }
+.btn-sm { font-size: 12px; padding: 7px 14px; }
+.btn-lg { font-size: 16px; padding: 14px 28px; }
+.btn-full { width: 100%; }
+
+/* ============================================================
+   MINI BRAND THEME
+   ============================================================ */
+body.mini-brand { --accent: #111111; --accent-hover: #2a2a2a; background: #f7f7f7; }
+body.mini-brand .topbar { background: #111111; border-bottom-color: #222; }
+body.mini-brand .topbar-logo img { filter: brightness(0) invert(1); }
+body.mini-brand .back-btn { color: #fff; border-color: #444; background: transparent; }
+body.mini-brand .back-btn:hover { background: #222; border-color: #666; }
+body.mini-brand .icon-btn { background: #222; border-color: #444; color: #ccc; }
+body.mini-brand .icon-btn:hover { background: #333; color: #fff; }
+body.mini-brand .icon-btn.active { background: #fff; border-color: #fff; color: #111; }
+body.mini-brand .login-btn { background: #222; border-color: #444; color: #ccc; }
+body.mini-brand .login-btn:hover { border-color: #fff; color: #fff; background: #333; }
+body.mini-brand .lang-switcher { background: #222; border-color: #444; }
+body.mini-brand .lang-btn { color: #888; }
+body.mini-brand .lang-btn.active { background: #fff; color: #111; }
+body.mini-brand .hero::after { background: linear-gradient(105deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.3) 60%, transparent 100%); }
+body.mini-brand .section-title { text-transform: uppercase; letter-spacing: 2px; font-size: 16px; color: #111; }
+body.mini-brand .sel-card { border-radius: 4px; border-top: 3px solid #111; background: #fff; }
+body.mini-brand .sel-card:hover { border-color: #111; box-shadow: 0 8px 24px rgba(0,0,0,0.18); transform: translateY(-3px); }
+body.mini-brand .brand-card .brand-name { letter-spacing: 3px; text-transform: uppercase; font-size: 13px; color: #111; }
+body.mini-brand .btn-primary { background: #111; color: #fff; border-radius: 2px; letter-spacing: 0.5px; }
+body.mini-brand .btn-primary:hover { background: #2a2a2a; }
+body.mini-brand .btn-outline { color: #111; border-color: #111; border-radius: 2px; }
+body.mini-brand .btn-outline:hover { background: #111; color: white; }
+body.mini-brand .btn-secondary { border-radius: 2px; }
+body.mini-brand .summary-pill { background: #111; color: #fff; border-color: #111; border-radius: 2px; letter-spacing: 0.5px; }
+body.mini-brand .price-main.sale { color: #111; }
+body.mini-brand .status-badge.in-stock { color: #111; }
+body.mini-brand .status-badge.in-stock::before { background: #111; }
+body.mini-brand .mode-banner.internal { background: #111; color: #fff; border-color: #333; }
+body.mini-brand .stat-card.accent { border-top-color: #111; }
+body.mini-brand .products-title { letter-spacing: 1px; }
+body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0.3s ease; }
+
+/* ============================================================
+   SELECTION CARDS
+   ============================================================ */
+.section-title { font-size: 22px; font-weight: 700; text-align: center; margin: 40px 0 28px; color: var(--text-primary); }
+.card-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-bottom: 40px; }
+.sel-card {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg); padding: 28px 36px;
+  cursor: pointer; min-width: 220px; min-height: 96px;
+  display: flex; flex-direction: column; justify-content: center;
+  align-items: center; text-align: center; font-size: 17px; font-weight: 700;
+  transition: var(--transition); box-shadow: var(--shadow-sm);
+  border-top: 3px solid var(--accent); gap: 10px;
+}
+.sel-card:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+.sel-card.mini-theme { border-top-color: var(--mini-black); }
+.sel-card.mini-theme:hover { border-color: var(--mini-black); }
+.brand-card { min-width: 200px; min-height: 140px; padding: 28px 32px; gap: 14px; }
+.brand-card img { height: 52px; width: auto; object-fit: contain; display: block; }
+.brand-card .brand-name { font-size: 16px; font-weight: 700; letter-spacing: 0.5px; color: var(--text-primary); }
+.sel-card-sub { font-size: 12px; font-weight: 500; color: var(--text-muted); }
+.model-card { width: 240px; min-height: 220px; padding: 18px; }
+.model-card img { width: 100%; height: 130px; object-fit: contain; margin-bottom: 12px; border-radius: var(--radius-sm); }
+.model-card .model-name { font-size: 15px; font-weight: 700; line-height: 1.3; }
+
+/* ============================================================
+   SUMMARY BOX
+   ============================================================ */
+.summary-box {
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 20px 24px;
+  margin-bottom: 28px; gap: 20px; box-shadow: var(--shadow-sm);
+}
+.summary-data { flex: 1; }
+.summary-data .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 10px; }
+.summary-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.summary-pill { background: var(--surface-3); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.summary-image img { width: 160px; height: 110px; object-fit: contain; border-radius: var(--radius-md); }
+
+/* ============================================================
+   PRODUCT LIST
+   ============================================================ */
+.products-section { margin-top: 8px; }
+.products-header { border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 6px; }
+.products-title { font-size: 28px; font-weight: 300; color: var(--text-primary); margin-bottom: 6px; font-family: var(--font-display); }
+.products-meta { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); flex-wrap: wrap; gap: 8px; }
+.product-item { display: flex; gap: 32px; border-bottom: 1px solid var(--border); padding: 36px 0; align-items: flex-start; transition: var(--transition); }
+.product-item:hover { background: transparent; }
+.product-item.sold-out { opacity: 0.5; filter: grayscale(100%); }
+.product-item.inactive-tire { opacity: 0.6; filter: grayscale(80%); background: var(--surface-2); border-radius: var(--radius-md); padding: 20px; margin-bottom: 8px; }
+.product-image-wrap { flex-shrink: 0; width: 210px; }
+.product-image-wrap img { width: 210px; height: 170px; object-fit: contain; border-radius: var(--radius-md); cursor: zoom-in; transition: var(--transition); }
+.product-image-wrap img.zoomed { transform: scale(2.8); transform-origin: center center; z-index: 50; position: relative; box-shadow: var(--shadow-lg); cursor: zoom-out; background: var(--surface); border-radius: 4px; }
+.product-no-image { width: 210px; height: 170px; display: flex; align-items: center; justify-content: center; background: var(--surface-3); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-muted); font-size: 12px; text-align: center; padding: 12px; }
+.product-info { flex: 1; min-width: 0; }
+.product-tag { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; padding: 3px 8px; border-radius: 4px; margin-bottom: 8px; background: var(--surface-3); color: var(--text-muted); }
+.product-brand-main { font-size: 22px; font-weight: 800; letter-spacing: -0.3px; text-transform: uppercase; color: var(--text-primary); margin-bottom: 4px; }
+.product-name { font-size: 17px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.product-sub { font-size: 14px; color: var(--text-secondary); margin-bottom: 10px; }
+.product-detail-row { font-size: 13px; color: var(--text-secondary); margin-bottom: 5px; display: flex; gap: 6px; }
+.product-detail-row b { color: var(--text-primary); font-weight: 600; min-width: 80px; }
+.product-note { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-top: 10px; white-space: pre-line; background: var(--surface-2); border-left: 3px solid var(--border-strong); padding: 8px 12px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+.product-partnr { font-size: 12px; color: var(--text-muted); margin-top: 10px; font-family: 'Courier New', monospace; background: var(--surface-3); display: inline-block; padding: 3px 8px; border-radius: 4px; }
+.dot-warning { font-size: 12px; font-weight: 700; color: var(--error); margin-top: 8px; }
+.dot-ok { font-size: 12px; font-weight: 700; color: var(--success); margin-top: 8px; }
+.product-right { width: 220px; flex-shrink: 0; text-align: right; }
+.price-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); margin-bottom: 6px; }
+.price-main { font-size: 26px; font-weight: 700; color: var(--text-primary); line-height: 1.1; margin-bottom: 4px; }
+.price-main.sale { color: var(--error); }
+.price-old { font-size: 14px; text-decoration: line-through; color: var(--text-muted); margin-bottom: 4px; }
+.price-vat { font-size: 11px; color: var(--text-muted); margin-bottom: 16px; }
+.status-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+.status-badge::before { content: ""; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.status-badge.in-stock { color: var(--success); }
+.status-badge.in-stock::before { background: var(--success); }
+.status-badge.order { color: var(--warning); }
+.status-badge.order::before { background: var(--warning); }
+.status-badge.unavailable { color: var(--text-muted); }
+.status-badge.unavailable::before { background: var(--text-muted); }
+.stock-count { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+.delivery-note-text { font-size: 11px; color: var(--text-muted); margin-bottom: 16px; }
+.product-actions { display: flex; flex-direction: column; gap: 8px; }
+
+/* ============================================================
+   TIRE SEARCH
+   ============================================================ */
+.search-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 28px; margin: 20px 0; box-shadow: var(--shadow-sm); }
+.search-section-title { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
+.search-section-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+.filter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; align-items: end; margin-bottom: 16px; }
+.filter-grid.wide { grid-template-columns: 2fr repeat(3, 1fr) auto auto; }
+.filter-field { display: flex; flex-direction: column; gap: 5px; }
+.filter-field label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+.filter-field input, .filter-field select { width: 100%; padding: 9px 12px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 13px; color: var(--text-primary); transition: var(--transition); }
+.filter-field input:focus, .filter-field select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(28, 105, 212, 0.12); background: var(--surface); }
+.filter-checkbox { display: flex; align-items: center; gap: 8px; padding-bottom: 2px; }
+.filter-checkbox input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+.filter-checkbox label { font-size: 13px; font-weight: 600; color: var(--text-secondary); cursor: pointer; text-transform: none; letter-spacing: 0; }
+.filter-actions { display: flex; gap: 8px; align-items: flex-end; }
+
+/* ============================================================
+   QTY SELECTOR
+   ============================================================ */
+.qty-wrap { margin-bottom: 14px; text-align: right; }
+.qty-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 5px; display: block; }
+.qty-select { width: 100%; max-width: 160px; padding: 8px 12px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; color: var(--text-primary); font-family: var(--font-body); cursor: pointer; }
+
+/* ============================================================
+   ADMIN SIDEBAR LAYOUT  ← NEU
+   ============================================================ */
+.admin-shell {
+  display: flex;
+  gap: 0;
+  min-height: calc(100vh - 64px);
+  margin: 0 -32px;
+}
+
+.admin-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 20px 0 40px;
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-sidebar-header {
+  padding: 0 20px 16px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+}
+
+.admin-sidebar-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.admin-sidebar-version {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* Stat badges strip */
+.admin-stat-strip {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-stat-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  gap: 6px;
+}
+
+.admin-stat-badge .sbl { color: var(--text-muted); font-weight: 500; flex: 1; }
+.admin-stat-badge .sbn { font-weight: 700; font-size: 13px; white-space: nowrap; }
+
+.admin-stat-badge.sbt-ok   { background: var(--success-bg); }
+.admin-stat-badge.sbt-ok .sbl, .admin-stat-badge.sbt-ok .sbn { color: var(--success); }
+.admin-stat-badge.sbt-warn { background: var(--warning-bg); }
+.admin-stat-badge.sbt-warn .sbl, .admin-stat-badge.sbt-warn .sbn { color: var(--warning); }
+.admin-stat-badge.sbt-err  { background: var(--error-bg); }
+.admin-stat-badge.sbt-err .sbl, .admin-stat-badge.sbt-err .sbn { color: var(--error); }
+.admin-stat-badge.sbt-neu  { background: var(--surface-3); }
+.admin-stat-badge.sbt-neu .sbl { color: var(--text-secondary); }
+.admin-stat-badge.sbt-neu .sbn { color: var(--text-primary); }
+
+/* Nav items */
+.admin-nav-section { padding: 8px 0; }
+
+.admin-nav-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  padding: 10px 20px 4px;
+}
+
+.admin-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  transition: var(--transition);
+  border-left: 3px solid transparent;
+  line-height: 1.3;
+}
+
+.admin-nav-item:hover {
+  background: var(--surface-2);
+  color: var(--text-primary);
+}
+
+.admin-nav-item.active {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--accent);
+  border-left-color: var(--accent);
+}
+
+.admin-nav-item .nav-icon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* Content area */
+.admin-content {
+  flex: 1;
+  min-width: 0;
+  padding: 28px 32px 60px;
+  overflow: hidden;
+}
+
+.admin-content-header {
+  margin-bottom: 20px;
+}
+
+.admin-content-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.admin-content-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Dashboard quick-access cards */
+.admin-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.admin-quick-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-quick-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.admin-quick-card .qc-icon { font-size: 24px; flex-shrink: 0; }
+.admin-quick-card .qc-title { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+.admin-quick-card .qc-sub   { font-size: 12px; color: var(--text-muted); }
+
+/* Responsive admin */
+@media (max-width: 900px) {
+  .admin-shell { flex-direction: column; margin: 0 -16px; }
+  .admin-sidebar {
+    width: 100%; height: auto; position: static;
+    border-right: none; border-bottom: 1px solid var(--border);
+    padding: 10px 0;
+  }
+  .admin-sidebar-header { padding: 0 12px 10px; }
+  .admin-stat-strip { flex-direction: row; flex-wrap: wrap; gap: 6px; padding: 8px 12px; }
+  .admin-stat-badge { font-size: 11px; }
+  .admin-nav-section { display: flex; flex-wrap: wrap; padding: 4px 8px; }
+  .admin-nav-label { display: none; }
+  .admin-nav-item {
+    width: auto; padding: 8px 12px; font-size: 12px;
+    border-left: none; border-bottom: 3px solid transparent; border-radius: var(--radius-sm);
+  }
+  .admin-nav-item.active { border-bottom-color: var(--accent); border-left-color: transparent; background: var(--surface-3); }
+  .admin-content { padding: 16px; }
+}
+
+/* ============================================================
+   MODALS
+   ============================================================ */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+.modal-overlay.open { display: flex; }
+.modal-box { background: var(--surface); border-radius: var(--radius-xl); padding: 32px; width: 100%; max-width: 580px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); border: 1px solid var(--border); animation: modalIn 0.25s cubic-bezier(0.4,0,0.2,1); }
+.modal-box.wide { max-width: 780px; }
+@keyframes modalIn { from { opacity: 0; transform: translateY(12px) scale(0.97); } to { opacity: 1; transform: none; } }
+.modal-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; color: var(--text-primary); }
+.modal-subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-grid .full { grid-column: 1 / -1; }
+.form-field { display: flex; flex-direction: column; gap: 5px; }
+.form-field label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-muted); }
+.form-field input, .form-field select, .form-field textarea { padding: 10px 12px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 13px; color: var(--text-primary); transition: var(--transition); width: 100%; }
+.form-field input:focus, .form-field select:focus, .form-field textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(28,105,212,0.1); background: var(--surface); }
+.form-field textarea { min-height: 80px; resize: vertical; }
+.required-note { font-size: 11px; color: var(--text-muted); margin: 12px 0; }
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+.modal-actions .btn { flex: 1; min-width: 100px; }
+
+/* ============================================================
+   INTERNAL BANNER
+   ============================================================ */
+.mode-banner { display: none; padding: 12px 20px; border-radius: var(--radius-md); margin: 16px 0 8px; font-size: 13px; font-weight: 700; text-align: center; letter-spacing: 0.2px; }
+.mode-banner.internal { background: #fff3cd; color: #856404; border: 1px solid #ffc107; display: block; }
+.mode-banner.admin { background: var(--error-bg); color: var(--error); border: 1px solid var(--error); display: block; }
+[data-theme="dark"] .mode-banner.internal { background: #2d1f00; color: #fbbf24; border-color: #78350f; }
+
+/* ============================================================
+   INFO SECTION
+   ============================================================ */
+.info-section { margin-top: 60px; max-width: 860px; padding: 32px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); }
+.info-section h2 { font-family: var(--font-display); font-size: 24px; font-weight: 400; margin-bottom: 16px; color: var(--text-primary); }
+.info-section p { font-size: 14px; line-height: 1.7; color: var(--text-secondary); margin-bottom: 12px; }
+
+/* ============================================================
+   DARK MODE
+   ============================================================ */
+[data-theme="dark"] .topbar { background: var(--surface); border-color: var(--border); }
+[data-theme="dark"] .hero::after { background: linear-gradient(105deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.25) 60%, transparent 100%); }
+
+/* ============================================================
+   LANG SWITCHER
+   ============================================================ */
+.lang-switcher { display: flex; gap: 2px; background: var(--surface-3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 2px; }
+.lang-btn { padding: 4px 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.3px; border: none; background: transparent; color: var(--text-muted); border-radius: 4px; cursor: pointer; transition: var(--transition); }
+.lang-btn.active { background: var(--surface); color: var(--text-primary); box-shadow: var(--shadow-sm); }
+
+/* ============================================================
+   STOCK WARNING
+   ============================================================ */
+.stock-warning-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning); border-radius: 20px; font-size: 11px; font-weight: 700; margin-left: 8px; }
+
+/* ============================================================
+   MISC
+   ============================================================ */
+.divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+.empty-state { text-align: center; padding: 48px 24px; color: var(--text-muted); font-size: 15px; }
+.empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; }
+.badge { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.badge-success { background: var(--success-bg); color: var(--success); }
+.badge-error   { background: var(--error-bg); color: var(--error); }
+.badge-warning { background: var(--warning-bg); color: var(--warning); }
+.badge-neutral { background: var(--surface-3); color: var(--text-muted); }
+
+/* ============================================================
+   RESPONSIVE (non-admin)
+   ============================================================ */
+@media (max-width: 900px) {
+  .product-item { flex-direction: column; }
+  .product-right { width: 100%; text-align: left; }
+  .summary-box { flex-direction: column; align-items: flex-start; }
+  .filter-grid.wide { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .topbar-inner { padding: 0 16px; }
+  .app-shell { padding: 0 16px 40px; }
+  .hero { height: 240px; }
+  .hero-content { left: 24px; bottom: 24px; right: 24px; }
+  .hero-content h1 { font-size: 26px; }
+  .product-image-wrap img, .product-image-wrap { width: 100%; max-width: 280px; height: auto; }
+  .form-grid { grid-template-columns: 1fr; }
+  .filter-grid.wide { grid-template-columns: 1fr; }
+  .modal-box { padding: 20px; }
+}
+@media print {
+  .topbar, .back-btn, .mode-banner, .info-section, .admin-sidebar, .search-section { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-logo">
+      <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" alt="Emmenegger Logo">
+    </div>
+    <div class="topbar-actions">
+      <button id="backHomeBtn" class="back-btn" onclick="goToHome()">← <span data-i18n="back_home">Startseite</span></button>
+      <div class="lang-switcher">
+        <button class="lang-btn active" onclick="setLang('de')">DE</button>
+        <button class="lang-btn" onclick="setLang('fr')">FR</button>
+        <button class="lang-btn" onclick="setLang('en')">EN</button>
+      </div>
+      <button id="darkToggle" class="icon-btn" onclick="toggleDark()" title="Dunkelmodus">🌙</button>
+      <button id="internalLoginBtn" class="login-btn" onclick="activateInternalMode()"><span data-i18n="internal_login">Interner Login</span></button>
+      <button id="adminLoginBtn" class="login-btn" onclick="activateAdminMode()"><span data-i18n="admin_login">Admin Login</span></button>
+      <button id="publicViewBtn" class="login-btn" onclick="deactivateAllModes()" style="display:none;"><span data-i18n="public_view">Öffentlich</span></button>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<div class="app-shell">
+  <div id="modeBanner" class="mode-banner"></div>
+  <div class="hero" id="heroBanner">
+    <div class="hero-content">
+      <h1 data-i18n="hero_title">Original Winterkompletträder</h1>
+      <p data-i18n="hero_sub">Perfekt auf Ihr Fahrzeug abgestimmt.</p>
+    </div>
+  </div>
+  <div id="app"></div>
+  <div class="info-section" id="infoSection">
+    <h2 data-i18n="info_title">Eiskalte Fahrfreude mit maximalem Grip</h2>
+    <p data-i18n="info_p1">Ob im Alltag, auf dem Weg in die Berge oder unterwegs zur Skipiste: Mit Original Winterkompletträdern bleiben Sie auch bei Schnee, Regen und tiefen Temperaturen sicher unterwegs.</p>
+    <p data-i18n="info_p2">Entdecken Sie jetzt über unseren Konfigurator die verfügbaren Angebote von Emmenegger und finden Sie die passenden Winterkompletträder für Ihr Fahrzeug.</p>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODALS (unverändert)
+     ============================================================ -->
+
+<!-- Inquiry modal -->
+<div id="inquiryModal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-title" data-i18n="modal_inquiry_title">Anfrage senden</div>
+    <div id="modalProductInfo" class="modal-subtitle"></div>
+    <div class="form-grid">
+      <div class="form-field"><label data-i18n="field_name">Name *</label><input id="kundeName" type="text" placeholder="Vorname Nachname"></div>
+      <div class="form-field"><label data-i18n="field_email">E-Mail *</label><input id="kundeEmail" type="email" placeholder="name@example.com"></div>
+      <div class="form-field"><label data-i18n="field_plate">Kontrollschild *</label><input id="kundeKontrollschild" type="text" placeholder="z. B. AG 123456"></div>
+      <div class="form-field"><label data-i18n="field_type">Art *</label><select id="kundeArt"><option value="Anfrage">Anfrage</option><option value="Bestellung">Bestellung</option></select></div>
+      <div class="form-field full"><label data-i18n="field_note">Bemerkung</label><textarea id="kundeBemerkung" placeholder="Zusätzliche Angaben"></textarea></div>
+    </div>
+    <div id="internalFields" style="display:none;">
+      <hr class="divider">
+      <div class="form-grid">
+        <div class="form-field"><label>Kundenname *</label><input id="internerKundenname" type="text" placeholder="Name Kunde"></div>
+        <div class="form-field"><label>Auftragsnummer *</label><input id="interneAuftragsnummer" type="text" placeholder="z. B. 123456"></div>
+        <div class="form-field"><label>Ordernummer / Fahrgestellnummer</label><input id="interneOrderOderFIN" type="text" placeholder="FIN oder Order"></div>
+        <div class="form-field"><label>Ablieferungsdatum</label><input id="internesAblieferdatum" type="date"></div>
+      </div>
+    </div>
+    <p class="required-note">* Pflichtfelder</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeInquiryModal()"><span data-i18n="btn_close">Schliessen</span></button>
+      <button class="btn btn-secondary" onclick="showOfferPreview()"><span data-i18n="btn_pdf">PDF Offerte</span></button>
+      <button id="sendBtn" class="btn btn-primary" onclick="sendMail()"><span data-i18n="btn_send">Senden</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Tire Modal -->
+<div id="addTireModal" class="modal-overlay">
+  <div class="modal-box wide">
+    <div class="modal-title">Neuen Reifen hinzufügen</div>
+    <div class="form-grid">
+      <div class="form-field"><label>Standort *</label><select id="newTireStandort"><option value="">Bitte wählen</option><option value="GEB">Gebenstorf</option><option value="HET">Hettenschwil</option></select></div>
+      <div class="form-field"><label>Reifentyp *</label><select id="newTireReifentyp"><option value="">Bitte wählen</option><option value="Sommer">Sommer</option><option value="Winter">Winter</option><option value="Allwetter">Allwetter</option></select></div>
+      <div class="form-field"><label>Hersteller *</label><select id="newTireHerstellerSelect" onchange="toggleNewTireOtherBrand()"><option value="">Bitte wählen</option><option value="Bridgestone">Bridgestone</option><option value="Continental">Continental</option><option value="Dunlop">Dunlop</option><option value="Goodyear">Goodyear</option><option value="Hankook">Hankook</option><option value="Michelin">Michelin</option><option value="Nexen">Nexen</option><option value="Pirelli">Pirelli</option><option value="Yokohama">Yokohama</option><option value="Andere">Andere</option></select></div>
+      <div class="form-field" id="newTireHerstellerOtherWrap" style="display:none;"><label>Anderer Hersteller *</label><input id="newTireHerstellerOther" type="text" placeholder="Hersteller eingeben"></div>
+      <div class="form-field"><label>Profil *</label><input id="newTireProfil" type="text" placeholder="z. B. SottoZero 3"></div>
+      <div class="form-field"><label>Profilbreite *</label><input id="newTireBreite" type="text" placeholder="225"></div>
+      <div class="form-field"><label>Querschnitt *</label><input id="newTireQuerschnitt" type="text" placeholder="45"></div>
+      <div class="form-field"><label>Zoll *</label><input id="newTireZoll" type="text" placeholder="18"></div>
+      <div class="form-field"><label>Lastindex</label><input id="newTireLastindex" type="text" placeholder="95"></div>
+      <div class="form-field"><label>Geschwindigkeitsindex</label><input id="newTireGeschwindigkeitsindex" type="text" placeholder="Y"></div>
+      <div class="form-field"><label>Runflat</label><select id="newTireRunflat"><option value="">Bitte wählen</option><option value="Ja">Ja</option><option value="Nein">Nein</option></select></div>
+      <div class="form-field"><label>DOT</label><input id="newTireDot" type="text" placeholder="12/24"></div>
+      <div class="form-field"><label>Teilenummer *</label><input id="newTireTeilenummer" type="text" placeholder="36115AABBCC"></div>
+      <div class="form-field"><label>Anzahl *</label><input id="newTireAnzahl" type="number" min="0" value="1"></div>
+      <div class="form-field"><label>EK Preis</label><input id="newTireEkPreis" type="text" placeholder="120"></div>
+      <div class="form-field"><label>VK Preis *</label><input id="newTireVkPreis" type="text" placeholder="180"></div>
+      <div class="form-field"><label>Aktiv *</label><select id="newTireAktiv"><option value="Ja" selected>Ja</option><option value="Nein">Nein</option></select></div>
+      <div class="form-field"><label>Bemerkung sichtbar</label><select id="newTireBemerkungSichtbar"><option value="Nein" selected>Nein</option><option value="Ja">Ja</option></select></div>
+      <div class="form-field full"><label>Bemerkung</label><textarea id="newTireBemerkung" placeholder="Freie Bemerkung"></textarea></div>
+    </div>
+    <p class="required-note">* Pflichtfelder</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeAddTireModal()">Schliessen</button>
+      <button class="btn btn-primary" onclick="saveNewTire()">Reifen speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Tire Modal -->
+<div id="editTireModal" class="modal-overlay">
+  <div class="modal-box wide">
+    <div class="modal-title">Reifen bearbeiten</div>
+    <div class="form-grid">
+      <div class="form-field"><label>Standort *</label><select id="editTireStandort"><option value="">Bitte wählen</option><option value="GEB">Gebenstorf</option><option value="HET">Hettenschwil</option></select></div>
+      <div class="form-field"><label>Reifentyp *</label><select id="editTireReifentyp"><option value="">Bitte wählen</option><option value="Sommer">Sommer</option><option value="Winter">Winter</option><option value="Allwetter">Allwetter</option></select></div>
+      <div class="form-field"><label>Hersteller *</label><select id="editTireHerstellerSelect" onchange="toggleEditTireOtherBrand()"><option value="">Bitte wählen</option><option value="Bridgestone">Bridgestone</option><option value="Continental">Continental</option><option value="Dunlop">Dunlop</option><option value="Goodyear">Goodyear</option><option value="Hankook">Hankook</option><option value="Michelin">Michelin</option><option value="Nexen">Nexen</option><option value="Pirelli">Pirelli</option><option value="Yokohama">Yokohama</option><option value="Andere">Andere</option></select></div>
+      <div class="form-field" id="editTireHerstellerOtherWrap" style="display:none;"><label>Anderer Hersteller *</label><input id="editTireHerstellerOther" type="text" placeholder="Hersteller eingeben"></div>
+      <div class="form-field"><label>Profil *</label><input id="editTireProfil" type="text" placeholder="SottoZero 3"></div>
+      <div class="form-field"><label>Profilbreite *</label><input id="editTireBreite" type="text" placeholder="225"></div>
+      <div class="form-field"><label>Querschnitt *</label><input id="editTireQuerschnitt" type="text" placeholder="45"></div>
+      <div class="form-field"><label>Zoll *</label><input id="editTireZoll" type="text" placeholder="18"></div>
+      <div class="form-field"><label>Lastindex</label><input id="editTireLastindex" type="text" placeholder="95"></div>
+      <div class="form-field"><label>Geschwindigkeitsindex</label><input id="editTireGeschwindigkeitsindex" type="text" placeholder="Y"></div>
+      <div class="form-field"><label>Runflat</label><select id="editTireRunflat"><option value="">Bitte wählen</option><option value="Ja">Ja</option><option value="Nein">Nein</option></select></div>
+      <div class="form-field"><label>DOT</label><input id="editTireDot" type="text" placeholder="12/24"></div>
+      <div class="form-field"><label>Teilenummer *</label><input id="editTireTeilenummer" type="text" placeholder="36115AABBCC"></div>
+      <div class="form-field"><label>Anzahl *</label><input id="editTireAnzahl" type="number" min="0"></div>
+      <div class="form-field"><label>EK Preis</label><input id="editTireEkPreis" type="text" placeholder="120"></div>
+      <div class="form-field"><label>VK Preis *</label><input id="editTireVkPreis" type="text" placeholder="180"></div>
+      <div class="form-field"><label>Aktiv *</label><select id="editTireAktiv"><option value="Ja">Ja</option><option value="Nein">Nein</option></select></div>
+      <div class="form-field"><label>Bemerkung sichtbar</label><select id="editTireBemerkungSichtbar"><option value="Nein">Nein</option><option value="Ja">Ja</option></select></div>
+      <div class="form-field full"><label>Bemerkung</label><textarea id="editTireBemerkung" placeholder="Freie Bemerkung"></textarea></div>
+    </div>
+    <p class="required-note">* Pflichtfelder</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeEditTireModal()">Schliessen</button>
+      <button class="btn btn-danger" onclick="deleteTire()">Löschen</button>
+      <button class="btn btn-primary" onclick="saveEditedTire()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add WKR Modal -->
+<div id="addWkrModal" class="modal-overlay">
+  <div class="modal-box wide">
+    <div class="modal-title">Neues Winterkomplettrad hinzufügen</div>
+    <div class="form-grid">
+      <div class="form-field"><label>Marke *</label><select id="newWkrMarke"><option value="">Bitte wählen</option><option value="BMW">BMW</option><option value="MINI">MINI</option></select></div>
+      <div class="form-field"><label>Standort *</label><select id="newWkrStandort"><option value="">Bitte wählen</option><option value="GEB">Gebenstorf</option><option value="HET">Hettenschwil</option></select></div>
+      <div class="form-field"><label>Bezeichnung *</label><input id="newWkrBezeichnung" type="text" placeholder="Bezeichnung"></div>
+      <div class="form-field"><label>Reifenmarke</label><input id="newWkrReifen" type="text" placeholder="z. B. Pirelli"></div>
+      <div class="form-field"><label>Dimension</label><input id="newWkrDimension" type="text" placeholder="Dimension"></div>
+      <div class="form-field"><label>Teilenummer (TN) *</label><input id="newWkrTN" type="text" placeholder="TN"></div>
+      <div class="form-field"><label>Lagerbestand</label><input id="newWkrLager" type="number" min="0" value="0"></div>
+      <div class="form-field"><label>Lagerort</label><input id="newWkrLagerort" type="text" placeholder="Regal A3 / Platz 12"></div>
+      <div class="form-field full"><label>Bild URL</label><input id="newWkrBild" type="text" placeholder="https://..."></div>
+      <div class="form-field"><label>VP</label><input id="newWkrVP" type="text" placeholder="2490"></div>
+      <div class="form-field"><label>Angebotspreis</label><input id="newWkrAngebotspreis" type="text" placeholder="2190"></div>
+      <div class="form-field"><label>Nettopreis</label><input id="newWkrNettopreis" type="text" placeholder="1850"></div>
+      <div class="form-field full"><label>Empfänger Mail</label><input id="newWkrEmpfaengerMail" type="email" placeholder="tv-g-fp@emmeneggerag.ch"></div>
+      <div class="form-field full"><label>Hinweistext</label><textarea id="newWkrHinweistext" placeholder="Freier Hinweistext"></textarea></div>
+      <div class="form-field full"><label>Verkaufshinweis</label><textarea id="newWkrVerkaufshinweis" placeholder="Interner / externer Hinweis"></textarea></div>
+    </div>
+    <p class="required-note">* Pflichtfelder</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeAddWkrModal()">Schliessen</button>
+      <button class="btn btn-primary" onclick="saveNewWkr()">WKR speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit WKR Modal -->
+<div id="editWkrModal" class="modal-overlay">
+  <div class="modal-box wide">
+    <div class="modal-title">Winterkomplettrad bearbeiten</div>
+    <div class="form-grid">
+      <div class="form-field"><label>Marke *</label><select id="editWkrMarke"><option value="">Bitte wählen</option><option value="BMW">BMW</option><option value="MINI">MINI</option></select></div>
+      <div class="form-field"><label>Standort *</label><select id="editWkrStandort"><option value="">Bitte wählen</option><option value="GEB">Gebenstorf</option><option value="HET">Hettenschwil</option></select></div>
+      <div class="form-field"><label>Bezeichnung *</label><input id="editWkrBezeichnung" type="text" placeholder="Bezeichnung"></div>
+      <div class="form-field"><label>Reifenmarke</label><input id="editWkrReifen" type="text" placeholder="z. B. Pirelli"></div>
+      <div class="form-field"><label>Dimension</label><input id="editWkrDimension" type="text" placeholder="Dimension"></div>
+      <div class="form-field"><label>Teilenummer (TN) *</label><input id="editWkrTN" type="text" placeholder="TN"></div>
+      <div class="form-field"><label>Lagerbestand</label><input id="editWkrLager" type="number" min="0"></div>
+      <div class="form-field"><label>Lagerort</label><input id="editWkrLagerort" type="text" placeholder="Regal A3 / Platz 12"></div>
+      <div class="form-field full"><label>Bild URL</label><input id="editWkrBild" type="text" placeholder="https://..."></div>
+      <div class="form-field"><label>VP</label><input id="editWkrVP" type="text" placeholder="2490"></div>
+      <div class="form-field"><label>Angebotspreis</label><input id="editWkrAngebotspreis" type="text" placeholder="2190"></div>
+      <div class="form-field"><label>Nettopreis</label><input id="editWkrNettopreis" type="text" placeholder="1850"></div>
+      <div class="form-field full"><label>Empfänger Mail</label><input id="editWkrEmpfaengerMail" type="email" placeholder="tv-g-fp@emmeneggerag.ch"></div>
+      <div class="form-field full"><label>Hinweistext</label><textarea id="editWkrHinweistext" placeholder="Freier Hinweistext"></textarea></div>
+      <div class="form-field full"><label>Verkaufshinweis</label><textarea id="editWkrVerkaufshinweis" placeholder="Interner / externer Hinweis"></textarea></div>
+    </div>
+    <p class="required-note">* Pflichtfelder</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeEditWkrModal()">Schliessen</button>
+      <button class="btn btn-danger" onclick="deleteWkr()">WKR löschen</button>
+      <button class="btn btn-primary" onclick="saveEditedWkr()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+/* ============================================================
+   CONSTANTS & CONFIG
+   ============================================================ */
+const URLS = {
+  produkte: "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Produkte",
+  mapping:  "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Zuordnung",
+  fahrzeuge:"https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Fahrzeuge",
+  reifen:   "https://opensheet.elk.sh/1LpvDu3OTGyfPsR-Fmd2Qn6EhvXzNZUqcyJ2EFngeiwU/Reifen"
+};
+
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw66JGYiZlVn7BtxsqYHiG0l_5n_gFlZZBDir6wLINdXG7T3ZSEhIZ3gcp0YKRPj214QA/exec";
+
+const AUTH = { internal: "28010", admin: "159357" };
+
+const HERO_IMAGES = {
+  start: "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/WINTER%20Ix3.jpg?raw=true",
+  BMW:   "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/2026-bmw-ix3-snow-driving-04.jpg?raw=true",
+  MINI:  "https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/MINI%20Countrymann.jpg?raw=true"
+};
+
+const TIRE_IMAGE_BASE = "https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/";
+const TIRE_IMAGES = {
+  "bridgestone_sommer": TIRE_IMAGE_BASE+"bridgestone_Sommer.jpg",
+  "bridgestone_winter": TIRE_IMAGE_BASE+"bridgestone_Winter.jpg",
+  "continental_sommer": TIRE_IMAGE_BASE+"continental_Sommer.jpg",
+  "continental_winter": TIRE_IMAGE_BASE+"continental_Winter.jpg",
+  "dunlop_sommer":      TIRE_IMAGE_BASE+"dunlop_Sommer.jpg",
+  "dunlop_winter":      TIRE_IMAGE_BASE+"dunlop_Winter.jpg",
+  "goodyear_sommer":    TIRE_IMAGE_BASE+"goodyear_Sommer.jpg",
+  "goodyear_winter":    TIRE_IMAGE_BASE+"goodyear_Winter.jpg",
+  "hankook_sommer":     TIRE_IMAGE_BASE+"hankook_Sommer.jpg",
+  "hankook_winter":     TIRE_IMAGE_BASE+"hankook_Winter.jpg",
+  "michelin_sommer":    TIRE_IMAGE_BASE+"michelin_Sommer.jpg",
+  "michelin_winter":    TIRE_IMAGE_BASE+"michelin_Winter.jpg",
+  "nexen_sommer":       TIRE_IMAGE_BASE+"nexen_Sommer.jpg",
+  "nexen_winter":       TIRE_IMAGE_BASE+"nexen_Winter.jpg",
+  "pirelli_sommer":     TIRE_IMAGE_BASE+"pirelli_Sommer.jpg",
+  "pirelli_winter":     TIRE_IMAGE_BASE+"pirelli_Winter.jpg",
+  "yokohama_sommer":    TIRE_IMAGE_BASE+"yokohama_Sommer.jpg",
+  "yokohama_winter":    TIRE_IMAGE_BASE+"yokohama_Winter.jpg"
+};
+const TIRE_LOGOS = {
+  bridgestone: TIRE_IMAGE_BASE+"Bridgestone_Logo.jpg",
+  continental: TIRE_IMAGE_BASE+"Continental_Logo.jpg",
+  dunlop:      TIRE_IMAGE_BASE+"Dunlop_Logo.jpg",
+  goodyear:    TIRE_IMAGE_BASE+"Goodyear_Logo.jpg",
+  hankook:     TIRE_IMAGE_BASE+"Hankook_Logo.jpg",
+  michelin:    TIRE_IMAGE_BASE+"Michelin_Logo.jpg",
+  nexen:       TIRE_IMAGE_BASE+"Nexen_Logo.jpg",
+  pirelli:     TIRE_IMAGE_BASE+"Pirelli_Logo.jpg",
+  yokohama:    TIRE_IMAGE_BASE+"Yokohama_Logo.jpg"
+};
+const KNOWN_BRANDS = ["Bridgestone","Continental","Dunlop","Goodyear","Hankook","Michelin","Nexen","Pirelli","Yokohama"];
+
+/* ============================================================
+   I18N
+   ============================================================ */
+const TRANSLATIONS = {
+  de: {
+    back_home:"Startseite",internal_login:"Interner Login",admin_login:"Admin Login",public_view:"Öffentlich",
+    hero_title:"Original Winterkompletträder",hero_sub:"Perfekt auf Ihr Fahrzeug abgestimmt.",
+    info_title:"Eiskalte Fahrfreude mit maximalem Grip",
+    info_p1:"Ob im Alltag, auf dem Weg in die Berge oder unterwegs zur Skipiste: Mit Original Winterkompletträdern bleiben Sie auch bei Schnee, Regen und tiefen Temperaturen sicher unterwegs.",
+    info_p2:"Entdecken Sie jetzt über unseren Konfigurator die verfügbaren Angebote von Emmenegger und finden Sie die passenden Winterkompletträder für Ihr Fahrzeug.",
+    modal_inquiry_title:"Anfrage senden",field_name:"Name *",field_email:"E-Mail *",field_plate:"Kontrollschild *",field_type:"Art *",field_note:"Bemerkung",
+    btn_close:"Schliessen",btn_pdf:"PDF Offerte",btn_send:"Senden",
+    select_brand:"Marke wählen",select_location:"Standort wählen",select_series:"Reihe wählen",select_model:"Modell wählen",select_engine:"Motor wählen",
+    in_stock:"An Lager",on_order:"Auf Bestellung",sold_out:"Ausverkauft",delivery_immediate:"Sofort verfügbar",delivery_days:"Lieferzeit 5–10 Arbeitstage",
+    price_set:"Pro Satz inkl. Montage",price_incl_vat:"Preise inkl. MwSt.",select_action:"Auswählen",
+    internal_mode_active:"Interner Verkaufsmodus aktiv",admin_mode_active:"Administrator-Modus aktiv",
+    what_search:"Was möchtest du suchen?",wkr_label:"Winterkompletträder",tire_label:"Reifen",
+    no_results:"Für diese Auswahl wurden keine Produkte gefunden.",no_tires:"Für diese Reifengrösse wurden keine aktiven Reifen gefunden.",
+    dot_warning:"⚠ DOT älter als 3 Jahre",stock_warning:"Nur noch",stock_warning_unit:"Stück an Lager",
+    admin_dashboard:"Dashboard",admin_wkr_by_model:"WKR Konfigurator-Ansicht",admin_wkr_all:"WKR Gesamtübersicht",admin_tires_all:"Reifen Gesamtübersicht",
+    total_wkr:"WKR Total",total_tires:"Reifen Total",in_stock_wkr:"WKR an Lager",in_stock_tires:"Reifen an Lager",
+    low_stock_wkr:"WKR kritischer Lager",inactive_tires:"Inaktive Reifen",active_tires:"Aktive Reifen"
+  },
+  fr: {
+    back_home:"Accueil",internal_login:"Login interne",admin_login:"Admin Login",public_view:"Vue publique",
+    hero_title:"Jantes hiver d'origine",hero_sub:"Parfaitement adaptées à votre véhicule.",
+    info_title:"Conduite hivernale avec grip maximum",
+    info_p1:"Que ce soit au quotidien, en route pour les montagnes ou les pistes de ski : les jantes hiver d'origine vous garantissent sécurité et performance.",
+    info_p2:"Découvrez maintenant les offres disponibles chez Emmenegger via notre configurateur.",
+    modal_inquiry_title:"Envoyer une demande",field_name:"Nom *",field_email:"E-Mail *",field_plate:"Plaque d'immatriculation *",field_type:"Type *",field_note:"Remarque",
+    btn_close:"Fermer",btn_pdf:"Offre PDF",btn_send:"Envoyer",
+    select_brand:"Choisir la marque",select_location:"Choisir le site",select_series:"Choisir la série",select_model:"Choisir le modèle",select_engine:"Choisir le moteur",
+    in_stock:"En stock",on_order:"Sur commande",sold_out:"Épuisé",delivery_immediate:"Disponible immédiatement",delivery_days:"Délai 5–10 jours ouvrables",
+    price_set:"Par jeu incl. montage",price_incl_vat:"Prix TTC",select_action:"Sélectionner",
+    internal_mode_active:"Mode vente interne actif",admin_mode_active:"Mode administrateur actif",
+    what_search:"Que souhaitez-vous rechercher ?",wkr_label:"Jantes hiver complètes",tire_label:"Pneus",
+    no_results:"Aucun produit trouvé pour cette sélection.",no_tires:"Aucun pneu actif trouvé pour cette taille.",
+    dot_warning:"⚠ DOT de plus de 3 ans",stock_warning:"Plus que",stock_warning_unit:"pièce(s) en stock",
+    admin_dashboard:"Tableau de bord",admin_wkr_by_model:"Vue configurateur",admin_wkr_all:"Toutes les jantes",admin_tires_all:"Tous les pneus",
+    total_wkr:"Total jantes",total_tires:"Total pneus",in_stock_wkr:"Jantes en stock",in_stock_tires:"Pneus en stock",
+    low_stock_wkr:"Jantes stock critique",inactive_tires:"Pneus inactifs",active_tires:"Pneus actifs"
+  },
+  en: {
+    back_home:"Home",internal_login:"Internal Login",admin_login:"Admin Login",public_view:"Public view",
+    hero_title:"Original Winter Complete Wheels",hero_sub:"Perfectly matched to your vehicle.",
+    info_title:"Ice-cold driving pleasure with maximum grip",
+    info_p1:"Whether in everyday life, on the way to the mountains or the slopes: Original complete winter wheels keep you safe in snow, rain and low temperatures.",
+    info_p2:"Discover available offers from Emmenegger via our configurator and find the right winter wheels for your vehicle.",
+    modal_inquiry_title:"Send inquiry",field_name:"Name *",field_email:"E-Mail *",field_plate:"License plate *",field_type:"Type *",field_note:"Note",
+    btn_close:"Close",btn_pdf:"PDF Quote",btn_send:"Send",
+    select_brand:"Select brand",select_location:"Select location",select_series:"Select series",select_model:"Select model",select_engine:"Select engine",
+    in_stock:"In stock",on_order:"On order",sold_out:"Sold out",delivery_immediate:"Available immediately",delivery_days:"Delivery 5–10 working days",
+    price_set:"Per set incl. mounting",price_incl_vat:"Prices incl. VAT",select_action:"Select",
+    internal_mode_active:"Internal sales mode active",admin_mode_active:"Administrator mode active",
+    what_search:"What would you like to search?",wkr_label:"Winter complete wheels",tire_label:"Tyres",
+    no_results:"No products found for this selection.",no_tires:"No active tyres found for this size.",
+    dot_warning:"⚠ DOT older than 3 years",stock_warning:"Only",stock_warning_unit:"left in stock",
+    admin_dashboard:"Dashboard",admin_wkr_by_model:"WCW Configurator view",admin_wkr_all:"All WCW",admin_tires_all:"All tyres",
+    total_wkr:"Total WCW",total_tires:"Total tyres",in_stock_wkr:"WCW in stock",in_stock_tires:"Tyres in stock",
+    low_stock_wkr:"WCW critical stock",inactive_tires:"Inactive tyres",active_tires:"Active tyres"
+  }
+};
+
+/* ============================================================
+   APP STATE
+   ============================================================ */
+let lang = "de", darkMode = false, internalMode = false, adminMode = false;
+let produkte = [], mapping = [], fahrzeuge = [], reifen = [];
+let state = { standort:null,marke:null,reihe:null,modell:null,motor:null,internalSection:null,adminSection:null };
+let tireSearch = { direkt:"",profilbreite:"",querschnitt:"",zoll:"" };
+let adminWkrFilter    = { suche:"",marke:"",standort:"",nurAnLager:false };
+let adminReifenFilter = { suche:"",standort:"",reifentyp:"",aktivStatus:"",nurAnLager:false };
+let selectedProduct = null, editingTireId = "", editingWkrTN = "";
+let _saving = { newTire:false,editTire:false,deleteTire:false,newWkr:false,deleteWkr:false };
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const t = (key) => (TRANSLATIONS[lang]||TRANSLATIONS.de)[key]||key;
+const clean = (v) => (v||"").toString().trim();
+function e(v){ return clean(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
+function js(v){ return clean(v).replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/"/g,"&quot;").replace(/\r?\n/g,"\\n"); }
+function parsePrice(v){ const n=parseFloat(clean(v).replace(/\s/g,"").replace(/'/g,"").replace(/,/g,".")); return isFinite(n)?n:null; }
+function formatPrice(v){ const n=parsePrice(v); if(n===null)return null; return n.toLocaleString("de-CH",{minimumFractionDigits:0,maximumFractionDigits:2}); }
+function standortLabel(v){ return v==="GEB"?"Gebenstorf":v==="HET"?"Hettenschwil":v; }
+function tireSize(row){ const b=clean(row["Profilbreite"]),q=clean(row["Querschnitt"]),z=clean(row["Zoll"]); return(b&&q&&z)?`${b}/${q} R${z}`:""; }
+function isDotOld(dot){ const m=clean(dot).match(/^(\d{2})\/(\d{2})$/); if(!m)return false; const d=new Date(2000+parseInt(m[2]),0,1+(parseInt(m[1])-1)*7); return(new Date()-d)/(1000*60*60*24*365.25)>3; }
+function getTireImage(h,t_){ const b=clean(h).toLowerCase(),tp=clean(t_).toLowerCase(); return(tp==="sommer"||tp==="winter")?TIRE_IMAGES[`${b}_${tp}`]||"":""; }
+function getTireLogo(h){ return TIRE_LOGOS[clean(h).toLowerCase()]||""; }
+function splitMotors(v){ return clean(v).split(",").map(x=>x.trim()).filter(Boolean); }
+function motorMatch(mm,sm){ return splitMotors(mm).includes(clean(sm)); }
+function qtyOptions(max){ const q=parseInt(clean(max),10)||0; return[1,2,4].filter(n=>n<=q); }
+function parseDirectTire(input){ const raw=clean(input).toUpperCase().replace(/\s+/g,"").replace(/-/g,"/").replace(/R/g,"/"); const m=raw.match(/^(\d{3})\/(\d{2})\/(\d{2})$/); return m?{profilbreite:m[1],querschnitt:m[2],zoll:m[3]}:null; }
+
+/* ============================================================
+   LANG & THEME
+   ============================================================ */
+function setLang(l){
+  lang=l;
+  document.querySelectorAll(".lang-btn").forEach(b=>b.classList.toggle("active",b.textContent===l.toUpperCase()));
+  applyTranslations(); render();
+}
+function applyTranslations(){ document.querySelectorAll("[data-i18n]").forEach(el=>{ el.textContent=t(el.getAttribute("data-i18n")); }); }
+function toggleDark(){
+  darkMode=!darkMode;
+  document.documentElement.setAttribute("data-theme",darkMode?"dark":"light");
+  const btn=document.getElementById("darkToggle");
+  if(btn){btn.textContent=darkMode?"☀️":"🌙";btn.classList.toggle("active",darkMode);}
+  try{localStorage.setItem("wkr_dark",darkMode?"1":"0");}catch(e){}
+}
+function initTheme(){ try{if(localStorage.getItem("wkr_dark")==="1")toggleDark();}catch(e){} }
+
+/* ============================================================
+   AUTH
+   ============================================================ */
+function activateInternalMode(){
+  if(internalMode){alert(t("internal_mode_active"));return;}
+  const pwd=prompt("Passwort für internen Modus:");
+  if(pwd===null)return;
+  if(pwd===AUTH.internal){
+    internalMode=true;adminMode=false;
+    state.internalSection=null;state.adminSection=null;
+    document.getElementById("publicViewBtn").style.display="inline-block";
+    showModeBanner("internal");
+    document.getElementById("internalFields").style.display="block";
+    render();
+  }else alert("Falsches Passwort.");
+}
+function activateAdminMode(){
+  if(adminMode){alert(t("admin_mode_active"));return;}
+  const pwd=prompt("Passwort für Administrator-Modus:");
+  if(pwd===null)return;
+  if(pwd===AUTH.admin){
+    adminMode=true;internalMode=false;
+    state.internalSection=null;state.adminSection="dashboard";
+    document.getElementById("publicViewBtn").style.display="inline-block";
+    showModeBanner("admin");
+    document.getElementById("internalFields").style.display="none";
+    render();
+  }else alert("Falsches Passwort.");
+}
+function deactivateAllModes(){
+  internalMode=false;adminMode=false;
+  state.internalSection=null;state.adminSection=null;
+  document.getElementById("publicViewBtn").style.display="none";
+  document.getElementById("modeBanner").style.display="none";
+  document.getElementById("modeBanner").className="mode-banner";
+  document.getElementById("internalFields").style.display="none";
+  closeAllModals();render();
+}
+function showModeBanner(type){
+  const el=document.getElementById("modeBanner");
+  el.className=`mode-banner ${type}`;
+  el.textContent=type==="admin"?t("admin_mode_active"):t("internal_mode_active");
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function goToHome(){
+  state={standort:null,marke:null,reihe:null,modell:null,motor:null,internalSection:null,adminSection:adminMode?"dashboard":null};
+  tireSearch={direkt:"",profilbreite:"",querschnitt:"",zoll:""};
+  selectedProduct=null; closeAllModals(); render();
+}
+function closeAllModals(){
+  ["inquiryModal","addTireModal","editTireModal","addWkrModal","editWkrModal"].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove("open");});
+}
+function selectInternalSection(s){ state.internalSection=s; state.standort=state.marke=state.reihe=state.modell=state.motor=null; tireSearch={direkt:"",profilbreite:"",querschnitt:"",zoll:""}; selectedProduct=null; render(); }
+function selectAdminSection(s){ state.adminSection=s; state.standort=state.marke=state.reihe=state.modell=state.motor=null; render(); }
+function resetInternalSection(){ state.internalSection=null; state.standort=state.marke=state.reihe=state.modell=state.motor=null; render(); }
+function selectMarke(m){ state.marke=m; state.standort=state.reihe=state.modell=state.motor=null; render(); }
+function selectStandort(s){ state.standort=s; state.reihe=state.modell=state.motor=null; render(); }
+function selectReihe(r){ state.reihe=r; state.modell=state.motor=null; render(); }
+function selectModell(m){ state.modell=m; state.motor=null; render(); }
+function selectMotor(m){ state.motor=m; render(); }
+function resetSelection(){ state.standort=state.marke=state.reihe=state.modell=state.motor=null; selectedProduct=null; closeAllModals(); render(); }
+
+/* ============================================================
+   HERO & BRAND THEME
+   ============================================================ */
+function updateHero(){
+  const hero=document.getElementById("heroBanner");
+  const info=document.getElementById("infoSection");
+  if(!hero)return;
+  const showHero=(!adminMode&&!internalMode)||state.internalSection==="wkr"||state.adminSection==="wkr_model";
+  hero.style.display=showHero?"block":"none";
+  if(info) info.style.display=adminMode?"none":"block";
+  const img=state.marke==="BMW"?HERO_IMAGES.BMW:state.marke==="MINI"?HERO_IMAGES.MINI:HERO_IMAGES.start;
+  hero.style.backgroundImage=`url('${img}')`;
+}
+function updateBrandTheme(){ document.body.classList.toggle("mini-brand",state.marke==="MINI"); }
+
+/* ============================================================
+   FILTER HELPERS
+   ============================================================ */
+function getFilteredAdminWkr(){
+  return produkte.filter(p=>{
+    const s=adminWkrFilter.suche.toLowerCase();
+    const lager=parseInt(clean(p["Lager"]),10)||0;
+    return(!s||["Marke","Bezeichnung","Reifen","Dimension","TN","Hinweistext"].some(f=>clean(p[f]).toLowerCase().includes(s)))
+      &&(!adminWkrFilter.marke||clean(p["Marke"])===adminWkrFilter.marke)
+      &&(!adminWkrFilter.standort||clean(p["Standort"])===adminWkrFilter.standort)
+      &&(!adminWkrFilter.nurAnLager||lager>0);
+  }).sort((a,b)=>{const ma=clean(a["Marke"]),mb=clean(b["Marke"]);return ma!==mb?ma.localeCompare(mb,"de"):clean(a["Bezeichnung"]).localeCompare(clean(b["Bezeichnung"]),"de");});
+}
+function getFilteredAdminReifen(){
+  return reifen.filter(r=>{
+    const s=adminReifenFilter.suche.toLowerCase();
+    const anzahl=parseInt(clean(r["Anzahl"]),10)||0;
+    return(!s||["Hersteller","Profil","Teilenummer","Standort","Reifentyp","DOT","Lastindex","Geschwindigkeitsindex"].some(f=>clean(r[f]).toLowerCase().includes(s))||tireSize(r).toLowerCase().includes(s))
+      &&(!adminReifenFilter.standort||clean(r["Standort"])===adminReifenFilter.standort)
+      &&(!adminReifenFilter.reifentyp||clean(r["Reifentyp"])===adminReifenFilter.reifentyp)
+      &&(!adminReifenFilter.aktivStatus||clean(r["Aktiv"])===adminReifenFilter.aktivStatus)
+      &&(!adminReifenFilter.nurAnLager||anzahl>0);
+  }).sort((a,b)=>{const aa=clean(a["Aktiv"])==="Ja"?0:1,ab=clean(b["Aktiv"])==="Ja"?0:1;if(aa!==ab)return aa-ab;const ha=clean(a["Hersteller"]),hb=clean(b["Hersteller"]);return ha!==hb?ha.localeCompare(hb,"de"):clean(a["Profil"]).localeCompare(clean(b["Profil"]),"de");});
+}
+function getFilteredReifen(){
+  let pb=tireSearch.profilbreite,qs=tireSearch.querschnitt,zl=tireSearch.zoll;
+  if(clean(tireSearch.direkt)){const p=parseDirectTire(tireSearch.direkt);if(!p)return[];pb=p.profilbreite;qs=p.querschnitt;zl=p.zoll;}
+  if(!pb||!qs||!zl)return[];
+  return reifen.filter(r=>clean(r["Aktiv"]).toLowerCase()==="ja"&&clean(r["Profilbreite"])===pb&&clean(r["Querschnitt"])===qs&&clean(r["Zoll"])===zl);
+}
+function applyAdminWkrFilter(){ adminWkrFilter.suche=clean(document.getElementById("adminWkrSuche")?.value);adminWkrFilter.marke=clean(document.getElementById("adminWkrMarke")?.value);adminWkrFilter.standort=clean(document.getElementById("adminWkrStandort")?.value);adminWkrFilter.nurAnLager=!!document.getElementById("adminWkrNurLager")?.checked;render(); }
+function resetAdminWkrFilter(){ adminWkrFilter={suche:"",marke:"",standort:"",nurAnLager:false};render(); }
+function applyAdminReifenFilter(){ adminReifenFilter.suche=clean(document.getElementById("adminReifenSuche")?.value);adminReifenFilter.standort=clean(document.getElementById("adminReifenStandort")?.value);adminReifenFilter.reifentyp=clean(document.getElementById("adminReifenTyp")?.value);adminReifenFilter.aktivStatus=clean(document.getElementById("adminReifenAktiv")?.value);adminReifenFilter.nurAnLager=!!document.getElementById("adminReifenNurLager")?.checked;render(); }
+function resetAdminReifenFilter(){ adminReifenFilter={suche:"",standort:"",reifentyp:"",aktivStatus:"",nurAnLager:false};render(); }
+function applyTireSearch(){ tireSearch.direkt=clean(document.getElementById("tireDirektInput")?.value);tireSearch.profilbreite=clean(document.getElementById("tireBreiteInput")?.value);tireSearch.querschnitt=clean(document.getElementById("tireQuerschnittInput")?.value);tireSearch.zoll=clean(document.getElementById("tireZollInput")?.value);render(); }
+function resetTireSearch(){ tireSearch={direkt:"",profilbreite:"",querschnitt:"",zoll:""};render(); }
+
+/* ============================================================
+   DASHBOARD STATS
+   ============================================================ */
+function getDashboardStats(){
+  const totalWkr=produkte.length;
+  const wkrInStock=produkte.filter(p=>(parseInt(clean(p["Lager"]),10)||0)>0).length;
+  const lowStockWkr=produkte.filter(p=>{const l=parseInt(clean(p["Lager"]),10)||0;return l>0&&l<=2;}).length;
+  const totalTires=reifen.length;
+  const activeTires=reifen.filter(r=>clean(r["Aktiv"])==="Ja").length;
+  const inactiveTires=totalTires-activeTires;
+  const tiresInStock=reifen.filter(r=>clean(r["Aktiv"])==="Ja"&&(parseInt(clean(r["Anzahl"]),10)||0)>0).length;
+  const dotWarnings=reifen.filter(r=>isDotOld(r["DOT"])).length;
+  return{totalWkr,wkrInStock,lowStockWkr,totalTires,activeTires,inactiveTires,tiresInStock,dotWarnings};
+}
+
+/* ============================================================
+   RENDER ADMIN SIDEBAR  ← NEU
+   ============================================================ */
+function renderAdminSidebar(){
+  const s=getDashboardStats();
+  const sec=state.adminSection||"dashboard";
+
+  // Stat badges
+  const wkrLagerClass   = s.wkrInStock===0    ? "sbt-err"  : s.lowStockWkr>0 ? "sbt-warn" : "sbt-ok";
+  const dotClass        = s.dotWarnings>0      ? "sbt-warn" : "sbt-ok";
+  const inaktivClass    = s.inactiveTires>0    ? "sbt-err"  : "sbt-ok";
+
+  return `<div class="admin-sidebar">
+    <div class="admin-sidebar-header">
+      <div class="admin-sidebar-title">Administrator</div>
+      <div class="admin-sidebar-version">WKR Konfigurator</div>
+    </div>
+
+    <div class="admin-stat-strip">
+      <div class="admin-stat-badge ${wkrLagerClass}">
+        <span class="sbl">WKR an Lager</span>
+        <span class="sbn">${s.wkrInStock} / ${s.totalWkr}</span>
+      </div>
+      <div class="admin-stat-badge ${s.lowStockWkr>0?"sbt-warn":"sbt-ok"}">
+        <span class="sbl">Kritischer Lager</span>
+        <span class="sbn">${s.lowStockWkr}</span>
+      </div>
+      <div class="admin-stat-badge sbt-neu">
+        <span class="sbl">Reifen aktiv</span>
+        <span class="sbn">${s.activeTires} / ${s.totalTires}</span>
+      </div>
+      <div class="admin-stat-badge ${inaktivClass}">
+        <span class="sbl">Reifen inaktiv</span>
+        <span class="sbn">${s.inactiveTires}</span>
+      </div>
+      <div class="admin-stat-badge ${dotClass}">
+        <span class="sbl">DOT-Warnungen</span>
+        <span class="sbn">${s.dotWarnings}</span>
+      </div>
+    </div>
+
+    <div class="admin-nav-section">
+      <div class="admin-nav-label">Übersicht</div>
+      <button class="admin-nav-item ${sec==="dashboard"?"active":""}" onclick="selectAdminSection('dashboard')">
+        <span class="nav-icon">🏠</span> Dashboard
+      </button>
+    </div>
+
+    <div class="admin-nav-section">
+      <div class="admin-nav-label">WKR</div>
+      <button class="admin-nav-item ${sec==="wkr_model"?"active":""}" onclick="selectAdminSection('wkr_model')">
+        <span class="nav-icon">🔍</span> ${e(t("admin_wkr_by_model"))}
+      </button>
+      <button class="admin-nav-item ${sec==="wkr_list"?"active":""}" onclick="selectAdminSection('wkr_list')">
+        <span class="nav-icon">🛞</span> ${e(t("admin_wkr_all"))}
+      </button>
+    </div>
+
+    <div class="admin-nav-section">
+      <div class="admin-nav-label">Reifen</div>
+      <button class="admin-nav-item ${sec==="reifen_list"?"active":""}" onclick="selectAdminSection('reifen_list')">
+        <span class="nav-icon">⚫</span> ${e(t("admin_tires_all"))}
+      </button>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   RENDER ADMIN DASHBOARD (compact)  ← NEU
+   ============================================================ */
+function renderAdminDashboard(){
+  const s=getDashboardStats();
+  return `<div class="admin-content">
+    <div class="admin-content-header">
+      <div class="admin-content-title">Dashboard</div>
+      <div class="admin-content-sub">Schnellzugriff auf alle Verwaltungsbereiche</div>
+    </div>
+    <div class="admin-quick-grid">
+      <div class="admin-quick-card" onclick="selectAdminSection('wkr_model')">
+        <div class="qc-icon">🔍</div>
+        <div>
+          <div class="qc-title">${e(t("admin_wkr_by_model"))}</div>
+          <div class="qc-sub">Fahrzeugspezifische Ansicht</div>
+        </div>
+      </div>
+      <div class="admin-quick-card" onclick="selectAdminSection('wkr_list')">
+        <div class="qc-icon">🛞</div>
+        <div>
+          <div class="qc-title">${e(t("admin_wkr_all"))}</div>
+          <div class="qc-sub">${s.totalWkr} Einträge · ${s.wkrInStock} an Lager</div>
+        </div>
+      </div>
+      <div class="admin-quick-card" onclick="selectAdminSection('reifen_list')">
+        <div class="qc-icon">⚫</div>
+        <div>
+          <div class="qc-title">${e(t("admin_tires_all"))}</div>
+          <div class="qc-sub">${s.activeTires} aktiv · ${s.inactiveTires > 0 ? `<span style="color:var(--error)">${s.inactiveTires} inaktiv</span>` : "alle aktiv"}</div>
+        </div>
+      </div>
+      <div class="admin-quick-card" onclick="selectAdminSection('wkr_list');setTimeout(()=>document.getElementById('addWkrModal')?.classList.add('open'),100)">
+        <div class="qc-icon">➕</div>
+        <div>
+          <div class="qc-title">Neues WKR</div>
+          <div class="qc-sub">Winterkomplettrad erfassen</div>
+        </div>
+      </div>
+      <div class="admin-quick-card" onclick="selectAdminSection('reifen_list');setTimeout(()=>document.getElementById('addTireModal')?.classList.add('open'),100)">
+        <div class="qc-icon">➕</div>
+        <div>
+          <div class="qc-title">Neuer Reifen</div>
+          <div class="qc-sub">Reifen erfassen</div>
+        </div>
+      </div>
+      ${s.dotWarnings > 0 ? `
+      <div class="admin-quick-card" onclick="adminReifenFilter.suche='';adminReifenFilter.aktivStatus='';selectAdminSection('reifen_list')">
+        <div class="qc-icon">⚠️</div>
+        <div>
+          <div class="qc-title" style="color:var(--warning)">${s.dotWarnings} DOT-Warnung${s.dotWarnings>1?"en":""}</div>
+          <div class="qc-sub">Reifen älter als 3 Jahre</div>
+        </div>
+      </div>` : ""}
+      ${s.lowStockWkr > 0 ? `
+      <div class="admin-quick-card" onclick="adminWkrFilter.nurAnLager=true;selectAdminSection('wkr_list')">
+        <div class="qc-icon">📦</div>
+        <div>
+          <div class="qc-title" style="color:var(--warning)">${s.lowStockWkr} WKR kritisch</div>
+          <div class="qc-sub">Lagerbestand ≤ 2 Stück</div>
+        </div>
+      </div>` : ""}
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function render(){
+  let html = "";
+
+  const isWkrFlow = (!internalMode && !adminMode)
+    || state.internalSection === "wkr"
+    || state.adminSection === "wkr_model";
+
+  /* ── Admin shell with sidebar ── */
+  if (adminMode) {
+    let contentHtml = "";
+
+    if (state.adminSection === "dashboard" || !state.adminSection) {
+      contentHtml = renderAdminDashboard();
+    } else if (state.adminSection === "reifen_list") {
+      contentHtml = `<div class="admin-content">${renderAdminReifenList()}</div>`;
+    } else if (state.adminSection === "wkr_list") {
+      contentHtml = `<div class="admin-content">${renderAdminWkrList()}</div>`;
+    } else if (state.adminSection === "wkr_model") {
+      // Konfigurator-Flow im Admin
+      contentHtml = `<div class="admin-content">${renderWkrFlow()}</div>`;
+    }
+
+    html = `<div class="admin-shell">${renderAdminSidebar()}${contentHtml}</div>`;
+    document.getElementById("app").innerHTML = html;
+    updateHero();
+    updateBrandTheme();
+    applyTranslations();
+    return;
+  }
+
+  /* ── Internal start ── */
+  if (internalMode && !state.internalSection) {
+    html += `<div class="section-title">${e(t("what_search"))}</div>`;
+    html += `<div class="card-grid">
+      <div class="sel-card" onclick="selectInternalSection('wkr')">🛞 <span>${e(t("wkr_label"))}</span></div>
+      <div class="sel-card mini-theme" onclick="selectInternalSection('reifen')">⚫ <span>${e(t("tire_label"))}</span></div>
+    </div>`;
+  }
+
+  /* ── WKR flow (public + internal) ── */
+  if (isWkrFlow) html += renderWkrFlow();
+
+  /* ── Internal tire search ── */
+  if (internalMode && state.internalSection === "reifen") html += renderTireSearch();
+
+  document.getElementById("app").innerHTML = html;
+  updateHero();
+  updateBrandTheme();
+  applyTranslations();
+}
+
+/* ============================================================
+   WKR FLOW (shared between public, internal, admin)
+   ============================================================ */
+function renderWkrFlow(){
+  let html = "";
+  const isWkrFlow = true;
+
+  if (!state.marke) {
+    html += `<div class="section-title">${e(t("select_brand"))}</div>`;
+    html += `<div class="card-grid">
+      <div class="sel-card brand-card" onclick="selectMarke('BMW')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/BMW.svg/120px-BMW.svg.png" alt="BMW Logo" style="height:52px;width:auto;object-fit:contain;">
+        <div class="brand-name">BMW</div>
+      </div>
+      <div class="sel-card brand-card mini-theme" onclick="selectMarke('MINI')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/MINI_logo.svg/200px-MINI_logo.svg.png" alt="MINI Logo" style="height:44px;width:auto;object-fit:contain;">
+        <div class="brand-name">MINI</div>
+      </div>
+    </div>`;
+    return html;
+  }
+
+  if (!state.standort) {
+    const locs=[...new Set(produkte.filter(x=>clean(x["Marke"])===state.marke).map(x=>clean(x["Standort"])).filter(Boolean))];
+    html+=`<div class="section-title">${e(t("select_location"))}</div><div class="card-grid">`;
+    locs.forEach(s=>{ html+=`<div class="sel-card" onclick="selectStandort('${js(s)}')">${e(standortLabel(s))}</div>`; });
+    html+=`</div>`;
+    return html;
+  }
+
+  if (!state.reihe) {
+    const reihen=[...new Set(mapping.filter(x=>clean(x["Marke"])===state.marke).map(x=>clean(x["Reihe"])).filter(Boolean))];
+    html+=`<div class="section-title">${e(t("select_series"))}</div><div class="card-grid">`;
+    reihen.forEach(r=>{ html+=`<div class="sel-card" onclick="selectReihe('${js(r)}')">${e(r)}</div>`; });
+    html+=`</div>`;
+    return html;
+  }
+
+  if (!state.modell) {
+    const modelle=[...new Set(mapping.filter(x=>clean(x["Marke"])===state.marke&&clean(x["Reihe"])===state.reihe).map(x=>clean(x["Modell"])).filter(Boolean))];
+    html+=`<div class="section-title">${e(t("select_model"))}</div><div class="card-grid">`;
+    modelle.forEach(m=>{
+      const fz=fahrzeuge.find(f=>clean(f["Marke"])===state.marke&&clean(f["Reihe"])===state.reihe&&clean(f["Modell"])===m);
+      const bild=clean(fz?.Bild)||"https://via.placeholder.com/260x140?text=Fahrzeug";
+      const code=clean(fz?.Code)||m;
+      html+=`<div class="sel-card model-card" onclick="selectModell('${js(m)}')"><img src="${e(bild)}" alt="${e(code)}"><div class="model-name">${e(code)}</div></div>`;
+    });
+    html+=`</div>`;
+    return html;
+  }
+
+  if (!state.motor) {
+    const motors=[...new Set(mapping.filter(x=>clean(x["Marke"])===state.marke&&clean(x["Reihe"])===state.reihe&&clean(x["Modell"])===state.modell).flatMap(x=>splitMotors(x["Motor"])))];
+    html+=`<div class="section-title">${e(t("select_engine"))}</div><div class="card-grid">`;
+    motors.forEach(m=>{ html+=`<div class="sel-card" onclick="selectMotor('${js(m)}')">${e(m)}</div>`; });
+    html+=`</div>`;
+    return html;
+  }
+
+  // Product listing
+  const fz=fahrzeuge.find(f=>clean(f["Marke"])===state.marke&&clean(f["Reihe"])===state.reihe&&clean(f["Modell"])===state.modell);
+  const fzBild=clean(fz?.Bild)||"https://via.placeholder.com/220x130?text=Fahrzeug";
+  const fzCode=clean(fz?.Code)||state.modell;
+  const tnList=[...new Set(mapping.filter(x=>clean(x["Marke"])===state.marke&&clean(x["Reihe"])===state.reihe&&clean(x["Modell"])===state.modell&&motorMatch(x["Motor"],state.motor)).map(x=>clean(x["TN"])).filter(Boolean))];
+  const results=produkte.filter(p=>clean(p["Standort"])===state.standort&&clean(p["Marke"])===state.marke&&tnList.includes(clean(p["TN"])));
+
+  html+=`<div class="summary-box">
+    <div class="summary-data">
+      <div class="label">Ihre Auswahl</div>
+      <div class="summary-pills">
+        <span class="summary-pill">${e(state.marke)}</span>
+        <span class="summary-pill">${e(standortLabel(state.standort))}</span>
+        <span class="summary-pill">${e(state.reihe)}</span>
+        <span class="summary-pill">${e(fzCode)}</span>
+        <span class="summary-pill">${e(state.motor)}</span>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="resetSelection()">✎ Auswahl ändern</button>
+    </div>
+    <div class="summary-image"><img src="${e(fzBild)}" alt="${e(fzCode)}"></div>
+  </div>`;
+
+  html+=`<div class="products-section">
+    <div class="products-header">
+      <h2 class="products-title">Winterkomplettradangebote für ${e(state.marke)} ${e(fzCode)}</h2>
+      <div class="products-meta"><span>Standort: ${e(standortLabel(state.standort))}</span><span>Sortierung: Preis</span></div>
+    </div>`;
+  if(!results.length) html+=`<div class="empty-state"><div class="empty-icon">🔍</div>${e(t("no_results"))}</div>`;
+  results.forEach(r=>{ html+=renderWkrProduct(r); });
+  html+=`</div>`;
+  return html;
+}
+
+/* ============================================================
+   RENDER: WKR PRODUCT
+   ============================================================ */
+function renderWkrProduct(r){
+  const lager=parseInt(clean(r["Lager"]),10)||0;
+  const bild=clean(r["Bild"])||"https://via.placeholder.com/220x140?text=Rad";
+  const bezeichnung=clean(r["Bezeichnung"]);
+  const markeReifen=clean(r["Reifen"]);
+  const dimension=clean(r["Dimension"]);
+  const hinweistext=clean(r["Hinweistext"]);
+  const verkaufshinweis=clean(r["Verkaufshinweis"]);
+  const teilenummer=clean(r["TN"]);
+  const vp=clean(r["VP"]);
+  const angebot=clean(r["Angebotspreis"]);
+  const nettopreis=clean(r["Nettopreis"]);
+  const empfaengerMail=clean(r["EmpfängerMail"]||r["EmpfaengerMail"]);
+  const vpNum=parsePrice(vp),angebotNum=parsePrice(angebot);
+  const hasPrice=(angebotNum>0)||(vpNum>0);
+  const isSoldOut=lager<=0&&!hasPrice;
+  const isOrderable=lager<=0&&hasPrice;
+  const hasDiscount=angebotNum>0&&vpNum>0&&angebotNum<vpNum;
+  const isLowStock=lager>0&&lager<=2;
+  let priceHtml="";
+  if(hasDiscount) priceHtml=`<div class="price-main sale">${e(formatPrice(angebot))} CHF</div><div class="price-old">UPE: ${e(formatPrice(vp))} CHF</div>`;
+  else if(angebotNum>0) priceHtml=`<div class="price-main">${e(formatPrice(angebot))} CHF</div>`;
+  else if(vpNum>0) priceHtml=`<div class="price-main">${e(formatPrice(vp))} CHF</div>`;
+  else priceHtml=`<div class="price-main">Preis offen</div>`;
+  let statusHtml;
+  if(internalMode||adminMode){ statusHtml=`<div class="stock-count">Lagerbestand: ${lager}</div>`; if(isLowStock)statusHtml+=`<span class="stock-warning-chip">⚠ ${lager} ${e(t("stock_warning_unit"))}</span>`; }
+  else if(isSoldOut){ statusHtml=`<div class="status-badge unavailable">${e(t("sold_out"))}</div>`; }
+  else if(isOrderable){ statusHtml=`<div class="status-badge order">${e(t("on_order"))}</div><div class="delivery-note-text">${e(t("delivery_days"))}</div>`; }
+  else{ statusHtml=`<div class="status-badge in-stock">${e(t("in_stock"))}</div><div class="delivery-note-text">${e(t("delivery_immediate"))}</div>`; if(isLowStock)statusHtml+=`<span class="stock-warning-chip">⚠ ${lager} ${e(t("stock_warning_unit"))}</span>`; }
+
+  let actionHtml="";
+  if(adminMode){
+    actionHtml=`<div class="product-actions">
+      <button class="btn btn-primary btn-sm" onclick="openEditWkrModal('${js(teilenummer)}')">Bearbeiten</button>
+      <button class="btn btn-secondary btn-sm" onclick="printWkrLabel('${js(teilenummer)}')">Etikette</button>
+    </div>`;
+  } else {
+    actionHtml=isSoldOut
+      ?`<button class="btn btn-disabled">${e(t("sold_out"))}</button>`
+      :`<button class="btn btn-primary" onclick="openInquiryModal('${js(bezeichnung)}','${js(markeReifen)}','${js(dimension)}','${js(angebot||vp)}','${js(empfaengerMail)}','${js(bild)}','${js(teilenummer)}','${js(hinweistext)}','${js(verkaufshinweis)}','${js(nettopreis)}')">${e(t("select_action"))}</button>`;
+  }
+
+  return `<div class="product-item ${isSoldOut?"sold-out":""}">
+    <div class="product-image-wrap"><img src="${e(bild)}" alt="${e(bezeichnung)}" onclick="toggleZoom(this)"></div>
+    <div class="product-info">
+      <div class="product-name">${e(bezeichnung)}</div>
+      <div class="product-sub">${e(markeReifen)} · ${e(dimension)}</div>
+      ${hinweistext?`<div class="product-note">${e(hinweistext)}</div>`:""}
+      ${verkaufshinweis?`<div class="product-detail-row"><b>Hinweis:</b> ${e(verkaufshinweis)}</div>`:""}
+      ${teilenummer?`<div class="product-partnr">TN: ${e(teilenummer)}</div>`:""}
+    </div>
+    <div class="product-right">
+      <div class="price-label">${e(t("price_set"))}</div>
+      ${priceHtml}
+      <div class="price-vat">${e(t("price_incl_vat"))}</div>
+      ${(internalMode||adminMode)&&nettopreis?`<div class="product-detail-row" style="text-align:right;font-size:12px;"><b>Netto:</b> ${e(formatPrice(nettopreis))} CHF</div>`:""}
+      ${statusHtml}
+      <div class="product-actions">${actionHtml}</div>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   RENDER: TIRE SEARCH (INTERNAL)
+   ============================================================ */
+function renderTireSearch(){
+  const results=getFilteredReifen();
+  const searched=clean(tireSearch.direkt)||(clean(tireSearch.profilbreite)&&clean(tireSearch.querschnitt)&&clean(tireSearch.zoll));
+  let html=`<div class="search-section">
+    <div class="search-section-title">Interne Reifensuche</div>
+    <div class="search-section-sub">Suche nach Profilbreite/Querschnitt/Zoll oder Direkteingabe (z. B. 225/45R18)</div>
+    <div class="filter-grid">
+      <div class="filter-field"><label>Direkteingabe</label><input id="tireDirektInput" type="text" placeholder="225/45R18" value="${e(tireSearch.direkt)}"></div>
+      <div class="filter-field"><label>Profilbreite</label><input id="tireBreiteInput" type="text" placeholder="225" value="${e(tireSearch.profilbreite)}"></div>
+      <div class="filter-field"><label>Querschnitt</label><input id="tireQuerschnittInput" type="text" placeholder="45" value="${e(tireSearch.querschnitt)}"></div>
+      <div class="filter-field"><label>Zoll</label><input id="tireZollInput" type="text" placeholder="18" value="${e(tireSearch.zoll)}"></div>
+      <button class="btn btn-primary" onclick="applyTireSearch()">Suchen</button>
+      <button class="btn btn-secondary" onclick="resetTireSearch()">Zurücksetzen</button>
+    </div>`;
+  if(searched){
+    html+=`<div class="products-section"><div class="products-header"><h2 class="products-title">Reifenangebote</h2><div class="products-meta"><span>Treffer: ${results.length}</span></div></div>`;
+    if(!results.length) html+=`<div class="empty-state"><div class="empty-icon">🔍</div>${e(t("no_tires"))}</div>`;
+    results.forEach(r=>{ html+=renderTireProduct(r,true); });
+    html+=`</div>`;
+  }
+  html+=`</div>`;
+  return html;
+}
+
+/* ============================================================
+   RENDER: TIRE PRODUCT CARD
+   ============================================================ */
+function renderTireProduct(r,isInternal){
+  const hersteller=clean(r["Hersteller"]);
+  const reifentyp=clean(r["Reifentyp"]);
+  const bild=clean(r["Bild"])||getTireImage(hersteller,reifentyp);
+  const profil=clean(r["Profil"]);
+  const lastindex=clean(r["Lastindex"]);
+  const gi=clean(r["Geschwindigkeitsindex"]);
+  const runflat=clean(r["Runflat"]);
+  const dot=clean(r["DOT"]);
+  const anzahl=clean(r["Anzahl"]);
+  const standort=standortLabel(clean(r["Standort"]));
+  const vkpreis=clean(r["VK Preis"]);
+  const ekpreis=clean(r["EK Preis"]);
+  const teilenummer=clean(r["Teilenummer"]);
+  const aktiv=clean(r["Aktiv"]);
+  const rowId=clean(r["ID"]);
+  const groesse=tireSize(r);
+  const logo=getTireLogo(hersteller);
+  const bemerkung=clean(r["Bemerkung"]);
+  const bemerkungSichtbar=clean(r["Bemerkung sichtbar"]);
+  const lagerort=clean(r["Lagerort"]);
+  const vkNum=parsePrice(vkpreis)||0;
+  const ekNum=parsePrice(ekpreis);
+  const isSpecialPrice=ekNum!==null&&vkNum>0&&ekNum>vkNum;
+  const qtyOpts=qtyOptions(anzahl);
+  const isAdmin=adminMode;
+  const imgHtml=bild?`<img src="${e(bild)}" alt="${e(hersteller)}" onclick="toggleZoom(this)">`:`<div class="product-no-image">Kein Bild</div>`;
+  let dotHtml="";
+  if(dot) dotHtml=isDotOld(dot)?`<div class="dot-warning">⚠ DOT: ${e(dot)} — ${e(t("dot_warning"))}</div>`:`<div class="dot-ok">✓ DOT: ${e(dot)}</div>`;
+  const priceColor=isSpecialPrice?"style='color:var(--error);font-weight:700;'":"";
+  const actionHtml=isAdmin
+    ?`<div class="product-actions"><button class="btn btn-primary btn-sm" onclick="openEditTireModal('${js(rowId)}')">Bearbeiten</button><button class="btn btn-secondary btn-sm" onclick="printTireLabel('${js(rowId)}')">Etikette drucken</button></div>`
+    :`<button class="btn btn-primary" onclick="openInquiryModal('${js((hersteller+" "+profil).trim())}','${js(reifentyp)}','${js(groesse)}',this.closest('.product-item').querySelector('.tire-price-display').textContent.replace(' CHF',''),'tv-g-fp@emmeneggerag.ch','${js(bild)}','${js(teilenummer)}','${js("DOT: "+dot+(anzahl?" | Anzahl: "+anzahl:"")+(runflat?" | Runflat: "+runflat:""))}','${js("Standort: "+standort)}','')">${e(t("select_action"))}</button>`;
+  return `<div class="product-item ${aktiv!=="Ja"?"inactive-tire":""}">
+    <div class="product-image-wrap">${imgHtml}</div>
+    <div class="product-info">
+      ${reifentyp?`<div class="product-tag">${e(reifentyp)}</div>`:""}
+      ${logo?`<img src="${e(logo)}" alt="${e(hersteller)}" style="height:22px;width:auto;object-fit:contain;margin-bottom:6px;display:block;">`:`<div class="product-brand-main">${e(hersteller)}</div>`}
+      ${profil?`<div class="product-name">${e(profil)}</div>`:""}
+      ${groesse?`<div class="product-sub">${e(groesse)} ${e(lastindex)}${e(gi)}</div>`:""}
+      ${runflat&&clean(runflat).toLowerCase()==="ja"?`<div class="product-detail-row"><b>Runflat:</b> Ja</div>`:""}
+      <div class="product-detail-row"><b>An Lager:</b> ${e(anzahl||"0")}</div>
+      <div class="product-detail-row"><b>Standort:</b> ${e(standort)}</div>
+      ${lagerort?`<div class="product-detail-row"><b>Lagerort:</b> ${e(lagerort)}</div>`:""}
+      ${teilenummer?`<div class="product-partnr">TN: ${e(teilenummer)}</div>`:""}
+      ${dotHtml}
+      ${isAdmin?`<div class="product-detail-row"><b>Status:</b> <span class="${aktiv==="Ja"?"badge badge-success":"badge badge-error"}">${aktiv==="Ja"?"Aktiv":"Inaktiv"}</span></div>`:""}
+      ${isAdmin&&bemerkung&&bemerkungSichtbar==="Ja"?`<div class="product-note">${e(bemerkung)}</div>`:""}
+    </div>
+    <div class="product-right">
+      <div class="price-label">${isSpecialPrice?"Angebotspreis":"VK Preis"}</div>
+      <div class="price-main tire-price-display" ${priceColor}>${vkpreis?e(vkpreis)+" CHF":"Preis offen"}</div>
+      ${isAdmin&&ekpreis?`<div class="product-detail-row" style="text-align:right;font-size:12px;"><b>EK:</b> ${e(ekpreis)} CHF</div>`:""}
+      ${qtyOpts.length>0&&isInternal&&!isAdmin?`<div class="qty-wrap"><label class="qty-label">Menge</label><select class="qty-select" onchange="updateTirePrice(this,'${js(String(vkNum))}')">${qtyOpts.map(q=>`<option value="${q}">${q}x</option>`).join("")}</select></div>`:""}
+      <div class="price-vat">inkl. MwSt.</div>
+      <div class="product-actions">${actionHtml}</div>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   RENDER: ADMIN REIFEN LIST
+   ============================================================ */
+function renderAdminReifenList(){
+  const results=getFilteredAdminReifen();
+  const standorte=[...new Set(reifen.map(r=>clean(r["Standort"])).filter(Boolean))];
+  const typen=[...new Set(reifen.map(r=>clean(r["Reifentyp"])).filter(Boolean))];
+  const aktiv=results.filter(r=>clean(r["Aktiv"])==="Ja").length;
+  const inaktiv=results.length-aktiv;
+  return `<div class="search-section">
+    <div class="search-section-title">${e(t("admin_tires_all"))}</div>
+    <div class="search-section-sub">Alle Reifen mit Filteroptionen</div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
+      <button class="btn btn-primary" onclick="openAddTireModal()">+ Neuen Reifen</button>
+    </div>
+    <div class="filter-grid" style="grid-template-columns:2fr 1fr 1fr 1fr auto auto auto;">
+      <div class="filter-field"><label>Suche</label><input id="adminReifenSuche" type="text" placeholder="Hersteller, Profil, Teilenummer, DOT …" value="${e(adminReifenFilter.suche)}"></div>
+      <div class="filter-field"><label>Standort</label><select id="adminReifenStandort"><option value="">Alle</option>${standorte.map(s=>`<option value="${e(s)}" ${adminReifenFilter.standort===s?"selected":""}>${e(standortLabel(s))}</option>`).join("")}</select></div>
+      <div class="filter-field"><label>Reifentyp</label><select id="adminReifenTyp"><option value="">Alle</option>${typen.map(tp=>`<option value="${e(tp)}" ${adminReifenFilter.reifentyp===tp?"selected":""}>${e(tp)}</option>`).join("")}</select></div>
+      <div class="filter-field"><label>Status</label><select id="adminReifenAktiv"><option value="">Alle</option><option value="Ja" ${adminReifenFilter.aktivStatus==="Ja"?"selected":""}>Aktiv</option><option value="Nein" ${adminReifenFilter.aktivStatus==="Nein"?"selected":""}>Inaktiv</option></select></div>
+      <div class="filter-field" style="justify-content:flex-end;"><div class="filter-checkbox"><input id="adminReifenNurLager" type="checkbox" ${adminReifenFilter.nurAnLager?"checked":""}><label for="adminReifenNurLager">Nur an Lager</label></div></div>
+      <button class="btn btn-primary" onclick="applyAdminReifenFilter()">Suchen</button>
+      <button class="btn btn-secondary" onclick="resetAdminReifenFilter()">Reset</button>
+    </div>
+    <div class="products-section">
+      <div class="products-header">
+        <h2 class="products-title">Reifen Übersicht</h2>
+        <div class="products-meta"><span>Treffer: <b>${results.length}</b> | <span class="badge badge-success">Aktiv: ${aktiv}</span> <span class="badge badge-error" style="margin-left:4px;">Inaktiv: ${inaktiv}</span></span><span>Administrator Ansicht</span></div>
+      </div>
+      ${results.length?results.map(r=>renderTireProduct(r,false)).join(""):`<div class="empty-state"><div class="empty-icon">🔍</div>Keine Reifen gefunden.</div>`}
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   RENDER: ADMIN WKR LIST
+   ============================================================ */
+function renderAdminWkrList(){
+  const results=getFilteredAdminWkr();
+  const marken=[...new Set(produkte.map(p=>clean(p["Marke"])).filter(Boolean))];
+  const standorte=[...new Set(produkte.map(p=>clean(p["Standort"])).filter(Boolean))];
+  return `<div class="search-section">
+    <div class="search-section-title">${e(t("admin_wkr_all"))}</div>
+    <div class="search-section-sub">Alle Winterkompletträder mit Filter</div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
+      <button class="btn btn-primary" onclick="openAddWkrModal()">+ Neues WKR</button>
+    </div>
+    <div class="filter-grid" style="grid-template-columns:2fr 1fr 1fr auto auto auto;">
+      <div class="filter-field"><label>Suche</label><input id="adminWkrSuche" type="text" placeholder="TN, Bezeichnung, Reifen, Dimension …" value="${e(adminWkrFilter.suche)}"></div>
+      <div class="filter-field"><label>Marke</label><select id="adminWkrMarke"><option value="">Alle</option>${marken.map(m=>`<option value="${e(m)}" ${adminWkrFilter.marke===m?"selected":""}>${e(m)}</option>`).join("")}</select></div>
+      <div class="filter-field"><label>Standort</label><select id="adminWkrStandort"><option value="">Alle</option>${standorte.map(s=>`<option value="${e(s)}" ${adminWkrFilter.standort===s?"selected":""}>${e(standortLabel(s))}</option>`).join("")}</select></div>
+      <div class="filter-field" style="justify-content:flex-end;"><div class="filter-checkbox"><input id="adminWkrNurLager" type="checkbox" ${adminWkrFilter.nurAnLager?"checked":""}><label for="adminWkrNurLager">Nur an Lager</label></div></div>
+      <button class="btn btn-primary" onclick="applyAdminWkrFilter()">Suchen</button>
+      <button class="btn btn-secondary" onclick="resetAdminWkrFilter()">Reset</button>
+    </div>
+    <div class="products-section">
+      <div class="products-header">
+        <h2 class="products-title">WKR Übersicht</h2>
+        <div class="products-meta"><span>Treffer: ${results.length}</span><span>Administrator Ansicht</span></div>
+      </div>
+      ${results.length?results.map(r=>renderAdminWkrItem(r)).join(""):`<div class="empty-state"><div class="empty-icon">🔍</div>Keine WKR gefunden.</div>`}
+    </div>
+  </div>`;
+}
+
+function renderAdminWkrItem(r){
+  const lager=parseInt(clean(r["Lager"]),10)||0;
+  const bild=clean(r["Bild"])||"https://via.placeholder.com/220x140?text=Rad";
+  const bezeichnung=clean(r["Bezeichnung"]);
+  const marke=clean(r["Marke"]);
+  const standort=standortLabel(clean(r["Standort"]));
+  const lagerort=clean(r["Lagerort"]);
+  const markeReifen=clean(r["Reifen"]);
+  const dimension=clean(r["Dimension"]);
+  const hinweistext=clean(r["Hinweistext"]);
+  const verkaufshinweis=clean(r["Verkaufshinweis"]);
+  const teilenummer=clean(r["TN"]);
+  const vp=clean(r["VP"]);
+  const angebot=clean(r["Angebotspreis"]);
+  const nettopreis=clean(r["Nettopreis"]);
+  const vpNum=parsePrice(vp),angebotNum=parsePrice(angebot);
+  const hasDiscount=angebotNum>0&&vpNum>0&&angebotNum<vpNum;
+  const isLowStock=lager>0&&lager<=2;
+  let priceHtml="";
+  if(hasDiscount) priceHtml=`<div class="price-main sale">${e(formatPrice(angebot))} CHF</div><div class="price-old">UPE: ${e(formatPrice(vp))} CHF</div>`;
+  else if(angebotNum>0) priceHtml=`<div class="price-main">${e(formatPrice(angebot))} CHF</div>`;
+  else if(vpNum>0) priceHtml=`<div class="price-main">${e(formatPrice(vp))} CHF</div>`;
+  else priceHtml=`<div class="price-main">Preis offen</div>`;
+  return `<div class="product-item">
+    <div class="product-image-wrap"><img src="${e(bild)}" alt="${e(bezeichnung)}" onclick="toggleZoom(this)"></div>
+    <div class="product-info">
+      <div class="product-name">${e(bezeichnung)}</div>
+      <div class="product-sub">${e(marke)} · ${e(markeReifen)} · ${e(dimension)}</div>
+      <div class="product-detail-row"><b>Standort:</b> ${e(standort)}</div>
+      ${lagerort?`<div class="product-detail-row"><b>Lagerort:</b> ${e(lagerort)}</div>`:""}
+      ${teilenummer?`<div class="product-partnr">TN: ${e(teilenummer)}</div>`:""}
+      ${hinweistext?`<div class="product-note">${e(hinweistext)}</div>`:""}
+      ${verkaufshinweis?`<div class="product-detail-row"><b>Hinweis:</b> ${e(verkaufshinweis)}</div>`:""}
+    </div>
+    <div class="product-right">
+      <div class="price-label">Pro Satz inkl. Montage</div>
+      ${priceHtml}
+      <div class="price-vat">inkl. MwSt.</div>
+      ${nettopreis?`<div class="product-detail-row" style="text-align:right;font-size:12px;"><b>Netto:</b> ${e(formatPrice(nettopreis))} CHF</div>`:""}
+      <div class="stock-count" style="color:${lager>0?"var(--success)":"var(--text-muted)"};">Lagerbestand: ${lager}</div>
+      ${isLowStock?`<span class="stock-warning-chip">⚠ Kritischer Lager</span>`:""}
+      <div class="product-actions" style="margin-top:12px;">
+        <button class="btn btn-primary btn-sm" onclick="openEditWkrModal('${js(teilenummer)}')">Bearbeiten</button>
+        <button class="btn btn-secondary btn-sm" onclick="printWkrLabel('${js(teilenummer)}')">Etikette drucken</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   IMAGE ZOOM
+   ============================================================ */
+function toggleZoom(img){
+  document.querySelectorAll(".zoomed").forEach(el=>{if(el!==img)el.classList.remove("zoomed");});
+  img.classList.toggle("zoomed");
+}
+
+/* ============================================================
+   MODAL: INQUIRY
+   ============================================================ */
+function openInquiryModal(bezeichnung,marke,dimension,preis,empfaengerMail,bild,teilenummer,hinweistext,verkaufshinweis,nettopreis){
+  selectedProduct={bezeichnung,marke,dimension,preis,nettopreis,empfaengerMail,bild,teilenummer,hinweistext,verkaufshinweis};
+  const priceFormatted=formatPrice(preis)||preis;
+  document.getElementById("modalProductInfo").innerHTML=`<b>Produkt:</b> ${e(bezeichnung)}<br>${e(marke)} ${e(dimension)}<br>`+(preis?`<b>Preis:</b> ${e(priceFormatted)} CHF<br>`:"")+((internalMode||adminMode)&&nettopreis?`<b>Netto:</b> ${e(formatPrice(nettopreis))} CHF`:"");
+  document.getElementById("internalFields").style.display=internalMode?"block":"none";
+  document.getElementById("inquiryModal").classList.add("open");
+}
+function closeInquiryModal(){ document.getElementById("inquiryModal").classList.remove("open"); }
+
+/* ============================================================
+   MODAL: ADD/EDIT TIRE
+   ============================================================ */
+function openAddTireModal(){ clearTireForm("new"); document.getElementById("addTireModal").classList.add("open"); }
+function closeAddTireModal(){ document.getElementById("addTireModal").classList.remove("open"); }
+function clearTireForm(prefix){
+  ["Standort","Reifentyp","HerstellerSelect","Profil","Breite","Querschnitt","Zoll","Lastindex","Geschwindigkeitsindex","Runflat","Dot","Teilenummer","EkPreis","VkPreis"].forEach(f=>{const el=document.getElementById(`${prefix}Tire${f}`);if(el)el.value="";});
+  const anzahl=document.getElementById(`${prefix}TireAnzahl`);if(anzahl)anzahl.value="1";
+  const aktiv=document.getElementById(`${prefix}TireAktiv`);if(aktiv)aktiv.value="Ja";
+  const bsv=document.getElementById(`${prefix}TireBemerkungSichtbar`);if(bsv)bsv.value="Nein";
+  const bm=document.getElementById(`${prefix}TireBemerkung`);if(bm)bm.value="";
+  const ho=document.getElementById(`${prefix}TireHerstellerOther`);if(ho)ho.value="";
+  const wrap=document.getElementById(`${prefix}TireHerstellerOtherWrap`);if(wrap)wrap.style.display="none";
+}
+function toggleNewTireOtherBrand(){ const sel=document.getElementById("newTireHerstellerSelect"); document.getElementById("newTireHerstellerOtherWrap").style.display=sel?.value==="Andere"?"block":"none"; }
+function toggleEditTireOtherBrand(){ const sel=document.getElementById("editTireHerstellerSelect"); document.getElementById("editTireHerstellerOtherWrap").style.display=sel?.value==="Andere"?"block":"none"; }
+function openEditTireModal(rowId){
+  const tire=reifen.find(r=>clean(r["ID"])===clean(rowId));
+  if(!tire){alert("Reifen nicht gefunden.");return;}
+  editingTireId=clean(rowId);
+  const currentHersteller=clean(tire["Hersteller"]);
+  const isKnown=KNOWN_BRANDS.includes(currentHersteller);
+  document.getElementById("editTireStandort").value=clean(tire["Standort"]);
+  document.getElementById("editTireReifentyp").value=clean(tire["Reifentyp"]);
+  document.getElementById("editTireHerstellerSelect").value=isKnown?currentHersteller:"Andere";
+  document.getElementById("editTireHerstellerOther").value=isKnown?"":currentHersteller;
+  document.getElementById("editTireHerstellerOtherWrap").style.display=isKnown?"none":"block";
+  document.getElementById("editTireProfil").value=clean(tire["Profil"]);
+  document.getElementById("editTireBreite").value=clean(tire["Profilbreite"]);
+  document.getElementById("editTireQuerschnitt").value=clean(tire["Querschnitt"]);
+  document.getElementById("editTireZoll").value=clean(tire["Zoll"]);
+  document.getElementById("editTireLastindex").value=clean(tire["Lastindex"]);
+  document.getElementById("editTireGeschwindigkeitsindex").value=clean(tire["Geschwindigkeitsindex"]);
+  document.getElementById("editTireRunflat").value=clean(tire["Runflat"]);
+  document.getElementById("editTireDot").value=clean(tire["DOT"]);
+  document.getElementById("editTireTeilenummer").value=clean(tire["Teilenummer"]);
+  document.getElementById("editTireAnzahl").value=clean(tire["Anzahl"]);
+  document.getElementById("editTireEkPreis").value=clean(tire["EK Preis"]);
+  document.getElementById("editTireVkPreis").value=clean(tire["VK Preis"]);
+  document.getElementById("editTireAktiv").value=clean(tire["Aktiv"])||"Ja";
+  document.getElementById("editTireBemerkung").value=clean(tire["Bemerkung"]);
+  document.getElementById("editTireBemerkungSichtbar").value=clean(tire["Bemerkung sichtbar"])||"Nein";
+  document.getElementById("editTireModal").classList.add("open");
+}
+function closeEditTireModal(){ document.getElementById("editTireModal").classList.remove("open"); editingTireId=""; }
+
+/* ============================================================
+   MODAL: ADD/EDIT WKR
+   ============================================================ */
+function openAddWkrModal(){ clearWkrForm("new"); document.getElementById("addWkrModal").classList.add("open"); }
+function closeAddWkrModal(){ document.getElementById("addWkrModal").classList.remove("open"); }
+function clearWkrForm(prefix){
+  ["Marke","Standort","Bezeichnung","Reifen","Dimension","TN","Lagerort","Bild","VP","Angebotspreis","Nettopreis","EmpfaengerMail","Hinweistext","Verkaufshinweis"].forEach(f=>{const el=document.getElementById(`${prefix}Wkr${f}`);if(el)el.value="";});
+  const lager=document.getElementById(`${prefix}WkrLager`);if(lager)lager.value="0";
+}
+function openEditWkrModal(tn){
+  const row=produkte.find(p=>clean(p["TN"])===clean(tn));
+  if(!row){alert("WKR nicht gefunden.");return;}
+  editingWkrTN=clean(row["TN"]);
+  document.getElementById("editWkrMarke").value=clean(row["Marke"]);
+  document.getElementById("editWkrStandort").value=clean(row["Standort"]);
+  document.getElementById("editWkrBezeichnung").value=clean(row["Bezeichnung"]);
+  document.getElementById("editWkrReifen").value=clean(row["Reifen"]);
+  document.getElementById("editWkrDimension").value=clean(row["Dimension"]);
+  document.getElementById("editWkrTN").value=clean(row["TN"]);
+  document.getElementById("editWkrLager").value=clean(row["Lager"]);
+  document.getElementById("editWkrLagerort").value=clean(row["Lagerort"]);
+  document.getElementById("editWkrBild").value=clean(row["Bild"]);
+  document.getElementById("editWkrVP").value=clean(row["VP"]);
+  document.getElementById("editWkrAngebotspreis").value=clean(row["Angebotspreis"]);
+  document.getElementById("editWkrNettopreis").value=clean(row["Nettopreis"]);
+  document.getElementById("editWkrEmpfaengerMail").value=clean(row["EmpfängerMail"]||row["EmpfaengerMail"]);
+  document.getElementById("editWkrHinweistext").value=clean(row["Hinweistext"]);
+  document.getElementById("editWkrVerkaufshinweis").value=clean(row["Verkaufshinweis"]);
+  document.getElementById("editWkrModal").classList.add("open");
+}
+function closeEditWkrModal(){ document.getElementById("editWkrModal").classList.remove("open"); editingWkrTN=""; }
+
+/* ============================================================
+   SAVE/DELETE: TIRES
+   ============================================================ */
+async function saveNewTire(){
+  if(_saving.newTire)return;
+  const standort=clean(document.getElementById("newTireStandort").value);
+  const reifentyp=clean(document.getElementById("newTireReifentyp").value);
+  const herstellerSel=clean(document.getElementById("newTireHerstellerSelect").value);
+  const hersteller=herstellerSel==="Andere"?clean(document.getElementById("newTireHerstellerOther").value):herstellerSel;
+  const profil=clean(document.getElementById("newTireProfil").value);
+  const pb=clean(document.getElementById("newTireBreite").value);
+  const qs=clean(document.getElementById("newTireQuerschnitt").value);
+  const zl=clean(document.getElementById("newTireZoll").value);
+  const lastindex=clean(document.getElementById("newTireLastindex").value);
+  const gi=clean(document.getElementById("newTireGeschwindigkeitsindex").value);
+  const runflat=clean(document.getElementById("newTireRunflat").value);
+  const dot=clean(document.getElementById("newTireDot").value);
+  const tn=clean(document.getElementById("newTireTeilenummer").value);
+  const anzahl=clean(document.getElementById("newTireAnzahl").value);
+  const ekpreis=clean(document.getElementById("newTireEkPreis").value);
+  const vkpreis=clean(document.getElementById("newTireVkPreis").value);
+  const aktiv=clean(document.getElementById("newTireAktiv").value);
+  const bemerkung=clean(document.getElementById("newTireBemerkung").value);
+  const bemSichtbar=clean(document.getElementById("newTireBemerkungSichtbar").value);
+  const bild=getTireImage(hersteller,reifentyp);
+  if(!standort||!reifentyp||!hersteller||!profil||!pb||!qs||!zl||!tn||!anzahl||!vkpreis||!aktiv){alert("Bitte alle Pflichtfelder ausfüllen.");return;}
+  _saving.newTire=true;
+  const newRow={"Standort":standort,"Reifentyp":reifentyp,"Hersteller":hersteller,"Profil":profil,"Profilbreite":pb,"Querschnitt":qs,"Zoll":zl,"Lastindex":lastindex,"Geschwindigkeitsindex":gi,"Runflat":runflat,"DOT":dot,"Teilenummer":tn,"Anzahl":anzahl,"EK Preis":ekpreis,"VK Preis":vkpreis,"Bild":bild,"Aktiv":aktiv,"Bemerkung":bemerkung,"Bemerkung sichtbar":bemSichtbar};
+  try{const res=await postToScript({action:"addRow",sheet:"Reifen",row:newRow});if(res&&res.status==="OK"){if(res.id)newRow.ID=res.id;reifen.push(newRow);alert("Reifen gespeichert.");closeAddTireModal();render();if(newRow.ID)printTireLabel(newRow.ID);}else{alert("Fehler: "+JSON.stringify(res));}}catch(err){alert("Fehler: "+err.message);}finally{_saving.newTire=false;}
+}
+async function saveEditedTire(){
+  if(_saving.editTire)return;
+  if(!editingTireId){alert("Keine ID.");return;}
+  const standort=clean(document.getElementById("editTireStandort").value);
+  const reifentyp=clean(document.getElementById("editTireReifentyp").value);
+  const herstellerSel=clean(document.getElementById("editTireHerstellerSelect").value);
+  const hersteller=herstellerSel==="Andere"?clean(document.getElementById("editTireHerstellerOther").value):herstellerSel;
+  const profil=clean(document.getElementById("editTireProfil").value);
+  const pb=clean(document.getElementById("editTireBreite").value);
+  const qs=clean(document.getElementById("editTireQuerschnitt").value);
+  const zl=clean(document.getElementById("editTireZoll").value);
+  const lastindex=clean(document.getElementById("editTireLastindex").value);
+  const gi=clean(document.getElementById("editTireGeschwindigkeitsindex").value);
+  const runflat=clean(document.getElementById("editTireRunflat").value);
+  const dot=clean(document.getElementById("editTireDot").value);
+  const tn=clean(document.getElementById("editTireTeilenummer").value);
+  const anzahl=clean(document.getElementById("editTireAnzahl").value);
+  const ekpreis=clean(document.getElementById("editTireEkPreis").value);
+  const vkpreis=clean(document.getElementById("editTireVkPreis").value);
+  const aktiv=clean(document.getElementById("editTireAktiv").value);
+  const bemerkung=clean(document.getElementById("editTireBemerkung").value);
+  const bemSichtbar=clean(document.getElementById("editTireBemerkungSichtbar").value);
+  const bild=getTireImage(hersteller,reifentyp);
+  if(!standort||!reifentyp||!hersteller||!profil||!pb||!qs||!zl||!tn||!anzahl||!vkpreis||!aktiv){alert("Bitte alle Pflichtfelder ausfüllen.");return;}
+  _saving.editTire=true;
+  const updates={"Standort":standort,"Reifentyp":reifentyp,"Hersteller":hersteller,"Profil":profil,"Profilbreite":pb,"Querschnitt":qs,"Zoll":zl,"Lastindex":lastindex,"Geschwindigkeitsindex":gi,"Runflat":runflat,"DOT":dot,"Teilenummer":tn,"Anzahl":anzahl,"EK Preis":ekpreis,"VK Preis":vkpreis,"Bild":bild,"Aktiv":aktiv,"Bemerkung":bemerkung,"Bemerkung sichtbar":bemSichtbar};
+  try{const res=await postToScript({sheet:"Reifen",keyField:"ID",keyValue:editingTireId,updates});if(res==="OK"||(res&&res.status==="OK")){const row=reifen.find(r=>clean(r["ID"])===clean(editingTireId));if(row)Object.assign(row,updates);alert("Reifen aktualisiert.");closeEditTireModal();render();}else{alert("Fehler: "+JSON.stringify(res));}}catch(err){alert("Fehler: "+err.message);}finally{_saving.editTire=false;}
+}
+async function deleteTire(){
+  if(_saving.deleteTire)return;
+  if(!editingTireId)return;
+  if(!confirm("Reifen wirklich löschen?"))return;
+  _saving.deleteTire=true;
+  try{const res=await postToScript({action:"deleteRow",sheet:"Reifen",keyField:"ID",keyValue:editingTireId});if(res==="OK"||(res&&(res.status==="OK"||res==="OK"))){reifen=reifen.filter(r=>clean(r["ID"])!==clean(editingTireId));alert("Reifen gelöscht.");closeEditTireModal();render();}else{alert("Fehler: "+JSON.stringify(res));}}catch(err){alert("Fehler: "+err.message);}finally{_saving.deleteTire=false;}
+}
+
+/* ============================================================
+   SAVE/DELETE: WKR
+   ============================================================ */
+async function saveNewWkr(){
+  if(_saving.newWkr)return;
+  const marke=clean(document.getElementById("newWkrMarke").value);
+  const standort=clean(document.getElementById("newWkrStandort").value);
+  const bezeichnung=clean(document.getElementById("newWkrBezeichnung").value);
+  const reifenmarke=clean(document.getElementById("newWkrReifen").value);
+  const dimension=clean(document.getElementById("newWkrDimension").value);
+  const tn=clean(document.getElementById("newWkrTN").value);
+  const lager=clean(document.getElementById("newWkrLager").value);
+  const lagerort=clean(document.getElementById("newWkrLagerort").value);
+  const bild=clean(document.getElementById("newWkrBild").value);
+  const vp=clean(document.getElementById("newWkrVP").value);
+  const angebotspreis=clean(document.getElementById("newWkrAngebotspreis").value);
+  const nettopreis=clean(document.getElementById("newWkrNettopreis").value);
+  const empfaengerMail=clean(document.getElementById("newWkrEmpfaengerMail").value);
+  const hinweistext=clean(document.getElementById("newWkrHinweistext").value);
+  const verkaufshinweis=clean(document.getElementById("newWkrVerkaufshinweis").value);
+  if(!marke||!standort||!bezeichnung||!tn){alert("Pflichtfelder ausfüllen.");return;}
+  if(produkte.some(p=>clean(p["TN"])===tn)){alert("TN existiert bereits.");return;}
+  _saving.newWkr=true;
+  const row={"Marke":marke,"Standort":standort,"Bezeichnung":bezeichnung,"Reifen":reifenmarke,"Dimension":dimension,"TN":tn,"Lager":lager,"Lagerort":lagerort,"Bild":bild,"VP":vp,"Angebotspreis":angebotspreis,"Nettopreis":nettopreis,"EmpfaengerMail":empfaengerMail,"Hinweistext":hinweistext,"Verkaufshinweis":verkaufshinweis};
+  try{const res=await postToScript({action:"appendRow",sheet:"Produkte",row});if(res&&res.status==="OK"){produkte.push(row);alert("WKR gespeichert.");closeAddWkrModal();render();}else{alert("Fehler: "+JSON.stringify(res));}}catch(err){alert("Fehler: "+err.message);}finally{_saving.newWkr=false;}
+}
+async function saveEditedWkr(){
+  if(!editingWkrTN){alert("Keine TN.");return;}
+  const marke=clean(document.getElementById("editWkrMarke").value);
+  const standort=clean(document.getElementById("editWkrStandort").value);
+  const bezeichnung=clean(document.getElementById("editWkrBezeichnung").value);
+  const tn=clean(document.getElementById("editWkrTN").value);
+  if(!marke||!standort||!bezeichnung||!tn){alert("Pflichtfelder ausfüllen.");return;}
+  const updates={"Marke":marke,"Standort":standort,"Bezeichnung":bezeichnung,"Reifen":clean(document.getElementById("editWkrReifen").value),"Dimension":clean(document.getElementById("editWkrDimension").value),"TN":tn,"Lager":clean(document.getElementById("editWkrLager").value),"Lagerort":clean(document.getElementById("editWkrLagerort").value),"Bild":clean(document.getElementById("editWkrBild").value),"VP":clean(document.getElementById("editWkrVP").value),"Angebotspreis":clean(document.getElementById("editWkrAngebotspreis").value),"Nettopreis":clean(document.getElementById("editWkrNettopreis").value),"EmpfaengerMail":clean(document.getElementById("editWkrEmpfaengerMail").value),"Hinweistext":clean(document.getElementById("editWkrHinweistext").value),"Verkaufshinweis":clean(document.getElementById("editWkrVerkaufshinweis").value)};
+  try{const res=await postToScript({sheet:"Produkte",keyField:"TN",keyValue:editingWkrTN,updates});if(res==="OK"||(res&&res.status==="OK")){const row=produkte.find(p=>clean(p["TN"])===clean(editingWkrTN));if(row)Object.assign(row,updates);editingWkrTN=tn;alert("WKR aktualisiert.");closeEditWkrModal();render();}else{alert("Fehler: "+JSON.stringify(res));}}catch(err){alert("Fehler: "+err.message);}
+}
+async function deleteWkr(){
+  if(!editingWkrTN)return;
+  if(!confirm("WKR wirklich löschen?"))return;
+  _saving.deleteWkr=true;
+  try{const res=await postToScript({action:"deleteRow",sheet:"Produkte",keyField:"TN",keyValue:editingWkrTN});if(res==="OK"||(res&&res.status==="OK")){produkte=produkte.filter(p=>clean(p["TN"])!==clean(editingWkrTN));alert("WKR gelöscht.");closeEditWkrModal();render();}else{alert("Fehler: "+JSON.stringify(res));}}catch(err){alert("Fehler: "+err.message);}finally{_saving.deleteWkr=false;}
+}
+
+/* ============================================================
+   API HELPER
+   ============================================================ */
+async function postToScript(payload){
+  const response=await fetch(APPS_SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload),redirect:"follow"});
+  const text=await response.text();
+  try{return JSON.parse(text);}catch{return text;}
+}
+
+/* ============================================================
+   PRICE UPDATE
+   ============================================================ */
+function updateTirePrice(selectEl,basePrice){
+  const wrap=selectEl.closest(".product-item");if(!wrap)return;
+  const qty=parseInt(selectEl.value,10)||1;
+  const price=parseFloat(basePrice)||0;
+  const target=wrap.querySelector(".tire-price-display");
+  if(target)target.textContent=`${(price*qty).toLocaleString("de-CH",{minimumFractionDigits:0,maximumFractionDigits:2})} CHF`;
+}
+
+/* ============================================================
+   MAIL SEND
+   ============================================================ */
+async function sendMail(){
+  if(!selectedProduct){alert("Kein Produkt ausgewählt.");return;}
+  const name=clean(document.getElementById("kundeName").value);
+  const email=clean(document.getElementById("kundeEmail").value);
+  const plate=clean(document.getElementById("kundeKontrollschild").value);
+  const art=clean(document.getElementById("kundeArt").value);
+  const bemerkung=clean(document.getElementById("kundeBemerkung").value);
+  const auftrag=clean(document.getElementById("interneAuftragsnummer")?.value);
+  const kundeName=clean(document.getElementById("internerKundenname")?.value);
+  const fin=clean(document.getElementById("interneOrderOderFIN")?.value);
+  const ablieferung=clean(document.getElementById("internesAblieferdatum")?.value);
+  const sendBtn=document.getElementById("sendBtn");
+  if(!name||!email||!plate){alert("Pflichtfelder ausfüllen.");return;}
+  if(internalMode&&(!kundeName||!auftrag)){alert("Kundenname und Auftragsnummer ausfüllen.");return;}
+  if(!/^[^ ]+@[^ ]+\.[a-z]{2,}$/i.test(email)){alert("Ungültige E-Mail Adresse.");return;}
+  const orig=sendBtn.textContent;
+  sendBtn.textContent="Wird gesendet…";sendBtn.disabled=true;
+  const fz=fahrzeuge.find(f=>clean(f["Marke"])===state.marke&&clean(f["Reihe"])===state.reihe&&clean(f["Modell"])===state.modell);
+  const modellAnzeige=clean(fz?.Code)||state.modell||"";
+  const formData=new FormData();
+  formData.append("access_key","29788c4e-2b0a-47ba-a817-eb729a965e38");
+  formData.append("subject",internalMode?`Interne ${art} WKR - ${auftrag} - ${selectedProduct.bezeichnung}`:`${art} Winterkompletträder - ${selectedProduct.bezeichnung}`);
+  formData.append("from_name","WKR Konfigurator");
+  formData.append("to",selectedProduct.empfaengerMail||"tv-g-fp@emmeneggerag.ch");
+  formData.append("Name",name);formData.append("E-Mail",email);formData.append("Kontrollschild",plate);formData.append("Art",art);
+  formData.append("Standort",state.standort||"");formData.append("Marke",state.marke||"");formData.append("Reihe",state.reihe||"");formData.append("Modell",modellAnzeige);formData.append("Motor",state.motor||"");
+  formData.append("Produkt",selectedProduct.bezeichnung||"");formData.append("Reifen",`${selectedProduct.marke||""} ${selectedProduct.dimension||""}`.trim());
+  formData.append("Preis",selectedProduct.preis?`${selectedProduct.preis} CHF`:"");
+  formData.append("Netto Preis",selectedProduct.nettopreis?`${selectedProduct.nettopreis} CHF`:"");
+  formData.append("InternerModus",internalMode?"Ja":"Nein");formData.append("Auftragsnummer",auftrag);formData.append("Kundenname intern",kundeName);formData.append("Ordernummer / Fahrgestellnummer",fin);formData.append("Ablieferungsdatum",ablieferung);formData.append("Bemerkung",bemerkung);
+  const message=`${internalMode?"Interne ":""}${art} über WKR Konfigurator.\n\nFahrzeug: ${state.marke||""} ${state.reihe||""} ${modellAnzeige} ${state.motor||""}\nStandort: ${state.standort||""}\nProdukt: ${selectedProduct.bezeichnung||""} | ${selectedProduct.marke||""} ${selectedProduct.dimension||""}\nPreis: ${selectedProduct.preis||""} CHF\n${(internalMode||adminMode)&&selectedProduct.nettopreis?`Netto: ${selectedProduct.nettopreis} CHF`:""}\n\nKundendaten:\nName: ${name} | E-Mail: ${email} | Kontrollschild: ${plate}\n${internalMode?`Auftragsnummer: ${auftrag} | Kundenname: ${kundeName}\nFIN/Order: ${fin} | Ablieferdatum: ${ablieferung}`:""}\n\nBemerkung: ${bemerkung}`;
+  formData.append("message",message);
+  try{const response=await fetch("https://api.web3forms.com/submit",{method:"POST",body:formData});const data=await response.json();if(response.ok){alert("Anfrage erfolgreich gesendet.");["kundeName","kundeEmail","kundeKontrollschild","kundeBemerkung"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});document.getElementById("kundeArt").value="Anfrage";["interneAuftragsnummer","internerKundenname","interneOrderOderFIN","internesAblieferdatum"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});closeInquiryModal();}else{alert("Fehler: "+(data.message||"Unbekannter Fehler."));}}catch{alert("Fehler. Bitte erneut versuchen.");}finally{sendBtn.textContent=orig;sendBtn.disabled=false;}
+}
+
+/* ============================================================
+   PDF OFFER
+   ============================================================ */
+function showOfferPreview(){
+  if(!selectedProduct){alert("Kein Produkt ausgewählt.");return;}
+  const name=clean(document.getElementById("kundeName").value);
+  const email=clean(document.getElementById("kundeEmail").value);
+  const plate=clean(document.getElementById("kundeKontrollschild").value);
+  const art=clean(document.getElementById("kundeArt").value);
+  const bm=clean(document.getElementById("kundeBemerkung").value);
+  const auftrag=clean(document.getElementById("interneAuftragsnummer")?.value);
+  const kundeName=clean(document.getElementById("internerKundenname")?.value);
+  const fin=clean(document.getElementById("interneOrderOderFIN")?.value);
+  const ablieferung=clean(document.getElementById("internesAblieferdatum")?.value);
+  const fz=fahrzeuge.find(f=>clean(f["Marke"])===state.marke&&clean(f["Reihe"])===state.reihe&&clean(f["Modell"])===state.modell);
+  const modellAnzeige=clean(fz?.Code)||state.modell||"";
+  const today=new Date().toLocaleDateString("de-CH");
+  const sl=standortLabel(state.standort);
+  const priceFormatted=formatPrice(selectedProduct.preis)||selectedProduct.preis;
+  const w=window.open("","_blank");
+  if(!w){alert("Popup blockiert. Bitte Popups erlauben.");return;}
+  w.document.write(`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Offerte</title><style>body{font-family:Arial,sans-serif;color:#1f1f1f;padding:40px;background:white;}.offer-wrap{max-width:960px;margin:0 auto;}.hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #1c69d4;padding-bottom:20px;margin-bottom:30px;}.hdr img{width:200px;}.hdr-right h1{margin:0 0 6px;font-size:28px;}.hdr-right .meta{font-size:13px;color:#555;line-height:1.6;}h2{font-size:16px;border-bottom:1px solid #ddd;padding-bottom:6px;margin:0 0 12px;}table{width:100%;border-collapse:collapse;}td{padding:7px 0;font-size:13px;vertical-align:top;}td:first-child{width:220px;font-weight:700;}.price-box{margin-top:12px;padding:12px;background:#f0f5ff;border-left:4px solid #1c69d4;}.price-box .lbl{font-size:12px;color:#555;margin-bottom:4px;}.price-box .val{font-size:26px;font-weight:700;}.note{font-size:12px;color:#555;line-height:1.5;margin-top:8px;white-space:pre-line;}.footer{margin-top:30px;font-size:12px;color:#777;}.actions{margin-top:24px;}.actions button{background:#1c69d4;color:white;border:none;padding:10px 16px;font-size:13px;cursor:pointer;margin-right:8px;}.actions button.sec{background:#666;}@media print{.actions{display:none;}}</style></head><body><div class="offer-wrap"><div class="hdr"><img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" alt="Logo"><div class="hdr-right"><h1>Offerte Winterkompletträder</h1><div class="meta">Datum: ${today}<br>Art: ${e(art)}<br>Standort: ${e(sl)}</div></div></div><div style="margin-bottom:24px;"><h2>Fahrzeugangaben</h2><table><tr><td>Marke</td><td>${e(state.marke||"")}</td></tr><tr><td>Reihe</td><td>${e(state.reihe||"")}</td></tr><tr><td>Modell</td><td>${e(modellAnzeige)}</td></tr><tr><td>Motor</td><td>${e(state.motor||"")}</td></tr><tr><td>Kontrollschild</td><td>${e(plate)}</td></tr>${internalMode?`<tr><td>Kundenname</td><td>${e(kundeName)}</td></tr><tr><td>Auftragsnummer</td><td>${e(auftrag)}</td></tr><tr><td>FIN / Order</td><td>${e(fin)}</td></tr><tr><td>Ablieferungsdatum</td><td>${e(ablieferung)}</td></tr>`:`<tr><td>Name</td><td>${e(name)}</td></tr><tr><td>E-Mail</td><td>${e(email)}</td></tr>`}</table></div><div><h2>Angebotenes Produkt</h2><div style="display:flex;gap:20px;"><div><img src="${e(selectedProduct.bild||"")}" style="width:200px;object-fit:contain;border:1px solid #ddd;padding:8px;"></div><div style="flex:1;"><table><tr><td>Bezeichnung</td><td>${e(selectedProduct.bezeichnung||"")}</td></tr><tr><td>Reifen</td><td>${e(selectedProduct.marke||"")}</td></tr><tr><td>Dimension</td><td>${e(selectedProduct.dimension||"")}</td></tr><tr><td>Teilenummer</td><td>${e(selectedProduct.teilenummer||"")}</td></tr>${(internalMode||adminMode)&&selectedProduct.nettopreis?`<tr><td>Netto Preis</td><td>${e(formatPrice(selectedProduct.nettopreis)||selectedProduct.nettopreis)} CHF</td></tr>`:""}</table><div class="price-box"><div class="lbl">Preis pro Satz inkl. Montage / Preise inkl. MwSt.</div><div class="val">${e(priceFormatted)} CHF</div></div>${selectedProduct.verkaufshinweis?`<div class="note"><b>Hinweis:</b> ${e(selectedProduct.verkaufshinweis)}</div>`:""}${selectedProduct.hinweistext?`<div class="note">${e(selectedProduct.hinweistext)}</div>`:""}${bm?`<div class="note"><b>Bemerkung:</b><br>${e(bm)}</div>`:""}</div></div></div><div class="footer">Diese Offerte wurde über den Emmenegger WKR-Konfigurator erstellt. Änderungen und Zwischenverkauf vorbehalten.</div><div class="actions"><button onclick="window.print()">Drucken / Als PDF speichern</button><button class="sec" onclick="window.close()">Schliessen</button></div></div></body></html>`);
+  w.document.close();
+}
+
+/* ============================================================
+   LABEL PRINTING
+   ============================================================ */
+function buildTireLabelHtml(tire){
+  const hersteller=clean(tire["Hersteller"]);
+  const profil=clean(tire["Profil"]);
+  const groesse=tireSize(tire);
+  const lastindex=clean(tire["Lastindex"]);
+  const gi=clean(tire["Geschwindigkeitsindex"]);
+  const runflat=clean(tire["Runflat"]);
+  const dot=clean(tire["DOT"]);
+  const standort=standortLabel(clean(tire["Standort"]));
+  const tn=clean(tire["Teilenummer"]);
+  const reifentyp=clean(tire["Reifentyp"]);
+  const anzahl=clean(tire["Anzahl"]);
+  const logo=getTireLogo(hersteller);
+  return `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Etikette</title><style>@page{size:100mm 73mm;margin:0;}html,body{width:100mm;height:73mm;margin:0;padding:0;font-family:Arial,sans-serif;background:white;}.wrap{width:100mm;height:73mm;box-sizing:border-box;padding:4mm 5mm 3mm;display:flex;flex-direction:column;}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:4mm;margin-bottom:2mm;}.brand-block{flex:1;min-width:0;}.title{font-size:15pt;font-weight:700;line-height:1.05;margin-bottom:1mm;}.profile{font-size:10pt;font-weight:700;}.logo-wrap{width:24mm;height:10mm;display:flex;align-items:flex-start;justify-content:flex-end;overflow:hidden;flex-shrink:0;}.logo{max-width:24mm;max-height:10mm;object-fit:contain;object-position:right top;display:block;}.line{font-size:10pt;line-height:1.2;margin-bottom:1.2mm;}.size{font-size:14pt;font-weight:700;margin-bottom:1.2mm;}.tn{font-size:11pt;font-weight:700;margin-bottom:1mm;}.barcode-wrap{margin-top:1.5mm;padding-top:1mm;text-align:center;border-top:1px solid #ddd;}.barcode{width:70mm;height:10mm;display:block;margin:0 auto;}.tn-text{font-size:8pt;margin-top:0.8mm;letter-spacing:0.4px;font-weight:700;}.actions{position:fixed;right:10px;top:10px;display:flex;gap:8px;}.actions button{border:none;background:#1c69d4;color:white;padding:10px 14px;font-size:13px;cursor:pointer;}.actions button.sec{background:#666;}@media print{.actions{display:none;}}</style></head><body><div class="actions"><button onclick="window.print()">Drucken</button><button class="sec" onclick="window.close()">Schliessen</button></div><div class="wrap"><div class="top"><div class="brand-block"><div class="title">${e(hersteller)}</div>${profil?`<div class="profile">${e(profil)}</div>`:""}</div>${logo?`<div class="logo-wrap"><img src="${e(logo)}" class="logo" alt="${e(hersteller)}"></div>`:""}</div>${reifentyp?`<div class="line"><b>Typ:</b> ${e(reifentyp)}</div>`:""}<div class="size">${e(groesse)} ${e(lastindex)}${e(gi)}</div>${runflat?`<div class="line"><b>Runflat:</b> ${e(runflat)}</div>`:""}${dot?`<div class="line"><b>DOT:</b> ${e(dot)}</div>`:""}${standort?`<div class="line"><b>Standort:</b> ${e(standort)}</div>`:""}${anzahl?`<div class="line"><b>Anzahl:</b> ${e(anzahl)}</div>`:""}<div class="tn">Teilenummer: ${e(tn)}</div><div class="barcode-wrap"><svg id="barcode" class="barcode"></svg><div class="tn-text">${e(tn)}</div></div></div><script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script><script>if(${JSON.stringify(!!tn)})JsBarcode("#barcode",${JSON.stringify(tn)},{format:"CODE128",displayValue:false,margin:0,width:1.15,height:26});<\/script></body></html>`;
+}
+function printTireLabel(rowId){
+  const tire=reifen.find(r=>clean(r["ID"])===clean(rowId));
+  if(!tire){alert("Reifen nicht gefunden.");return;}
+  const w=window.open("","_blank","width=900,height=700");
+  if(!w){alert("Popup blockiert.");return;}
+  w.document.open();w.document.write(buildTireLabelHtml(tire));w.document.close();
+}
+function printWkrLabel(tn){
+  const r=produkte.find(p=>clean(p["TN"])===clean(tn));
+  if(!r){alert("WKR nicht gefunden.");return;}
+  const bezeichnung=clean(r["Bezeichnung"]);
+  const dimension=clean(r["Dimension"]);
+  const markeReifen=clean(r["Reifen"]);
+  const teilenummer=clean(r["TN"]);
+  const lager=clean(r["Lager"]);
+  const w=window.open("","_blank","width=900,height=700");
+  if(!w){alert("Popup blockiert.");return;}
+  w.document.write(`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>WKR Etikette</title><style>@page{size:100mm 73mm;margin:0;}html,body{width:100mm;height:73mm;margin:0;padding:0;font-family:Arial,sans-serif;background:white;}.wrap{width:100mm;height:73mm;box-sizing:border-box;padding:5mm;}.title{font-size:13pt;font-weight:700;margin-bottom:2mm;}.line{font-size:10pt;margin-bottom:1.5mm;}.tn{font-size:10pt;font-weight:700;margin-top:2mm;}.barcode-wrap{margin-top:2mm;text-align:center;border-top:1px solid #ddd;padding-top:1mm;}.barcode{width:70mm;height:10mm;display:block;margin:0 auto;}.tn-text{font-size:8pt;margin-top:0.8mm;font-weight:700;}.actions{position:fixed;right:10px;top:10px;display:flex;gap:8px;}.actions button{border:none;background:#1c69d4;color:white;padding:10px 14px;font-size:13px;cursor:pointer;}.actions button.sec{background:#666;}@media print{.actions{display:none;}}</style></head><body><div class="actions"><button onclick="window.print()">Drucken</button><button class="sec" onclick="window.close()">Schliessen</button></div><div class="wrap"><div class="title">${e(bezeichnung)}</div><div class="line">${e(markeReifen)} · ${e(dimension)}</div>${lager?`<div class="line"><b>Lagerbestand:</b> ${e(lager)}</div>`:""}<div class="tn">TN: ${e(teilenummer)}</div><div class="barcode-wrap"><svg id="barcode" class="barcode"></svg><div class="tn-text">${e(teilenummer)}</div></div></div><script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script><script>if(${JSON.stringify(!!teilenummer)})JsBarcode("#barcode",${JSON.stringify(teilenummer)},{format:"CODE128",displayValue:false,margin:0,width:1.15,height:26});<\/script></body></html>`);
+  w.document.close();
+}
+
+/* ============================================================
+   KEYBOARD
+   ============================================================ */
+document.addEventListener("keydown",function(ev){
+  if(ev.key!=="Enter")return;
+  const id=document.activeElement?.id;
+  if(["tireDirektInput","tireBreiteInput","tireQuerschnittInput","tireZollInput"].includes(id)){ev.preventDefault();applyTireSearch();}
+  if(id==="adminReifenSuche"){ev.preventDefault();applyAdminReifenFilter();}
+  if(id==="adminWkrSuche"){ev.preventDefault();applyAdminWkrFilter();}
+});
+
+document.querySelectorAll(".modal-overlay").forEach(overlay=>{
+  overlay.addEventListener("click",function(ev){
+    if(ev.target===this){this.classList.remove("open");if(this.id==="editTireModal"){editingTireId="";}if(this.id==="editWkrModal"){editingWkrTN="";}}
+  });
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+initTheme();
+
+Promise.all([
+  fetch(URLS.produkte).then(r=>r.json()),
+  fetch(URLS.mapping).then(r=>r.json()),
+  fetch(URLS.fahrzeuge).then(r=>r.json()),
+  fetch(URLS.reifen).then(r=>r.json())
+]).then(([p,m,f,r])=>{
+  produkte=Array.isArray(p)?p:[];
+  mapping=Array.isArray(m)?m:[];
+  fahrzeuge=Array.isArray(f)?f:[];
+  reifen=Array.isArray(r)?r:[];
+  render();
+}).catch(()=>{
+  document.getElementById("app").innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div>Daten konnten nicht geladen werden. Bitte Seite neu laden.</div>`;
+});
+</script>
+</body>
+</html>
