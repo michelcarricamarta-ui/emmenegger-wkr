@@ -1301,8 +1301,15 @@ await window.firebaseSignInWithEmailAndPassword(window.firebaseAuth, email, pass
     state.adminSection = "dashboard";
 
     document.getElementById("publicViewBtn").style.display = "inline-block";
-    showModeBanner("admin");
-    document.getElementById("internalFields").style.display = "none";
+
+const logoutBtn = document.getElementById("adminLogoutBtn");
+if (logoutBtn) logoutBtn.style.display = "inline-block";
+
+const publicBtnMobile = document.getElementById("publicViewBtnMobile");
+if (publicBtnMobile) publicBtnMobile.style.display = "inline-block";
+
+showModeBanner("admin");
+document.getElementById("internalFields").style.display = "none";
 
     closeAdminLoginModal();
     render();
@@ -1342,16 +1349,26 @@ async function deactivateAllModes(){
   state.adminSection = null;
 
   const publicBtn = document.getElementById("publicViewBtn");
-  if (publicBtn) publicBtn.style.display = "none";
+if (publicBtn) publicBtn.style.display = "none";
 
-  const banner = document.getElementById("modeBanner");
-  if (banner) {
-    banner.className = "mode-banner";
-    banner.textContent = "";
-  }
+const logoutBtn = document.getElementById("adminLogoutBtn");
+if (logoutBtn) logoutBtn.style.display = "none";
 
-  closeAllModals();
-  render();
+const publicBtnMobile = document.getElementById("publicViewBtnMobile");
+if (publicBtnMobile) publicBtnMobile.style.display = "none";
+
+const internalFields = document.getElementById("internalFields");
+if (internalFields) internalFields.style.display = "none";
+
+const banner = document.getElementById("modeBanner");
+if (banner) {
+  banner.style.display = "none";
+  banner.className = "mode-banner";
+  banner.textContent = "";
+}
+
+closeAllModals();
+render();
 }
 function showModeBanner(type){
   const el=document.getElementById("modeBanner");
@@ -1369,10 +1386,16 @@ function applyFirebaseAdminState(){
     }
 
     const publicBtn = document.getElementById("publicViewBtn");
-    if (publicBtn) publicBtn.style.display = "inline-block";
+if (publicBtn) publicBtn.style.display = "inline-block";
 
-    const internalFields = document.getElementById("internalFields");
-    if (internalFields) internalFields.style.display = "none";
+const logoutBtn = document.getElementById("adminLogoutBtn");
+if (logoutBtn) logoutBtn.style.display = "inline-block";
+
+const publicBtnMobile = document.getElementById("publicViewBtnMobile");
+if (publicBtnMobile) publicBtnMobile.style.display = "inline-block";
+
+const internalFields = document.getElementById("internalFields");
+if (internalFields) internalFields.style.display = "none";
 
     showModeBanner("admin");
   } else {
