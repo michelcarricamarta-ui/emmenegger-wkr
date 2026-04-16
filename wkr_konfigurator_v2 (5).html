@@ -1294,7 +1294,20 @@ function selectReihe(r){ state.reihe=r; state.modell=state.motor=null; render();
 function selectModell(m){ state.modell=m; state.motor=null; render(); }
 function selectMotor(m){ state.motor=m; render(); }
 function resetSelection(){ state.standort=state.marke=state.reihe=state.modell=state.motor=null; selectedProduct=null; closeAllModals(); render(); }
-
+function shareConfig(){
+  const params = new URLSearchParams();
+  if(state.marke)    params.set("marke", state.marke);
+  if(state.standort) params.set("standort", state.standort);
+  if(state.reihe)    params.set("reihe", state.reihe);
+  if(state.modell)   params.set("modell", state.modell);
+  if(state.motor)    params.set("motor", state.motor);
+  const url = window.location.href.split("?")[0] + "?" + params.toString();
+  navigator.clipboard.writeText(url).then(()=>{
+    alert("Link wurde kopiert! Einfach einfügen und teilen.");
+  }).catch(()=>{
+    prompt("Link zum Kopieren:", url);
+  });
+}
 /* ============================================================
    HERO & BRAND THEME
    ============================================================ */
@@ -1625,7 +1638,10 @@ function renderWkrFlow(){
   html+=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:16px 20px;margin-bottom:28px;box-shadow:var(--shadow-sm);">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
       <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);">Ihre Auswahl</span>
-      <button class="btn btn-secondary btn-sm" onclick="resetSelection()">✎ Auswahl ändern</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-secondary btn-sm" onclick="shareConfig()">🔗 Teilen</button>
+        <button class="btn btn-secondary btn-sm" onclick="resetSelection()">✎ Auswahl ändern</button>
+      </div>
     </div>
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:20px;">
       <div style="display:flex;align-items:stretch;gap:0;flex-wrap:wrap;border:1px solid var(--border);border-radius:3px;overflow:hidden;">
@@ -2295,7 +2311,18 @@ document.querySelectorAll(".modal-overlay").forEach(overlay=>{
 
 /* ============================================================
    INIT
-   ============================================================ */
+============================================================ */
+   function loadFromUrl(){
+  try {
+    const p = new URLSearchParams(window.location.search);
+    if(p.get("marke"))    state.marke    = p.get("marke");
+    if(p.get("standort")) state.standort = p.get("standort");
+    if(p.get("reihe"))    state.reihe    = p.get("reihe");
+    if(p.get("modell"))   state.modell   = p.get("modell");
+    if(p.get("motor"))    state.motor    = p.get("motor");
+  } catch(e){}
+}
+loadFromUrl();
 initTheme();
 
 Promise.all([
