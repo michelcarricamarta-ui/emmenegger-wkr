@@ -1166,14 +1166,34 @@ await window.firebaseSignInWithEmailAndPassword(window.firebaseAuth, email, pass
     }
   }
 }
-function deactivateAllModes(){
-  internalMode=false;adminMode=false;
-  state.internalSection=null;state.adminSection=null;
-  document.getElementById("publicViewBtn").style.display="none";
-  document.getElementById("modeBanner").style.display="none";
-  document.getElementById("modeBanner").className="mode-banner";
-  document.getElementById("internalFields").style.display="none";
-  closeAllModals();render();
+async function deactivateAllModes(){
+  try {
+    if (window.firebaseAuth && window.firebaseSignOut && window.isFirebaseAdminLoggedIn) {
+      await window.firebaseSignOut(window.firebaseAuth);
+    }
+  } catch (err) {
+    console.error("Fehler beim Logout:", err);
+  }
+
+  window.isFirebaseAdminLoggedIn = false;
+
+  adminMode = false;
+  internalMode = false;
+
+  state.internalSection = null;
+  state.adminSection = null;
+
+  const publicBtn = document.getElementById("publicViewBtn");
+  if (publicBtn) publicBtn.style.display = "none";
+
+  const banner = document.getElementById("modeBanner");
+  if (banner) {
+    banner.className = "mode-banner";
+    banner.textContent = "";
+  }
+
+  closeAllModals();
+  render();
 }
 function showModeBanner(type){
   const el=document.getElementById("modeBanner");
