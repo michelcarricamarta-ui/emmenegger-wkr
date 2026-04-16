@@ -1540,7 +1540,12 @@ function renderAdminSidebar(){
         <span class="nav-icon">⚫</span> ${e(t("admin_tires_all"))}
      </button>
     </div>
-
+<div class="admin-nav-section">
+      <div class="admin-nav-label">Tools</div>
+      <button class="admin-nav-item ${sec==="inventur"?"active":""}" onclick="selectAdminSection('inventur')">
+        <span class="nav-icon">📊</span> Inventur / Export
+      </button>
+    </div>
     <div class="admin-nav-section" style="border-top:1px solid var(--border); padding-top:8px; margin-top:8px;">
       <div class="admin-nav-label">Konto</div>
       <button class="admin-nav-item" onclick="logoutAdmin()" style="color:var(--error);">
@@ -1636,6 +1641,8 @@ function render(){
       contentHtml = `<div class="admin-content">${renderAdminReifenList()}</div>`;
     } else if (state.adminSection === "wkr_list") {
       contentHtml = `<div class="admin-content">${renderAdminWkrList()}</div>`;
+       } else if (state.adminSection === "inventur") {
+      contentHtml = `<div class="admin-content">${renderAdminInventur()}</div>`;
     } else if (state.adminSection === "wkr_model") {
       // Konfigurator-Flow im Admin
       contentHtml = `<div class="admin-content">${renderWkrFlow()}</div>`;
@@ -2002,7 +2009,133 @@ function renderAdminWkrList(){
     </div>
   </div>`;
 }
+/* ============================================================
+   RENDER: INVENTUR / EXPORT
+   ============================================================ */
+function renderAdminInventur(){
+  const standorte = ["","GEB","HET"];
+  return `<div class="admin-content-header">
+    <div class="admin-content-title">Inventur & Export</div>
+    <div class="admin-content-sub">Excel-Export oder Druckliste nach Standort filtern</div>
+  </div>
 
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px;">
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;">
+      <div style="font-size:16px;font-weight:700;margin-bottom:4px;">🛞 WKR Export</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Winterkompletträder als Excel/CSV exportieren</div>
+      <div class="filter-field" style="margin-bottom:12px;">
+        <label>Standort</label>
+        <select id="exportWkrStandort">
+          <option value="">Alle Standorte</option>
+          <option value="GEB">Gebenstorf</option>
+          <option value="HET">Hettenschwil</option>
+        </select>
+      </div>
+      <div class="filter-field" style="margin-bottom:16px;">
+        <label>Lager</label>
+        <select id="exportWkrLager">
+          <option value="">Alle</option>
+          <option value="lager">Nur an Lager</option>
+          <option value="kein">Nur ohne Lager</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary btn-sm" onclick="exportWkrCSV()">⬇ Excel/CSV</button>
+        <button class="btn btn-secondary btn-sm" onclick="printWkrInventur()">🖨 Drucken</button>
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;">
+      <div style="font-size:16px;font-weight:700;margin-bottom:4px;">⚫ Reifen Export</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Reifen als Excel/CSV exportieren</div>
+      <div class="filter-field" style="margin-bottom:12px;">
+        <label>Standort</label>
+        <select id="exportReifenStandort">
+          <option value="">Alle Standorte</option>
+          <option value="GEB">Gebenstorf</option>
+          <option value="HET">Hettenschwil</option>
+        </select>
+      </div>
+      <div class="filter-field" style="margin-bottom:16px;">
+        <label>Status</label>
+        <select id="exportReifenStatus">
+          <option value="">Alle</option>
+          <option value="Ja">Nur aktive</option>
+          <option value="Nein">Nur inaktive</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary btn-sm" onclick="exportReifenCSV()">⬇ Excel/CSV</button>
+        <button class="btn btn-secondary btn-sm" onclick="printReifenInventur()">🖨 Drucken</button>
+      </div>
+    </div>
+
+  </div>`;
+}
+
+function getWkrExportData(){
+  const standort = clean(document.getElementById("exportWkrStandort")?.value);
+  const lager = clean(document.getElementById("exportWkrLager")?.value);
+  return produkte.filter(p => {
+    const l = parseInt(clean(p["Lager"]),10)||0;
+    return (!standort || clean(p["Standort"])===standort)
+      && (lager===""||( lager==="lager"&&l>0)||(lager==="kein"&&l<=0));
+  });
+}
+
+function getReifenExportData(){
+  const standort = clean(document.getElementById("exportReifenStandort")?.value);
+  const status = clean(document.getElementById("exportReifenStatus")?.value);
+  return reifen.filter(r =>
+    (!standort || clean(r["Standort"])===standort)
+    && (!status || clean(r["Aktiv"])===status)
+  );
+}
+
+function exportWkrCSV(){
+  const data = getWkrExportData();
+  const headers = ["Marke","Standort","Bezeichnung","Reifen","Dimension","TN","Lager","Lagerort","VP","Angebotspreis","Nettopreis"];
+  const rows = data.map(p => headers.map(h => `"${clean(p[h]).replace(/"/g,'""')}"`).join(";"));
+  const csv = "\uFEFF" + headers.join(";") + "\n" + rows.join("\n");
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `WKR_Export_${new Date().toLocaleDateString("de-CH").replace(/\./g,"-")}.csv`;
+  a.click();
+}
+
+function exportReifenCSV(){
+  const data = getReifenExportData();
+  const headers = ["Standort","Reifentyp","Hersteller","Profil","Profilbreite","Querschnitt","Zoll","Lastindex","Geschwindigkeitsindex","Runflat","DOT","Teilenummer","Anzahl","EK Preis","VK Preis","Aktiv"];
+  const rows = data.map(r => headers.map(h => `"${clean(r[h]).replace(/"/g,'""')}"`).join(";"));
+  const csv = "\uFEFF" + headers.join(";") + "\n" + rows.join("\n");
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `Reifen_Export_${new Date().toLocaleDateString("de-CH").replace(/\./g,"-")}.csv`;
+  a.click();
+}
+
+function printWkrInventur(){
+  const data = getWkrExportData();
+  const standort = clean(document.getElementById("exportWkrStandort")?.value);
+  const w = window.open("","_blank");
+  if(!w) return;
+  const rows = data.map(p => `<tr><td>${e(clean(p["Marke"]))}</td><td>${e(standortLabel(clean(p["Standort"])))}</td><td>${e(clean(p["Bezeichnung"]))}</td><td>${e(clean(p["Reifen"]))}</td><td>${e(clean(p["Dimension"]))}</td><td>${e(clean(p["TN"]))}</td><td style="text-align:center;font-weight:700;color:${(parseInt(clean(p["Lager"]),10)||0)>0?"#16a34a":"#dc2626"}">${e(clean(p["Lager"]))}</td><td>${e(clean(p["Lagerort"]))}</td></tr>`).join("");
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>WKR Inventur</title><style>body{font-family:Arial,sans-serif;padding:20px;font-size:12px;}h2{margin-bottom:4px;}p{color:#666;margin-bottom:16px;}table{width:100%;border-collapse:collapse;}th{background:#1c69d4;color:white;padding:8px;text-align:left;font-size:11px;}td{padding:6px 8px;border-bottom:1px solid #eee;}tr:nth-child(even){background:#f9f9f9;}.actions{margin-bottom:16px;}button{background:#1c69d4;color:white;border:none;padding:8px 14px;cursor:pointer;margin-right:8px;}@media print{.actions{display:none;}}</style></head><body><div class="actions"><button onclick="window.print()">Drucken</button><button onclick="window.close()">Schliessen</button></div><h2>WKR Inventurliste</h2><p>Standort: ${standort?standortLabel(standort):"Alle"} — Datum: ${new Date().toLocaleDateString("de-CH")}</p><table><thead><tr><th>Marke</th><th>Standort</th><th>Bezeichnung</th><th>Reifen</th><th>Dimension</th><th>Teilenummer</th><th>Lager</th><th>Lagerort</th></tr></thead><tbody>${rows}</tbody></table></body></html>`);
+  w.document.close();
+}
+
+function printReifenInventur(){
+  const data = getReifenExportData();
+  const standort = clean(document.getElementById("exportReifenStandort")?.value);
+  const w = window.open("","_blank");
+  if(!w) return;
+  const rows = data.map(r => `<tr><td>${e(standortLabel(clean(r["Standort"])))}</td><td>${e(clean(r["Reifentyp"]))}</td><td>${e(clean(r["Hersteller"]))}</td><td>${e(clean(r["Profil"]))}</td><td>${e(tireSize(r))}</td><td>${e(clean(r["Teilenummer"]))}</td><td style="text-align:center;font-weight:700;color:${(parseInt(clean(r["Anzahl"]),10)||0)>0?"#16a34a":"#dc2626"}">${e(clean(r["Anzahl"]))}</td><td>${e(clean(r["DOT"]))}</td><td>${e(clean(r["Aktiv"])==="Ja"?"✓":"✗")}</td></tr>`).join("");
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Reifen Inventur</title><style>body{font-family:Arial,sans-serif;padding:20px;font-size:12px;}h2{margin-bottom:4px;}p{color:#666;margin-bottom:16px;}table{width:100%;border-collapse:collapse;}th{background:#1c69d4;color:white;padding:8px;text-align:left;font-size:11px;}td{padding:6px 8px;border-bottom:1px solid #eee;}tr:nth-child(even){background:#f9f9f9;}.actions{margin-bottom:16px;}button{background:#1c69d4;color:white;border:none;padding:8px 14px;cursor:pointer;margin-right:8px;}@media print{.actions{display:none;}}</style></head><body><div class="actions"><button onclick="window.print()">Drucken</button><button onclick="window.close()">Schliessen</button></div><h2>Reifen Inventurliste</h2><p>Standort: ${standort?standortLabel(standort):"Alle"} — Datum: ${new Date().toLocaleDateString("de-CH")}</p><table><thead><tr><th>Standort</th><th>Typ</th><th>Hersteller</th><th>Profil</th><th>Grösse</th><th>Teilenummer</th><th>Anzahl</th><th>DOT</th><th>Aktiv</th></tr></thead><tbody>${rows}</tbody></table></body></html>`);
+  w.document.close();
+}
 function renderAdminWkrItem(r){
   const lager=parseInt(clean(r["Lager"]),10)||0;
   const bild=clean(r["Bild"])||"https://via.placeholder.com/220x140?text=Rad";
