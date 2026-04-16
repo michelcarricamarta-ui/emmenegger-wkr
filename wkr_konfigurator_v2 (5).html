@@ -713,10 +713,15 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
   .form-grid { grid-template-columns: 1fr; }
   .modal-actions { flex-direction: column; }
   .modal-actions .btn { min-width: unset; }
-
+@media (min-width: 601px) {
+  #menuToggle { display: none !important; }
+  #mobileMenu { display: none !important; }
+}
   /* Topbar Actions — weniger Buttons zeigen */
 #menuToggle { display: flex !important; }
 #desktopActions { display: none !important; }
+
+/* Desktop: Hamburger verstecken */
 }
   .topbar, .back-btn, .mode-banner, .info-section, .admin-sidebar, .search-section { display: none !important; }
 }
@@ -733,7 +738,7 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
     <div class="topbar-actions">
   <button id="backHomeBtn" class="back-btn" onclick="goToHome()">← <span data-i18n="back_home">Startseite</span></button>
   <button id="darkToggle" class="icon-btn" onclick="toggleDark()" title="Dunkelmodus">🌙</button>
-  <button class="icon-btn" onclick="toggleMobileMenu()" id="menuToggle" style="display:none;font-size:20px;width:40px;height:40px;">☰</button>
+  <button class="icon-btn" onclick="toggleMobileMenu()" id="menuToggle" style="font-size:20px;width:40px;height:40px;">☰</button>
   <div id="desktopActions" style="display:flex;align-items:center;gap:8px;">
     <div class="lang-switcher">
       <button class="lang-btn active" onclick="setLang('de')">DE</button>
