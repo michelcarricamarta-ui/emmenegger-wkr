@@ -1080,11 +1080,14 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
       <div class="form-field">
         <label>Status *</label>
         <select id="newVoStatus">
-          <option value="Vororder offen">Vororder offen (Kunde wählt noch)</option>
-          <option value="Erfasst" selected>Erfasst (mit Reservierung)</option>
-          <option value="Bestellt">Bestellt</option>
-          <option value="Kein Interesse">Kein Interesse (nur Statistik)</option>
-        </select>
+  <option value="Kundenauswahl">Kundenauswahl (Kunde wählt online)</option>
+  <option value="Offerte ausstehend">Offerte ausstehend</option>
+  <option value="Offeriert">Offeriert</option>
+  <option value="Sammelbestellung (Vororder26)" selected>Sammelbestellung (Vororder26)</option>
+  <option value="Bestellt">Bestellt</option>
+  <option value="Reserviert">Reserviert (Ware eingetroffen)</option>
+  <option value="Kunde verzichtet">Kunde verzichtet</option>
+</select>
       </div>
       <div class="form-field full"><label>Bemerkungen</label><textarea id="newVoBemerkungen" placeholder="Zusätzliche Notizen"></textarea></div>
     </div>
@@ -2171,14 +2174,15 @@ function renderAdminVororder(){
   const results = getFilteredVororder();
 
   // Stats
+  // Stats
   const stats = {
-    offen: results.filter(v => ["Vororder offen","Kundenauswahl","Erfasst","Bestellt"].includes(clean(v["Status"]))).length,
-    eingetroffen: results.filter(v => ["Eingetroffen","Eingelagert"].includes(clean(v["Status"]))).length,
-    abgeschlossen: results.filter(v => ["Verrechnet","Abgeschlossen"].includes(clean(v["Status"]))).length,
-    abgesagt: results.filter(v => ["Abgesagt","Kein Interesse"].includes(clean(v["Status"]))).length
+    offen: results.filter(v => ["Kundenauswahl","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt"].includes(clean(v["Status"]))).length,
+    eingetroffen: results.filter(v => clean(v["Status"]) === "Reserviert").length,
+    abgeschlossen: results.filter(v => clean(v["Status"]) === "Erledigt").length,
+    abgesagt: results.filter(v => clean(v["Status"]) === "Kunde verzichtet").length
   };
 
-  const statusOptions = ["Vororder offen","Kundenauswahl","Erfasst","Bestellt","Eingetroffen","Eingelagert","Verrechnet","Abgeschlossen","Abgesagt","Kein Interesse"];
+  const statusOptions = ["Kundenauswahl","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt","Reserviert","Erledigt","Kunde verzichtet"];
 
   let html = `<div class="admin-content-header">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
@@ -2203,15 +2207,15 @@ function renderAdminVororder(){
       <div style="font-size:22px;font-weight:700;color:#92400e;">${stats.offen}</div>
     </div>
     <div style="background:#ecfccb;border:1px solid #bef264;border-radius:8px;padding:14px;">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#3f6212;margin-bottom:4px;">Eingetroffen</div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#3f6212;margin-bottom:4px;">Reserviert</div>
       <div style="font-size:22px;font-weight:700;color:#3f6212;">${stats.eingetroffen}</div>
     </div>
     <div style="background:#f3f4f6;border:1px solid #d1d5db;border-radius:8px;padding:14px;">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#374151;margin-bottom:4px;">Abgeschlossen</div>
+     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#374151;margin-bottom:4px;">Erledigt</div>
       <div style="font-size:22px;font-weight:700;color:#374151;">${stats.abgeschlossen}</div>
     </div>
     <div style="background:#fee2e2;border:1px solid #fecaca;border-radius:8px;padding:14px;">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#7f1d1d;margin-bottom:4px;">Abgesagt / Kein Int.</div>
+     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#7f1d1d;margin-bottom:4px;">Kunde verzichtet</div>
       <div style="font-size:22px;font-weight:700;color:#7f1d1d;">${stats.abgesagt}</div>
     </div>
   </div>`;
@@ -2899,7 +2903,7 @@ function getFilteredVororder(){
     return true;
   }).sort((a,b) => {
     // Sortierung: Offene zuerst, dann nach Datum absteigend
-    const openStatuses = ["Vororder offen","Kundenauswahl","Erfasst","Bestellt","Eingetroffen","Eingelagert"];
+    const openStatuses = ["Kundenauswahl","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt","Reserviert"];
     const aOpen = openStatuses.indexOf(clean(a["Status"])) !== -1 ? 0 : 1;
     const bOpen = openStatuses.indexOf(clean(b["Status"])) !== -1 ? 0 : 1;
     if (aOpen !== bOpen) return aOpen - bOpen;
@@ -2910,16 +2914,14 @@ function getFilteredVororder(){
 function vororderStatusBadge(status){
   const s = clean(status);
   const styles = {
-    "Vororder offen":  "background:#fef3c7;color:#92400e;",
-    "Kundenauswahl":   "background:#dbeafe;color:#1e40af;",
-    "Erfasst":         "background:#e0e7ff;color:#3730a3;",
-    "Bestellt":        "background:#cffafe;color:#0e7490;",
-    "Eingetroffen":    "background:#d1fae5;color:#065f46;",
-    "Eingelagert":     "background:#ecfccb;color:#3f6212;",
-    "Verrechnet":      "background:#f3f4f6;color:#374151;",
-    "Abgeschlossen":   "background:#f3f4f6;color:#6b7280;",
-    "Abgesagt":        "background:#fecaca;color:#991b1b;",
-    "Kein Interesse":  "background:#fee2e2;color:#7f1d1d;"
+    "Kundenauswahl":                  "background:#e0f2fe;color:#0c4a6e;",
+    "Offerte ausstehend":             "background:#fef3c7;color:#92400e;",
+    "Offeriert":                      "background:#dbeafe;color:#1e40af;",
+    "Sammelbestellung (Vororder26)":  "background:#e0e7ff;color:#3730a3;",
+    "Bestellt":                       "background:#cffafe;color:#0e7490;",
+    "Reserviert":                     "background:#d1fae5;color:#065f46;",
+    "Erledigt":                       "background:#f3f4f6;color:#374151;",
+    "Kunde verzichtet":               "background:#fee2e2;color:#7f1d1d;"
   };
   const style = styles[s] || "background:#f3f4f6;color:#374151;";
   return `<span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;${style}">${e(s || "—")}</span>`;
@@ -3119,7 +3121,7 @@ function openVororderDetail(id){
   const content = document.getElementById("voDetailContent");
   if (!content) return;
 
-  const allStatuses = ["Vororder offen","Kundenauswahl","Erfasst","Bestellt","Eingetroffen","Eingelagert","Verrechnet","Abgeschlossen","Abgesagt","Kein Interesse"];
+  const allStatuses = ["Kundenauswahl","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt","Reserviert","Erledigt","Kunde verzichtet"];
   const currentStatus = clean(vo["Status"]);
   const historie = clean(vo["HistorieLog"]);
 
@@ -3176,7 +3178,7 @@ function openVororderDetail(id){
           ${allStatuses.map(s => `<option value="${e(s)}" ${s===currentStatus?"selected":""}>${e(s)}</option>`).join("")}
         </select>
         <button class="btn btn-primary btn-sm" onclick="saveVororderStatus('${js(clean(vo["ID"]))}')">Status speichern</button>
-        ${clean(vo["Typ"])==="WKR"&&clean(vo["Status"])==="Eingetroffen"?`<button class="btn btn-secondary btn-sm" onclick="printVororderLabel('${js(clean(vo["ID"]))}')">🏷️ Etikette drucken</button>`:""}
+        ${clean(vo["Typ"])==="WKR"&&clean(vo["Status"])==="Reserviert"?`<button class="btn btn-secondary btn-sm" onclick="printVororderLabel('${js(clean(vo["ID"]))}')">🏷️ Etikette drucken</button>`:""}
       </div>
       <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">
         Bei Status-Wechsel werden Reservierung und Lager automatisch aktualisiert.
