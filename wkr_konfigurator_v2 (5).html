@@ -1100,7 +1100,56 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
     </div>
   </div>
 </div>
+<!-- Position Modal -->
+<div id="positionModal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-title" id="positionModalTitle">Neue Position</div>
+    <div class="modal-subtitle" id="positionModalSubtitle"></div>
 
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Typ *</label>
+        <select id="posTyp" onchange="onPosTypChange()">
+          <option value="">Bitte wählen</option>
+          <option value="WKR">WKR</option>
+          <option value="Reifen">Reifen</option>
+          <option value="Zubehör">Zubehör</option>
+        </select>
+      </div>
+      <div class="form-field"><label>Anzahl *</label><input id="posAnzahl" type="number" min="1" value="1"></div>
+      <div class="form-field full">
+        <label>Teilenummer (TN)</label>
+        <input id="posTN" type="text" list="posTnOptions" placeholder="TN (optional)" oninput="onPosTnChange()">
+        <datalist id="posTnOptions"></datalist>
+      </div>
+      <div class="form-field"><label>Bezeichnung</label><input id="posBezeichnung" type="text"></div>
+      <div class="form-field"><label>Dimension</label><input id="posDimension" type="text"></div>
+      <div class="form-field"><label>VK (CHF)</label><input id="posVK" type="text"></div>
+      <div class="form-field"><label>Konditionen</label><input id="posKonditionen" type="text"></div>
+      <div class="form-field full">
+        <label>Status</label>
+        <select id="posStatus">
+          <option value="Kundenauswahl">Kundenauswahl</option>
+          <option value="Offerte ausstehend" selected>Offerte ausstehend</option>
+          <option value="Offeriert">Offeriert</option>
+          <option value="Sammelbestellung (Vororder26)">Sammelbestellung (Vororder26)</option>
+          <option value="Bestellt">Bestellt</option>
+          <option value="Reserviert">Reserviert</option>
+          <option value="Erledigt">Erledigt</option>
+          <option value="Kunde verzichtet">Kunde verzichtet</option>
+        </select>
+      </div>
+      <div class="form-field full"><label>Bemerkungen</label><textarea id="posBemerkungen"></textarea></div>
+    </div>
+
+    <p class="required-note">* Pflichtfelder</p>
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closePositionModal()">Schliessen</button>
+      <button class="btn btn-primary" onclick="savePosition()">Speichern</button>
+    </div>
+  </div>
+</div>
 <!-- Vororder Detail Modal -->
 <div id="vororderDetailModal" class="modal-overlay">
   <div class="modal-box wide">
@@ -3369,10 +3418,244 @@ async function saveVoDetailChanges(){
 }
 
 // Platzhalter-Funktionen (werden in 4b ausgefüllt)
-function openNewPositionModal(voId){ alert("Neue Position — kommt in Phase 4b"); }
-function openEditPositionModal(posId){ alert("Position bearbeiten — kommt in Phase 4b"); }
-function deletePosition(posId){ alert("Position löschen — kommt in Phase 4b"); }
-function printPositionLabel(posId){ alert("Etikette pro Position — kommt in Phase 4b"); }
+/* ============================================================
+   POSITIONS-MODAL
+   ============================================================ */
+let _posEditMode = { posId: null, voId: null };
+
+function openNewPositionModal(voId){
+  _posEditMode = { posId: null, voId: voId };
+  document.getElementById("positionModalTitle").textContent = "Neue Position";
+  document.getElementById("positionModalSubtitle").textContent = `Für Vororder ${voId}`;
+  // Felder leeren
+  ["posTyp","posTN","posBezeichnung","posDimension","posVK","posKonditionen","posBemerkungen"].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = "";
+  });
+  document.getElementById("posAnzahl").value = "4";
+  document.getElementById("posStatus").value = "Offerte ausstehend";
+  fillPosTnOptions();
+  document.getElementById("positionModal").classList.add("open");
+}
+
+function openEditPositionModal(posId){
+  const positionen = Object.values(positionenMap).flat();
+  const pos = positionen.find(p => clean(p["PositionID"]) === clean(posId));
+  if (!pos) { alert("Position nicht gefunden."); return; }
+  _posEditMode = { posId: posId, voId: clean(pos["VororderID"]) };
+
+  document.getElementById("positionModalTitle").textContent = "Position bearbeiten";
+  document.getElementById("positionModalSubtitle").textContent = `${posId} — Vororder ${clean(pos["VororderID"])}`;
+
+  document.getElementById("posTyp").value = clean(pos["Typ"]);
+  document.getElementById("posAnzahl").value = clean(pos["Anzahl"]) || "1";
+  document.getElementById("posTN").value = clean(pos["TN"]);
+  document.getElementById("posBezeichnung").value = clean(pos["Bezeichnung"]);
+  document.getElementById("posDimension").value = clean(pos["Dimension"]);
+  document.getElementById("posVK").value = clean(pos["VK"]);
+  document.getElementById("posKonditionen").value = clean(pos["Konditionen"]);
+  document.getElementById("posStatus").value = clean(pos["Status"]) || "Offerte ausstehend";
+  document.getElementById("posBemerkungen").value = clean(pos["Bemerkungen"]);
+
+  fillPosTnOptions();
+  document.getElementById("positionModal").classList.add("open");
+}
+
+function closePositionModal(){
+  document.getElementById("positionModal").classList.remove("open");
+  _posEditMode = { posId: null, voId: null };
+}
+
+function fillPosTnOptions(){
+  const datalist = document.getElementById("posTnOptions");
+  if (!datalist) return;
+  datalist.innerHTML = produkte.map(p => {
+    const tn = clean(p["TN"]);
+    const lager = parseInt(clean(p["Lager"]),10)||0;
+    const reserviert = parseInt(clean(p["Reserviert"]),10)||0;
+    const verfuegbar = lager - reserviert;
+    const label = `${clean(p["Bezeichnung"])} · ${clean(p["Dimension"])} · Verfügbar: ${verfuegbar}/${lager}`;
+    return `<option value="${e(tn)}">${e(label)}</option>`;
+  }).join("");
+}
+
+function onPosTypChange(){
+  // nix zu tun aktuell
+}
+
+function onPosTnChange(){
+  const tn = clean(document.getElementById("posTN")?.value);
+  if (!tn) return;
+  const prod = produkte.find(p => clean(p["TN"]) === tn);
+  if (prod) {
+    const bezEl = document.getElementById("posBezeichnung");
+    const dimEl = document.getElementById("posDimension");
+    const vkEl = document.getElementById("posVK");
+    const typEl = document.getElementById("posTyp");
+    if (bezEl && !bezEl.value) bezEl.value = clean(prod["Bezeichnung"]);
+    if (dimEl && !dimEl.value) dimEl.value = clean(prod["Dimension"]);
+    if (vkEl && !vkEl.value)   vkEl.value  = clean(prod["Angebotspreis"]) || clean(prod["VP"]);
+    if (typEl && !typEl.value) typEl.value = "WKR";
+  }
+}
+
+async function savePosition(){
+  const typ = clean(document.getElementById("posTyp").value);
+  const anzahl = parseInt(clean(document.getElementById("posAnzahl").value),10) || 0;
+
+  if (!typ || !anzahl) {
+    alert("Pflichtfelder: Typ und Anzahl");
+    return;
+  }
+
+  const row = {
+    "Typ": typ,
+    "TN": clean(document.getElementById("posTN").value),
+    "Bezeichnung": clean(document.getElementById("posBezeichnung").value),
+    "Dimension": clean(document.getElementById("posDimension").value),
+    "Anzahl": anzahl,
+    "VK": clean(document.getElementById("posVK").value),
+    "Konditionen": clean(document.getElementById("posKonditionen").value),
+    "Status": clean(document.getElementById("posStatus").value),
+    "Bemerkungen": clean(document.getElementById("posBemerkungen").value)
+  };
+
+  try {
+    let res;
+    if (_posEditMode.posId) {
+      // Update
+      res = await postToScript({
+        action: "vororderPositionUpdate",
+        positionId: _posEditMode.posId,
+        updates: row
+      });
+    } else {
+      // Add
+      res = await postToScript({
+        action: "vororderPositionAdd",
+        vororderId: _posEditMode.voId,
+        row: row
+      });
+    }
+
+    if (res && res.status === "OK") {
+      closePositionModal();
+      await reloadVororder();
+      // Produkte neu laden für Reservierung
+      try {
+        const p = await fetch(URLS.produkte).then(r=>r.json());
+        if (Array.isArray(p)) produkte = p;
+      } catch(e){}
+      if (_voDetailId) renderVororderDetail();
+      render();
+    } else {
+      alert("Fehler: " + JSON.stringify(res));
+    }
+  } catch(err) {
+    alert("Fehler: " + err.message);
+  }
+}
+
+async function deletePosition(posId){
+  if (!confirm("Position wirklich löschen?\nEine aktive Reservierung wird automatisch aufgelöst.")) return;
+
+  try {
+    const res = await postToScript({
+      action: "vororderPositionDelete",
+      positionId: posId
+    });
+    if (res && res.status === "OK") {
+      await reloadVororder();
+      try {
+        const p = await fetch(URLS.produkte).then(r=>r.json());
+        if (Array.isArray(p)) produkte = p;
+      } catch(e){}
+      if (_voDetailId) renderVororderDetail();
+      render();
+    } else {
+      alert("Fehler: " + JSON.stringify(res));
+    }
+  } catch(err) {
+    alert("Fehler: " + err.message);
+  }
+}
+
+function printPositionLabel(posId){
+  const positionen = Object.values(positionenMap).flat();
+  const pos = positionen.find(p => clean(p["PositionID"]) === clean(posId));
+  if (!pos) { alert("Position nicht gefunden."); return; }
+  const vo = vororder.find(v => clean(v["ID"]) === clean(pos["VororderID"]));
+  if (!vo) { alert("Vororder nicht gefunden."); return; }
+
+  // Etikette drucken mit Position-Daten
+  const kunde = clean(vo["Kundenname"]);
+  const fahrzeug = clean(vo["Fahrzeug"]);
+  const fin = clean(vo["Fahrgestellnr"]);
+  const auftrag = clean(vo["Auftrag"]);
+  const ablieferung = formatVororderDate(vo["Ablieferung"]);
+  const typ = clean(pos["Typ"]);
+  const bezeichnung = clean(pos["Bezeichnung"]);
+  const dimension = clean(pos["Dimension"]);
+  const tn = clean(pos["TN"]);
+  const anzahl = clean(pos["Anzahl"]);
+  const voId = clean(vo["ID"]);
+  const labelCode = voId + "-" + posId;
+
+  const w = window.open("","_blank","width=900,height=700");
+  if(!w){alert("Popup blockiert.");return;}
+
+  w.document.write(`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Position-Etikette</title><style>
+    @page{size:100mm 73mm;margin:0;}
+    html,body{width:100mm;height:73mm;margin:0;padding:0;font-family:Arial,sans-serif;background:white;}
+    .wrap{width:100mm;height:73mm;box-sizing:border-box;padding:4mm 5mm;}
+    .hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1.5px solid #1c69d4;padding-bottom:1.5mm;margin-bottom:2mm;}
+    .hdr-left{flex:1;}
+    .hdr-right{font-size:8pt;color:#555;text-align:right;}
+    .id{font-size:9pt;font-weight:700;color:#1c69d4;font-family:monospace;}
+    .kunde{font-size:12pt;font-weight:700;line-height:1.1;}
+    .fahrzeug{font-size:10pt;font-weight:700;margin-bottom:1mm;}
+    .line{font-size:8.5pt;margin-bottom:0.8mm;line-height:1.3;}
+    .line b{font-weight:700;}
+    .tn-box{background:#f0f5ff;border-left:2px solid #1c69d4;padding:1.5mm 2mm;margin:1.5mm 0;font-size:9pt;font-weight:700;}
+    .barcode-wrap{margin-top:2mm;text-align:center;border-top:1px solid #ddd;padding-top:1mm;}
+    .barcode{width:70mm;height:9mm;display:block;margin:0 auto;}
+    .tn-text{font-size:7.5pt;margin-top:0.5mm;font-weight:700;}
+    .actions{position:fixed;right:10px;top:10px;display:flex;gap:8px;}
+    .actions button{border:none;background:#1c69d4;color:white;padding:10px 14px;font-size:13px;cursor:pointer;}
+    .actions button.sec{background:#666;}
+    @media print{.actions{display:none;}}
+  </style></head><body>
+    <div class="actions">
+      <button onclick="window.print()">Drucken</button>
+      <button class="sec" onclick="window.close()">Schliessen</button>
+    </div>
+    <div class="wrap">
+      <div class="hdr">
+        <div class="hdr-left">
+          <div class="id">${e(voId)} / ${e(posId)}</div>
+        </div>
+        <div class="hdr-right">
+          ${ablieferung?`<div><b>Abl.:</b> ${e(ablieferung)}</div>`:""}
+          ${auftrag?`<div>Auftrag ${e(auftrag)}</div>`:""}
+        </div>
+      </div>
+      <div class="kunde">${e(kunde)}</div>
+      <div class="fahrzeug">${e(fahrzeug)}</div>
+      ${fin?`<div class="line"><b>FIN:</b> ${e(fin)}</div>`:""}
+      ${bezeichnung?`<div class="line"><b>Produkt:</b> ${e(bezeichnung)}${dimension?" · "+e(dimension):""}</div>`:""}
+      ${anzahl?`<div class="line"><b>Anzahl:</b> ${e(anzahl)} × ${e(typ)}</div>`:""}
+      ${tn?`<div class="tn-box">TN: ${e(tn)}</div>`:""}
+      <div class="barcode-wrap">
+        <svg id="barcode" class="barcode"></svg>
+        <div class="tn-text">${e(labelCode)}</div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
+    <script>
+      JsBarcode("#barcode", ${JSON.stringify(labelCode)}, {format:"CODE128",displayValue:false,margin:0,width:1.3,height:24});
+    <\/script>
+  </body></html>`);
+  w.document.close();
+}
 /* ============================================================
    VORORDER: Etikette drucken
    ============================================================ */
