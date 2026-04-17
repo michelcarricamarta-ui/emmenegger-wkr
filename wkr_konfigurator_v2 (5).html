@@ -3409,7 +3409,7 @@ async function saveVoDetailChanges(){
         <td style="padding:8px;">${vororderStatusBadge(p["Status"])}</td>
         <td style="padding:8px;text-align:right;white-space:nowrap;">
           <button class="btn btn-secondary btn-sm" onclick="openEditPositionModal('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;">✏️</button>
-          ${clean(p["Typ"])==="WKR"&&clean(p["Status"])==="Reserviert"?`<button class="btn btn-secondary btn-sm" onclick="printPositionLabel('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;">🏷️</button>`:""}
+          ${clean(p["Typ"])==="WKR"?`<button class="btn btn-secondary btn-sm" onclick="printPositionLabel('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;" title="Etikette drucken">🏷️</button>`:""}
           <button class="btn btn-danger btn-sm" onclick="deletePosition('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;">🗑️</button>
         </td>
       </tr>`).join("")}
