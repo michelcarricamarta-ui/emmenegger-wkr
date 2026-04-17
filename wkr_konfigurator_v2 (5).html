@@ -1244,6 +1244,7 @@ let _saving = { newTire:false,editTire:false,deleteTire:false,newWkr:false,delet
 let vororderLoaded = false;
 let vororderLoading = false;
 let vororderFilter = { suche:"", status:"", typ:"", standort:"" };
+   let positionenMap = {};  // { "VO-2026-0001": [ {PositionID, Typ, ...}, ... ] }
 
 /* ============================================================
    HELPERS
@@ -2877,13 +2878,22 @@ async function loadVororder(){
       vororder = res.data;
       vororderLoaded = true;
     }
+    // Positionen laden
+    const posRes = await postToScript({ action: "vororderPositionenList" });
+    if (posRes && posRes.status === "OK" && Array.isArray(posRes.data)) {
+      positionenMap = {};
+      posRes.data.forEach(p => {
+        const voId = clean(p["VororderID"]);
+        if (!positionenMap[voId]) positionenMap[voId] = [];
+        positionenMap[voId].push(p);
+      });
+    }
   } catch(err) {
     console.error("Vororder-Ladefehler:", err);
   } finally {
     vororderLoading = false;
   }
 }
-
 function getFilteredVororder(){
   // SuperAdmin darf auch nach Standort filtern, Normal-Admin nur eigenen Standort
   const userStandort = currentUser?.standort || "";
@@ -3189,61 +3199,12 @@ function renderVororderDetail(){
     </div>
 
     <div style="background:var(--surface-2);border-radius:8px;padding:14px;margin-bottom:12px;">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Kunde</div>
-      ${edit ? `<div class="form-grid">
-        ${f("Kundenname","voEdit_Kundenname",vo["Kundenname"],{full:true,showEmpty:true})}
-        ${f("Debitornr","voEdit_Debitornr",vo["Debitornr"])}
-        ${f("Adressnr","voEdit_Adressnr",vo["Adressnr"])}
-        ${f("Kunden E-Mail","voEdit_KundenEmail",vo["KundenEmail"],{type:"email"})}
-        ${f("Rechnung an","voEdit_RechnungAn",vo["RechnungAn"],{type:"select",options:["","An Kunde","Im Leasing (Intern)","Spezialpreis"]})}
-      </div>` : `
-        <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${e(clean(vo["Kundenname"]))||"—"}</div>
-        ${f("Debitor","_d",vo["Debitornr"])}${f("Adresse","_a",vo["Adressnr"])}${f("E-Mail","_e",vo["KundenEmail"])}${f("Rechnung","_r",vo["RechnungAn"])}
-      `}
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Positionen</div>
+        ${!edit ? `<button class="btn btn-primary btn-sm" onclick="openNewPositionModal('${js(clean(vo["ID"]))}')">+ Position hinzufügen</button>` : ""}
+      </div>
+      ${renderPositionenList(clean(vo["ID"]), edit)}
     </div>
-
-    <div style="background:var(--surface-2);border-radius:8px;padding:14px;margin-bottom:12px;">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Fahrzeug</div>
-      ${edit ? `<div class="form-grid">
-        ${f("Marke","voEdit_Marke",vo["Marke"],{type:"select",options:["","BMW","MINI","Andere"]})}
-        ${f("Fahrzeug","voEdit_Fahrzeug",vo["Fahrzeug"],{full:true,showEmpty:true})}
-        ${f("Fahrgestellnr","voEdit_Fahrgestellnr",vo["Fahrgestellnr"])}
-        ${f("Ordernr","voEdit_Ordernr",vo["Ordernr"])}
-        ${f("Vertragsnr","voEdit_Vertragsnr",vo["Vertragsnr"])}
-        ${f("Auftrag","voEdit_Auftrag",vo["Auftrag"])}
-        ${f("Ablieferung","voEdit_Ablieferung",vo["Ablieferung"],{type:"date"})}
-      </div>` : `
-        <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${e(clean(vo["Fahrzeug"]))||"—"}</div>
-        ${f("FIN","_f",vo["Fahrgestellnr"])}${f("Ordernr","_o",vo["Ordernr"])}${f("Vertragsnr","_v",vo["Vertragsnr"])}${f("Auftrag","_au",vo["Auftrag"])}${f("Ablieferung","_ab",formatVororderDate(vo["Ablieferung"]))}
-      `}
-    </div>
-
-    <div style="background:var(--surface-2);border-radius:8px;padding:14px;margin-bottom:12px;">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Produkt</div>
-      ${edit ? `<div class="form-grid">
-        ${f("Typ","voEdit_Typ",vo["Typ"],{type:"select",options:["","WKR","Reifen","Zubehör"]})}
-        ${f("Anzahl","voEdit_Anzahl",vo["Anzahl"],{type:"number"})}
-        ${f("TN","voEdit_TN",vo["TN"],{full:true})}
-        ${f("Bezeichnung","voEdit_Bezeichnung",vo["Bezeichnung"])}
-        ${f("Dimension","voEdit_Dimension",vo["Dimension"])}
-        ${f("VK (CHF)","voEdit_VK",vo["VK"])}
-        ${f("Konditionen","voEdit_Konditionen",vo["Konditionen"])}
-        ${f("Bearbeitungs-Standort","voEdit_Standort_Bearbeitung",vo["Standort_Bearbeitung"],{type:"select",options:["","GEB","HET"]})}
-      </div>` : `
-        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
-          <span style="background:var(--accent);color:white;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:700;">${e(clean(vo["Typ"]))||"—"}</span>
-          <span style="font-weight:700;">${e(clean(vo["Bezeichnung"]))||"—"}</span>
-          ${clean(vo["Dimension"])?`<span>${e(clean(vo["Dimension"]))}</span>`:""}
-          ${clean(vo["TN"])?`<span style="font-family:monospace;background:var(--surface-3);padding:2px 8px;border-radius:3px;font-size:12px;">${e(clean(vo["TN"]))}</span>`:""}
-          <span>Anzahl: <b>${e(clean(vo["Anzahl"]))||"—"}</b></span>
-          ${clean(vo["VK"])?`<span>VK: <b>${e(clean(vo["VK"]))} CHF</b></span>`:""}
-          <span style="margin-left:auto;font-size:12px;color:${clean(vo["ReservierungAktiv"])==="Ja"?"var(--success)":"var(--text-muted)"};">
-            ${clean(vo["ReservierungAktiv"])==="Ja"?"✅ Reserviert":"◯ Keine Reservierung"}
-          </span>
-        </div>
-      `}
-    </div>
-
     ${!edit ? `<div style="background:var(--warning-bg);border:1px solid var(--warning);border-radius:8px;padding:14px;margin-bottom:12px;">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--warning);margin-bottom:10px;">Status ändern</div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
@@ -3332,7 +3293,51 @@ async function saveVoDetailChanges(){
     renderVororderDetail();
     return;
   }
+function renderPositionenList(voId, edit){
+  const positionen = positionenMap[voId] || [];
+  if (!positionen.length) {
+    return `<div style="padding:12px;color:var(--text-muted);font-size:13px;text-align:center;">Keine Positionen erfasst. <button class="btn btn-primary btn-sm" onclick="openNewPositionModal('${js(voId)}')" style="margin-left:8px;">+ Erste Position</button></div>`;
+  }
 
+  return `<table style="width:100%;border-collapse:collapse;font-size:13px;">
+    <thead>
+      <tr style="background:var(--surface-3);">
+        <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">#</th>
+        <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">Typ / TN</th>
+        <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">Bezeichnung</th>
+        <th style="padding:8px;text-align:center;font-size:11px;color:var(--text-muted);font-weight:700;">Anz.</th>
+        <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">Status</th>
+        <th style="padding:8px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:700;">Aktion</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${positionen.map((p, idx) => `<tr style="border-top:1px solid var(--border);">
+        <td style="padding:8px;color:var(--text-muted);">${idx + 1}</td>
+        <td style="padding:8px;">
+          <span style="background:var(--accent);color:white;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;">${e(clean(p["Typ"]))||"—"}</span>
+          ${clean(p["TN"])?`<div style="font-family:monospace;font-size:11px;color:var(--text-muted);margin-top:2px;">${e(clean(p["TN"]))}</div>`:""}
+        </td>
+        <td style="padding:8px;">
+          <div style="font-weight:600;">${e(clean(p["Bezeichnung"]))||"—"}</div>
+          ${clean(p["Dimension"])?`<div style="font-size:11px;color:var(--text-muted);">${e(clean(p["Dimension"]))}</div>`:""}
+        </td>
+        <td style="padding:8px;text-align:center;font-weight:700;">${e(clean(p["Anzahl"]))||"—"}</td>
+        <td style="padding:8px;">${vororderStatusBadge(p["Status"])}</td>
+        <td style="padding:8px;text-align:right;white-space:nowrap;">
+          <button class="btn btn-secondary btn-sm" onclick="openEditPositionModal('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;">✏️</button>
+          ${clean(p["Typ"])==="WKR"&&clean(p["Status"])==="Reserviert"?`<button class="btn btn-secondary btn-sm" onclick="printPositionLabel('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;">🏷️</button>`:""}
+          <button class="btn btn-danger btn-sm" onclick="deletePosition('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;">🗑️</button>
+        </td>
+      </tr>`).join("")}
+    </tbody>
+  </table>`;
+}
+
+// Platzhalter-Funktionen (werden in 4b ausgefüllt)
+function openNewPositionModal(voId){ alert("Neue Position — kommt in Phase 4b"); }
+function openEditPositionModal(posId){ alert("Position bearbeiten — kommt in Phase 4b"); }
+function deletePosition(posId){ alert("Position löschen — kommt in Phase 4b"); }
+function printPositionLabel(posId){ alert("Etikette pro Position — kommt in Phase 4b"); }
   const typNow = updates["Typ"] != null ? updates["Typ"] : clean(vo["Typ"]);
   if ((updates["TN"] != null || updates["Anzahl"] != null) && 
       typNow === "WKR" && clean(vo["ReservierungAktiv"]) === "Ja") {
