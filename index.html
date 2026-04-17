@@ -1080,11 +1080,14 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
       <div class="form-field">
         <label>Status *</label>
         <select id="newVoStatus">
-          <option value="Vororder offen">Vororder offen (Kunde wählt noch)</option>
-          <option value="Erfasst" selected>Erfasst (mit Reservierung)</option>
-          <option value="Bestellt">Bestellt</option>
-          <option value="Kein Interesse">Kein Interesse (nur Statistik)</option>
-        </select>
+  <option value="Kundenauswahl">Kundenauswahl (Kunde wählt online)</option>
+  <option value="Offerte ausstehend">Offerte ausstehend</option>
+  <option value="Offeriert">Offeriert</option>
+  <option value="Sammelbestellung (Vororder26)" selected>Sammelbestellung (Vororder26)</option>
+  <option value="Bestellt">Bestellt</option>
+  <option value="Reserviert">Reserviert (Ware eingetroffen)</option>
+  <option value="Kunde verzichtet">Kunde verzichtet</option>
+</select>
       </div>
       <div class="form-field full"><label>Bemerkungen</label><textarea id="newVoBemerkungen" placeholder="Zusätzliche Notizen"></textarea></div>
     </div>
@@ -1097,7 +1100,56 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
     </div>
   </div>
 </div>
+<!-- Position Modal -->
+<div id="positionModal" class="modal-overlay" style="z-index:2000;">
+  <div class="modal-box">
+    <div class="modal-title" id="positionModalTitle">Neue Position</div>
+    <div class="modal-subtitle" id="positionModalSubtitle"></div>
 
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Typ *</label>
+        <select id="posTyp" onchange="onPosTypChange()">
+          <option value="">Bitte wählen</option>
+          <option value="WKR">WKR</option>
+          <option value="Reifen">Reifen</option>
+          <option value="Zubehör">Zubehör</option>
+        </select>
+      </div>
+      <div class="form-field"><label>Anzahl *</label><input id="posAnzahl" type="number" min="1" value="1"></div>
+      <div class="form-field full">
+        <label>Teilenummer (TN)</label>
+        <input id="posTN" type="text" list="posTnOptions" placeholder="z.B. 5A92C63" oninput="onPosTnChange()">
+        <datalist id="posTnOptions"></datalist>
+      </div>
+      <div class="form-field"><label>Bezeichnung</label><input id="posBezeichnung" type="text"></div>
+      <div class="form-field"><label>Dimension</label><input id="posDimension" type="text"></div>
+      <div class="form-field"><label>VK (CHF)</label><input id="posVK" type="text"></div>
+      <div class="form-field"><label>Konditionen</label><input id="posKonditionen" type="text"></div>
+      <div class="form-field full">
+        <label>Status</label>
+        <select id="posStatus">
+          <option value="Kundenauswahl">Kundenauswahl</option>
+          <option value="Offerte ausstehend" selected>Offerte ausstehend</option>
+          <option value="Offeriert">Offeriert</option>
+          <option value="Sammelbestellung (Vororder26)">Sammelbestellung (Vororder26)</option>
+          <option value="Bestellt">Bestellt</option>
+          <option value="Reserviert">Reserviert</option>
+          <option value="Erledigt">Erledigt</option>
+          <option value="Kunde verzichtet">Kunde verzichtet</option>
+        </select>
+      </div>
+      <div class="form-field full"><label>Bemerkungen</label><textarea id="posBemerkungen"></textarea></div>
+    </div>
+
+    <p class="required-note">* Pflichtfelder</p>
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closePositionModal()">Schliessen</button>
+      <button class="btn btn-primary" onclick="savePosition()">Speichern</button>
+    </div>
+  </div>
+</div>
 <!-- Vororder Detail Modal -->
 <div id="vororderDetailModal" class="modal-overlay">
   <div class="modal-box wide">
@@ -1241,6 +1293,7 @@ let _saving = { newTire:false,editTire:false,deleteTire:false,newWkr:false,delet
 let vororderLoaded = false;
 let vororderLoading = false;
 let vororderFilter = { suche:"", status:"", typ:"", standort:"" };
+   let positionenMap = {};  // { "VO-2026-0001": [ {PositionID, Typ, ...}, ... ] }
 
 /* ============================================================
    HELPERS
@@ -2171,14 +2224,15 @@ function renderAdminVororder(){
   const results = getFilteredVororder();
 
   // Stats
+  // Stats
   const stats = {
-    offen: results.filter(v => ["Vororder offen","Kundenauswahl","Erfasst","Bestellt"].includes(clean(v["Status"]))).length,
-    eingetroffen: results.filter(v => ["Eingetroffen","Eingelagert"].includes(clean(v["Status"]))).length,
-    abgeschlossen: results.filter(v => ["Verrechnet","Abgeschlossen"].includes(clean(v["Status"]))).length,
-    abgesagt: results.filter(v => ["Abgesagt","Kein Interesse"].includes(clean(v["Status"]))).length
+    offen: results.filter(v => ["Kundenauswahl","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt"].includes(clean(v["Status"]))).length,
+    eingetroffen: results.filter(v => clean(v["Status"]) === "Reserviert").length,
+    abgeschlossen: results.filter(v => clean(v["Status"]) === "Erledigt").length,
+    abgesagt: results.filter(v => clean(v["Status"]) === "Kunde verzichtet").length
   };
 
-  const statusOptions = ["Vororder offen","Kundenauswahl","Erfasst","Bestellt","Eingetroffen","Eingelagert","Verrechnet","Abgeschlossen","Abgesagt","Kein Interesse"];
+  const statusOptions = ["Kundenauswahl","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt","Reserviert","Erledigt","Kunde verzichtet"];
 
   let html = `<div class="admin-content-header">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
@@ -2203,15 +2257,15 @@ function renderAdminVororder(){
       <div style="font-size:22px;font-weight:700;color:#92400e;">${stats.offen}</div>
     </div>
     <div style="background:#ecfccb;border:1px solid #bef264;border-radius:8px;padding:14px;">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#3f6212;margin-bottom:4px;">Eingetroffen</div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#3f6212;margin-bottom:4px;">Reserviert</div>
       <div style="font-size:22px;font-weight:700;color:#3f6212;">${stats.eingetroffen}</div>
     </div>
     <div style="background:#f3f4f6;border:1px solid #d1d5db;border-radius:8px;padding:14px;">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#374151;margin-bottom:4px;">Abgeschlossen</div>
+     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#374151;margin-bottom:4px;">Erledigt</div>
       <div style="font-size:22px;font-weight:700;color:#374151;">${stats.abgeschlossen}</div>
     </div>
     <div style="background:#fee2e2;border:1px solid #fecaca;border-radius:8px;padding:14px;">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#7f1d1d;margin-bottom:4px;">Abgesagt / Kein Int.</div>
+     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#7f1d1d;margin-bottom:4px;">Kunde verzichtet</div>
       <div style="font-size:22px;font-weight:700;color:#7f1d1d;">${stats.abgesagt}</div>
     </div>
   </div>`;
@@ -2873,13 +2927,22 @@ async function loadVororder(){
       vororder = res.data;
       vororderLoaded = true;
     }
+    // Positionen laden
+    const posRes = await postToScript({ action: "vororderPositionenList" });
+    if (posRes && posRes.status === "OK" && Array.isArray(posRes.data)) {
+      positionenMap = {};
+      posRes.data.forEach(p => {
+        const voId = clean(p["VororderID"]);
+        if (!positionenMap[voId]) positionenMap[voId] = [];
+        positionenMap[voId].push(p);
+      });
+    }
   } catch(err) {
     console.error("Vororder-Ladefehler:", err);
   } finally {
     vororderLoading = false;
   }
 }
-
 function getFilteredVororder(){
   // SuperAdmin darf auch nach Standort filtern, Normal-Admin nur eigenen Standort
   const userStandort = currentUser?.standort || "";
@@ -2899,7 +2962,7 @@ function getFilteredVororder(){
     return true;
   }).sort((a,b) => {
     // Sortierung: Offene zuerst, dann nach Datum absteigend
-    const openStatuses = ["Vororder offen","Kundenauswahl","Erfasst","Bestellt","Eingetroffen","Eingelagert"];
+    const openStatuses = ["Kundenauswahl","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt","Reserviert"];
     const aOpen = openStatuses.indexOf(clean(a["Status"])) !== -1 ? 0 : 1;
     const bOpen = openStatuses.indexOf(clean(b["Status"])) !== -1 ? 0 : 1;
     if (aOpen !== bOpen) return aOpen - bOpen;
@@ -2910,16 +2973,14 @@ function getFilteredVororder(){
 function vororderStatusBadge(status){
   const s = clean(status);
   const styles = {
-    "Vororder offen":  "background:#fef3c7;color:#92400e;",
-    "Kundenauswahl":   "background:#dbeafe;color:#1e40af;",
-    "Erfasst":         "background:#e0e7ff;color:#3730a3;",
-    "Bestellt":        "background:#cffafe;color:#0e7490;",
-    "Eingetroffen":    "background:#d1fae5;color:#065f46;",
-    "Eingelagert":     "background:#ecfccb;color:#3f6212;",
-    "Verrechnet":      "background:#f3f4f6;color:#374151;",
-    "Abgeschlossen":   "background:#f3f4f6;color:#6b7280;",
-    "Abgesagt":        "background:#fecaca;color:#991b1b;",
-    "Kein Interesse":  "background:#fee2e2;color:#7f1d1d;"
+    "Kundenauswahl":                  "background:#e0f2fe;color:#0c4a6e;",
+    "Offerte ausstehend":             "background:#fef3c7;color:#92400e;",
+    "Offeriert":                      "background:#dbeafe;color:#1e40af;",
+    "Sammelbestellung (Vororder26)":  "background:#e0e7ff;color:#3730a3;",
+    "Bestellt":                       "background:#cffafe;color:#0e7490;",
+    "Reserviert":                     "background:#d1fae5;color:#065f46;",
+    "Erledigt":                       "background:#f3f4f6;color:#374151;",
+    "Kunde verzichtet":               "background:#fee2e2;color:#7f1d1d;"
   };
   const style = styles[s] || "background:#f3f4f6;color:#374151;";
   return `<span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;${style}">${e(s || "—")}</span>`;
@@ -3112,16 +3173,60 @@ async function saveNewVororder(){
 /* ============================================================
    VORORDER: Detail-Ansicht
    ============================================================ */
+/* ============================================================
+   VORORDER: Detail-Ansicht mit Bearbeiten-Modus
+   ============================================================ */
+let _voDetailEditMode = false;
+let _voDetailId = null;
+
 function openVororderDetail(id){
-  const vo = vororder.find(v => clean(v["ID"]) === clean(id));
+  _voDetailId = id;
+  _voDetailEditMode = false;
+  renderVororderDetail();
+  document.getElementById("vororderDetailModal").classList.add("open");
+}
+
+function closeVororderDetail(){
+  document.getElementById("vororderDetailModal").classList.remove("open");
+  _voDetailEditMode = false;
+  _voDetailId = null;
+}
+
+function toggleVoEditMode(){
+  _voDetailEditMode = !_voDetailEditMode;
+  renderVororderDetail();
+}
+
+function renderVororderDetail(){
+  const vo = vororder.find(v => clean(v["ID"]) === clean(_voDetailId));
   if (!vo) { alert("Vororder nicht gefunden."); return; }
 
   const content = document.getElementById("voDetailContent");
   if (!content) return;
 
-  const allStatuses = ["Vororder offen","Kundenauswahl","Erfasst","Bestellt","Eingetroffen","Eingelagert","Verrechnet","Abgeschlossen","Abgesagt","Kein Interesse"];
+  const allStatuses = ["Kundenauswahl","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt","Reserviert","Erledigt","Kunde verzichtet"];
   const currentStatus = clean(vo["Status"]);
   const historie = clean(vo["HistorieLog"]);
+  const edit = _voDetailEditMode;
+
+  const f = (label, id, value, opts) => {
+    opts = opts || {};
+    const v = clean(value);
+    if (!edit) {
+      if (!v && !opts.showEmpty) return "";
+      return `<div style="margin-bottom:4px;"><span style="color:var(--text-muted);font-size:11px;">${e(label)}:</span> <b>${e(v)||"—"}</b></div>`;
+    }
+    if (opts.type === "select") {
+      const options = opts.options || [];
+      return `<div class="form-field"><label>${e(label)}</label><select id="${id}">${options.map(o => `<option value="${e(o)}" ${v===o?"selected":""}>${e(o)||"—"}</option>`).join("")}</select></div>`;
+    }
+    if (opts.type === "textarea") {
+      return `<div class="form-field full"><label>${e(label)}</label><textarea id="${id}">${e(v)}</textarea></div>`;
+    }
+    const type = opts.type || "text";
+    const fullClass = opts.full ? " full" : "";
+    return `<div class="form-field${fullClass}"><label>${e(label)}</label><input id="${id}" type="${type}" value="${e(v)}"></div>`;
+  };
 
   content.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;gap:12px;">
@@ -3132,73 +3237,47 @@ function openVororderDetail(id){
           <span style="font-size:12px;color:var(--text-muted);">Erfasst am ${e(formatVororderDate(vo["ErfasstAm"]))} · ${e(clean(vo["Erfasser"]))}</span>
         </div>
       </div>
-      <button class="btn btn-secondary btn-sm" onclick="closeVororderDetail()">✕ Schliessen</button>
-    </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-      <div style="background:var(--surface-2);border-radius:8px;padding:14px;">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Kunde</div>
-        <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${e(clean(vo["Kundenname"]))||"—"}</div>
-        ${clean(vo["Debitornr"])?`<div style="font-size:12px;">Debitor: ${e(clean(vo["Debitornr"]))}</div>`:""}
-        ${clean(vo["Adressnr"])?`<div style="font-size:12px;">Adresse: ${e(clean(vo["Adressnr"]))}</div>`:""}
-        ${clean(vo["KundenEmail"])?`<div style="font-size:12px;">E-Mail: ${e(clean(vo["KundenEmail"]))}</div>`:""}
-        ${clean(vo["RechnungAn"])?`<div style="font-size:12px;margin-top:6px;">💰 ${e(clean(vo["RechnungAn"]))}</div>`:""}
-      </div>
-      <div style="background:var(--surface-2);border-radius:8px;padding:14px;">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Fahrzeug</div>
-        <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${e(clean(vo["Fahrzeug"]))||"—"}</div>
-        ${clean(vo["Fahrgestellnr"])?`<div style="font-size:12px;font-family:monospace;">FIN: ${e(clean(vo["Fahrgestellnr"]))}</div>`:""}
-        ${clean(vo["Ordernr"])?`<div style="font-size:12px;font-family:monospace;">Order: ${e(clean(vo["Ordernr"]))}</div>`:""}
-        ${clean(vo["Auftrag"])?`<div style="font-size:12px;">Auftrag: ${e(clean(vo["Auftrag"]))}</div>`:""}
-        ${clean(vo["Ablieferung"])?`<div style="font-size:12px;margin-top:6px;">📅 Ablieferung: ${e(formatVororderDate(vo["Ablieferung"]))}</div>`:""}
+      <div style="display:flex;gap:8px;">
+        ${edit 
+          ? `<button class="btn btn-primary btn-sm" onclick="saveVoDetailChanges()">💾 Speichern</button>
+             <button class="btn btn-secondary btn-sm" onclick="toggleVoEditMode()">✖ Abbrechen</button>`
+          : `<button class="btn btn-secondary btn-sm" onclick="toggleVoEditMode()">✏️ Bearbeiten</button>
+             <button class="btn btn-secondary btn-sm" onclick="closeVororderDetail()">✕ Schliessen</button>`
+        }
       </div>
     </div>
 
-    <div style="background:var(--surface-2);border-radius:8px;padding:14px;margin-bottom:16px;">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Produkt</div>
-      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
-        <span style="background:var(--accent);color:white;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:700;">${e(clean(vo["Typ"]))||"—"}</span>
-        <span style="font-weight:700;">${e(clean(vo["Bezeichnung"]))||"—"}</span>
-        ${clean(vo["Dimension"])?`<span>${e(clean(vo["Dimension"]))}</span>`:""}
-        ${clean(vo["TN"])?`<span style="font-family:monospace;background:var(--surface-3);padding:2px 8px;border-radius:3px;font-size:12px;">${e(clean(vo["TN"]))}</span>`:""}
-        <span>Anzahl: <b>${e(clean(vo["Anzahl"]))||"—"}</b></span>
-        ${clean(vo["VK"])?`<span>VK: <b>${e(clean(vo["VK"]))} CHF</b></span>`:""}
-        <span style="margin-left:auto;font-size:12px;color:${clean(vo["ReservierungAktiv"])==="Ja"?"var(--success)":"var(--text-muted)"};">
-          ${clean(vo["ReservierungAktiv"])==="Ja"?"✅ Reserviert":"◯ Keine Reservierung"}
-        </span>
+    <div style="background:var(--surface-2);border-radius:8px;padding:14px;margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Positionen</div>
+        ${!edit ? `<button class="btn btn-primary btn-sm" onclick="openNewPositionModal('${js(clean(vo["ID"]))}')">+ Position hinzufügen</button>` : ""}
       </div>
+      ${renderPositionenList(clean(vo["ID"]), edit)}
     </div>
-
-    <div style="background:var(--warning-bg);border:1px solid var(--warning);border-radius:8px;padding:14px;margin-bottom:16px;">
+    ${!edit ? `<div style="background:var(--warning-bg);border:1px solid var(--warning);border-radius:8px;padding:14px;margin-bottom:12px;">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--warning);margin-bottom:10px;">Status ändern</div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
         <select id="voDetailStatus" style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-weight:600;">
           ${allStatuses.map(s => `<option value="${e(s)}" ${s===currentStatus?"selected":""}>${e(s)}</option>`).join("")}
         </select>
         <button class="btn btn-primary btn-sm" onclick="saveVororderStatus('${js(clean(vo["ID"]))}')">Status speichern</button>
-        ${clean(vo["Typ"])==="WKR"&&clean(vo["Status"])==="Eingetroffen"?`<button class="btn btn-secondary btn-sm" onclick="printVororderLabel('${js(clean(vo["ID"]))}')">🏷️ Etikette drucken</button>`:""}
+        ${clean(vo["Typ"])==="WKR"&&clean(vo["Status"])==="Reserviert"?`<button class="btn btn-secondary btn-sm" onclick="printVororderLabel('${js(clean(vo["ID"]))}')">🏷️ Etikette drucken</button>`:""}
       </div>
-      <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">
-        Bei Status-Wechsel werden Reservierung und Lager automatisch aktualisiert.
-      </div>
-    </div>
+    </div>` : ""}
 
-    ${clean(vo["Bemerkungen"])?`<div style="background:var(--surface-2);border-radius:8px;padding:14px;margin-bottom:16px;">
+    ${edit ? `<div style="background:var(--surface-2);border-radius:8px;padding:14px;margin-bottom:12px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Bemerkungen</div>
+      <div class="form-grid">${f("Bemerkungen","voEdit_Bemerkungen",vo["Bemerkungen"],{type:"textarea"})}</div>
+    </div>` : (clean(vo["Bemerkungen"])?`<div style="background:var(--surface-2);border-radius:8px;padding:14px;margin-bottom:12px;">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:6px;">Bemerkungen</div>
       <div style="white-space:pre-line;font-size:13px;">${e(clean(vo["Bemerkungen"]))}</div>
-    </div>`:""}
+    </div>`:"")}
 
     ${historie?`<div style="background:var(--surface-2);border-radius:8px;padding:14px;">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:8px;">Historie</div>
       <div style="font-size:11px;font-family:monospace;white-space:pre-line;line-height:1.6;color:var(--text-secondary);">${e(historie)}</div>
     </div>`:""}
   `;
-
-  document.getElementById("vororderDetailModal").classList.add("open");
-}
-
-function closeVororderDetail(){
-  document.getElementById("vororderDetailModal").classList.remove("open");
 }
 
 async function saveVororderStatus(id){
@@ -3221,7 +3300,6 @@ async function saveVororderStatus(id){
       alert(`✅ Status geändert zu: ${newStatus}`);
       closeVororderDetail();
       await reloadVororder();
-      // Produkte neu laden für aktuellen Reserviert-Wert
       try {
         const p = await fetch(URLS.produkte).then(r=>r.json());
         if (Array.isArray(p)) produkte = p;
@@ -3235,6 +3313,364 @@ async function saveVororderStatus(id){
   }
 }
 
+async function saveVoDetailChanges(){
+  if (!_voDetailId) return;
+  const vo = vororder.find(v => clean(v["ID"]) === clean(_voDetailId));
+  if (!vo) { alert("Vororder nicht gefunden."); return; }
+
+  const fields = ["Kundenname","Debitornr","Adressnr","KundenEmail","RechnungAn",
+                  "Marke","Fahrzeug","Fahrgestellnr","Ordernr","Vertragsnr","Auftrag","Ablieferung",
+                  "Typ","Anzahl","TN","Bezeichnung","Dimension","VK","Konditionen","Standort_Bearbeitung",
+                  "Bemerkungen"];
+
+  const updates = {};
+  let hasChanges = false;
+  fields.forEach(f => {
+    const el = document.getElementById("voEdit_" + f);
+    if (!el) return;
+    const newVal = clean(el.value);
+    const oldVal = clean(vo[f]);
+    if (newVal !== oldVal) {
+      updates[f] = newVal;
+      hasChanges = true;
+    }
+  });
+
+  if (!hasChanges) {
+    alert("Keine Änderungen zum Speichern.");
+    _voDetailEditMode = false;
+    renderVororderDetail();
+    return;
+  }
+
+  const typNow = updates["Typ"] != null ? updates["Typ"] : clean(vo["Typ"]);
+  if ((updates["TN"] != null || updates["Anzahl"] != null) && 
+      typNow === "WKR" && clean(vo["ReservierungAktiv"]) === "Ja") {
+    if (!confirm("⚠ Änderung bei WKR mit aktiver Reservierung.\nAlte Reservierung wird aufgelöst, neue gesetzt.\nFortfahren?")) {
+      return;
+    }
+  }
+
+  const user = currentUser?.name || currentUser?.email || "Unknown";
+
+  try {
+    const res = await postToScript({
+      action: "vororderUpdate",
+      id: _voDetailId,
+      user: user,
+      updates: updates
+    });
+    if (res && res.status === "OK") {
+      alert(`✅ ${res.changedFields?.length || 0} Feld(er) gespeichert.`);
+      _voDetailEditMode = false;
+      await reloadVororder();
+      try {
+        const p = await fetch(URLS.produkte).then(r=>r.json());
+        if (Array.isArray(p)) produkte = p;
+      } catch(e){}
+      renderVororderDetail();
+      render();
+    } else {
+      alert("Fehler: " + JSON.stringify(res));
+    }
+  } catch(err) {
+    alert("Fehler: " + err.message);
+  }
+}
+   function renderPositionenList(voId, edit){
+  const positionen = positionenMap[voId] || [];
+  if (!positionen.length) {
+    return `<div style="padding:12px;color:var(--text-muted);font-size:13px;text-align:center;">Keine Positionen erfasst. <button class="btn btn-primary btn-sm" onclick="openNewPositionModal('${js(voId)}')" style="margin-left:8px;">+ Erste Position</button></div>`;
+  }
+
+  return `<table style="width:100%;border-collapse:collapse;font-size:13px;">
+    <thead>
+      <tr style="background:var(--surface-3);">
+        <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">#</th>
+        <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">Typ / TN</th>
+        <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">Bezeichnung</th>
+        <th style="padding:8px;text-align:center;font-size:11px;color:var(--text-muted);font-weight:700;">Anz.</th>
+        <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">Status</th>
+        <th style="padding:8px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:700;">Aktion</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${positionen.map((p, idx) => `<tr style="border-top:1px solid var(--border);">
+        <td style="padding:8px;color:var(--text-muted);">${idx + 1}</td>
+        <td style="padding:8px;">
+          <span style="background:var(--accent);color:white;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;">${e(clean(p["Typ"]))||"—"}</span>
+          ${clean(p["TN"])?`<div style="font-family:monospace;font-size:11px;color:var(--text-muted);margin-top:2px;">${e(clean(p["TN"]))}</div>`:""}
+        </td>
+        <td style="padding:8px;">
+          <div style="font-weight:600;">${e(clean(p["Bezeichnung"]))||"—"}</div>
+          ${clean(p["Dimension"])?`<div style="font-size:11px;color:var(--text-muted);">${e(clean(p["Dimension"]))}</div>`:""}
+        </td>
+        <td style="padding:8px;text-align:center;font-weight:700;">${e(clean(p["Anzahl"]))||"—"}</td>
+        <td style="padding:8px;">${vororderStatusBadge(p["Status"])}</td>
+        <td style="padding:8px;text-align:right;white-space:nowrap;">
+          <button class="btn btn-secondary btn-sm" onclick="openEditPositionModal('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;">✏️</button>
+          ${clean(p["Typ"])==="WKR"?`<button class="btn btn-secondary btn-sm" onclick="printPositionLabel('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;" title="Etikette drucken">🏷️</button>`:""}
+          <button class="btn btn-danger btn-sm" onclick="deletePosition('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;">🗑️</button>
+        </td>
+      </tr>`).join("")}
+    </tbody>
+  </table>`;
+}
+
+// Platzhalter-Funktionen (werden in 4b ausgefüllt)
+/* ============================================================
+   POSITIONS-MODAL
+   ============================================================ */
+let _posEditMode = { posId: null, voId: null };
+
+function openNewPositionModal(voId){
+  _posEditMode = { posId: null, voId: voId };
+  document.getElementById("positionModalTitle").textContent = "Neue Position";
+  document.getElementById("positionModalSubtitle").textContent = `Für Vororder ${voId}`;
+  // Felder leeren
+  ["posTyp","posTN","posBezeichnung","posDimension","posVK","posKonditionen","posBemerkungen"].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = "";
+  });
+  document.getElementById("posAnzahl").value = "";
+  document.getElementById("posStatus").value = "Offerte ausstehend";
+  fillPosTnOptions();
+  document.getElementById("positionModal").classList.add("open");
+}
+
+function openEditPositionModal(posId){
+  const positionen = Object.values(positionenMap).flat();
+  const pos = positionen.find(p => clean(p["PositionID"]) === clean(posId));
+  if (!pos) { alert("Position nicht gefunden."); return; }
+  _posEditMode = { posId: posId, voId: clean(pos["VororderID"]) };
+
+  document.getElementById("positionModalTitle").textContent = "Position bearbeiten";
+  document.getElementById("positionModalSubtitle").textContent = `${posId} — Vororder ${clean(pos["VororderID"])}`;
+
+  document.getElementById("posTyp").value = clean(pos["Typ"]);
+  document.getElementById("posAnzahl").value = clean(pos["Anzahl"]) || "1";
+  document.getElementById("posTN").value = clean(pos["TN"]);
+  document.getElementById("posBezeichnung").value = clean(pos["Bezeichnung"]);
+  document.getElementById("posDimension").value = clean(pos["Dimension"]);
+  document.getElementById("posVK").value = clean(pos["VK"]);
+  document.getElementById("posKonditionen").value = clean(pos["Konditionen"]);
+  document.getElementById("posStatus").value = clean(pos["Status"]) || "Offerte ausstehend";
+  document.getElementById("posBemerkungen").value = clean(pos["Bemerkungen"]);
+
+  fillPosTnOptions();
+  document.getElementById("positionModal").classList.add("open");
+}
+
+function closePositionModal(){
+  document.getElementById("positionModal").classList.remove("open");
+  _posEditMode = { posId: null, voId: null };
+}
+
+function fillPosTnOptions(){
+  const datalist = document.getElementById("posTnOptions");
+  if (!datalist) return;
+  datalist.innerHTML = produkte.map(p => {
+    const tn = clean(p["TN"]);
+    const lager = parseInt(clean(p["Lager"]),10)||0;
+    const reserviert = parseInt(clean(p["Reserviert"]),10)||0;
+    const verfuegbar = lager - reserviert;
+    const label = `${clean(p["Bezeichnung"])} · ${clean(p["Dimension"])} · Verfügbar: ${verfuegbar}/${lager}`;
+    return `<option value="${e(tn)}">${e(label)}</option>`;
+  }).join("");
+}
+
+function onPosTypChange(){
+  // nix zu tun aktuell
+}
+
+function onPosTnChange(){
+  const tn = clean(document.getElementById("posTN")?.value);
+  if (!tn) return;
+  const prod = produkte.find(p => clean(p["TN"]) === tn);
+  if (prod) {
+    const bezEl = document.getElementById("posBezeichnung");
+    const dimEl = document.getElementById("posDimension");
+    const vkEl = document.getElementById("posVK");
+    const typEl = document.getElementById("posTyp");
+    if (bezEl && !bezEl.value) bezEl.value = clean(prod["Bezeichnung"]);
+    if (dimEl && !dimEl.value) dimEl.value = clean(prod["Dimension"]);
+    if (vkEl && !vkEl.value)   vkEl.value  = clean(prod["Angebotspreis"]) || clean(prod["VP"]);
+    if (typEl && !typEl.value) typEl.value = "WKR";
+  }
+}
+async function savePosition(){
+  const typ = clean(document.getElementById("posTyp").value);
+  const anzahl = parseInt(clean(document.getElementById("posAnzahl").value),10) || 0;
+
+  if (!typ || !anzahl) {
+    alert("Pflichtfelder: Typ und Anzahl");
+    return;
+  }
+
+  const row = {
+    "Typ": typ,
+    "TN": clean(document.getElementById("posTN").value),
+    "Bezeichnung": clean(document.getElementById("posBezeichnung").value),
+    "Dimension": clean(document.getElementById("posDimension").value),
+    "Anzahl": anzahl,
+    "VK": clean(document.getElementById("posVK").value),
+    "Konditionen": clean(document.getElementById("posKonditionen").value),
+    "Status": clean(document.getElementById("posStatus").value),
+    "Bemerkungen": clean(document.getElementById("posBemerkungen").value)
+  };
+
+  // Welche Vororder ist aktuell offen?
+  const currentVoId = _voDetailId;
+
+  try {
+    let res;
+    if (_posEditMode.posId) {
+      res = await postToScript({
+        action: "vororderPositionUpdate",
+        positionId: _posEditMode.posId,
+        updates: row
+      });
+    } else {
+      res = await postToScript({
+        action: "vororderPositionAdd",
+        vororderId: _posEditMode.voId,
+        row: row
+      });
+    }
+
+    if (res && res.status === "OK") {
+      closePositionModal();
+      // Positionen neu laden (nicht die ganze Liste — schneller)
+      const posRes = await postToScript({ action: "vororderPositionenList" });
+      if (posRes && posRes.status === "OK" && Array.isArray(posRes.data)) {
+        positionenMap = {};
+        posRes.data.forEach(p => {
+          const voId = clean(p["VororderID"]);
+          if (!positionenMap[voId]) positionenMap[voId] = [];
+          positionenMap[voId].push(p);
+        });
+      }
+      // Detail-Modal offen lassen, nur neu rendern
+      if (currentVoId) {
+        _voDetailId = currentVoId;
+        renderVororderDetail();
+      }
+    } else {
+      alert("Fehler: " + JSON.stringify(res));
+    }
+  } catch(err) {
+    alert("Fehler: " + err.message);
+  }
+}
+
+
+async function deletePosition(posId){
+  if (!confirm("Position wirklich löschen?\nEine aktive Reservierung wird automatisch aufgelöst.")) return;
+
+  const currentVoId = _voDetailId;
+
+  try {
+    const res = await postToScript({
+      action: "vororderPositionDelete",
+      positionId: posId
+    });
+    if (res && res.status === "OK") {
+      const posRes = await postToScript({ action: "vororderPositionenList" });
+      if (posRes && posRes.status === "OK" && Array.isArray(posRes.data)) {
+        positionenMap = {};
+        posRes.data.forEach(p => {
+          const voId = clean(p["VororderID"]);
+          if (!positionenMap[voId]) positionenMap[voId] = [];
+          positionenMap[voId].push(p);
+        });
+      }
+      if (currentVoId) {
+        _voDetailId = currentVoId;
+        renderVororderDetail();
+      }
+    } else {
+      alert("Fehler: " + JSON.stringify(res));
+    }
+  } catch(err) {
+    alert("Fehler: " + err.message);
+  }
+}
+function printPositionLabel(posId){
+  const positionen = Object.values(positionenMap).flat();
+  const pos = positionen.find(p => clean(p["PositionID"]) === clean(posId));
+  if (!pos) { alert("Position nicht gefunden."); return; }
+  const vo = vororder.find(v => clean(v["ID"]) === clean(pos["VororderID"]));
+  if (!vo) { alert("Vororder nicht gefunden."); return; }
+
+  // Etikette drucken mit Position-Daten
+  const kunde = clean(vo["Kundenname"]);
+  const fahrzeug = clean(vo["Fahrzeug"]);
+  const fin = clean(vo["Fahrgestellnr"]);
+  const auftrag = clean(vo["Auftrag"]);
+  const ablieferung = formatVororderDate(vo["Ablieferung"]);
+  const typ = clean(pos["Typ"]);
+  const bezeichnung = clean(pos["Bezeichnung"]);
+  const dimension = clean(pos["Dimension"]);
+  const tn = clean(pos["TN"]);
+  const anzahl = clean(pos["Anzahl"]);
+  const voId = clean(vo["ID"]);
+  const labelCode = voId + "-" + posId;
+
+  const w = window.open("","_blank","width=900,height=700");
+  if(!w){alert("Popup blockiert.");return;}
+
+  w.document.write(`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Position-Etikette</title><style>
+    @page{size:100mm 73mm;margin:0;}
+    html,body{width:100mm;height:73mm;margin:0;padding:0;font-family:Arial,sans-serif;background:white;}
+    .wrap{width:100mm;height:73mm;box-sizing:border-box;padding:4mm 5mm;}
+    .hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1.5px solid #1c69d4;padding-bottom:1.5mm;margin-bottom:2mm;}
+    .hdr-left{flex:1;}
+    .hdr-right{font-size:8pt;color:#555;text-align:right;}
+    .id{font-size:9pt;font-weight:700;color:#1c69d4;font-family:monospace;}
+    .kunde{font-size:12pt;font-weight:700;line-height:1.1;}
+    .fahrzeug{font-size:10pt;font-weight:700;margin-bottom:1mm;}
+    .line{font-size:8.5pt;margin-bottom:0.8mm;line-height:1.3;}
+    .line b{font-weight:700;}
+    .tn-box{background:#f0f5ff;border-left:2px solid #1c69d4;padding:1.5mm 2mm;margin:1.5mm 0;font-size:9pt;font-weight:700;}
+    .barcode-wrap{margin-top:2mm;text-align:center;border-top:1px solid #ddd;padding-top:1mm;}
+    .barcode{width:70mm;height:9mm;display:block;margin:0 auto;}
+    .tn-text{font-size:7.5pt;margin-top:0.5mm;font-weight:700;}
+    .actions{position:fixed;right:10px;top:10px;display:flex;gap:8px;}
+    .actions button{border:none;background:#1c69d4;color:white;padding:10px 14px;font-size:13px;cursor:pointer;}
+    .actions button.sec{background:#666;}
+    @media print{.actions{display:none;}}
+  </style></head><body>
+    <div class="actions">
+      <button onclick="window.print()">Drucken</button>
+      <button class="sec" onclick="window.close()">Schliessen</button>
+    </div>
+    <div class="wrap">
+      <div class="hdr">
+        <div class="hdr-left">
+          <div class="id">${e(voId)} / ${e(posId)}</div>
+        </div>
+        <div class="hdr-right">
+          ${ablieferung?`<div><b>Abl.:</b> ${e(ablieferung)}</div>`:""}
+          ${auftrag?`<div>Auftrag ${e(auftrag)}</div>`:""}
+        </div>
+      </div>
+      <div class="kunde">${e(kunde)}</div>
+      <div class="fahrzeug">${e(fahrzeug)}</div>
+      ${fin?`<div class="line"><b>FIN:</b> ${e(fin)}</div>`:""}
+      ${bezeichnung?`<div class="line"><b>Produkt:</b> ${e(bezeichnung)}${dimension?" · "+e(dimension):""}</div>`:""}
+      ${anzahl?`<div class="line"><b>Anzahl:</b> ${e(anzahl)} × ${e(typ)}</div>`:""}
+      ${tn?`<div class="tn-box">TN: ${e(tn)}</div>`:""}
+      <div class="barcode-wrap">
+        <svg id="barcode" class="barcode"></svg>
+        <div class="tn-text">${e(labelCode)}</div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
+    <script>
+      JsBarcode("#barcode", ${JSON.stringify(labelCode)}, {format:"CODE128",displayValue:false,margin:0,width:1.3,height:24});
+    <\/script>
+  </body></html>`);
+  w.document.close();
+}
 /* ============================================================
    VORORDER: Etikette drucken
    ============================================================ */
