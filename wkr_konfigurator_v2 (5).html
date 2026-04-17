@@ -3150,7 +3150,6 @@ function renderVororderDetail(){
   const historie = clean(vo["HistorieLog"]);
   const edit = _voDetailEditMode;
 
-  // Helper: Feld rendern (read oder edit)
   const f = (label, id, value, opts) => {
     opts = opts || {};
     const v = clean(value);
@@ -3189,7 +3188,6 @@ function renderVororderDetail(){
       </div>
     </div>
 
-    <!-- Kunde -->
     <div style="background:var(--surface-2);border-radius:8px;padding:14px;margin-bottom:12px;">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Kunde</div>
       ${edit ? `<div class="form-grid">
@@ -3204,7 +3202,6 @@ function renderVororderDetail(){
       `}
     </div>
 
-    <!-- Fahrzeug -->
     <div style="background:var(--surface-2);border-radius:8px;padding:14px;margin-bottom:12px;">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Fahrzeug</div>
       ${edit ? `<div class="form-grid">
@@ -3221,7 +3218,6 @@ function renderVororderDetail(){
       `}
     </div>
 
-    <!-- Produkt -->
     <div style="background:var(--surface-2);border-radius:8px;padding:14px;margin-bottom:12px;">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Produkt</div>
       ${edit ? `<div class="form-grid">
@@ -3259,7 +3255,6 @@ function renderVororderDetail(){
       </div>
     </div>` : ""}
 
-    <!-- Bemerkungen -->
     ${edit ? `<div style="background:var(--surface-2);border-radius:8px;padding:14px;margin-bottom:12px;">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Bemerkungen</div>
       <div class="form-grid">${f("Bemerkungen","voEdit_Bemerkungen",vo["Bemerkungen"],{type:"textarea"})}</div>
@@ -3313,7 +3308,6 @@ async function saveVoDetailChanges(){
   const vo = vororder.find(v => clean(v["ID"]) === clean(_voDetailId));
   if (!vo) { alert("Vororder nicht gefunden."); return; }
 
-  // Alle bearbeitbaren Felder einsammeln
   const fields = ["Kundenname","Debitornr","Adressnr","KundenEmail","RechnungAn",
                   "Marke","Fahrzeug","Fahrgestellnr","Ordernr","Vertragsnr","Auftrag","Ablieferung",
                   "Typ","Anzahl","TN","Bezeichnung","Dimension","VK","Konditionen","Standort_Bearbeitung",
@@ -3339,7 +3333,6 @@ async function saveVoDetailChanges(){
     return;
   }
 
-  // Warnung bei TN/Anzahl-Änderung wenn WKR mit aktiver Reservierung
   const typNow = updates["Typ"] != null ? updates["Typ"] : clean(vo["Typ"]);
   if ((updates["TN"] != null || updates["Anzahl"] != null) && 
       typNow === "WKR" && clean(vo["ReservierungAktiv"]) === "Ja") {
@@ -3374,34 +3367,6 @@ async function saveVoDetailChanges(){
     alert("Fehler: " + err.message);
   }
 }
-
-  const user = currentUser?.name || currentUser?.email || "Unknown";
-
-  try {
-    const res = await postToScript({
-      action: "vororderUpdate",
-      id: id,
-      user: user,
-      updates: { Status: newStatus }
-    });
-    if (res && res.status === "OK") {
-      alert(`✅ Status geändert zu: ${newStatus}`);
-      closeVororderDetail();
-      await reloadVororder();
-      // Produkte neu laden für aktuellen Reserviert-Wert
-      try {
-        const p = await fetch(URLS.produkte).then(r=>r.json());
-        if (Array.isArray(p)) produkte = p;
-      } catch(e){}
-      render();
-    } else {
-      alert("Fehler: " + JSON.stringify(res));
-    }
-  } catch(err) {
-    alert("Fehler: " + err.message);
-  }
-}
-
 /* ============================================================
    VORORDER: Etikette drucken
    ============================================================ */
