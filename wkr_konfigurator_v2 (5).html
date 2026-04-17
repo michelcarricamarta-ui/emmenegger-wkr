@@ -1101,7 +1101,7 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
   </div>
 </div>
 <!-- Position Modal -->
-<div id="positionModal" class="modal-overlay">
+<div id="positionModal" class="modal-overlay" style="z-index:2000;">
   <div class="modal-box">
     <div class="modal-title" id="positionModalTitle">Neue Position</div>
     <div class="modal-subtitle" id="positionModalSubtitle"></div>
@@ -1119,7 +1119,7 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
       <div class="form-field"><label>Anzahl *</label><input id="posAnzahl" type="number" min="1" value="1"></div>
       <div class="form-field full">
         <label>Teilenummer (TN)</label>
-        <input id="posTN" type="text" list="posTnOptions" placeholder="TN (optional)" oninput="onPosTnChange()">
+        <input id="posTN" type="text" list="posTnOptions" placeholder="z.B. 5A92C63" oninput="onPosTnChange()">
         <datalist id="posTnOptions"></datalist>
       </div>
       <div class="form-field"><label>Bezeichnung</label><input id="posBezeichnung" type="text"></div>
@@ -3431,7 +3431,7 @@ function openNewPositionModal(voId){
   ["posTyp","posTN","posBezeichnung","posDimension","posVK","posKonditionen","posBemerkungen"].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = "";
   });
-  document.getElementById("posAnzahl").value = "4";
+  document.getElementById("posAnzahl").value = "";
   document.getElementById("posStatus").value = "Offerte ausstehend";
   fillPosTnOptions();
   document.getElementById("positionModal").classList.add("open");
@@ -3497,7 +3497,6 @@ function onPosTnChange(){
     if (typEl && !typEl.value) typEl.value = "WKR";
   }
 }
-
 async function savePosition(){
   const typ = clean(document.getElementById("posTyp").value);
   const anzahl = parseInt(clean(document.getElementById("posAnzahl").value),10) || 0;
@@ -3519,17 +3518,18 @@ async function savePosition(){
     "Bemerkungen": clean(document.getElementById("posBemerkungen").value)
   };
 
+  // Welche Vororder ist aktuell offen?
+  const currentVoId = _voDetailId;
+
   try {
     let res;
     if (_posEditMode.posId) {
-      // Update
       res = await postToScript({
         action: "vororderPositionUpdate",
         positionId: _posEditMode.posId,
         updates: row
       });
     } else {
-      // Add
       res = await postToScript({
         action: "vororderPositionAdd",
         vororderId: _posEditMode.voId,
@@ -3539,14 +3539,21 @@ async function savePosition(){
 
     if (res && res.status === "OK") {
       closePositionModal();
-      await reloadVororder();
-      // Produkte neu laden für Reservierung
-      try {
-        const p = await fetch(URLS.produkte).then(r=>r.json());
-        if (Array.isArray(p)) produkte = p;
-      } catch(e){}
-      if (_voDetailId) renderVororderDetail();
-      render();
+      // Positionen neu laden (nicht die ganze Liste — schneller)
+      const posRes = await postToScript({ action: "vororderPositionenList" });
+      if (posRes && posRes.status === "OK" && Array.isArray(posRes.data)) {
+        positionenMap = {};
+        posRes.data.forEach(p => {
+          const voId = clean(p["VororderID"]);
+          if (!positionenMap[voId]) positionenMap[voId] = [];
+          positionenMap[voId].push(p);
+        });
+      }
+      // Detail-Modal offen lassen, nur neu rendern
+      if (currentVoId) {
+        _voDetailId = currentVoId;
+        renderVororderDetail();
+      }
     } else {
       alert("Fehler: " + JSON.stringify(res));
     }
@@ -3555,8 +3562,11 @@ async function savePosition(){
   }
 }
 
+
 async function deletePosition(posId){
   if (!confirm("Position wirklich löschen?\nEine aktive Reservierung wird automatisch aufgelöst.")) return;
+
+  const currentVoId = _voDetailId;
 
   try {
     const res = await postToScript({
@@ -3564,13 +3574,19 @@ async function deletePosition(posId){
       positionId: posId
     });
     if (res && res.status === "OK") {
-      await reloadVororder();
-      try {
-        const p = await fetch(URLS.produkte).then(r=>r.json());
-        if (Array.isArray(p)) produkte = p;
-      } catch(e){}
-      if (_voDetailId) renderVororderDetail();
-      render();
+      const posRes = await postToScript({ action: "vororderPositionenList" });
+      if (posRes && posRes.status === "OK" && Array.isArray(posRes.data)) {
+        positionenMap = {};
+        posRes.data.forEach(p => {
+          const voId = clean(p["VororderID"]);
+          if (!positionenMap[voId]) positionenMap[voId] = [];
+          positionenMap[voId].push(p);
+        });
+      }
+      if (currentVoId) {
+        _voDetailId = currentVoId;
+        renderVororderDetail();
+      }
     } else {
       alert("Fehler: " + JSON.stringify(res));
     }
@@ -3578,7 +3594,6 @@ async function deletePosition(posId){
     alert("Fehler: " + err.message);
   }
 }
-
 function printPositionLabel(posId){
   const positionen = Object.values(positionenMap).flat();
   const pos = positionen.find(p => clean(p["PositionID"]) === clean(posId));
