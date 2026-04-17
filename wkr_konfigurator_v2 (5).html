@@ -3293,7 +3293,42 @@ async function saveVoDetailChanges(){
     renderVororderDetail();
     return;
   }
-function renderPositionenList(voId, edit){
+
+  const typNow = updates["Typ"] != null ? updates["Typ"] : clean(vo["Typ"]);
+  if ((updates["TN"] != null || updates["Anzahl"] != null) && 
+      typNow === "WKR" && clean(vo["ReservierungAktiv"]) === "Ja") {
+    if (!confirm("⚠ Änderung bei WKR mit aktiver Reservierung.\nAlte Reservierung wird aufgelöst, neue gesetzt.\nFortfahren?")) {
+      return;
+    }
+  }
+
+  const user = currentUser?.name || currentUser?.email || "Unknown";
+
+  try {
+    const res = await postToScript({
+      action: "vororderUpdate",
+      id: _voDetailId,
+      user: user,
+      updates: updates
+    });
+    if (res && res.status === "OK") {
+      alert(`✅ ${res.changedFields?.length || 0} Feld(er) gespeichert.`);
+      _voDetailEditMode = false;
+      await reloadVororder();
+      try {
+        const p = await fetch(URLS.produkte).then(r=>r.json());
+        if (Array.isArray(p)) produkte = p;
+      } catch(e){}
+      renderVororderDetail();
+      render();
+    } else {
+      alert("Fehler: " + JSON.stringify(res));
+    }
+  } catch(err) {
+    alert("Fehler: " + err.message);
+  }
+}
+   function renderPositionenList(voId, edit){
   const positionen = positionenMap[voId] || [];
   if (!positionen.length) {
     return `<div style="padding:12px;color:var(--text-muted);font-size:13px;text-align:center;">Keine Positionen erfasst. <button class="btn btn-primary btn-sm" onclick="openNewPositionModal('${js(voId)}')" style="margin-left:8px;">+ Erste Position</button></div>`;
@@ -3338,40 +3373,6 @@ function openNewPositionModal(voId){ alert("Neue Position — kommt in Phase 4b"
 function openEditPositionModal(posId){ alert("Position bearbeiten — kommt in Phase 4b"); }
 function deletePosition(posId){ alert("Position löschen — kommt in Phase 4b"); }
 function printPositionLabel(posId){ alert("Etikette pro Position — kommt in Phase 4b"); }
-  const typNow = updates["Typ"] != null ? updates["Typ"] : clean(vo["Typ"]);
-  if ((updates["TN"] != null || updates["Anzahl"] != null) && 
-      typNow === "WKR" && clean(vo["ReservierungAktiv"]) === "Ja") {
-    if (!confirm("⚠ Änderung bei WKR mit aktiver Reservierung.\nAlte Reservierung wird aufgelöst, neue gesetzt.\nFortfahren?")) {
-      return;
-    }
-  }
-
-  const user = currentUser?.name || currentUser?.email || "Unknown";
-
-  try {
-    const res = await postToScript({
-      action: "vororderUpdate",
-      id: _voDetailId,
-      user: user,
-      updates: updates
-    });
-    if (res && res.status === "OK") {
-      alert(`✅ ${res.changedFields?.length || 0} Feld(er) gespeichert.`);
-      _voDetailEditMode = false;
-      await reloadVororder();
-      try {
-        const p = await fetch(URLS.produkte).then(r=>r.json());
-        if (Array.isArray(p)) produkte = p;
-      } catch(e){}
-      renderVororderDetail();
-      render();
-    } else {
-      alert("Fehler: " + JSON.stringify(res));
-    }
-  } catch(err) {
-    alert("Fehler: " + err.message);
-  }
-}
 /* ============================================================
    VORORDER: Etikette drucken
    ============================================================ */
