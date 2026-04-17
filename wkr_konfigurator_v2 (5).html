@@ -3114,8 +3114,32 @@ async function saveNewVororder(){
 /* ============================================================
    VORORDER: Detail-Ansicht
    ============================================================ */
+/* ============================================================
+   VORORDER: Detail-Ansicht mit Bearbeiten-Modus
+   ============================================================ */
+let _voDetailEditMode = false;
+let _voDetailId = null;
+
 function openVororderDetail(id){
-  const vo = vororder.find(v => clean(v["ID"]) === clean(id));
+  _voDetailId = id;
+  _voDetailEditMode = false;
+  renderVororderDetail();
+  document.getElementById("vororderDetailModal").classList.add("open");
+}
+
+function closeVororderDetail(){
+  document.getElementById("vororderDetailModal").classList.remove("open");
+  _voDetailEditMode = false;
+  _voDetailId = null;
+}
+
+function toggleVoEditMode(){
+  _voDetailEditMode = !_voDetailEditMode;
+  renderVororderDetail();
+}
+
+function renderVororderDetail(){
+  const vo = vororder.find(v => clean(v["ID"]) === clean(_voDetailId));
   if (!vo) { alert("Vororder nicht gefunden."); return; }
 
   const content = document.getElementById("voDetailContent");
@@ -3124,6 +3148,27 @@ function openVororderDetail(id){
   const allStatuses = ["Kundenauswahl","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt","Reserviert","Erledigt","Kunde verzichtet"];
   const currentStatus = clean(vo["Status"]);
   const historie = clean(vo["HistorieLog"]);
+  const edit = _voDetailEditMode;
+
+  // Helper: Feld rendern (read oder edit)
+  const f = (label, id, value, opts) => {
+    opts = opts || {};
+    const v = clean(value);
+    if (!edit) {
+      if (!v && !opts.showEmpty) return "";
+      return `<div style="margin-bottom:4px;"><span style="color:var(--text-muted);font-size:11px;">${e(label)}:</span> <b>${e(v)||"—"}</b></div>`;
+    }
+    if (opts.type === "select") {
+      const options = opts.options || [];
+      return `<div class="form-field"><label>${e(label)}</label><select id="${id}">${options.map(o => `<option value="${e(o)}" ${v===o?"selected":""}>${e(o)||"—"}</option>`).join("")}</select></div>`;
+    }
+    if (opts.type === "textarea") {
+      return `<div class="form-field full"><label>${e(label)}</label><textarea id="${id}">${e(v)}</textarea></div>`;
+    }
+    const type = opts.type || "text";
+    const fullClass = opts.full ? " full" : "";
+    return `<div class="form-field${fullClass}"><label>${e(label)}</label><input id="${id}" type="${type}" value="${e(v)}"></div>`;
+  };
 
   content.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;gap:12px;">
@@ -3134,44 +3179,76 @@ function openVororderDetail(id){
           <span style="font-size:12px;color:var(--text-muted);">Erfasst am ${e(formatVororderDate(vo["ErfasstAm"]))} · ${e(clean(vo["Erfasser"]))}</span>
         </div>
       </div>
-      <button class="btn btn-secondary btn-sm" onclick="closeVororderDetail()">✕ Schliessen</button>
+      <div style="display:flex;gap:8px;">
+        ${edit 
+          ? `<button class="btn btn-primary btn-sm" onclick="saveVoDetailChanges()">💾 Speichern</button>
+             <button class="btn btn-secondary btn-sm" onclick="toggleVoEditMode()">✖ Abbrechen</button>`
+          : `<button class="btn btn-secondary btn-sm" onclick="toggleVoEditMode()">✏️ Bearbeiten</button>
+             <button class="btn btn-secondary btn-sm" onclick="closeVororderDetail()">✕ Schliessen</button>`
+        }
+      </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-      <div style="background:var(--surface-2);border-radius:8px;padding:14px;">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Kunde</div>
+    <!-- Kunde -->
+    <div style="background:var(--surface-2);border-radius:8px;padding:14px;margin-bottom:12px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Kunde</div>
+      ${edit ? `<div class="form-grid">
+        ${f("Kundenname","voEdit_Kundenname",vo["Kundenname"],{full:true,showEmpty:true})}
+        ${f("Debitornr","voEdit_Debitornr",vo["Debitornr"])}
+        ${f("Adressnr","voEdit_Adressnr",vo["Adressnr"])}
+        ${f("Kunden E-Mail","voEdit_KundenEmail",vo["KundenEmail"],{type:"email"})}
+        ${f("Rechnung an","voEdit_RechnungAn",vo["RechnungAn"],{type:"select",options:["","An Kunde","Im Leasing (Intern)","Spezialpreis"]})}
+      </div>` : `
         <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${e(clean(vo["Kundenname"]))||"—"}</div>
-        ${clean(vo["Debitornr"])?`<div style="font-size:12px;">Debitor: ${e(clean(vo["Debitornr"]))}</div>`:""}
-        ${clean(vo["Adressnr"])?`<div style="font-size:12px;">Adresse: ${e(clean(vo["Adressnr"]))}</div>`:""}
-        ${clean(vo["KundenEmail"])?`<div style="font-size:12px;">E-Mail: ${e(clean(vo["KundenEmail"]))}</div>`:""}
-        ${clean(vo["RechnungAn"])?`<div style="font-size:12px;margin-top:6px;">💰 ${e(clean(vo["RechnungAn"]))}</div>`:""}
-      </div>
-      <div style="background:var(--surface-2);border-radius:8px;padding:14px;">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Fahrzeug</div>
+        ${f("Debitor","_d",vo["Debitornr"])}${f("Adresse","_a",vo["Adressnr"])}${f("E-Mail","_e",vo["KundenEmail"])}${f("Rechnung","_r",vo["RechnungAn"])}
+      `}
+    </div>
+
+    <!-- Fahrzeug -->
+    <div style="background:var(--surface-2);border-radius:8px;padding:14px;margin-bottom:12px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Fahrzeug</div>
+      ${edit ? `<div class="form-grid">
+        ${f("Marke","voEdit_Marke",vo["Marke"],{type:"select",options:["","BMW","MINI","Andere"]})}
+        ${f("Fahrzeug","voEdit_Fahrzeug",vo["Fahrzeug"],{full:true,showEmpty:true})}
+        ${f("Fahrgestellnr","voEdit_Fahrgestellnr",vo["Fahrgestellnr"])}
+        ${f("Ordernr","voEdit_Ordernr",vo["Ordernr"])}
+        ${f("Vertragsnr","voEdit_Vertragsnr",vo["Vertragsnr"])}
+        ${f("Auftrag","voEdit_Auftrag",vo["Auftrag"])}
+        ${f("Ablieferung","voEdit_Ablieferung",vo["Ablieferung"],{type:"date"})}
+      </div>` : `
         <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${e(clean(vo["Fahrzeug"]))||"—"}</div>
-        ${clean(vo["Fahrgestellnr"])?`<div style="font-size:12px;font-family:monospace;">FIN: ${e(clean(vo["Fahrgestellnr"]))}</div>`:""}
-        ${clean(vo["Ordernr"])?`<div style="font-size:12px;font-family:monospace;">Order: ${e(clean(vo["Ordernr"]))}</div>`:""}
-        ${clean(vo["Auftrag"])?`<div style="font-size:12px;">Auftrag: ${e(clean(vo["Auftrag"]))}</div>`:""}
-        ${clean(vo["Ablieferung"])?`<div style="font-size:12px;margin-top:6px;">📅 Ablieferung: ${e(formatVororderDate(vo["Ablieferung"]))}</div>`:""}
-      </div>
+        ${f("FIN","_f",vo["Fahrgestellnr"])}${f("Ordernr","_o",vo["Ordernr"])}${f("Vertragsnr","_v",vo["Vertragsnr"])}${f("Auftrag","_au",vo["Auftrag"])}${f("Ablieferung","_ab",formatVororderDate(vo["Ablieferung"]))}
+      `}
     </div>
 
-    <div style="background:var(--surface-2);border-radius:8px;padding:14px;margin-bottom:16px;">
+    <!-- Produkt -->
+    <div style="background:var(--surface-2);border-radius:8px;padding:14px;margin-bottom:12px;">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Produkt</div>
-      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
-        <span style="background:var(--accent);color:white;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:700;">${e(clean(vo["Typ"]))||"—"}</span>
-        <span style="font-weight:700;">${e(clean(vo["Bezeichnung"]))||"—"}</span>
-        ${clean(vo["Dimension"])?`<span>${e(clean(vo["Dimension"]))}</span>`:""}
-        ${clean(vo["TN"])?`<span style="font-family:monospace;background:var(--surface-3);padding:2px 8px;border-radius:3px;font-size:12px;">${e(clean(vo["TN"]))}</span>`:""}
-        <span>Anzahl: <b>${e(clean(vo["Anzahl"]))||"—"}</b></span>
-        ${clean(vo["VK"])?`<span>VK: <b>${e(clean(vo["VK"]))} CHF</b></span>`:""}
-        <span style="margin-left:auto;font-size:12px;color:${clean(vo["ReservierungAktiv"])==="Ja"?"var(--success)":"var(--text-muted)"};">
-          ${clean(vo["ReservierungAktiv"])==="Ja"?"✅ Reserviert":"◯ Keine Reservierung"}
-        </span>
-      </div>
+      ${edit ? `<div class="form-grid">
+        ${f("Typ","voEdit_Typ",vo["Typ"],{type:"select",options:["","WKR","Reifen","Zubehör"]})}
+        ${f("Anzahl","voEdit_Anzahl",vo["Anzahl"],{type:"number"})}
+        ${f("TN","voEdit_TN",vo["TN"],{full:true})}
+        ${f("Bezeichnung","voEdit_Bezeichnung",vo["Bezeichnung"])}
+        ${f("Dimension","voEdit_Dimension",vo["Dimension"])}
+        ${f("VK (CHF)","voEdit_VK",vo["VK"])}
+        ${f("Konditionen","voEdit_Konditionen",vo["Konditionen"])}
+        ${f("Bearbeitungs-Standort","voEdit_Standort_Bearbeitung",vo["Standort_Bearbeitung"],{type:"select",options:["","GEB","HET"]})}
+      </div>` : `
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+          <span style="background:var(--accent);color:white;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:700;">${e(clean(vo["Typ"]))||"—"}</span>
+          <span style="font-weight:700;">${e(clean(vo["Bezeichnung"]))||"—"}</span>
+          ${clean(vo["Dimension"])?`<span>${e(clean(vo["Dimension"]))}</span>`:""}
+          ${clean(vo["TN"])?`<span style="font-family:monospace;background:var(--surface-3);padding:2px 8px;border-radius:3px;font-size:12px;">${e(clean(vo["TN"]))}</span>`:""}
+          <span>Anzahl: <b>${e(clean(vo["Anzahl"]))||"—"}</b></span>
+          ${clean(vo["VK"])?`<span>VK: <b>${e(clean(vo["VK"]))} CHF</b></span>`:""}
+          <span style="margin-left:auto;font-size:12px;color:${clean(vo["ReservierungAktiv"])==="Ja"?"var(--success)":"var(--text-muted)"};">
+            ${clean(vo["ReservierungAktiv"])==="Ja"?"✅ Reserviert":"◯ Keine Reservierung"}
+          </span>
+        </div>
+      `}
     </div>
 
-    <div style="background:var(--warning-bg);border:1px solid var(--warning);border-radius:8px;padding:14px;margin-bottom:16px;">
+    ${!edit ? `<div style="background:var(--warning-bg);border:1px solid var(--warning);border-radius:8px;padding:14px;margin-bottom:12px;">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--warning);margin-bottom:10px;">Status ändern</div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
         <select id="voDetailStatus" style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-weight:600;">
@@ -3180,27 +3257,22 @@ function openVororderDetail(id){
         <button class="btn btn-primary btn-sm" onclick="saveVororderStatus('${js(clean(vo["ID"]))}')">Status speichern</button>
         ${clean(vo["Typ"])==="WKR"&&clean(vo["Status"])==="Reserviert"?`<button class="btn btn-secondary btn-sm" onclick="printVororderLabel('${js(clean(vo["ID"]))}')">🏷️ Etikette drucken</button>`:""}
       </div>
-      <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">
-        Bei Status-Wechsel werden Reservierung und Lager automatisch aktualisiert.
-      </div>
-    </div>
+    </div>` : ""}
 
-    ${clean(vo["Bemerkungen"])?`<div style="background:var(--surface-2);border-radius:8px;padding:14px;margin-bottom:16px;">
+    <!-- Bemerkungen -->
+    ${edit ? `<div style="background:var(--surface-2);border-radius:8px;padding:14px;margin-bottom:12px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Bemerkungen</div>
+      <div class="form-grid">${f("Bemerkungen","voEdit_Bemerkungen",vo["Bemerkungen"],{type:"textarea"})}</div>
+    </div>` : (clean(vo["Bemerkungen"])?`<div style="background:var(--surface-2);border-radius:8px;padding:14px;margin-bottom:12px;">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:6px;">Bemerkungen</div>
       <div style="white-space:pre-line;font-size:13px;">${e(clean(vo["Bemerkungen"]))}</div>
-    </div>`:""}
+    </div>`:"")}
 
     ${historie?`<div style="background:var(--surface-2);border-radius:8px;padding:14px;">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:8px;">Historie</div>
       <div style="font-size:11px;font-family:monospace;white-space:pre-line;line-height:1.6;color:var(--text-secondary);">${e(historie)}</div>
     </div>`:""}
   `;
-
-  document.getElementById("vororderDetailModal").classList.add("open");
-}
-
-function closeVororderDetail(){
-  document.getElementById("vororderDetailModal").classList.remove("open");
 }
 
 async function saveVororderStatus(id){
@@ -3209,6 +3281,99 @@ async function saveVororderStatus(id){
   const vo = vororder.find(v => clean(v["ID"]) === clean(id));
   if (!vo) return;
   if (clean(vo["Status"]) === newStatus) { alert("Status ist bereits " + newStatus); return; }
+
+  const user = currentUser?.name || currentUser?.email || "Unknown";
+
+  try {
+    const res = await postToScript({
+      action: "vororderUpdate",
+      id: id,
+      user: user,
+      updates: { Status: newStatus }
+    });
+    if (res && res.status === "OK") {
+      alert(`✅ Status geändert zu: ${newStatus}`);
+      closeVororderDetail();
+      await reloadVororder();
+      try {
+        const p = await fetch(URLS.produkte).then(r=>r.json());
+        if (Array.isArray(p)) produkte = p;
+      } catch(e){}
+      render();
+    } else {
+      alert("Fehler: " + JSON.stringify(res));
+    }
+  } catch(err) {
+    alert("Fehler: " + err.message);
+  }
+}
+
+async function saveVoDetailChanges(){
+  if (!_voDetailId) return;
+  const vo = vororder.find(v => clean(v["ID"]) === clean(_voDetailId));
+  if (!vo) { alert("Vororder nicht gefunden."); return; }
+
+  // Alle bearbeitbaren Felder einsammeln
+  const fields = ["Kundenname","Debitornr","Adressnr","KundenEmail","RechnungAn",
+                  "Marke","Fahrzeug","Fahrgestellnr","Ordernr","Vertragsnr","Auftrag","Ablieferung",
+                  "Typ","Anzahl","TN","Bezeichnung","Dimension","VK","Konditionen","Standort_Bearbeitung",
+                  "Bemerkungen"];
+
+  const updates = {};
+  let hasChanges = false;
+  fields.forEach(f => {
+    const el = document.getElementById("voEdit_" + f);
+    if (!el) return;
+    const newVal = clean(el.value);
+    const oldVal = clean(vo[f]);
+    if (newVal !== oldVal) {
+      updates[f] = newVal;
+      hasChanges = true;
+    }
+  });
+
+  if (!hasChanges) {
+    alert("Keine Änderungen zum Speichern.");
+    _voDetailEditMode = false;
+    renderVororderDetail();
+    return;
+  }
+
+  // Warnung bei TN/Anzahl-Änderung wenn WKR mit aktiver Reservierung
+  const typNow = updates["Typ"] != null ? updates["Typ"] : clean(vo["Typ"]);
+  if ((updates["TN"] != null || updates["Anzahl"] != null) && 
+      typNow === "WKR" && clean(vo["ReservierungAktiv"]) === "Ja") {
+    if (!confirm("⚠ Änderung bei WKR mit aktiver Reservierung.\nAlte Reservierung wird aufgelöst, neue gesetzt.\nFortfahren?")) {
+      return;
+    }
+  }
+
+  const user = currentUser?.name || currentUser?.email || "Unknown";
+
+  try {
+    const res = await postToScript({
+      action: "vororderUpdate",
+      id: _voDetailId,
+      user: user,
+      updates: updates
+    });
+    if (res && res.status === "OK") {
+      alert(`✅ ${res.changedFields?.length || 0} Feld(er) gespeichert.`);
+      _voDetailEditMode = false;
+      await reloadVororder();
+      try {
+        const p = await fetch(URLS.produkte).then(r=>r.json());
+        if (Array.isArray(p)) produkte = p;
+      } catch(e){}
+      renderVororderDetail();
+      render();
+    } else {
+      alert("Fehler: " + JSON.stringify(res));
+    }
+  } catch(err) {
+    alert("Fehler: " + err.message);
+  }
+}
 
   const user = currentUser?.name || currentUser?.email || "Unknown";
 
