@@ -3600,92 +3600,7 @@ function printPositionLabel(posId){
   if (!pos) { alert("Position nicht gefunden."); return; }
   const vo = vororder.find(v => clean(v["ID"]) === clean(pos["VororderID"]));
   if (!vo) { alert("Vororder nicht gefunden."); return; }
-   /* ============================================================
-   VORORDER: Sammel-Etikette (alle Positionen)
-   ============================================================ */
-function printVororderSammelEtikette(voId){
-  const vo = vororder.find(v => clean(v["ID"]) === clean(voId));
-  if (!vo) { alert("Vororder nicht gefunden."); return; }
-  const positionen = positionenMap[voId] || [];
-  if (!positionen.length) { alert("Keine Positionen vorhanden."); return; }
-
-  const kunde = clean(vo["Kundenname"]);
-  const fahrzeug = clean(vo["Fahrzeug"]);
-  const fin = clean(vo["Fahrgestellnr"]);
-  const auftrag = clean(vo["Auftrag"]);
-  const ablieferung = formatVororderDate(vo["Ablieferung"]);
-
-  // WKR-Position suchen (für Barcode) — erste WKR-Position mit TN
-  const wkrPos = positionen.find(p => clean(p["Typ"]) === "WKR" && clean(p["TN"]));
-  const barcodeTN = wkrPos ? clean(wkrPos["TN"]) : clean(voId);
-
-  // Positionen-Liste als HTML
-  const posListHtml = positionen.map(p => {
-    const typ = clean(p["Typ"]);
-    const anz = clean(p["Anzahl"]);
-    const bez = clean(p["Bezeichnung"]) || typ;
-    const dim = clean(p["Dimension"]);
-    const tn = clean(p["TN"]);
-    return `<div class="pos-row">
-      <b>${e(anz)}×</b> <span style="font-weight:600;">${e(typ)}</span> ${e(bez)}${dim?" · "+e(dim):""}${tn?` <span style="font-family:monospace;font-size:7.5pt;color:#555;">(TN: ${e(tn)})</span>`:""}
-    </div>`;
-  }).join("");
-
-  const w = window.open("","_blank","width=900,height=700");
-  if(!w){alert("Popup blockiert.");return;}
-
-  w.document.write(`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Vororder-Etikette</title><style>
-    @page{size:100mm 73mm;margin:0;}
-    html,body{width:100mm;height:73mm;margin:0;padding:0;font-family:Arial,sans-serif;background:white;}
-    .wrap{width:100mm;height:73mm;box-sizing:border-box;padding:4mm 5mm;display:flex;flex-direction:column;}
-    .hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1.5px solid #1c69d4;padding-bottom:1.5mm;margin-bottom:2mm;}
-    .hdr-left{flex:1;}
-    .hdr-right{font-size:8pt;color:#555;text-align:right;}
-    .id{font-size:9pt;font-weight:700;color:#1c69d4;font-family:monospace;}
-    .kunde{font-size:11pt;font-weight:700;line-height:1.1;margin-bottom:0.5mm;}
-    .fahrzeug{font-size:9pt;font-weight:700;margin-bottom:1mm;}
-    .fin{font-size:7.5pt;color:#555;margin-bottom:1mm;}
-    .positionen-header{font-size:7pt;font-weight:700;text-transform:uppercase;color:#666;letter-spacing:0.5px;margin-top:1mm;margin-bottom:0.5mm;}
-    .pos-row{font-size:8pt;line-height:1.3;margin-bottom:0.5mm;}
-    .barcode-wrap{margin-top:auto;text-align:center;border-top:1px solid #ddd;padding-top:1mm;}
-    .barcode{width:70mm;height:9mm;display:block;margin:0 auto;}
-    .tn-text{font-size:7.5pt;margin-top:0.5mm;font-weight:700;}
-    .actions{position:fixed;right:10px;top:10px;display:flex;gap:8px;}
-    .actions button{border:none;background:#1c69d4;color:white;padding:10px 14px;font-size:13px;cursor:pointer;}
-    .actions button.sec{background:#666;}
-    @media print{.actions{display:none;}}
-  </style></head><body>
-    <div class="actions">
-      <button onclick="window.print()">Drucken</button>
-      <button class="sec" onclick="window.close()">Schliessen</button>
-    </div>
-    <div class="wrap">
-      <div class="hdr">
-        <div class="hdr-left">
-          <div class="id">${e(voId)}</div>
-        </div>
-        <div class="hdr-right">
-          ${ablieferung?`<div><b>Abl.:</b> ${e(ablieferung)}</div>`:""}
-          ${auftrag?`<div>Auftrag ${e(auftrag)}</div>`:""}
-        </div>
-      </div>
-      <div class="kunde">${e(kunde)}</div>
-      <div class="fahrzeug">${e(fahrzeug)}</div>
-      ${fin?`<div class="fin"><b>FIN:</b> ${e(fin)}</div>`:""}
-      <div class="positionen-header">Produkte (${positionen.length})</div>
-      ${posListHtml}
-      <div class="barcode-wrap">
-        <svg id="barcode" class="barcode"></svg>
-        <div class="tn-text">${e(barcodeTN)}</div>
-      </div>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
-    <script>
-      JsBarcode("#barcode", ${JSON.stringify(barcodeTN)}, {format:"CODE128",displayValue:false,margin:0,width:1.3,height:24});
-    <\/script>
-  </body></html>`);
-  w.document.close();
-}
+ 
 
   // Etikette drucken mit Position-Daten
   const kunde = clean(vo["Kundenname"]);
@@ -4070,6 +3985,92 @@ window.firebaseOnAuthStateChanged(firebaseAuth, (user) => {
     window.applyFirebaseAdminState();
   }
 });
+        /* ============================================================
+   VORORDER: Sammel-Etikette (alle Positionen)
+   ============================================================ */
+function printVororderSammelEtikette(voId){
+  const vo = vororder.find(v => clean(v["ID"]) === clean(voId));
+  if (!vo) { alert("Vororder nicht gefunden."); return; }
+  const positionen = positionenMap[voId] || [];
+  if (!positionen.length) { alert("Keine Positionen vorhanden."); return; }
+
+  const kunde = clean(vo["Kundenname"]);
+  const fahrzeug = clean(vo["Fahrzeug"]);
+  const fin = clean(vo["Fahrgestellnr"]);
+  const auftrag = clean(vo["Auftrag"]);
+  const ablieferung = formatVororderDate(vo["Ablieferung"]);
+
+  // WKR-Position suchen (für Barcode) — erste WKR-Position mit TN
+  const wkrPos = positionen.find(p => clean(p["Typ"]) === "WKR" && clean(p["TN"]));
+  const barcodeTN = wkrPos ? clean(wkrPos["TN"]) : clean(voId);
+
+  // Positionen-Liste als HTML
+  const posListHtml = positionen.map(p => {
+    const typ = clean(p["Typ"]);
+    const anz = clean(p["Anzahl"]);
+    const bez = clean(p["Bezeichnung"]) || typ;
+    const dim = clean(p["Dimension"]);
+    const tn = clean(p["TN"]);
+    return `<div class="pos-row">
+      <b>${e(anz)}×</b> <span style="font-weight:600;">${e(typ)}</span> ${e(bez)}${dim?" · "+e(dim):""}${tn?` <span style="font-family:monospace;font-size:7.5pt;color:#555;">(TN: ${e(tn)})</span>`:""}
+    </div>`;
+  }).join("");
+
+  const w = window.open("","_blank","width=900,height=700");
+  if(!w){alert("Popup blockiert.");return;}
+
+  w.document.write(`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Vororder-Etikette</title><style>
+    @page{size:100mm 73mm;margin:0;}
+    html,body{width:100mm;height:73mm;margin:0;padding:0;font-family:Arial,sans-serif;background:white;}
+    .wrap{width:100mm;height:73mm;box-sizing:border-box;padding:4mm 5mm;display:flex;flex-direction:column;}
+    .hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1.5px solid #1c69d4;padding-bottom:1.5mm;margin-bottom:2mm;}
+    .hdr-left{flex:1;}
+    .hdr-right{font-size:8pt;color:#555;text-align:right;}
+    .id{font-size:9pt;font-weight:700;color:#1c69d4;font-family:monospace;}
+    .kunde{font-size:11pt;font-weight:700;line-height:1.1;margin-bottom:0.5mm;}
+    .fahrzeug{font-size:9pt;font-weight:700;margin-bottom:1mm;}
+    .fin{font-size:7.5pt;color:#555;margin-bottom:1mm;}
+    .positionen-header{font-size:7pt;font-weight:700;text-transform:uppercase;color:#666;letter-spacing:0.5px;margin-top:1mm;margin-bottom:0.5mm;}
+    .pos-row{font-size:8pt;line-height:1.3;margin-bottom:0.5mm;}
+    .barcode-wrap{margin-top:auto;text-align:center;border-top:1px solid #ddd;padding-top:1mm;}
+    .barcode{width:70mm;height:9mm;display:block;margin:0 auto;}
+    .tn-text{font-size:7.5pt;margin-top:0.5mm;font-weight:700;}
+    .actions{position:fixed;right:10px;top:10px;display:flex;gap:8px;}
+    .actions button{border:none;background:#1c69d4;color:white;padding:10px 14px;font-size:13px;cursor:pointer;}
+    .actions button.sec{background:#666;}
+    @media print{.actions{display:none;}}
+  </style></head><body>
+    <div class="actions">
+      <button onclick="window.print()">Drucken</button>
+      <button class="sec" onclick="window.close()">Schliessen</button>
+    </div>
+    <div class="wrap">
+      <div class="hdr">
+        <div class="hdr-left">
+          <div class="id">${e(voId)}</div>
+        </div>
+        <div class="hdr-right">
+          ${ablieferung?`<div><b>Abl.:</b> ${e(ablieferung)}</div>`:""}
+          ${auftrag?`<div>Auftrag ${e(auftrag)}</div>`:""}
+        </div>
+      </div>
+      <div class="kunde">${e(kunde)}</div>
+      <div class="fahrzeug">${e(fahrzeug)}</div>
+      ${fin?`<div class="fin"><b>FIN:</b> ${e(fin)}</div>`:""}
+      <div class="positionen-header">Produkte (${positionen.length})</div>
+      ${posListHtml}
+      <div class="barcode-wrap">
+        <svg id="barcode" class="barcode"></svg>
+        <div class="tn-text">${e(barcodeTN)}</div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
+    <script>
+      JsBarcode("#barcode", ${JSON.stringify(barcodeTN)}, {format:"CODE128",displayValue:false,margin:0,width:1.3,height:24});
+    <\/script>
+  </body></html>`);
+  w.document.close();
+}
 </script>
 </body>
 </html>
