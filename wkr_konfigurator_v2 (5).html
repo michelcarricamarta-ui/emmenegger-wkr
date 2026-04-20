@@ -1068,7 +1068,7 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
       </div>
       <div class="form-field"><label>Bezeichnung</label><input id="newVoBezeichnung" type="text" placeholder="z.B. V-Speiche 474"></div>
       <div class="form-field"><label>Dimension</label><input id="newVoDimension" type="text" placeholder="z.B. 225/45R18"></div>
-      <div class="form-field"><label>VK (CHF)</label><input id="newVoVK" type="text" placeholder="optional"></div>
+      <div class="form-field"><label>Verkäufer</label><input id="newVoVK" type="text" placeholder="z.B. Marco"></div>
       <div class="form-field"><label>Konditionen</label><input id="newVoKonditionen" type="text" placeholder="z.B. 0.2"></div>
     </div>
 
@@ -1130,7 +1130,7 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
       </div>
       <div class="form-field"><label>Bezeichnung</label><input id="posBezeichnung" type="text"></div>
       <div class="form-field"><label>Dimension</label><input id="posDimension" type="text"></div>
-      <div class="form-field"><label>VK (CHF)</label><input id="posVK" type="text"></div>
+     <div class="form-field"><label>Verkäufer</label><input id="posVK" type="text" placeholder="z.B. Marco"></div>
        <div class="form-field"><label>Lagerort</label><input id="posLagerort" type="text" placeholder="z.B. Regal A3 / Platz 12"></div>
       <div class="form-field"><label>Konditionen</label><input id="posKonditionen" type="text"></div>
       <div class="form-field full">
@@ -2393,6 +2393,7 @@ function renderAdminVororder(){
             <th style="padding:10px 12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Kunde</th>
             <th style="padding:10px 12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Fahrzeug</th>
             <th style="padding:10px 12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Typ / TN</th>
+            <th style="padding:10px 12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Verkäufer</th>
             <th style="padding:10px 12px;text-align:center;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Anzahl</th>
             <th style="padding:10px 12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Ablieferung</th>
             ${isSuperAdmin ? `<th style="padding:10px 12px;text-align:center;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Standort</th>` : ""}
@@ -2414,6 +2415,7 @@ function renderAdminVororder(){
           <div>${e(clean(v["Fahrzeug"]))||"—"}</div>
           ${clean(v["Fahrgestellnr"]) ? `<div style="font-size:11px;color:var(--text-muted);font-family:monospace;">FIN: ${e(clean(v["Fahrgestellnr"]))}</div>` : ""}
         </td>
+        <td style="padding:10px 12px;font-size:12px;">${e(clean(v["Verkaeufer"]))||"—"}</td>
         <td style="padding:10px 12px;">
           <div><span style="font-size:11px;background:var(--surface-3);padding:2px 6px;border-radius:3px;font-weight:600;">${e(clean(v["Typ"]))||"—"}</span></div>
           ${clean(v["TN"]) ? `<div style="font-size:11px;color:var(--text-muted);margin-top:3px;font-family:monospace;">${e(clean(v["TN"]))}</div>` : ""}
@@ -3364,7 +3366,7 @@ function onVoTnChange(){
     const markeEl = document.getElementById("newVoMarke");
     if (bezEl && !bezEl.value) bezEl.value = clean(prod["Bezeichnung"]);
     if (dimEl && !dimEl.value) dimEl.value = clean(prod["Dimension"]);
-    if (vkEl && !vkEl.value)   vkEl.value  = clean(prod["Angebotspreis"]) || clean(prod["VP"]);
+    // vkEl ist jetzt Verkäufer-Feld, kein Auto-Fill vom Produkt
     if (typEl && !typEl.value) typEl.value = "WKR";
     if (markeEl && !markeEl.value) markeEl.value = clean(prod["Marke"]);
   }
@@ -3407,7 +3409,7 @@ async function saveNewVororder(){
     "Bezeichnung": clean(document.getElementById("newVoBezeichnung").value),
     "Dimension": clean(document.getElementById("newVoDimension").value),
     "Anzahl": anzahl,
-    "VK": clean(document.getElementById("newVoVK").value),
+ "Verkaeufer": clean(document.getElementById("newVoVK").value),
     "Konditionen": clean(document.getElementById("newVoKonditionen").value),
     "Standort_Bearbeitung": standort,
     "Status": status,
@@ -3423,7 +3425,7 @@ async function saveNewVororder(){
       if (typ && anzahl > 0) {
         const posRow = {
           "Typ": typ, "TN": tn, "Bezeichnung": row["Bezeichnung"], "Dimension": row["Dimension"],
-          "Anzahl": anzahl, "VK": row["VK"], "Konditionen": row["Konditionen"],
+          "Anzahl": anzahl, "Verkaeufer": row["Verkaeufer"], "Konditionen": row["Konditionen"],
           "Status": status, "Bemerkungen": ""
         };
         await postToScript({ action: "vororderPositionAdd", vororderId: res.id, row: posRow });
@@ -3539,11 +3541,13 @@ function renderVororderDetail(){
           ${f("Adressnr","voEdit_Adressnr",vo["Adressnr"])}
           ${f("Kunden E-Mail","voEdit_KundenEmail",vo["KundenEmail"],{type:"email"})}
           ${f("Rechnung an","voEdit_RechnungAn",vo["RechnungAn"],{type:"select",options:["","An Kunde","Im Leasing (Intern)","Spezialpreis"]})}
+          ${f("Verkäufer","voEdit_Verkaeufer",vo["Verkaeufer"],{full:true})}
         </div>` : `
           <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${e(clean(vo["Kundenname"]))||"—"}</div>
           ${clean(vo["Debitornr"])?`<div style="font-size:12px;">Debitor: ${e(clean(vo["Debitornr"]))}</div>`:""}
           ${clean(vo["Adressnr"])?`<div style="font-size:12px;">Adresse: ${e(clean(vo["Adressnr"]))}</div>`:""}
           ${clean(vo["KundenEmail"])?`<div style="font-size:12px;">E-Mail: ${e(clean(vo["KundenEmail"]))}</div>`:""}
+          ${clean(vo["Verkaeufer"])?`<div style="font-size:12px;margin-top:6px;">👤 Verkäufer: <b>${e(clean(vo["Verkaeufer"]))}</b></div>`:""}
           ${clean(vo["RechnungAn"])?`<div style="font-size:12px;margin-top:6px;">💰 ${e(clean(vo["RechnungAn"]))}</div>`:""}
         `}
       </div>
@@ -3764,9 +3768,9 @@ async function saveVoDetailChanges(){
   const vo = vororder.find(v => clean(v["ID"]) === clean(_voDetailId));
   if (!vo) { alert("Vororder nicht gefunden."); return; }
 
-  const fields = ["Kundenname","Debitornr","Adressnr","KundenEmail","RechnungAn",
+ const fields = ["Kundenname","Debitornr","Adressnr","KundenEmail","RechnungAn","Verkaeufer",
                   "Marke","Fahrzeug","Fahrgestellnr","Ordernr","Vertragsnr","Auftrag","Ablieferung",
-                  "Typ","Anzahl","TN","Bezeichnung","Dimension","VK","Konditionen","Standort_Bearbeitung",
+                  "Typ","Anzahl","TN","Bezeichnung","Dimension","Konditionen","Standort_Bearbeitung",
                   "Bemerkungen"];
 
   const updates = {};
@@ -3899,7 +3903,7 @@ function openEditPositionModal(posId){
   document.getElementById("posTN").value = clean(pos["TN"]);
   document.getElementById("posBezeichnung").value = clean(pos["Bezeichnung"]);
   document.getElementById("posDimension").value = clean(pos["Dimension"]);
-  document.getElementById("posVK").value = clean(pos["VK"]);
+  document.getElementById("posVK").value = clean(pos["Verkaeufer"]);
   document.getElementById("posKonditionen").value = clean(pos["Konditionen"]);
   document.getElementById("posStatus").value = clean(pos["Status"]) || "Offerte ausstehend";
   document.getElementById("posBemerkungen").value = clean(pos["Bemerkungen"]);
@@ -3942,7 +3946,7 @@ function onPosTnChange(){
     const typEl = document.getElementById("posTyp");
     if (bezEl && !bezEl.value) bezEl.value = clean(prod["Bezeichnung"]);
     if (dimEl && !dimEl.value) dimEl.value = clean(prod["Dimension"]);
-    if (vkEl && !vkEl.value)   vkEl.value  = clean(prod["Angebotspreis"]) || clean(prod["VP"]);
+    // vkEl ist jetzt Verkäufer-Feld, kein Auto-Fill vom Produkt
     if (typEl && !typEl.value) typEl.value = "WKR";
   }
 }
@@ -3961,7 +3965,7 @@ async function savePosition(){
     "Bezeichnung": clean(document.getElementById("posBezeichnung").value),
     "Dimension": clean(document.getElementById("posDimension").value),
     "Anzahl": anzahl,
-    "VK": clean(document.getElementById("posVK").value),
+   "Verkaeufer": clean(document.getElementById("posVK").value),
     "Konditionen": clean(document.getElementById("posKonditionen").value),
     "Status": clean(document.getElementById("posStatus").value),
  "Bemerkungen": clean(document.getElementById("posBemerkungen").value),
