@@ -757,35 +757,28 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
       <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" alt="Emmenegger Logo">
     </div>
     <div class="topbar-actions">
-  <button id="backHomeBtn" class="back-btn" onclick="goToHome()">← <span data-i18n="back_home">Startseite</span></button>
+  <button id="backHomeBtn" class="back-btn" onclick="goToHome()">← <span>Startseite</span></button>
+  
+  <!-- Kontextabhängiger Topbar-Inhalt -->
+  <div id="topbarContext" style="flex:1;display:flex;align-items:center;justify-content:center;gap:12px;"></div>
+  
   <button id="darkToggle" class="icon-btn" onclick="toggleDark()" title="Dunkelmodus">🌙</button>
   <button class="icon-btn" onclick="toggleMobileMenu()" id="menuToggle" style="font-size:20px;width:40px;height:40px;">☰</button>
+  
   <div id="desktopActions" style="display:flex;align-items:center;gap:8px;">
-    <div class="lang-switcher">
-      <button class="lang-btn active" onclick="setLang('de')">DE</button>
-      <button class="lang-btn" onclick="setLang('fr')">FR</button>
-      <button class="lang-btn" onclick="setLang('en')">EN</button>
-    </div>
-    <button id="internalLoginBtn" class="login-btn" onclick="activateInternalMode()"><span data-i18n="internal_login">Interner Login</span></button>
-    <button id="adminLoginBtn" class="login-btn" onclick="activateAdminMode()"><span data-i18n="admin_login">Admin Login</span></button>
-    <button id="publicViewBtn" class="login-btn" onclick="deactivateAllModes()" style="display:none;"><span data-i18n="public_view">Öffentlich</span></button>
-     <div id="userBadge" style="display:none; align-items:center; gap:6px; padding:6px 12px; background:var(--surface-3); border:1px solid var(--border); border-radius:var(--radius-sm); font-size:12px; font-weight:600; color:var(--text-secondary); white-space:nowrap;"></div>
+    <button id="internalLoginBtn" class="login-btn" onclick="activateInternalMode()">Interner Login</button>
+    <button id="adminLoginBtn" class="login-btn" onclick="activateAdminMode()">Admin Login</button>
+    <button id="publicViewBtn" class="login-btn" onclick="deactivateAllModes()" style="display:none;">Öffentlich</button>
+    <div id="userBadge" style="display:none; align-items:center; gap:6px; padding:6px 12px; background:var(--surface-3); border:1px solid var(--border); border-radius:var(--radius-sm); font-size:12px; font-weight:600; color:var(--text-secondary); white-space:nowrap;"></div>
     <button id="adminLogoutBtn" class="login-btn" onclick="logoutAdmin()" style="display:none;">Logout</button>
   </div>
 </div>
 <!-- Mobile Menu -->
 <div id="mobileMenu" style="display:none;position:fixed;top:56px;width:100%;left:0;right:0;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px;z-index:99;box-shadow:var(--shadow-md);flex-direction:column;gap:8px;">
-  <div class="lang-switcher" style="width:fit-content;">
-    <button class="lang-btn active" onclick="setLang('de')">DE</button>
-    <button class="lang-btn" onclick="setLang('fr')">FR</button>
-    <button class="lang-btn" onclick="setLang('en')">EN</button>
-  </div>
-  <button class="login-btn" onclick="activateInternalMode();toggleMobileMenu()"><span data-i18n="internal_login">Interner Login</span></button>
-  <button class="login-btn" onclick="activateAdminMode();toggleMobileMenu()"><span data-i18n="admin_login">Admin Login</span></button>
-  <button id="publicViewBtnMobile" class="login-btn" onclick="deactivateAllModes();toggleMobileMenu()" style="display:none;"><span data-i18n="public_view">Öffentlich</span></button>
+  <button class="login-btn" onclick="activateInternalMode();toggleMobileMenu()">Interner Login</button>
+  <button class="login-btn" onclick="activateAdminMode();toggleMobileMenu()">Admin Login</button>
+  <button id="publicViewBtnMobile" class="login-btn" onclick="deactivateAllModes();toggleMobileMenu()" style="display:none;">Öffentlich</button>
 </div>
-  </div>
-</header>
 
 <!-- MAIN -->
 <div class="app-shell">
@@ -2046,6 +2039,163 @@ function renderAdminDashboard(){
 
   </div>`;
 }
+   /* ============================================================
+   TOPBAR: Kontextabhängiger Inhalt
+   ============================================================ */
+function updateTopbarContext(){
+  const el = document.getElementById("topbarContext");
+  if (!el) return;
+
+  if (adminMode) {
+    // Admin: Globale Suche + Benachrichtigungs-Bell
+    const urgentCount = getUrgentCount();
+    el.innerHTML = `
+      <div style="position:relative;flex:1;max-width:420px;">
+        <input id="globalSearch" type="text" placeholder="🔍 Suche: Kunde, TN, FIN, Auftrag..." 
+               oninput="handleGlobalSearch(this.value)" 
+               onblur="setTimeout(()=>document.getElementById('globalSearchResults').style.display='none', 200)"
+               onfocus="if(this.value)document.getElementById('globalSearchResults').style.display='block'"
+               style="width:100%;padding:8px 14px;border:1px solid var(--border);border-radius:20px;font-size:13px;background:var(--surface-2);">
+        <div id="globalSearchResults" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-lg);max-height:400px;overflow-y:auto;z-index:200;"></div>
+      </div>
+      <button onclick="showUrgentModal()" title="Dringende Aufgaben" style="position:relative;background:none;border:1px solid var(--border);border-radius:50%;width:38px;height:38px;cursor:pointer;font-size:16px;transition:all 0.2s;" onmouseover="this.style.background='var(--surface-3)';" onmouseout="this.style.background='none';">
+        🔔
+        ${urgentCount > 0 ? `<span style="position:absolute;top:-4px;right:-4px;background:#dc2626;color:white;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;min-width:18px;text-align:center;">${urgentCount}</span>` : ""}
+      </button>
+    `;
+  } else if (internalMode) {
+    // Intern: Nur globale Suche
+    el.innerHTML = `
+      <div style="position:relative;flex:1;max-width:420px;">
+        <input id="globalSearch" type="text" placeholder="🔍 Suche: Kunde, TN, FIN, Auftrag..." 
+               oninput="handleGlobalSearch(this.value)"
+               onblur="setTimeout(()=>document.getElementById('globalSearchResults').style.display='none', 200)"
+               onfocus="if(this.value)document.getElementById('globalSearchResults').style.display='block'"
+               style="width:100%;padding:8px 14px;border:1px solid var(--border);border-radius:20px;font-size:13px;background:var(--surface-2);">
+        <div id="globalSearchResults" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-lg);max-height:400px;overflow-y:auto;z-index:200;"></div>
+      </div>
+    `;
+  } else {
+    // Öffentlich: Datum/Uhrzeit
+    const now = new Date();
+    const datumStr = now.toLocaleDateString("de-CH", { weekday:"long", day:"2-digit", month:"long", year:"numeric" });
+    el.innerHTML = `
+      <div style="font-size:12px;color:var(--text-muted);font-weight:500;">
+        📅 ${datumStr}
+      </div>
+    `;
+  }
+}
+
+/* ============================================================
+   TOPBAR: Dringende Aufgaben zählen
+   ============================================================ */
+function getUrgentCount(){
+  if (!vororderLoaded || !vororder) return 0;
+  const now = new Date();
+  const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  return vororder.filter(v => {
+    const status = clean(v["Status"]);
+    if (status === "Erledigt" || status === "Kunde verzichtet") return false;
+    const abl = clean(v["Ablieferung"]);
+    if (!abl) return false;
+    try {
+      const d = new Date(abl);
+      return !isNaN(d.getTime()) && d >= now && d <= in7Days;
+    } catch(e) { return false; }
+  }).length;
+}
+
+/* ============================================================
+   TOPBAR: Dringend-Modal öffnen
+   ============================================================ */
+function showUrgentModal(){
+  selectAdminSection('dashboard');
+  setTimeout(() => {
+    const urgentBlock = document.querySelector('[style*="Dringend"]');
+    if (urgentBlock) urgentBlock.scrollIntoView({ behavior:"smooth", block:"start" });
+  }, 200);
+}
+
+/* ============================================================
+   TOPBAR: Globale Suche
+   ============================================================ */
+function handleGlobalSearch(query){
+  const resultsEl = document.getElementById("globalSearchResults");
+  if (!resultsEl) return;
+  const q = clean(query).toLowerCase();
+  if (!q || q.length < 2) {
+    resultsEl.style.display = "none";
+    resultsEl.innerHTML = "";
+    return;
+  }
+
+  const results = [];
+
+  // Vororders durchsuchen
+  if (vororderLoaded && vororder) {
+    vororder.forEach(v => {
+      const fields = ["Kundenname","Fahrzeug","ID","Auftrag","Fahrgestellnr","TN","Debitornr","Ordernr","Verkaeufer"];
+      const hit = fields.some(f => clean(v[f]).toLowerCase().includes(q));
+      if (hit) {
+        results.push({
+          type: "vororder",
+          id: clean(v["ID"]),
+          title: clean(v["Kundenname"]) || "(kein Name)",
+          sub: `${clean(v["ID"])} · ${clean(v["Fahrzeug"])||"—"} · ${clean(v["Status"])}`,
+          icon: "📋",
+          onclick: `openVororderDetail('${js(clean(v["ID"]))}');document.getElementById('globalSearchResults').style.display='none';document.getElementById('globalSearch').value='';`
+        });
+      }
+    });
+  }
+
+  // WKR durchsuchen
+  produkte.forEach(p => {
+    const fields = ["TN","Bezeichnung","Marke","Reifen","Dimension"];
+    const hit = fields.some(f => clean(p[f]).toLowerCase().includes(q));
+    if (hit) {
+      results.push({
+        type: "wkr",
+        id: clean(p["TN"]),
+        title: clean(p["Bezeichnung"]),
+        sub: `TN: ${clean(p["TN"])} · ${clean(p["Dimension"])} · Lager: ${clean(p["Lager"])}`,
+        icon: "🛞",
+        onclick: adminMode 
+          ? `openEditWkrModal('${js(clean(p["TN"]))}');document.getElementById('globalSearchResults').style.display='none';document.getElementById('globalSearch').value='';`
+          : `selectAdminSection('wkr_list');document.getElementById('globalSearchResults').style.display='none';document.getElementById('globalSearch').value='';`
+      });
+    }
+  });
+
+  // Max 10 Ergebnisse
+  const topResults = results.slice(0, 10);
+
+  if (!topResults.length) {
+    resultsEl.innerHTML = `<div style="padding:14px;color:var(--text-muted);font-size:13px;text-align:center;">Keine Treffer für "${e(query)}"</div>`;
+  } else {
+    const vororderCount = topResults.filter(r => r.type === "vororder").length;
+    const wkrCount = topResults.filter(r => r.type === "wkr").length;
+    resultsEl.innerHTML = `
+      <div style="padding:8px 14px;font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px;background:var(--surface-2);border-bottom:1px solid var(--border);">
+        ${topResults.length} Treffer · ${vororderCount} Vororder · ${wkrCount} WKR
+      </div>
+      ${topResults.map(r => `
+        <div style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center;transition:all 0.15s;"
+             onmouseover="this.style.background='var(--surface-2)';"
+             onmouseout="this.style.background='var(--surface)';"
+             onclick="${r.onclick}">
+          <div style="font-size:18px;">${r.icon}</div>
+          <div style="min-width:0;flex:1;">
+            <div style="font-weight:600;font-size:13px;color:var(--text-primary);">${e(r.title)}</div>
+            <div style="font-size:11px;color:var(--text-muted);">${e(r.sub)}</div>
+          </div>
+        </div>
+      `).join("")}
+    `;
+  }
+  resultsEl.style.display = "block";
+}
 /* ============================================================
    RENDER
    ============================================================ */
@@ -2080,9 +2230,10 @@ function render(){
 
     html = `<div class="admin-shell">${renderAdminSidebar()}${contentHtml}</div>`;
     document.getElementById("app").innerHTML = html;
-    updateHero();
+   updateHero();
     updateBrandTheme();
     applyTranslations();
+    updateTopbarContext();
     return;
   }
 
@@ -2103,10 +2254,11 @@ function render(){
 
   document.getElementById("app").innerHTML = html;
   updateHero();
-  updateBrandTheme();
-  applyTranslations();
-}
-
+    updateBrandTheme();
+    applyTranslations();
+    updateTopbarContext();
+    return;
+  }
 /* ============================================================
    WKR FLOW (shared between public, internal, admin)
    ============================================================ */
