@@ -616,7 +616,103 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
    ============================================================ */
 [data-theme="dark"] .topbar { background: var(--surface); border-color: var(--border); }
 [data-theme="dark"] .hero::after { background: linear-gradient(105deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.25) 60%, transparent 100%); }
+/* ============================================================
+   ADMIN TOPBAR ADDON (Suche + Bell)
+   ============================================================ */
+.admin-topbar-addon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  justify-content: flex-end;
+  min-width: 0;
+}
+.admin-search-wrap {
+  position: relative;
+  width: 280px;
+  max-width: 100%;
+}
+.admin-search-input {
+  width: 100%;
+  padding: 7px 14px 7px 32px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 12px;
+  background: var(--surface-2);
+  color: var(--text-primary);
+  transition: var(--transition);
+}
+.admin-search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(28,105,212,0.1);
+}
+.admin-search-wrap::before {
+  content: "🔍";
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  pointer-events: none;
+}
+.admin-search-results {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  width: 380px;
+  max-width: 95vw;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  max-height: 420px;
+  overflow-y: auto;
+  z-index: 200;
+}
+.admin-bell-btn {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+.admin-bell-btn:hover {
+  background: var(--surface-3);
+  border-color: var(--accent);
+}
+.admin-bell-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--error);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+  line-height: 1;
+}
 
+@media (max-width: 900px) {
+  .admin-search-wrap { width: 200px; }
+  .admin-search-results { width: 300px; }
+}
+@media (max-width: 600px) {
+  .admin-topbar-addon { display: none !important; }
+}
 /* ============================================================
    LANG SWITCHER
    ============================================================ */
@@ -760,7 +856,19 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
   <button id="backHomeBtn" class="back-btn" onclick="goToHome()">← <span data-i18n="back_home">Startseite</span></button>
   <button id="darkToggle" class="icon-btn" onclick="toggleDark()" title="Dunkelmodus">🌙</button>
   <button class="icon-btn" onclick="toggleMobileMenu()" id="menuToggle" style="font-size:20px;width:40px;height:40px;">☰</button>
-  
+  <div id="adminTopbarAddon" class="admin-topbar-addon" style="display:none;">
+      <div class="admin-search-wrap">
+        <input id="globalSearch" type="text" class="admin-search-input" placeholder="Suche: Kunde, TN, FIN, Auftrag..."
+               oninput="handleGlobalSearch(this.value)"
+               onblur="setTimeout(()=>{const r=document.getElementById('globalSearchResults');if(r)r.style.display='none';}, 200)"
+               onfocus="if(this.value)document.getElementById('globalSearchResults').style.display='block'">
+        <div id="globalSearchResults" class="admin-search-results"></div>
+      </div>
+      <button id="adminBellBtn" class="admin-bell-btn" onclick="showUrgentModal()" title="Dringende Aufgaben">
+        🔔
+        <span id="adminBellBadge" class="admin-bell-badge" style="display:none;">0</span>
+      </button>
+    </div>
   <div id="desktopActions" style="display:flex;align-items:center;gap:8px;">
     <button id="internalLoginBtn" class="login-btn" onclick="activateInternalMode()">Interner Login</button>
     <button id="adminLoginBtn" class="login-btn" onclick="activateAdminMode()">Admin Login</button>
@@ -2042,47 +2150,23 @@ function renderAdminDashboard(){
    TOPBAR: Kontextabhängiger Inhalt
    ============================================================ */
 function updateTopbarContext(){
-  const el = document.getElementById("topbarContext");
-  if (!el) return; // kein Topbar-Context-Div vorhanden, nichts zu tun
-   
+  const addon = document.getElementById("adminTopbarAddon");
+  const badge = document.getElementById("adminBellBadge");
+  if (!addon) return;
+
   if (adminMode) {
-    // Admin: Globale Suche + Benachrichtigungs-Bell
+    addon.style.display = "flex";
     const urgentCount = getUrgentCount();
-    el.innerHTML = `
-      <div style="position:relative;flex:1;max-width:420px;">
-        <input id="globalSearch" type="text" placeholder="🔍 Suche: Kunde, TN, FIN, Auftrag..." 
-               oninput="handleGlobalSearch(this.value)" 
-               onblur="setTimeout(()=>document.getElementById('globalSearchResults').style.display='none', 200)"
-               onfocus="if(this.value)document.getElementById('globalSearchResults').style.display='block'"
-               style="width:100%;padding:8px 14px;border:1px solid var(--border);border-radius:20px;font-size:13px;background:var(--surface-2);">
-        <div id="globalSearchResults" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-lg);max-height:400px;overflow-y:auto;z-index:200;"></div>
-      </div>
-      <button onclick="showUrgentModal()" title="Dringende Aufgaben" style="position:relative;background:none;border:1px solid var(--border);border-radius:50%;width:38px;height:38px;cursor:pointer;font-size:16px;transition:all 0.2s;" onmouseover="this.style.background='var(--surface-3)';" onmouseout="this.style.background='none';">
-        🔔
-        ${urgentCount > 0 ? `<span style="position:absolute;top:-4px;right:-4px;background:#dc2626;color:white;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;min-width:18px;text-align:center;">${urgentCount}</span>` : ""}
-      </button>
-    `;
-  } else if (internalMode) {
-    // Intern: Nur globale Suche
-    el.innerHTML = `
-      <div style="position:relative;flex:1;max-width:420px;">
-        <input id="globalSearch" type="text" placeholder="🔍 Suche: Kunde, TN, FIN, Auftrag..." 
-               oninput="handleGlobalSearch(this.value)"
-               onblur="setTimeout(()=>document.getElementById('globalSearchResults').style.display='none', 200)"
-               onfocus="if(this.value)document.getElementById('globalSearchResults').style.display='block'"
-               style="width:100%;padding:8px 14px;border:1px solid var(--border);border-radius:20px;font-size:13px;background:var(--surface-2);">
-        <div id="globalSearchResults" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-lg);max-height:400px;overflow-y:auto;z-index:200;"></div>
-      </div>
-    `;
+    if (badge) {
+      if (urgentCount > 0) {
+        badge.textContent = urgentCount;
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+    }
   } else {
-    // Öffentlich: Datum/Uhrzeit
-    const now = new Date();
-    const datumStr = now.toLocaleDateString("de-CH", { weekday:"long", day:"2-digit", month:"long", year:"numeric" });
-    el.innerHTML = `
-      <div style="font-size:12px;color:var(--text-muted);font-weight:500;">
-        📅 ${datumStr}
-      </div>
-    `;
+    addon.style.display = "none";
   }
 }
 
