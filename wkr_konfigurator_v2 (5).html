@@ -1187,97 +1187,21 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeInternalMailModal()">Abbrechen</button>
       <button id="confirmSendMailBtn" class="btn btn-primary" onclick="submitInternalMail()">E-Mail jetzt senden</button>
+</div>
+  </div>
+</div>
+
+<div id="reservationInfoModal" class="modal-overlay" style="z-index:3000;">
+  <div class="modal-box" style="max-width: 500px;">
+    <div class="modal-title">Aktive Reservierungen</div>
+    <div class="modal-subtitle" id="resInfoSubtitle"></div>
+    <div id="resInfoContent" style="margin: 16px 0; font-size: 14px; line-height: 1.6; max-height: 300px; overflow-y: auto;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="document.getElementById('reservationInfoModal').classList.remove('open')">Schliessen</button>
     </div>
   </div>
 </div>
-   async function saveNewVororder(){
-  if (_vororderSaving) return;
 
-  const kundenname = clean(document.getElementById("newVoKundenname").value);
-  const typ = clean(document.getElementById("newVoTyp").value);
-  const anzahl = parseInt(clean(document.getElementById("newVoAnzahl").value),10) || 0;
-  const marke = clean(document.getElementById("newVoMarke").value);
-  const fahrzeug = clean(document.getElementById("newVoFahrzeug").value);
-  const standort = clean(document.getElementById("newVoStandort").value);
-  const status = clean(document.getElementById("newVoStatus").value);
-  const tn = clean(document.getElementById("newVoTN").value);
-
-  if (!kundenname || !typ || !anzahl || !marke || !fahrzeug || !standort || !status) {
-    alert("Bitte Pflichtfelder ausfüllen: Kundenname, Typ, Anzahl, Marke, Fahrzeug, Standort, Status");
-    return;
-  }
-
-  const row = {
-    "Kundenname": kundenname,
-    "Debitornr": clean(document.getElementById("newVoDebitornr").value),
-    "Adressnr": clean(document.getElementById("newVoAdressnr").value),
-    "KundenEmail": clean(document.getElementById("newVoEmail").value),
-    "RechnungAn": clean(document.getElementById("newVoRechnungAn").value),
-    "Marke": marke,
-    "Fahrzeug": fahrzeug,
-    "Reihe": clean(document.getElementById("newVoReihe").value),
-    "Modell": clean(document.getElementById("newVoModell").value),
-    "Motor": clean(document.getElementById("newVoMotor").value),
-    "Fahrgestellnr": clean(document.getElementById("newVoFIN").value),
-    "Ordernr": clean(document.getElementById("newVoOrdernr").value),
-    "Vertragsnr": clean(document.getElementById("newVoVertragsnr").value),
-    "Auftrag": clean(document.getElementById("newVoAuftrag").value),
-    "Ablieferung": clean(document.getElementById("newVoAblieferung").value),
-    "Typ": typ,
-    "TN": tn,
-    "Bezeichnung": clean(document.getElementById("newVoBezeichnung").value),
-    "Dimension": clean(document.getElementById("newVoDimension").value),
-    "Anzahl": anzahl,
-    "VK": clean(document.getElementById("newVoVK").value),
-    "Konditionen": clean(document.getElementById("newVoKonditionen").value),
-    "Standort_Bearbeitung": standort,
-    "Status": status,
-    "Erfasser": currentUser?.name || currentUser?.email || "Unknown",
-    "Bemerkungen": clean(document.getElementById("newVoBemerkungen").value)
-  };
-
-  _vororderSaving = true;
-  try {
-    const res = await postToScript({ action: "vororderAdd", row: row });
-    if (res && res.status === "OK") {
-      
-      // NEU: Sofort die gewählte Position (Rad) hinzufügen
-      if (typ && anzahl > 0) {
-        const posRow = {
-          "Typ": typ,
-          "TN": tn,
-          "Bezeichnung": row["Bezeichnung"],
-          "Dimension": row["Dimension"],
-          "Anzahl": anzahl,
-          "VK": row["VK"],
-          "Konditionen": row["Konditionen"],
-          "Status": status,
-          "Bemerkungen": ""
-        };
-        await postToScript({ action: "vororderPositionAdd", vororderId: res.id, row: posRow });
-      }
-
-      alert(`✅ Vororder ${res.id} erfolgreich gespeichert.`);
-      closeNewVororderModal();
-      await reloadVororder();
-      
-      try {
-        const p = await fetch(URLS.produkte).then(r=>r.json());
-        if (Array.isArray(p)) produkte = p;
-      } catch(e){}
-      render();
-    } else {
-      alert("Fehler beim Speichern: " + JSON.stringify(res));
-    }
-  } catch(err) {
-    alert("Fehler: " + err.message);
-  } finally {
-    _vororderSaving = false;
-  }
-}
-<!-- ============================================================
-     JAVASCRIPT
-     ============================================================ -->
 <script>
 /* ============================================================
    CONSTANTS & CONFIG
@@ -3380,7 +3304,6 @@ function resetVororderFilter(){
   vororderFilter = { suche:"", status:"", typ:"", standort:"" };
   render();
 }
-
 async function reloadVororder(){
   vororderLoaded = false;
   vororder = [];
@@ -3388,6 +3311,7 @@ async function reloadVororder(){
   await loadVororder();
   render();
 }
+
 async function saveNewVororder(){
   if (_vororderSaving) return;
 
@@ -3438,34 +3362,21 @@ async function saveNewVororder(){
   try {
     const res = await postToScript({ action: "vororderAdd", row: row });
     if (res && res.status === "OK") {
-      
-      // NEU: Sofort die gewählte Position (Rad) hinzufügen
+      // Automatische Position anlegen
       if (typ && anzahl > 0) {
         const posRow = {
-          "Typ": typ,
-          "TN": tn,
-          "Bezeichnung": row["Bezeichnung"],
-          "Dimension": row["Dimension"],
-          "Anzahl": anzahl,
-          "VK": row["VK"],
-          "Konditionen": row["Konditionen"],
-          "Status": status,
-          "Bemerkungen": ""
+          "Typ": typ, "TN": tn, "Bezeichnung": row["Bezeichnung"], "Dimension": row["Dimension"],
+          "Anzahl": anzahl, "VK": row["VK"], "Konditionen": row["Konditionen"],
+          "Status": status, "Bemerkungen": ""
         };
         await postToScript({ action: "vororderPositionAdd", vororderId: res.id, row: posRow });
       }
-
       alert(`✅ Vororder ${res.id} erfolgreich gespeichert.`);
       closeNewVororderModal();
       await reloadVororder();
-      
-      try {
-        const p = await fetch(URLS.produkte).then(r=>r.json());
-        if (Array.isArray(p)) produkte = p;
-      } catch(e){}
       render();
     } else {
-      alert("Fehler beim Speichern: " + JSON.stringify(res));
+      alert("Fehler: " + JSON.stringify(res));
     }
   } catch(err) {
     alert("Fehler: " + err.message);
@@ -3473,8 +3384,6 @@ async function saveNewVororder(){
     _vororderSaving = false;
   }
 }
-    }
-  }
 
   const row = {
     "Kundenname": kundenname,
