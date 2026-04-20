@@ -2838,6 +2838,10 @@ function printReifenInventur(){
 
 function renderAdminWkrItem(r){
   const lager=parseInt(clean(r["Lager"]),10)||0;
+  // NEU: Reservierte Menge auslesen und Verfügbarkeit berechnen
+  const reserviert=parseInt(clean(r["Reserviert"]),10)||0;
+  const verfuegbar=lager-reserviert;
+
   const bild=clean(r["Bild"])||"https://via.placeholder.com/220x140?text=Rad";
   const bezeichnung=clean(r["Bezeichnung"]);
   const marke=clean(r["Marke"]);
@@ -2853,8 +2857,11 @@ function renderAdminWkrItem(r){
   const nettopreis=clean(r["Nettopreis"]);
   const vpNum=parsePrice(vp),angebotNum=parsePrice(angebot);
   const hasDiscount=angebotNum>0&&vpNum>0&&angebotNum<vpNum;
-  const isLowStock=lager>0&&lager<=2;
-let priceHtml = "";
+  
+  // NEU: Warnung basiert jetzt auf dem frei verfügbaren Bestand
+  const isLowStock=verfuegbar>0&&verfuegbar<=2;
+
+  let priceHtml = "";
   if (hasDiscount) {
     priceHtml = `<div class="price-old">VP (Brutto): ${e(formatPrice(vp))} CHF</div>
                  <div class="price-main sale" style="font-size:20px;">Angebot: ${e(formatPrice(angebot))} CHF</div>`;
@@ -2883,14 +2890,52 @@ let priceHtml = "";
       <div class="price-label">Preise Admin-Ansicht</div>
       ${priceHtml}
       ${nettopreis ? `<div class="product-detail-row" style="text-align:right;font-size:13px;margin-top:6px;"><b>Netto EK:</b> ${e(formatPrice(nettopreis))} CHF</div>` : ""}
-      <div class="stock-count" style="color:${lager > 0 ? "var(--success)" : "var(--text-muted)"}; margin-top:12px;">Lagerbestand: ${lager}</div>
-      ${isLowStock ? `<span class="stock-warning-chip">⚠ Kritischer Lager</span>` : ""}
+      
+      <div style="margin-top:16px; padding:10px; background:var(--surface-3); border-radius:6px; font-size:12px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+          <span>Lager (Physisch):</span>
+          <b>${lager}</b>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px; color:var(--warning);">
+          <span>Reserviert (aktiv):</span>
+          <b style="cursor:pointer; text-decoration:underline;" onclick="showReservationDetails('${js(teilenummer)}')">${reserviert}</b>
+        </div>
+        <div style="display:flex; justify-content:space-between; border-top:1px solid var(--border); padding-top:4px; margin-top:4px; font-weight:700; color:${verfuegbar > 0 ? 'var(--success)' : 'var(--error)'};">
+          <span>Frei verfügbar:</span>
+          <span>${verfuegbar}</span>
+        </div>
+      </div>
+
+      ${isLowStock ? `<span class="stock-warning-chip" style="margin-top:8px; display:inline-block;">⚠ Kritischer Lager</span>` : ""}
       <div class="product-actions" style="margin-top:12px;">
         <button class="btn btn-primary btn-sm" onclick="openEditWkrModal('${js(teilenummer)}')">Bearbeiten</button>
         <button class="btn btn-secondary btn-sm" onclick="printWkrLabel('${js(teilenummer)}')">Etikette drucken</button>
       </div>
     </div>
   </div>`;
+}
+   /* ============================================================
+   RESERVIERUNGEN ANZEIGEN (Popup)
+   ============================================================ */
+function showReservationDetails(tn) {
+  if (!tn) return;
+  
+  // Alle Positionen durchsuchen
+  const matchingPositions = Object.values(positionenMap).flat().filter(p => clean(p["TN"]) === tn && clean(p["Status"]) !== "Erledigt" && clean(p["Status"]) !== "Kunde verzichtet");
+  
+  if (matchingPositions.length === 0) {
+    alert("Aktuell gibt es keine aktiven Reservierungen für diese Teilenummer.");
+    return;
+  }
+
+  let info = `Aktive Reservierungen für TN ${tn}:\n\n`;
+  matchingPositions.forEach(p => {
+    const vo = vororder.find(v => v.ID === p.VororderID);
+    const kunde = vo ? vo.Kundenname : "Unbekannt";
+    info += `• ${kunde}: ${p.Anzahl} Stück (VO-ID: ${p.VororderID})\n`;
+  });
+
+  alert(info);
 }
 
 /* ============================================================
