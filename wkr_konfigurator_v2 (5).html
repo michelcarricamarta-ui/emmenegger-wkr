@@ -1163,6 +1163,33 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
     <div id="voDetailContent"></div>
   </div>
 </div>
+
+<div id="internalMailModal" class="modal-overlay" style="z-index:3000;">
+  <div class="modal-box">
+    <div class="modal-title">E-Mail an Kunden senden</div>
+    <div class="modal-subtitle" id="mailModalSubtitle">Individueller Konfigurator-Link</div>
+    
+    <div class="form-grid" style="grid-template-columns: 1fr;">
+      <div class="form-field">
+        <label>Empfänger</label>
+        <input id="mailRecipient" type="text" readonly style="background:var(--surface-3); cursor:not-allowed;">
+      </div>
+      <div class="form-field">
+        <label>Betreff</label>
+        <input id="mailSubject" type="text">
+      </div>
+      <div class="form-field">
+        <label>Nachricht</label>
+        <textarea id="mailBody" style="min-height: 200px;"></textarea>
+      </div>
+    </div>
+    
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeInternalMailModal()">Abbrechen</button>
+      <button id="confirmSendMailBtn" class="btn btn-primary" onclick="submitInternalMail()">E-Mail jetzt senden</button>
+    </div>
+  </div>
+</div>
 <!-- ============================================================
      JAVASCRIPT
      ============================================================ -->
@@ -3389,7 +3416,7 @@ function toggleVoEditMode(){
 
 function renderVororderDetail(){
   const vo = vororder.find(v => clean(v["ID"]) === clean(_voDetailId));
-  if (!vo) { alert("Vororder nicht gefunden."); return; }
+  if (!vo) return; // Still abbrechen, während die Daten im Hintergrund neu laden
 
   const content = document.getElementById("voDetailContent");
   if (!content) return;
@@ -3487,7 +3514,7 @@ function renderVororderDetail(){
         </select>
         <button class="btn btn-primary btn-sm" onclick="saveVororderStatus('${js(clean(vo["ID"]))}')">Status speichern</button>
         <button class="btn btn-secondary btn-sm" onclick="printVororderSammelEtikette('${js(clean(vo["ID"]))}')">🏷️ Etikette drucken</button>
-        <button class="btn btn-secondary btn-sm" onclick="sendLinkToCustomer('${js(clean(vo["ID"]))}')">✉️ Link an Kunde senden</button>
+        <button class="btn btn-secondary btn-sm" onclick="openInternalMailModal('${js(clean(vo["ID"]))}')">✉️ Link an Kunde senden</button>
               </div>
     </div>` : ""}
 
@@ -3544,61 +3571,87 @@ async function saveVororderStatus(id){
   }
 }
 /* ============================================================
-   MAIL-LINK AN KUNDE SENDEN
+   INTERNAL MAILER (VARIANTE 2)
    ============================================================ */
-async function sendLinkToCustomer(id) {
+
+let _currentMailVoId = null;
+
+function openInternalMailModal(id) {
   const vo = vororder.find(v => clean(v["ID"]) === clean(id));
-  if (!vo) { alert("Vororder nicht gefunden."); return; }
+  if (!vo) return;
 
   const email = clean(vo["KundenEmail"]);
   if (!email) {
-    alert("⚠ Es ist keine E-Mail-Adresse für diesen Kunden hinterlegt. Bitte trage sie zuerst im Bearbeiten-Modus ein.");
+    alert("⚠ Bitte zuerst eine E-Mail-Adresse beim Kunden hinterlegen.");
     return;
   }
 
-  // 1. Individuellen Link zum Fahrzeug generieren
+  _currentMailVoId = id;
+
+  // Link generieren
   const params = new URLSearchParams();
   if (vo["Marke"]) params.set("marke", clean(vo["Marke"]));
   if (vo["Standort_Bearbeitung"]) params.set("standort", clean(vo["Standort_Bearbeitung"]));
   if (vo["Reihe"]) params.set("reihe", clean(vo["Reihe"]));
   if (vo["Modell"]) params.set("modell", clean(vo["Modell"]));
   if (vo["Motor"]) params.set("motor", clean(vo["Motor"]));
-  
   const link = window.location.href.split("?")[0] + "?" + params.toString();
 
-  // 2. E-Mail Inhalt vorbereiten
-  const subject = encodeURIComponent(`Ihre Winterkomplettrad-Auswahl für Ihren ${clean(vo["Fahrzeug"])}`);
-  const body = encodeURIComponent(`Guten Tag ${clean(vo["Kundenname"])},\n\nÜber den folgenden Link gelangen Sie direkt zu den passenden Winterkompletträdern für Ihr Fahrzeug. Dort können Sie die Angebote bequem prüfen:\n\n${link}\n\nBei Fragen stehen wir Ihnen gerne zur Verfügung.\n\nFreundliche Grüsse\nIhr Emmenegger Team`);
+  // Felder füllen
+  document.getElementById("mailRecipient").value = email;
+  document.getElementById("mailSubject").value = `Angebote für Ihren ${clean(vo["Fahrzeug"])}`;
+  document.getElementById("mailBody").value = `Guten Tag ${clean(vo["Kundenname"])},\n\nwie besprochen senden wir Ihnen hier den Zugang zu den passenden Angeboten für Ihr Fahrzeug:\n\n${link}\n\nDort können Sie die verfügbaren Winterkompletträder direkt einsehen.\n\nBei Fragen stehen wir Ihnen gerne zur Verfügung.\n\nFreundliche Grüsse\nIhr Emmenegger Team`;
 
-  // 3. E-Mail Programm öffnen
-  window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+  document.getElementById("internalMailModal").classList.add("open");
+}
 
-  // 4. Automatischen Status-Wechsel vorschlagen
-  if (clean(vo["Status"]) === "Offerte ausstehend" || clean(vo["Status"]) === "Kundenauswahl") {
-    // Kurze Verzögerung, damit sich zuerst das E-Mail-Programm öffnet
-    setTimeout(async () => {
-      if (confirm("Soll der Status dieser Vororder nun automatisch auf 'Offeriert' gesetzt werden?")) {
-        const user = currentUser?.name || currentUser?.email || "Unknown";
-        try {
-          const res = await postToScript({
-            action: "vororderUpdate",
-            id: id,
-            user: user,
-            updates: { Status: "Offeriert" }
-          });
-          if (res && res.status === "OK") {
-            alert("✅ Status erfolgreich auf 'Offeriert' geändert.");
-            closeVororderDetail();
-            await reloadVororder();
-            render();
-          } else {
-            alert("Fehler beim Status-Update: " + JSON.stringify(res));
-          }
-        } catch(err) {
-          alert("Fehler: " + err.message);
-        }
-      }
-    }, 1000);
+function closeInternalMailModal() {
+  document.getElementById("internalMailModal").classList.remove("open");
+  _currentMailVoId = null;
+}
+
+async function submitInternalMail() {
+  const btn = document.getElementById("confirmSendMailBtn");
+  const voId = _currentMailVoId;
+  const recipient = document.getElementById("mailRecipient").value;
+  const subject = document.getElementById("mailSubject").value;
+  const body = document.getElementById("mailBody").value;
+
+  btn.disabled = true;
+  btn.textContent = "Wird gesendet...";
+
+  try {
+    const res = await postToScript({
+      action: "sendInternalEmail", 
+      to: recipient,
+      subject: subject,
+      body: body,
+      voId: voId,
+      user: currentUser?.name || "Admin"
+    });
+
+    if (res && res.status === "OK") {
+      alert("✅ E-Mail wurde erfolgreich versendet.");
+      closeInternalMailModal();
+      
+      // Status automatisch auf "Offeriert" setzen
+      await postToScript({
+        action: "vororderUpdate",
+        id: voId,
+        user: currentUser?.name || "Admin",
+        updates: { Status: "Offeriert" }
+      });
+      
+      await reloadVororder();
+      render();
+    } else {
+      alert("Fehler beim Senden: " + (res.message || JSON.stringify(res)));
+    }
+  } catch (err) {
+    alert("Fehler: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "E-Mail jetzt senden";
   }
 }
 async function saveVoDetailChanges(){
