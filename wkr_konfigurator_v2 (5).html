@@ -948,8 +948,11 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
       <div class="form-field"><label>Lagerbestand</label><input id="newWkrLager" type="number" min="0" value="0"></div>
       <div class="form-field"><label>Lagerort</label><input id="newWkrLagerort" type="text" placeholder="Regal A3 / Platz 12"></div>
       <div class="form-field full"><label>Bild URL</label><input id="newWkrBild" type="text" placeholder="https://..."></div>
-      <div class="form-field"><label>VP</label><input id="newWkrVP" type="text" placeholder="2490"></div>
-      <div class="form-field"><label>Angebotspreis</label><input id="newWkrAngebotspreis" type="text" placeholder="2190"></div>
+      <div class="form-field"><label>VP (Brutto)</label><input id="newWkrVP" type="text" placeholder="2490"></div>
+      <div class="form-field">
+        <label style="display:flex; justify-content:space-between;">Angebotspreis <button type="button" onclick="calcWkrDiscount('new')" style="background:none;border:none;color:var(--accent);font-size:10px;font-weight:700;cursor:pointer;padding:0;">-20% BERECHNEN</button></label>
+        <input id="newWkrAngebotspreis" type="text" placeholder="2190">
+      </div>
       <div class="form-field"><label>Nettopreis</label><input id="newWkrNettopreis" type="text" placeholder="1850"></div>
       <div class="form-field full"><label>Empfänger Mail</label><input id="newWkrEmpfaengerMail" type="email" placeholder="tv-g-fp@emmeneggerag.ch"></div>
       <div class="form-field full"><label>Hinweistext</label><textarea id="newWkrHinweistext" placeholder="Freier Hinweistext"></textarea></div>
@@ -977,8 +980,11 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
       <div class="form-field"><label>Lagerbestand</label><input id="editWkrLager" type="number" min="0"></div>
       <div class="form-field"><label>Lagerort</label><input id="editWkrLagerort" type="text" placeholder="Regal A3 / Platz 12"></div>
       <div class="form-field full"><label>Bild URL</label><input id="editWkrBild" type="text" placeholder="https://..."></div>
-      <div class="form-field"><label>VP</label><input id="editWkrVP" type="text" placeholder="2490"></div>
-      <div class="form-field"><label>Angebotspreis</label><input id="editWkrAngebotspreis" type="text" placeholder="2190"></div>
+      <div class="form-field"><label>VP (Brutto)</label><input id="editWkrVP" type="text" placeholder="2490"></div>
+      <div class="form-field">
+        <label style="display:flex; justify-content:space-between;">Angebotspreis <button type="button" onclick="calcWkrDiscount('edit')" style="background:none;border:none;color:var(--accent);font-size:10px;font-weight:700;cursor:pointer;padding:0;">-20% BERECHNEN</button></label>
+        <input id="editWkrAngebotspreis" type="text" placeholder="2190">
+      </div>
       <div class="form-field"><label>Nettopreis</label><input id="editWkrNettopreis" type="text" placeholder="1850"></div>
       <div class="form-field full"><label>Empfänger Mail</label><input id="editWkrEmpfaengerMail" type="email" placeholder="tv-g-fp@emmeneggerag.ch"></div>
       <div class="form-field full"><label>Hinweistext</label><textarea id="editWkrHinweistext" placeholder="Freier Hinweistext"></textarea></div>
@@ -2802,11 +2808,18 @@ function renderAdminWkrItem(r){
   const vpNum=parsePrice(vp),angebotNum=parsePrice(angebot);
   const hasDiscount=angebotNum>0&&vpNum>0&&angebotNum<vpNum;
   const isLowStock=lager>0&&lager<=2;
-  let priceHtml="";
-  if(hasDiscount) priceHtml=`<div class="price-main sale">${e(formatPrice(angebot))} CHF</div><div class="price-old">UPE: ${e(formatPrice(vp))} CHF</div>`;
-  else if(angebotNum>0) priceHtml=`<div class="price-main">${e(formatPrice(angebot))} CHF</div>`;
-  else if(vpNum>0) priceHtml=`<div class="price-main">${e(formatPrice(vp))} CHF</div>`;
-  else priceHtml=`<div class="price-main">Preis offen</div>`;
+let priceHtml = "";
+  if (hasDiscount) {
+    priceHtml = `<div class="price-old">VP (Brutto): ${e(formatPrice(vp))} CHF</div>
+                 <div class="price-main sale" style="font-size:20px;">Angebot: ${e(formatPrice(angebot))} CHF</div>`;
+  } else if (angebotNum > 0) {
+    priceHtml = `<div class="price-main" style="font-size:20px;">Angebot: ${e(formatPrice(angebot))} CHF</div>`;
+  } else if (vpNum > 0) {
+    priceHtml = `<div class="price-main" style="font-size:20px;">VP (Brutto): ${e(formatPrice(vp))} CHF</div>`;
+  } else {
+    priceHtml = `<div class="price-main" style="font-size:20px;">Preis offen</div>`;
+  }
+
   return `<div class="product-item">
     <div class="product-image-wrap"><img src="${e(bild)}" alt="${e(bezeichnung)}" onclick="toggleZoom(this)"></div>
     <div class="product-info">
@@ -2815,18 +2828,17 @@ function renderAdminWkrItem(r){
       <div class="product-sub">${e(markeReifen)}</div>
       <div class="product-sub" style="font-weight:700;">${e(dimension)}</div>
       <div class="product-detail-row"><b>Standort:</b> ${e(standort)}</div>
-      ${lagerort?`<div class="product-detail-row"><b>Lagerort:</b> ${e(lagerort)}</div>`:""}
-      ${teilenummer?`<div class="product-partnr">Teilenr.: ${e(teilenummer)}</div>`:""}
-      ${hinweistext?`<div class="product-note">${e(hinweistext)}</div>`:""}
-      ${verkaufshinweis?`<div class="product-detail-row"><b>Hinweis:</b> ${e(verkaufshinweis)}</div>`:""}
+      ${lagerort ? `<div class="product-detail-row"><b>Lagerort:</b> ${e(lagerort)}</div>` : ""}
+      ${teilenummer ? `<div class="product-partnr">Teilenr.: ${e(teilenummer)}</div>` : ""}
+      ${hinweistext ? `<div class="product-note">${e(hinweistext)}</div>` : ""}
+      ${verkaufshinweis ? `<div class="product-detail-row"><b>Hinweis:</b> ${e(verkaufshinweis)}</div>` : ""}
     </div>
     <div class="product-right">
-      <div class="price-label">Pro Satz inkl. Montage</div>
+      <div class="price-label">Preise Admin-Ansicht</div>
       ${priceHtml}
-      <div class="price-vat">inkl. MwSt.</div>
-      ${nettopreis?`<div class="product-detail-row" style="text-align:right;font-size:12px;"><b>Netto:</b> ${e(formatPrice(nettopreis))} CHF</div>`:""}
-      <div class="stock-count" style="color:${lager>0?"var(--success)":"var(--text-muted)"};">Lagerbestand: ${lager}</div>
-      ${isLowStock?`<span class="stock-warning-chip">⚠ Kritischer Lager</span>`:""}
+      ${nettopreis ? `<div class="product-detail-row" style="text-align:right;font-size:13px;margin-top:6px;"><b>Netto EK:</b> ${e(formatPrice(nettopreis))} CHF</div>` : ""}
+      <div class="stock-count" style="color:${lager > 0 ? "var(--success)" : "var(--text-muted)"}; margin-top:12px;">Lagerbestand: ${lager}</div>
+      ${isLowStock ? `<span class="stock-warning-chip">⚠ Kritischer Lager</span>` : ""}
       <div class="product-actions" style="margin-top:12px;">
         <button class="btn btn-primary btn-sm" onclick="openEditWkrModal('${js(teilenummer)}')">Bearbeiten</button>
         <button class="btn btn-secondary btn-sm" onclick="printWkrLabel('${js(teilenummer)}')">Etikette drucken</button>
@@ -2942,7 +2954,20 @@ function openEditWkrModal(tn){
   document.getElementById("editWkrModal").classList.add("open");
 }
 function closeEditWkrModal(){ document.getElementById("editWkrModal").classList.remove("open"); editingWkrTN=""; }
-
+function calcWkrDiscount(prefix) {
+  const vpInput = document.getElementById(`${prefix}WkrVP`);
+  const angebotInput = document.getElementById(`${prefix}WkrAngebotspreis`);
+  if (!vpInput || !angebotInput) return;
+  
+  const vp = parsePrice(vpInput.value);
+  if (vp && vp > 0) {
+    // 20% abziehen und auf ganze Franken runden
+    const discounted = Math.round(vp * 0.8);
+    angebotInput.value = discounted;
+  } else {
+    alert("Bitte gib zuerst einen gültigen VP ein.");
+  }
+}
 /* ============================================================
    SAVE/DELETE: TIRES
    ============================================================ */
