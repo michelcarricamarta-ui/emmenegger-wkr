@@ -2914,28 +2914,43 @@ function renderAdminWkrItem(r){
     </div>
   </div>`;
 }
-   /* ============================================================
+ /* ============================================================
    RESERVIERUNGEN ANZEIGEN (Popup)
    ============================================================ */
 function showReservationDetails(tn) {
   if (!tn) return;
-  
-  // Alle Positionen durchsuchen
-  const matchingPositions = Object.values(positionenMap).flat().filter(p => clean(p["TN"]) === tn && clean(p["Status"]) !== "Erledigt" && clean(p["Status"]) !== "Kunde verzichtet");
-  
-  if (matchingPositions.length === 0) {
-    alert("Aktuell gibt es keine aktiven Reservierungen für diese Teilenummer.");
-    return;
-  }
+  const searchTn = clean(tn).toLowerCase();
 
   let info = `Aktive Reservierungen für TN ${tn}:\n\n`;
-  matchingPositions.forEach(p => {
-    const vo = vororder.find(v => v.ID === p.VororderID);
-    const kunde = vo ? vo.Kundenname : "Unbekannt";
-    info += `• ${kunde}: ${p.Anzahl} Stück (VO-ID: ${p.VororderID})\n`;
+  let found = false;
+
+  // 1. Suche in den Haupt-Vororders
+  vororder.forEach(v => {
+    if (clean(v["TN"]).toLowerCase() === searchTn && clean(v["Status"]) !== "Erledigt" && clean(v["Status"]) !== "Kunde verzichtet") {
+      info += `• ${clean(v["Kundenname"]) || "Unbekannt"}: ${clean(v["Anzahl"])} Stück (VO-ID: ${v["ID"]})\n`;
+      found = true;
+    }
   });
 
-  alert(info);
+  // 2. Suche in den Unter-Positionen
+  const matchingPositions = Object.values(positionenMap).flat().filter(p => clean(p["TN"]).toLowerCase() === searchTn && clean(p["Status"]) !== "Erledigt" && clean(p["Status"]) !== "Kunde verzichtet");
+  
+  matchingPositions.forEach(p => {
+    const voId = clean(p["VororderID"]);
+    // Vermeiden, dass es doppelt angezeigt wird, falls es in beiden Listen steht
+    if (!info.includes(`(VO-ID: ${voId})`)) {
+      const vo = vororder.find(v => clean(v["ID"]) === voId);
+      const kunde = vo ? clean(vo["Kundenname"]) : "Unbekannt";
+      info += `• ${kunde}: ${clean(p["Anzahl"])} Stück (VO-ID: ${voId} / Pos)\n`;
+      found = true;
+    }
+  });
+
+  if (!found) {
+    alert("Hinweis: Das System meldet Bestand als reserviert, aber in der aktuellen Liste gibt es keine offene Vororder mit dieser Teilenummer. (Evtl. Alt-Daten im Google Sheet).");
+  } else {
+    alert(info);
+  }
 }
 
 /* ============================================================
