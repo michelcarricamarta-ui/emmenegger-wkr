@@ -1555,9 +1555,18 @@ async function deactivateAllModes(){
   render();
 }
 function showModeBanner(type){
-  const el=document.getElementById("modeBanner");
-  el.className=`mode-banner ${type}`;
-  el.textContent=type==="admin"?t("admin_mode_active"):t("internal_mode_active");
+  const el = document.getElementById("modeBanner");
+  if (!el) return;
+  // Admin-Banner nicht mehr anzeigen (man sieht's am Dashboard)
+  if (type === "admin") {
+    el.className = "mode-banner";
+    el.textContent = "";
+    el.style.display = "none";
+    return;
+  }
+  el.className = `mode-banner ${type}`;
+  el.textContent = type === "admin" ? t("admin_mode_active") : t("internal_mode_active");
+  el.style.display = "block";
 }
 async function applyFirebaseAdminState(){
   if (window.isFirebaseAdminLoggedIn) {
@@ -1822,75 +1831,125 @@ function renderAdminSidebar(){
    RENDER ADMIN DASHBOARD (compact)  ← NEU
    ============================================================ */
 function renderAdminDashboard(){
-  const s=getDashboardStats();
+  const s = getDashboardStats();
+
+  // Business-Metriken
+  let offeneVororders = 0, umsatzPotenzial = 0, reservierteWKR = 0, sammelbestellung = 0;
+  if (vororderLoaded && vororder) {
+    offeneVororders = vororder.filter(v => ["Kundenauswahl","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt"].includes(clean(v["Status"]))).length;
+    umsatzPotenzial = vororder.filter(v => ["Offeriert", "Sammelbestellung (Vororder26)", "Bestellt"].includes(clean(v["Status"]))).reduce((sum, v) => sum + (parsePrice(v["VK"]) || 0), 0);
+    reservierteWKR = vororder.filter(v => clean(v["Status"]) === "Reserviert").length;
+    sammelbestellung = vororder.filter(v => clean(v["Status"]) === "Sammelbestellung (Vororder26)").length;
+  }
+
+  const groupStyle = "background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:18px;";
+  const groupHeaderStyle = "display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);";
+  const groupTitleStyle = "font-size:14px;font-weight:700;color:var(--text-primary);";
+  const groupMetaStyle = "font-size:11px;color:var(--text-muted);";
+  const actionGridStyle = "display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:10px;";
+
+  const actionCard = (icon, title, sub, onclick, color) => `
+    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:14px;cursor:pointer;transition:all 0.2s;display:flex;gap:10px;align-items:center;" onclick="${onclick}" onmouseover="this.style.borderColor='${color||'var(--accent)'}';this.style.transform='translateY(-1px)';" onmouseout="this.style.borderColor='var(--border)';this.style.transform='none';">
+      <div style="font-size:20px;flex-shrink:0;">${icon}</div>
+      <div style="min-width:0;">
+        <div style="font-size:13px;font-weight:700;color:var(--text-primary);line-height:1.2;margin-bottom:2px;">${title}</div>
+        <div style="font-size:11px;color:var(--text-muted);line-height:1.3;">${sub}</div>
+      </div>
+    </div>`;
+
   return `<div class="admin-content">
     <div class="admin-content-header">
       <div class="admin-content-title">Dashboard</div>
-      <div class="admin-content-sub">Schnellzugriff auf alle Verwaltungsbereiche</div>
+      <div class="admin-content-sub">Willkommen ${e(currentUser?.name || "Admin")} · ${e(standortLabel(currentUser?.standort))}</div>
     </div>
-    <div class="admin-quick-grid">
-      <div class="admin-quick-card" onclick="selectAdminSection('wkr_model')">
-        <div class="qc-icon">🔍</div>
-        <div>
-          <div class="qc-title">${e(t("admin_wkr_by_model"))}</div>
-          <div class="qc-sub">Fahrzeugspezifische Ansicht</div>
-        </div>
+
+    <!-- ═══ ÜBERBLICK ═══ -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:12px;margin-bottom:24px;">
+      <div style="background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:8px;padding:14px;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:4px;">WKR Lager</div>
+        <div style="font-size:22px;font-weight:700;">${s.wkrInStock}<span style="font-size:13px;color:var(--text-muted);font-weight:400;"> / ${s.totalWkr}</span></div>
       </div>
-      <div class="admin-quick-card" onclick="selectAdminSection('wkr_list')">
-        <div class="qc-icon">🛞</div>
-        <div>
-          <div class="qc-title">${e(t("admin_wkr_all"))}</div>
-          <div class="qc-sub">${s.totalWkr} Einträge · ${s.wkrInStock} an Lager</div>
-        </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-top:3px solid #f59e0b;border-radius:8px;padding:14px;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:4px;">Offene Vororders</div>
+        <div style="font-size:22px;font-weight:700;">${vororderLoaded ? offeneVororders : "—"}</div>
       </div>
-      <div class="admin-quick-card" onclick="selectAdminSection('vororder')">
-        <div class="qc-icon">📋</div>
-        <div>
-          <div class="qc-title">Vororder-Übersicht</div>
-          <div class="qc-sub">Alle Vororders verwalten</div>
-        </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-top:3px solid #10b981;border-radius:8px;padding:14px;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:4px;">Reserviert (Ware da)</div>
+        <div style="font-size:22px;font-weight:700;">${vororderLoaded ? reservierteWKR : "—"}</div>
       </div>
-      <div class="admin-quick-card" onclick="selectAdminSection('reifen_list')">
-        <div class="qc-icon">⚫</div>
-        <div>
-          <div class="qc-title">${e(t("admin_tires_all"))}</div>
-          <div class="qc-sub">${s.activeTires} aktiv · ${s.inactiveTires > 0 ? `<span style="color:var(--error)">${s.inactiveTires} inaktiv</span>` : "alle aktiv"}</div>
-        </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-top:3px solid #8b5cf6;border-radius:8px;padding:14px;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:4px;">Pipeline Umsatz</div>
+        <div style="font-size:16px;font-weight:700;">${vororderLoaded && umsatzPotenzial > 0 ? formatPrice(umsatzPotenzial) + " CHF" : "—"}</div>
       </div>
-      <div class="admin-quick-card" onclick="selectAdminSection('wkr_list');setTimeout(()=>document.getElementById('addWkrModal')?.classList.add('open'),100)">
-        <div class="qc-icon">➕</div>
-        <div>
-          <div class="qc-title">Neues WKR</div>
-          <div class="qc-sub">Winterkomplettrad erfassen</div>
-        </div>
-      </div>
-      <div class="admin-quick-card" onclick="selectAdminSection('reifen_list');setTimeout(()=>document.getElementById('addTireModal')?.classList.add('open'),100)">
-        <div class="qc-icon">➕</div>
-        <div>
-          <div class="qc-title">Neuer Reifen</div>
-          <div class="qc-sub">Reifen erfassen</div>
-        </div>
-      </div>
-      ${s.dotWarnings > 0 ? `
-      <div class="admin-quick-card" onclick="adminReifenFilter.suche='';adminReifenFilter.aktivStatus='';selectAdminSection('reifen_list')">
-        <div class="qc-icon">⚠️</div>
-        <div>
-          <div class="qc-title" style="color:var(--warning)">${s.dotWarnings} DOT-Warnung${s.dotWarnings>1?"en":""}</div>
-          <div class="qc-sub">Reifen älter als 3 Jahre</div>
-        </div>
-      </div>` : ""}
-      ${s.lowStockWkr > 0 ? `
-      <div class="admin-quick-card" onclick="adminWkrFilter.nurAnLager=true;selectAdminSection('wkr_list')">
-        <div class="qc-icon">📦</div>
-        <div>
-          <div class="qc-title" style="color:var(--warning)">${s.lowStockWkr} WKR kritisch</div>
-          <div class="qc-sub">Lagerbestand ≤ 2 Stück</div>
-        </div>
-      </div>` : ""}
     </div>
+
+    <!-- ═══ WKR ═══ -->
+    <div style="${groupStyle}">
+      <div style="${groupHeaderStyle}">
+        <div>
+          <div style="${groupTitleStyle}">🛞 Winterkompletträder</div>
+          <div style="${groupMetaStyle}">${s.totalWkr} Einträge · ${s.wkrInStock} an Lager${s.lowStockWkr > 0 ? ` · <span style="color:var(--warning);font-weight:700;">${s.lowStockWkr} kritisch</span>` : ""}</div>
+        </div>
+      </div>
+      <div style="${actionGridStyle}">
+        ${actionCard("🔍", "Konfigurator-Ansicht", "Nach Fahrzeug filtern", "selectAdminSection('wkr_model')")}
+        ${actionCard("🛞", "Gesamtübersicht", "Alle WKR verwalten", "selectAdminSection('wkr_list')")}
+        ${actionCard("➕", "Neues WKR", "WKR erfassen", "selectAdminSection('wkr_list');setTimeout(()=>document.getElementById('addWkrModal')?.classList.add('open'),100)")}
+        ${actionCard("⬇️", "Excel Export", "Inventur als .xlsx", "selectAdminSection('inventur');setTimeout(()=>exportWkrXLSX(),200)")}
+        ${actionCard("🖨️", "Inventur drucken", "Druckliste WKR", "selectAdminSection('inventur');setTimeout(()=>printWkrInventur(),200)")}
+      </div>
+    </div>
+
+    <!-- ═══ VORORDER ═══ -->
+    <div style="${groupStyle}">
+      <div style="${groupHeaderStyle}">
+        <div>
+          <div style="${groupTitleStyle}">📋 Vororder</div>
+          <div style="${groupMetaStyle}">${vororderLoaded ? vororder.length + " Gesamt · " + offeneVororders + " offen · " + reservierteWKR + " reserviert" : "Noch nicht geladen"}</div>
+        </div>
+      </div>
+      <div style="${actionGridStyle}">
+        ${actionCard("📋", "Vororder-Übersicht", vororderLoaded ? vororder.length + " Einträge" : "Alle verwalten", "selectAdminSection('vororder')")}
+        ${actionCard("➕", "Neue Vororder", "Kunden-Bestellung erfassen", "selectAdminSection('vororder');setTimeout(()=>openNewVororderModal(),200)")}
+        ${actionCard("📦", "BMW-Sammelbestellung", sammelbestellung > 0 ? sammelbestellung + " Vororders sammeln" : "Aggregierte Liste drucken", "selectAdminSection('inventur');setTimeout(()=>{document.getElementById('exportVoStatus').value='Sammelbestellung (Vororder26)';printSammelbestellung();},300)", "#d97706")}
+        ${actionCard("⬇️", "Excel Export", "Vororder als .xlsx", "selectAdminSection('inventur');setTimeout(()=>exportVororderXLSX(),200)")}
+        ${actionCard("🖨️", "Druckliste", "Vororders drucken", "selectAdminSection('inventur');setTimeout(()=>printVororderList(),200)")}
+      </div>
+    </div>
+
+    <!-- ═══ REIFEN ═══ -->
+    <div style="${groupStyle}">
+      <div style="${groupHeaderStyle}">
+        <div>
+          <div style="${groupTitleStyle}">⚫ Reifen</div>
+          <div style="${groupMetaStyle}">${s.activeTires} aktiv${s.inactiveTires > 0 ? ` · <span style="color:var(--error);font-weight:700;">${s.inactiveTires} inaktiv</span>` : ""}${s.dotWarnings > 0 ? ` · <span style="color:var(--warning);font-weight:700;">${s.dotWarnings} DOT-Warnung${s.dotWarnings>1?"en":""}</span>` : ""}</div>
+        </div>
+      </div>
+      <div style="${actionGridStyle}">
+        ${actionCard("⚫", "Gesamtübersicht", "Alle Reifen verwalten", "selectAdminSection('reifen_list')")}
+        ${actionCard("➕", "Neuer Reifen", "Reifen erfassen", "selectAdminSection('reifen_list');setTimeout(()=>document.getElementById('addTireModal')?.classList.add('open'),100)")}
+        ${actionCard("⬇️", "Excel Export", "Inventur als .xlsx", "selectAdminSection('inventur');setTimeout(()=>exportReifenXLSX(),200)")}
+        ${actionCard("🖨️", "Inventur drucken", "Druckliste Reifen", "selectAdminSection('inventur');setTimeout(()=>printReifenInventur(),200)")}
+      </div>
+    </div>
+
+    ${(s.dotWarnings > 0 || s.lowStockWkr > 0) ? `
+    <!-- ═══ WARNUNGEN ═══ -->
+    <div style="${groupStyle} border-left:4px solid var(--warning);">
+      <div style="${groupHeaderStyle}">
+        <div>
+          <div style="${groupTitleStyle};color:var(--warning);">⚠️ Warnungen</div>
+          <div style="${groupMetaStyle}">Benötigt deine Aufmerksamkeit</div>
+        </div>
+      </div>
+      <div style="${actionGridStyle}">
+        ${s.dotWarnings > 0 ? actionCard("⚠️", `${s.dotWarnings} DOT-Warnung${s.dotWarnings>1?"en":""}`, "Reifen älter als 3 Jahre", "adminReifenFilter.suche='';selectAdminSection('reifen_list')", "var(--warning)") : ""}
+        ${s.lowStockWkr > 0 ? actionCard("📦", `${s.lowStockWkr} WKR kritisch`, "Lagerbestand ≤ 2 Stück", "adminWkrFilter.nurAnLager=true;selectAdminSection('wkr_list')", "var(--warning)") : ""}
+      </div>
+    </div>` : ""}
+
   </div>`;
 }
-
 /* ============================================================
    RENDER
    ============================================================ */
