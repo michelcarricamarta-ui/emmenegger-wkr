@@ -3530,7 +3530,45 @@ function renderVororderDetail(){
     </div>`:""}
   `;
 }
+async function deleteVororder(id){
+  const vo = vororder.find(v => clean(v["ID"]) === clean(id));
+  if (!vo) { alert("Vororder nicht gefunden."); return; }
 
+  const kunde = clean(vo["Kundenname"]) || "(kein Name)";
+  const positionenCount = (positionenMap[id] || []).length;
+
+  const msg = `⚠ Vororder ${id} wirklich löschen?\n\n` +
+              `Kunde: ${kunde}\n` +
+              `Positionen: ${positionenCount}\n\n` +
+              `Alle Positionen und aktive Reservierungen werden automatisch aufgelöst.\n` +
+              `Diese Aktion kann NICHT rückgängig gemacht werden!`;
+
+  if (!confirm(msg)) return;
+
+  const confirm2 = prompt(`Zur Bestätigung bitte "LÖSCHEN" eintippen:`);
+  if (clean(confirm2).toUpperCase() !== "LÖSCHEN") {
+    alert("Abgebrochen — der Text stimmt nicht überein.");
+    return;
+  }
+
+  try {
+    const res = await postToScript({ action: "vororderDelete", id: id });
+    if (res && res.status === "OK") {
+      alert(`✅ Vororder ${id} wurde gelöscht.`);
+      closeVororderDetail();
+      await reloadVororder();
+      try {
+        const p = await fetch(URLS.produkte).then(r=>r.json());
+        if (Array.isArray(p)) produkte = p;
+      } catch(e){}
+      render();
+    } else {
+      alert("Fehler: " + JSON.stringify(res));
+    }
+  } catch(err) {
+    alert("Fehler: " + err.message);
+  }
+}
 async function saveVororderStatus(id){
   const newStatus = clean(document.getElementById("voDetailStatus")?.value);
   if (!newStatus) return;
