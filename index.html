@@ -1125,6 +1125,7 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
       <div class="form-field"><label>Bezeichnung</label><input id="posBezeichnung" type="text"></div>
       <div class="form-field"><label>Dimension</label><input id="posDimension" type="text"></div>
       <div class="form-field"><label>VK (CHF)</label><input id="posVK" type="text"></div>
+       <div class="form-field"><label>Lagerort</label><input id="posLagerort" type="text" placeholder="z.B. Regal A3 / Platz 12"></div>
       <div class="form-field"><label>Konditionen</label><input id="posKonditionen" type="text"></div>
       <div class="form-field full">
         <label>Status</label>
@@ -1776,6 +1777,13 @@ function renderAdminDashboard(){
         <div>
           <div class="qc-title">${e(t("admin_wkr_all"))}</div>
           <div class="qc-sub">${s.totalWkr} Einträge · ${s.wkrInStock} an Lager</div>
+        </div>
+      </div>
+      <div class="admin-quick-card" onclick="selectAdminSection('vororder')">
+        <div class="qc-icon">📋</div>
+        <div>
+          <div class="qc-title">Vororder-Übersicht</div>
+          <div class="qc-sub">Alle Vororders verwalten</div>
         </div>
       </div>
       <div class="admin-quick-card" onclick="selectAdminSection('reifen_list')">
@@ -3246,7 +3254,42 @@ function renderVororderDetail(){
         }
       </div>
     </div>
-
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+      <div style="background:var(--surface-2);border-radius:8px;padding:14px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Kunde</div>
+        ${edit ? `<div class="form-grid">
+          ${f("Kundenname","voEdit_Kundenname",vo["Kundenname"],{full:true,showEmpty:true})}
+          ${f("Debitornr","voEdit_Debitornr",vo["Debitornr"])}
+          ${f("Adressnr","voEdit_Adressnr",vo["Adressnr"])}
+          ${f("Kunden E-Mail","voEdit_KundenEmail",vo["KundenEmail"],{type:"email"})}
+          ${f("Rechnung an","voEdit_RechnungAn",vo["RechnungAn"],{type:"select",options:["","An Kunde","Im Leasing (Intern)","Spezialpreis"]})}
+        </div>` : `
+          <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${e(clean(vo["Kundenname"]))||"—"}</div>
+          ${clean(vo["Debitornr"])?`<div style="font-size:12px;">Debitor: ${e(clean(vo["Debitornr"]))}</div>`:""}
+          ${clean(vo["Adressnr"])?`<div style="font-size:12px;">Adresse: ${e(clean(vo["Adressnr"]))}</div>`:""}
+          ${clean(vo["KundenEmail"])?`<div style="font-size:12px;">E-Mail: ${e(clean(vo["KundenEmail"]))}</div>`:""}
+          ${clean(vo["RechnungAn"])?`<div style="font-size:12px;margin-top:6px;">💰 ${e(clean(vo["RechnungAn"]))}</div>`:""}
+        `}
+      </div>
+      <div style="background:var(--surface-2);border-radius:8px;padding:14px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Fahrzeug</div>
+        ${edit ? `<div class="form-grid">
+          ${f("Marke","voEdit_Marke",vo["Marke"],{type:"select",options:["","BMW","MINI","Andere"]})}
+          ${f("Fahrzeug","voEdit_Fahrzeug",vo["Fahrzeug"],{full:true,showEmpty:true})}
+          ${f("Fahrgestellnr","voEdit_Fahrgestellnr",vo["Fahrgestellnr"])}
+          ${f("Ordernr","voEdit_Ordernr",vo["Ordernr"])}
+          ${f("Vertragsnr","voEdit_Vertragsnr",vo["Vertragsnr"])}
+          ${f("Auftrag","voEdit_Auftrag",vo["Auftrag"])}
+          ${f("Ablieferung","voEdit_Ablieferung",vo["Ablieferung"],{type:"date"})}
+        </div>` : `
+          <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${e(clean(vo["Fahrzeug"]))||"—"}</div>
+          ${clean(vo["Fahrgestellnr"])?`<div style="font-size:12px;font-family:monospace;">FIN: ${e(clean(vo["Fahrgestellnr"]))}</div>`:""}
+          ${clean(vo["Ordernr"])?`<div style="font-size:12px;font-family:monospace;">Order: ${e(clean(vo["Ordernr"]))}</div>`:""}
+          ${clean(vo["Auftrag"])?`<div style="font-size:12px;">Auftrag: ${e(clean(vo["Auftrag"]))}</div>`:""}
+          ${clean(vo["Ablieferung"])?`<div style="font-size:12px;margin-top:6px;">📅 Ablieferung: ${e(formatVororderDate(vo["Ablieferung"]))}</div>`:""}
+        `}
+      </div>
+    </div>
     <div style="background:var(--surface-2);border-radius:8px;padding:14px;margin-bottom:12px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Positionen</div>
@@ -3261,8 +3304,8 @@ function renderVororderDetail(){
           ${allStatuses.map(s => `<option value="${e(s)}" ${s===currentStatus?"selected":""}>${e(s)}</option>`).join("")}
         </select>
         <button class="btn btn-primary btn-sm" onclick="saveVororderStatus('${js(clean(vo["ID"]))}')">Status speichern</button>
-        ${clean(vo["Typ"])==="WKR"&&clean(vo["Status"])==="Reserviert"?`<button class="btn btn-secondary btn-sm" onclick="printVororderLabel('${js(clean(vo["ID"]))}')">🏷️ Etikette drucken</button>`:""}
-      </div>
+        <button class="btn btn-secondary btn-sm" onclick="printVororderSammelEtikette('${js(clean(vo["ID"]))}')">🏷️ Etikette drucken</button>
+              </div>
     </div>` : ""}
 
     ${edit ? `<div style="background:var(--surface-2);border-radius:8px;padding:14px;margin-bottom:12px;">
@@ -3286,6 +3329,11 @@ async function saveVororderStatus(id){
   const vo = vororder.find(v => clean(v["ID"]) === clean(id));
   if (!vo) return;
   if (clean(vo["Status"]) === newStatus) { alert("Status ist bereits " + newStatus); return; }
+   // Auftragsnummer-Pflicht bei "Erledigt"
+  if (newStatus === "Erledigt" && !clean(vo["Auftrag"])) {
+    alert("⚠ Für Status 'Erledigt' muss eine Auftragsnummer eingetragen sein.\nBitte zuerst die Vororder bearbeiten und Auftragsnummer eintragen.");
+    return;
+  }
 
   const user = currentUser?.name || currentUser?.email || "Unknown";
 
@@ -3404,6 +3452,8 @@ async function saveVoDetailChanges(){
         <td style="padding:8px;">
           <div style="font-weight:600;">${e(clean(p["Bezeichnung"]))||"—"}</div>
           ${clean(p["Dimension"])?`<div style="font-size:11px;color:var(--text-muted);">${e(clean(p["Dimension"]))}</div>`:""}
+          ${clean(p["Bemerkungen"])?`<div style="font-size:11px;color:var(--warning);margin-top:4px;padding:4px 8px;background:var(--warning-bg);border-radius:4px;border-left:2px solid var(--warning);"><b>📝 Hinweis:</b> ${e(clean(p["Bemerkungen"]))}</div>`:""}
+          ${clean(p["Lagerort_Rad"])?`<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">📦 Lager: <b>${e(clean(p["Lagerort_Rad"]))}</b></div>`:""}
         </td>
         <td style="padding:8px;text-align:center;font-weight:700;">${e(clean(p["Anzahl"]))||"—"}</td>
         <td style="padding:8px;">${vororderStatusBadge(p["Status"])}</td>
@@ -3428,7 +3478,7 @@ function openNewPositionModal(voId){
   document.getElementById("positionModalTitle").textContent = "Neue Position";
   document.getElementById("positionModalSubtitle").textContent = `Für Vororder ${voId}`;
   // Felder leeren
-  ["posTyp","posTN","posBezeichnung","posDimension","posVK","posKonditionen","posBemerkungen"].forEach(id => {
+ ["posTyp","posTN","posBezeichnung","posDimension","posVK","posKonditionen","posBemerkungen","posLagerort"].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = "";
   });
   document.getElementById("posAnzahl").value = "";
@@ -3455,6 +3505,7 @@ function openEditPositionModal(posId){
   document.getElementById("posKonditionen").value = clean(pos["Konditionen"]);
   document.getElementById("posStatus").value = clean(pos["Status"]) || "Offerte ausstehend";
   document.getElementById("posBemerkungen").value = clean(pos["Bemerkungen"]);
+   document.getElementById("posLagerort").value = clean(pos["Lagerort_Rad"]);
 
   fillPosTnOptions();
   document.getElementById("positionModal").classList.add("open");
@@ -3515,7 +3566,9 @@ async function savePosition(){
     "VK": clean(document.getElementById("posVK").value),
     "Konditionen": clean(document.getElementById("posKonditionen").value),
     "Status": clean(document.getElementById("posStatus").value),
-    "Bemerkungen": clean(document.getElementById("posBemerkungen").value)
+ "Bemerkungen": clean(document.getElementById("posBemerkungen").value),
+    "Lagerort_Rad": clean(document.getElementById("posLagerort").value)
+     
   };
 
   // Welche Vororder ist aktuell offen?
@@ -3600,6 +3653,7 @@ function printPositionLabel(posId){
   if (!pos) { alert("Position nicht gefunden."); return; }
   const vo = vororder.find(v => clean(v["ID"]) === clean(pos["VororderID"]));
   if (!vo) { alert("Vororder nicht gefunden."); return; }
+ 
 
   // Etikette drucken mit Position-Daten
   const kunde = clean(vo["Kundenname"]);
@@ -3613,7 +3667,7 @@ function printPositionLabel(posId){
   const tn = clean(pos["TN"]);
   const anzahl = clean(pos["Anzahl"]);
   const voId = clean(vo["ID"]);
-  const labelCode = voId + "-" + posId;
+  const labelCode = tn || (voId + "-" + posId);
 
   const w = window.open("","_blank","width=900,height=700");
   if(!w){alert("Popup blockiert.");return;}
@@ -3661,7 +3715,7 @@ function printPositionLabel(posId){
       ${tn?`<div class="tn-box">TN: ${e(tn)}</div>`:""}
       <div class="barcode-wrap">
         <svg id="barcode" class="barcode"></svg>
-        <div class="tn-text">${e(labelCode)}</div>
+        <div class="tn-text">${e(tn || labelCode)}</div>
       </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
@@ -3948,6 +4002,92 @@ Promise.all([
 }).catch(()=>{
   document.getElementById("app").innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div>Daten konnten nicht geladen werden. Bitte Seite neu laden.</div>`;
 });
+       /* ============================================================
+   VORORDER: Sammel-Etikette (alle Positionen)
+   ============================================================ */
+function printVororderSammelEtikette(voId){
+  const vo = vororder.find(v => clean(v["ID"]) === clean(voId));
+  if (!vo) { alert("Vororder nicht gefunden."); return; }
+  const positionen = positionenMap[voId] || [];
+  if (!positionen.length) { alert("Keine Positionen vorhanden."); return; }
+
+  const kunde = clean(vo["Kundenname"]);
+  const fahrzeug = clean(vo["Fahrzeug"]);
+  const fin = clean(vo["Fahrgestellnr"]);
+  const auftrag = clean(vo["Auftrag"]);
+  const ablieferung = formatVororderDate(vo["Ablieferung"]);
+
+  // WKR-Position suchen (für Barcode) — erste WKR-Position mit TN
+  const wkrPos = positionen.find(p => clean(p["Typ"]) === "WKR" && clean(p["TN"]));
+  const barcodeTN = wkrPos ? clean(wkrPos["TN"]) : clean(voId);
+
+  // Positionen-Liste als HTML
+  const posListHtml = positionen.map(p => {
+    const typ = clean(p["Typ"]);
+    const anz = clean(p["Anzahl"]);
+    const bez = clean(p["Bezeichnung"]) || typ;
+    const dim = clean(p["Dimension"]);
+    const tn = clean(p["TN"]);
+    return `<div class="pos-row">
+      <b>${e(anz)}×</b> <span style="font-weight:600;">${e(typ)}</span> ${e(bez)}${dim?" · "+e(dim):""}${tn?` <span style="font-family:monospace;font-size:7.5pt;color:#555;">(TN: ${e(tn)})</span>`:""}
+    </div>`;
+  }).join("");
+
+  const w = window.open("","_blank","width=900,height=700");
+  if(!w){alert("Popup blockiert.");return;}
+
+  w.document.write(`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Vororder-Etikette</title><style>
+    @page{size:100mm 73mm;margin:0;}
+    html,body{width:100mm;height:73mm;margin:0;padding:0;font-family:Arial,sans-serif;background:white;}
+    .wrap{width:100mm;height:73mm;box-sizing:border-box;padding:4mm 5mm;display:flex;flex-direction:column;}
+    .hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1.5px solid #1c69d4;padding-bottom:1.5mm;margin-bottom:2mm;}
+    .hdr-left{flex:1;}
+    .hdr-right{font-size:8pt;color:#555;text-align:right;}
+    .id{font-size:9pt;font-weight:700;color:#1c69d4;font-family:monospace;}
+    .kunde{font-size:11pt;font-weight:700;line-height:1.1;margin-bottom:0.5mm;}
+    .fahrzeug{font-size:9pt;font-weight:700;margin-bottom:1mm;}
+    .fin{font-size:7.5pt;color:#555;margin-bottom:1mm;}
+    .positionen-header{font-size:7pt;font-weight:700;text-transform:uppercase;color:#666;letter-spacing:0.5px;margin-top:1mm;margin-bottom:0.5mm;}
+    .pos-row{font-size:8pt;line-height:1.3;margin-bottom:0.5mm;}
+    .barcode-wrap{margin-top:auto;text-align:center;border-top:1px solid #ddd;padding-top:1mm;}
+    .barcode{width:70mm;height:9mm;display:block;margin:0 auto;}
+    .tn-text{font-size:7.5pt;margin-top:0.5mm;font-weight:700;}
+    .actions{position:fixed;right:10px;top:10px;display:flex;gap:8px;}
+    .actions button{border:none;background:#1c69d4;color:white;padding:10px 14px;font-size:13px;cursor:pointer;}
+    .actions button.sec{background:#666;}
+    @media print{.actions{display:none;}}
+  </style></head><body>
+    <div class="actions">
+      <button onclick="window.print()">Drucken</button>
+      <button class="sec" onclick="window.close()">Schliessen</button>
+    </div>
+    <div class="wrap">
+      <div class="hdr">
+        <div class="hdr-left">
+          <div class="id">${e(voId)}</div>
+        </div>
+        <div class="hdr-right">
+          ${ablieferung?`<div><b>Abl.:</b> ${e(ablieferung)}</div>`:""}
+          ${auftrag?`<div>Auftrag ${e(auftrag)}</div>`:""}
+        </div>
+      </div>
+      <div class="kunde">${e(kunde)}</div>
+      <div class="fahrzeug">${e(fahrzeug)}</div>
+      ${fin?`<div class="fin"><b>FIN:</b> ${e(fin)}</div>`:""}
+      <div class="positionen-header">Produkte (${positionen.length})</div>
+      ${posListHtml}
+      <div class="barcode-wrap">
+        <svg id="barcode" class="barcode"></svg>
+        <div class="tn-text">${e(barcodeTN)}</div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
+    <script>
+      JsBarcode("#barcode", ${JSON.stringify(barcodeTN)}, {format:"CODE128",displayValue:false,margin:0,width:1.3,height:24});
+    <\/script>
+  </body></html>`);
+  w.document.close();
+}
 </script>
    <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
