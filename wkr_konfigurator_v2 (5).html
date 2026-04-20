@@ -3487,6 +3487,7 @@ function renderVororderDetail(){
         </select>
         <button class="btn btn-primary btn-sm" onclick="saveVororderStatus('${js(clean(vo["ID"]))}')">Status speichern</button>
         <button class="btn btn-secondary btn-sm" onclick="printVororderSammelEtikette('${js(clean(vo["ID"]))}')">🏷️ Etikette drucken</button>
+        <button class="btn btn-secondary btn-sm" onclick="sendLinkToCustomer('${js(clean(vo["ID"]))}')">✉️ Link an Kunde senden</button>
               </div>
     </div>` : ""}
 
@@ -3542,7 +3543,64 @@ async function saveVororderStatus(id){
     alert("Fehler: " + err.message);
   }
 }
+/* ============================================================
+   MAIL-LINK AN KUNDE SENDEN
+   ============================================================ */
+async function sendLinkToCustomer(id) {
+  const vo = vororder.find(v => clean(v["ID"]) === clean(id));
+  if (!vo) { alert("Vororder nicht gefunden."); return; }
 
+  const email = clean(vo["KundenEmail"]);
+  if (!email) {
+    alert("⚠ Es ist keine E-Mail-Adresse für diesen Kunden hinterlegt. Bitte trage sie zuerst im Bearbeiten-Modus ein.");
+    return;
+  }
+
+  // 1. Individuellen Link zum Fahrzeug generieren
+  const params = new URLSearchParams();
+  if (vo["Marke"]) params.set("marke", clean(vo["Marke"]));
+  if (vo["Standort_Bearbeitung"]) params.set("standort", clean(vo["Standort_Bearbeitung"]));
+  if (vo["Reihe"]) params.set("reihe", clean(vo["Reihe"]));
+  if (vo["Modell"]) params.set("modell", clean(vo["Modell"]));
+  if (vo["Motor"]) params.set("motor", clean(vo["Motor"]));
+  
+  const link = window.location.href.split("?")[0] + "?" + params.toString();
+
+  // 2. E-Mail Inhalt vorbereiten
+  const subject = encodeURIComponent(`Ihre Winterkomplettrad-Auswahl für Ihren ${clean(vo["Fahrzeug"])}`);
+  const body = encodeURIComponent(`Guten Tag ${clean(vo["Kundenname"])},\n\nÜber den folgenden Link gelangen Sie direkt zu den passenden Winterkompletträdern für Ihr Fahrzeug. Dort können Sie die Angebote bequem prüfen:\n\n${link}\n\nBei Fragen stehen wir Ihnen gerne zur Verfügung.\n\nFreundliche Grüsse\nIhr Emmenegger Team`);
+
+  // 3. E-Mail Programm öffnen
+  window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+
+  // 4. Automatischen Status-Wechsel vorschlagen
+  if (clean(vo["Status"]) === "Offerte ausstehend" || clean(vo["Status"]) === "Kundenauswahl") {
+    // Kurze Verzögerung, damit sich zuerst das E-Mail-Programm öffnet
+    setTimeout(async () => {
+      if (confirm("Soll der Status dieser Vororder nun automatisch auf 'Offeriert' gesetzt werden?")) {
+        const user = currentUser?.name || currentUser?.email || "Unknown";
+        try {
+          const res = await postToScript({
+            action: "vororderUpdate",
+            id: id,
+            user: user,
+            updates: { Status: "Offeriert" }
+          });
+          if (res && res.status === "OK") {
+            alert("✅ Status erfolgreich auf 'Offeriert' geändert.");
+            closeVororderDetail();
+            await reloadVororder();
+            render();
+          } else {
+            alert("Fehler beim Status-Update: " + JSON.stringify(res));
+          }
+        } catch(err) {
+          alert("Fehler: " + err.message);
+        }
+      }
+    }, 1000);
+  }
+}
 async function saveVoDetailChanges(){
   if (!_voDetailId) return;
   const vo = vororder.find(v => clean(v["ID"]) === clean(_voDetailId));
