@@ -3311,7 +3311,64 @@ async function reloadVororder(){
   await loadVororder();
   render();
 }
+let _vororderSaving = false;
 
+function openNewVororderModal(){
+  // Felder leeren
+  ["newVoKundenname","newVoDebitornr","newVoAdressnr","newVoEmail","newVoRechnungAn",
+   "newVoMarke","newVoFahrzeug","newVoReihe","newVoModell","newVoMotor",
+   "newVoFIN","newVoOrdernr","newVoVertragsnr","newVoAuftrag","newVoAblieferung",
+   "newVoTyp","newVoTN","newVoBezeichnung","newVoDimension","newVoVK","newVoKonditionen",
+   "newVoBemerkungen"].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = "";
+  });
+
+  // Standard-Werte
+  document.getElementById("newVoAnzahl").value = "4";
+  document.getElementById("newVoStandort").value = currentUser?.standort || "GEB";
+  document.getElementById("newVoStatus").value = "Sammelbestellung (Vororder26)";
+
+  // TN-Optionen aus Produkten
+  const datalist = document.getElementById("voTnOptions");
+  if (datalist) {
+    datalist.innerHTML = produkte.map(p => {
+      const tn = clean(p["TN"]);
+      const lager = parseInt(clean(p["Lager"]),10)||0;
+      const reserviert = parseInt(clean(p["Reserviert"]),10)||0;
+      const verfuegbar = lager - reserviert;
+      const label = `${clean(p["Bezeichnung"])} · ${clean(p["Dimension"])} · Verfügbar: ${verfuegbar}/${lager}`;
+      return `<option value="${e(tn)}">${e(label)}</option>`;
+    }).join("");
+  }
+
+  document.getElementById("newVororderModal").classList.add("open");
+}
+
+function closeNewVororderModal(){
+  document.getElementById("newVororderModal").classList.remove("open");
+}
+
+function onVoMarkeChange(){
+  // Optional: könnte später Fahrzeug-Vorschläge bringen
+}
+
+function onVoTnChange(){
+  const tn = clean(document.getElementById("newVoTN")?.value);
+  if (!tn) return;
+  const prod = produkte.find(p => clean(p["TN"]) === tn);
+  if (prod) {
+    const bezEl = document.getElementById("newVoBezeichnung");
+    const dimEl = document.getElementById("newVoDimension");
+    const vkEl = document.getElementById("newVoVK");
+    const typEl = document.getElementById("newVoTyp");
+    const markeEl = document.getElementById("newVoMarke");
+    if (bezEl && !bezEl.value) bezEl.value = clean(prod["Bezeichnung"]);
+    if (dimEl && !dimEl.value) dimEl.value = clean(prod["Dimension"]);
+    if (vkEl && !vkEl.value)   vkEl.value  = clean(prod["Angebotspreis"]) || clean(prod["VP"]);
+    if (typEl && !typEl.value) typEl.value = "WKR";
+    if (markeEl && !markeEl.value) markeEl.value = clean(prod["Marke"]);
+  }
+}
 async function saveNewVororder(){
   if (_vororderSaving) return;
 
