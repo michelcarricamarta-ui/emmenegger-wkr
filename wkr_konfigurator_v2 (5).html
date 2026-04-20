@@ -757,11 +757,7 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
       <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" alt="Emmenegger Logo">
     </div>
     <div class="topbar-actions">
-  <button id="backHomeBtn" class="back-btn" onclick="goToHome()">← <span>Startseite</span></button>
-  
-  <!-- Kontextabhängiger Topbar-Inhalt -->
-  <div id="topbarContext" style="flex:1;display:flex;align-items:center;justify-content:center;gap:12px;"></div>
-  
+  <button id="backHomeBtn" class="back-btn" onclick="goToHome()">← <span data-i18n="back_home">Startseite</span></button>
   <button id="darkToggle" class="icon-btn" onclick="toggleDark()" title="Dunkelmodus">🌙</button>
   <button class="icon-btn" onclick="toggleMobileMenu()" id="menuToggle" style="font-size:20px;width:40px;height:40px;">☰</button>
   
@@ -2044,8 +2040,8 @@ function renderAdminDashboard(){
    ============================================================ */
 function updateTopbarContext(){
   const el = document.getElementById("topbarContext");
-  if (!el) return;
-
+  if (!el) return; // kein Topbar-Context-Div vorhanden, nichts zu tun
+   
   if (adminMode) {
     // Admin: Globale Suche + Benachrichtigungs-Bell
     const urgentCount = getUrgentCount();
