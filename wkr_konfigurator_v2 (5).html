@@ -3949,43 +3949,7 @@ Promise.all([
 }).catch(()=>{
   document.getElementById("app").innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div>Daten konnten nicht geladen werden. Bitte Seite neu laden.</div>`;
 });
-</script>
-   <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyADRZKpIOpebCWLG7lDFgxKb-LiIkzGeYk",
-    authDomain: "wkr-hompage-login.firebaseapp.com",
-    projectId: "wkr-hompage-login",
-    storageBucket: "wkr-hompage-login.firebasestorage.app",
-    messagingSenderId: "81720901608",
-    appId: "1:81720901608:web:cf243c05778ffbbbf9ae5d",
-    measurementId: "G-E4G5HQVSX4"
-  };
-
-  const firebaseApp = initializeApp(firebaseConfig);
-  const firebaseAuth = getAuth(firebaseApp);
-
-  window.firebaseAuth = firebaseAuth;
-window.firebaseSignInWithEmailAndPassword = signInWithEmailAndPassword;
-window.firebaseOnAuthStateChanged = onAuthStateChanged;
-window.firebaseSignOut = signOut;
-window.firebaseSetPersistence = setPersistence;
-window.firebaseBrowserLocalPersistence = browserLocalPersistence;
-
-window.firebaseOnAuthStateChanged(firebaseAuth, (user) => {
-  if (user) {
-    window.isFirebaseAdminLoggedIn = true;
-  } else {
-    window.isFirebaseAdminLoggedIn = false;
-  }
-
-  if (typeof window.applyFirebaseAdminState === "function") {
-    window.applyFirebaseAdminState();
-  }
-});
-        /* ============================================================
+       /* ============================================================
    VORORDER: Sammel-Etikette (alle Positionen)
    ============================================================ */
 function printVororderSammelEtikette(voId){
@@ -4071,6 +4035,42 @@ function printVororderSammelEtikette(voId){
   </body></html>`);
   w.document.close();
 }
+</script>
+   <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyADRZKpIOpebCWLG7lDFgxKb-LiIkzGeYk",
+    authDomain: "wkr-hompage-login.firebaseapp.com",
+    projectId: "wkr-hompage-login",
+    storageBucket: "wkr-hompage-login.firebasestorage.app",
+    messagingSenderId: "81720901608",
+    appId: "1:81720901608:web:cf243c05778ffbbbf9ae5d",
+    measurementId: "G-E4G5HQVSX4"
+  };
+
+  const firebaseApp = initializeApp(firebaseConfig);
+  const firebaseAuth = getAuth(firebaseApp);
+
+  window.firebaseAuth = firebaseAuth;
+window.firebaseSignInWithEmailAndPassword = signInWithEmailAndPassword;
+window.firebaseOnAuthStateChanged = onAuthStateChanged;
+window.firebaseSignOut = signOut;
+window.firebaseSetPersistence = setPersistence;
+window.firebaseBrowserLocalPersistence = browserLocalPersistence;
+
+window.firebaseOnAuthStateChanged(firebaseAuth, (user) => {
+  if (user) {
+    window.isFirebaseAdminLoggedIn = true;
+  } else {
+    window.isFirebaseAdminLoggedIn = false;
+  }
+
+  if (typeof window.applyFirebaseAdminState === "function") {
+    window.applyFirebaseAdminState();
+  }
+});
 </script>
 </body>
 </html>
