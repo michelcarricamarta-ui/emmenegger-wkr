@@ -3433,8 +3433,11 @@ async function saveNewVororder(){
       await reloadVororder();
       render();
       // Detail-Modal automatisch öffnen für weitere Positionen
-      if (newVoId) {
-        setTimeout(() => openVororderDetail(newVoId), 200);
+    if (newVoId) {
+        // Sicherstellen dass die Vororder + Positionen vollständig geladen sind
+        await loadVororder();
+        render();
+        setTimeout(() => openVororderDetail(newVoId), 100);
       }
     } else {
       alert("Fehler: " + JSON.stringify(res));
