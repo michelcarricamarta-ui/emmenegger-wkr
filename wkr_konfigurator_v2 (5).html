@@ -766,9 +766,12 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
     <button id="adminLoginBtn" class="login-btn" onclick="activateAdminMode()">Admin Login</button>
     <button id="publicViewBtn" class="login-btn" onclick="deactivateAllModes()" style="display:none;">Öffentlich</button>
     <div id="userBadge" style="display:none; align-items:center; gap:6px; padding:6px 12px; background:var(--surface-3); border:1px solid var(--border); border-radius:var(--radius-sm); font-size:12px; font-weight:600; color:var(--text-secondary); white-space:nowrap;"></div>
-    <button id="adminLogoutBtn" class="login-btn" onclick="logoutAdmin()" style="display:none;">Logout</button>
+  <button id="adminLogoutBtn" class="login-btn" onclick="logoutAdmin()" style="display:none;">Logout</button>
   </div>
 </div>
+  </div>
+</header>
+
 <!-- Mobile Menu -->
 <div id="mobileMenu" style="display:none;position:fixed;top:56px;width:100%;left:0;right:0;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px;z-index:99;box-shadow:var(--shadow-md);flex-direction:column;gap:8px;">
   <button class="login-btn" onclick="activateInternalMode();toggleMobileMenu()">Interner Login</button>
