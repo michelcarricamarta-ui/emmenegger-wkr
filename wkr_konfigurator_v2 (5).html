@@ -2467,9 +2467,10 @@ function renderAdminInventur(){
       </div>
 
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn btn-primary btn-sm" onclick="exportVororderXLSX()">⬇ Excel (.xlsx)</button>
+       <button class="btn btn-primary btn-sm" onclick="exportVororderXLSX()">⬇ Excel (.xlsx)</button>
         <button class="btn btn-secondary btn-sm" onclick="exportVororderCSV()">⬇ CSV</button>
         <button class="btn btn-secondary btn-sm" onclick="printVororderList()">🖨 Druckliste</button>
+        <button class="btn btn-primary btn-sm" onclick="printSammelbestellung()" style="background:#d97706;">📦 BMW-Sammelbestellung</button>
       </div>
     </div>
 
@@ -2544,6 +2545,7 @@ function renderAdminInventur(){
         <button class="btn btn-primary btn-sm" onclick="exportVororderXLSX()">⬇ Excel (.xlsx)</button>
         <button class="btn btn-secondary btn-sm" onclick="exportVororderCSV()">⬇ CSV</button>
         <button class="btn btn-secondary btn-sm" onclick="printVororderList()">🖨 Druckliste</button>
+        <button class="btn btn-primary btn-sm" onclick="printSammelbestellung()" style="background:#d97706;">📦 BMW-Sammelbestellung</button>
       </div>
     </div>
 
@@ -2794,7 +2796,186 @@ function exportVororderCSV(){
   a.download = `Vororder_Export_${new Date().toLocaleDateString("de-CH").replace(/\./g,"-")}.csv`;
   a.click();
 }
+/* ============================================================
+   SAMMELBESTELLUNG: Aggregiert nach TN (für BMW-Bestellung)
+   ============================================================ */
+function printSammelbestellung(){
+  const statusFilter = clean(document.getElementById("exportVoStatus")?.value) || "Sammelbestellung (Vororder26)";
+  const standortFilter = clean(document.getElementById("exportVoStandort")?.value);
 
+  if (!vororderLoaded) {
+    alert("Bitte lade zuerst die Vororder-Daten (gehe kurz ins Vororder-Menü).");
+    return;
+  }
+
+  // Alle Positionen durchgehen (nur WKR!) + Status-Filter + ggf. Standort-Filter
+  const alle = Object.values(positionenMap).flat();
+  const aggMap = {}; // { TN: { bezeichnung, dimension, reserviert, kunden: [...] } }
+
+  alle.forEach(p => {
+    const typ = clean(p["Typ"]);
+    const tn = normalizeTNFrontend(clean(p["TN"]));
+    const status = clean(p["Status"]);
+    const anzahl = parseInt(clean(p["Anzahl"]), 10) || 0;
+
+    // Nur WKR-Positionen, nur passender Status, nur mit TN
+    if (typ.toUpperCase() !== "WKR") return;
+    if (!tn) return;
+    if (status !== statusFilter) return;
+    if (anzahl <= 0) return;
+
+    // Standort-Filter: wir suchen die zugehörige Vororder
+    if (standortFilter) {
+      const vo = vororder.find(v => clean(v["ID"]) === clean(p["VororderID"]));
+      if (!vo || clean(vo["Standort_Bearbeitung"]) !== standortFilter) return;
+    }
+
+    if (!aggMap[tn]) {
+      // Details aus Produkte-Sheet holen
+      const prod = produkte.find(x => normalizeTNFrontend(clean(x["TN"])) === tn);
+      aggMap[tn] = {
+        tn: clean(p["TN"]),
+        bezeichnung: prod ? clean(prod["Bezeichnung"]) : clean(p["Bezeichnung"]),
+        dimension: prod ? clean(prod["Dimension"]) : clean(p["Dimension"]),
+        marke: prod ? clean(prod["Marke"]) : "",
+        reserviert: 0,
+        kunden: []
+      };
+    }
+    aggMap[tn].reserviert += anzahl;
+
+    const vo = vororder.find(v => clean(v["ID"]) === clean(p["VororderID"]));
+    if (vo) {
+      aggMap[tn].kunden.push({
+        kunde: clean(vo["Kundenname"]),
+        anzahl: anzahl,
+        voId: clean(vo["ID"])
+      });
+    }
+  });
+
+  const tns = Object.keys(aggMap).sort((a,b) => (aggMap[b].reserviert - aggMap[a].reserviert));
+
+  if (!tns.length) {
+    alert(`Keine WKR-Positionen mit Status "${statusFilter}" gefunden.`);
+    return;
+  }
+
+  const gesamtReserviert = tns.reduce((sum, tn) => sum + aggMap[tn].reserviert, 0);
+
+  const w = window.open("","_blank");
+  if (!w) { alert("Popup blockiert."); return; }
+
+  const datum = new Date().toLocaleDateString("de-CH");
+  const standortLabel = standortFilter ? (standortFilter === "GEB" ? "Gebenstorf" : "Hettenschwil") : "Alle Standorte";
+
+  const rows = tns.map((tn, idx) => {
+    const a = aggMap[tn];
+    const kundenStr = a.kunden.map(k => `${e(k.kunde)} (${k.anzahl})`).join(", ");
+    return `<tr>
+      <td>${idx + 1}</td>
+      <td style="font-family:monospace;font-weight:700;">${e(a.tn)}</td>
+      <td>${e(a.bezeichnung)}</td>
+      <td>${e(a.dimension)}</td>
+      <td>${e(a.marke)}</td>
+      <td style="text-align:center;font-weight:700;color:#1c69d4;font-size:14px;">${a.reserviert}</td>
+      <td class="count-cell" style="text-align:center;"></td>
+      <td class="count-cell" style="text-align:center;font-weight:700;"></td>
+      <td style="font-size:10px;color:#555;">${kundenStr}</td>
+    </tr>`;
+  }).join("");
+
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>BMW Sammelbestellung</title><style>
+    body{font-family:Arial,sans-serif;padding:20px;font-size:12px;color:#1a1a1a;}
+    .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #1c69d4;padding-bottom:16px;margin-bottom:20px;}
+    .header h1{margin:0 0 6px 0;font-size:22px;color:#1c69d4;}
+    .header .meta{font-size:12px;color:#555;}
+    .stats{display:flex;gap:20px;margin-bottom:20px;background:#f0f5ff;padding:14px;border-radius:6px;border-left:4px solid #1c69d4;}
+    .stat{font-size:12px;}
+    .stat .val{font-size:20px;font-weight:700;color:#1c69d4;display:block;}
+    .stat .lbl{color:#555;}
+    table{width:100%;border-collapse:collapse;font-size:11px;}
+    th{background:#1c69d4;color:white;padding:8px 6px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:0.4px;}
+    td{padding:7px 6px;border-bottom:1px solid #e0e0e0;vertical-align:top;}
+    tr:nth-child(even){background:#f9f9f9;}
+    .count-cell{background:#fffbe8;border-left:1px dashed #d97706;border-right:1px dashed #d97706;}
+    .count-head{background:#d97706 !important;}
+    .legend{margin-top:12px;font-size:11px;color:#555;padding:10px;background:#f9f9f9;border-radius:4px;}
+    .actions{margin-bottom:16px;}
+    .actions button{background:#1c69d4;color:white;border:none;padding:10px 16px;font-size:13px;cursor:pointer;margin-right:8px;border-radius:3px;}
+    .actions button.sec{background:#666;}
+    .footer{margin-top:40px;border-top:1px solid #ccc;padding-top:14px;font-size:11px;color:#666;}
+    .signature{margin-top:30px;display:flex;gap:40px;}
+    .signature div{flex:1;}
+    .signature .line{border-top:1px solid #333;margin-top:40px;padding-top:4px;font-size:10px;}
+    @media print{.actions{display:none;}body{padding:10mm;}table{page-break-inside:auto;}tr{page-break-inside:avoid;}}
+  </style></head><body>
+    <div class="actions">
+      <button onclick="window.print()">🖨 Drucken</button>
+      <button class="sec" onclick="window.close()">Schliessen</button>
+    </div>
+    <div class="header">
+      <div>
+        <h1>BMW Sammelbestellung Vororder 2026</h1>
+        <div class="meta">
+          Status: <b>${e(statusFilter)}</b><br>
+          Standort: <b>${e(standortLabel)}</b><br>
+          Erstellt am: <b>${datum}</b>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" style="height:44px;">
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><span class="val">${tns.length}</span><span class="lbl">Verschiedene TN</span></div>
+      <div class="stat"><span class="val">${gesamtReserviert}</span><span class="lbl">Reservierte Stück</span></div>
+      <div class="stat"><span class="val">—</span><span class="lbl">Lager-Bedarf (handschriftlich)</span></div>
+      <div class="stat"><span class="val">—</span><span class="lbl">Gesamtbestellung</span></div>
+    </div>
+
+    <div class="legend">
+      <b>💡 Anleitung:</b> Die <b>reservierte Menge</b> ist automatisch aus allen Positionen mit Status "${e(statusFilter)}" aggregiert.
+      Trag in der Spalte <b>"+ Lager"</b> deine zusätzliche Lager-Bestellung ein, die Spalte <b>"BESTELLEN"</b> ist dann die Summe für BMW.
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Teilenummer</th>
+          <th>Bezeichnung</th>
+          <th>Dimension</th>
+          <th>Marke</th>
+          <th style="text-align:center;">Reserviert</th>
+          <th class="count-head" style="text-align:center;">+ Lager</th>
+          <th class="count-head" style="text-align:center;">BESTELLEN</th>
+          <th>Kunden (Name, Stück)</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+
+    <div class="signature">
+      <div>
+        <div class="line">Bestellt von (Datum, Unterschrift)</div>
+      </div>
+      <div>
+        <div class="line">BMW Bestätigung (Datum, Unterschrift)</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      Emmenegger AG · BMW/MINI Händler · Vororder 2026 Sammelbestellung
+    </div>
+  </body></html>`);
+  w.document.close();
+}
+
+function normalizeTNFrontend(tn){
+  return String(tn || "").trim().replace(/\s+/g, "").toUpperCase();
+}
 function printVororderList(){
   const data = getVororderExportData();
   if(!data) return;
