@@ -948,8 +948,11 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
       <div class="form-field"><label>Lagerbestand</label><input id="newWkrLager" type="number" min="0" value="0"></div>
       <div class="form-field"><label>Lagerort</label><input id="newWkrLagerort" type="text" placeholder="Regal A3 / Platz 12"></div>
       <div class="form-field full"><label>Bild URL</label><input id="newWkrBild" type="text" placeholder="https://..."></div>
-      <div class="form-field"><label>VP</label><input id="newWkrVP" type="text" placeholder="2490"></div>
-      <div class="form-field"><label>Angebotspreis</label><input id="newWkrAngebotspreis" type="text" placeholder="2190"></div>
+      <div class="form-field"><label>VP (Brutto)</label><input id="newWkrVP" type="text" placeholder="2490"></div>
+      <div class="form-field">
+        <label style="display:flex; justify-content:space-between;">Angebotspreis <button type="button" onclick="calcWkrDiscount('new')" style="background:none;border:none;color:var(--accent);font-size:10px;font-weight:700;cursor:pointer;padding:0;">-20% BERECHNEN</button></label>
+        <input id="newWkrAngebotspreis" type="text" placeholder="2190">
+      </div>
       <div class="form-field"><label>Nettopreis</label><input id="newWkrNettopreis" type="text" placeholder="1850"></div>
       <div class="form-field full"><label>Empfänger Mail</label><input id="newWkrEmpfaengerMail" type="email" placeholder="tv-g-fp@emmeneggerag.ch"></div>
       <div class="form-field full"><label>Hinweistext</label><textarea id="newWkrHinweistext" placeholder="Freier Hinweistext"></textarea></div>
@@ -977,8 +980,11 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
       <div class="form-field"><label>Lagerbestand</label><input id="editWkrLager" type="number" min="0"></div>
       <div class="form-field"><label>Lagerort</label><input id="editWkrLagerort" type="text" placeholder="Regal A3 / Platz 12"></div>
       <div class="form-field full"><label>Bild URL</label><input id="editWkrBild" type="text" placeholder="https://..."></div>
-      <div class="form-field"><label>VP</label><input id="editWkrVP" type="text" placeholder="2490"></div>
-      <div class="form-field"><label>Angebotspreis</label><input id="editWkrAngebotspreis" type="text" placeholder="2190"></div>
+      <div class="form-field"><label>VP (Brutto)</label><input id="editWkrVP" type="text" placeholder="2490"></div>
+      <div class="form-field">
+        <label style="display:flex; justify-content:space-between;">Angebotspreis <button type="button" onclick="calcWkrDiscount('edit')" style="background:none;border:none;color:var(--accent);font-size:10px;font-weight:700;cursor:pointer;padding:0;">-20% BERECHNEN</button></label>
+        <input id="editWkrAngebotspreis" type="text" placeholder="2190">
+      </div>
       <div class="form-field"><label>Nettopreis</label><input id="editWkrNettopreis" type="text" placeholder="1850"></div>
       <div class="form-field full"><label>Empfänger Mail</label><input id="editWkrEmpfaengerMail" type="email" placeholder="tv-g-fp@emmeneggerag.ch"></div>
       <div class="form-field full"><label>Hinweistext</label><textarea id="editWkrHinweistext" placeholder="Freier Hinweistext"></textarea></div>
@@ -1062,7 +1068,7 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
       </div>
       <div class="form-field"><label>Bezeichnung</label><input id="newVoBezeichnung" type="text" placeholder="z.B. V-Speiche 474"></div>
       <div class="form-field"><label>Dimension</label><input id="newVoDimension" type="text" placeholder="z.B. 225/45R18"></div>
-      <div class="form-field"><label>VK</label><input id="newVoVK" type="text" placeholder="optional"></div>
+      <div class="form-field"><label>Verkäufer</label><input id="newVoVK" type="text" placeholder="z.B. Marco"></div>
       <div class="form-field"><label>Konditionen</label><input id="newVoKonditionen" type="text" placeholder="z.B. 0.2"></div>
     </div>
 
@@ -1124,7 +1130,7 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
       </div>
       <div class="form-field"><label>Bezeichnung</label><input id="posBezeichnung" type="text"></div>
       <div class="form-field"><label>Dimension</label><input id="posDimension" type="text"></div>
-      <div class="form-field"><label>VK</label><input id="posVK" type="text"></div>
+     <div class="form-field"><label>Verkäufer</label><input id="posVK" type="text" placeholder="z.B. Marco"></div>
        <div class="form-field"><label>Lagerort</label><input id="posLagerort" type="text" placeholder="z.B. Regal A3 / Platz 12"></div>
       <div class="form-field"><label>Konditionen</label><input id="posKonditionen" type="text"></div>
       <div class="form-field full">
@@ -1157,9 +1163,45 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
     <div id="voDetailContent"></div>
   </div>
 </div>
-<!-- ============================================================
-     JAVASCRIPT
-     ============================================================ -->
+
+<div id="internalMailModal" class="modal-overlay" style="z-index:3000;">
+  <div class="modal-box">
+    <div class="modal-title">E-Mail an Kunden senden</div>
+    <div class="modal-subtitle" id="mailModalSubtitle">Individueller Konfigurator-Link</div>
+    
+    <div class="form-grid" style="grid-template-columns: 1fr;">
+      <div class="form-field">
+        <label>Empfänger</label>
+        <input id="mailRecipient" type="text" readonly style="background:var(--surface-3); cursor:not-allowed;">
+      </div>
+      <div class="form-field">
+        <label>Betreff</label>
+        <input id="mailSubject" type="text">
+      </div>
+      <div class="form-field">
+        <label>Nachricht</label>
+        <textarea id="mailBody" style="min-height: 200px;"></textarea>
+      </div>
+    </div>
+    
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeInternalMailModal()">Abbrechen</button>
+      <button id="confirmSendMailBtn" class="btn btn-primary" onclick="submitInternalMail()">E-Mail jetzt senden</button>
+</div>
+  </div>
+</div>
+
+<div id="reservationInfoModal" class="modal-overlay" style="z-index:3000;">
+  <div class="modal-box" style="max-width: 500px;">
+    <div class="modal-title">Aktive Reservierungen</div>
+    <div class="modal-subtitle" id="resInfoSubtitle"></div>
+    <div id="resInfoContent" style="margin: 16px 0; font-size: 14px; line-height: 1.6; max-height: 300px; overflow-y: auto;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="document.getElementById('reservationInfoModal').classList.remove('open')">Schliessen</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ============================================================
    CONSTANTS & CONFIG
@@ -1672,14 +1714,30 @@ function getDashboardStats(){
 /* ============================================================
    RENDER ADMIN SIDEBAR  ← NEU
    ============================================================ */
+/* ============================================================
+   RENDER ADMIN SIDEBAR
+   ============================================================ */
 function renderAdminSidebar(){
-  const s=getDashboardStats();
-  const sec=state.adminSection||"dashboard";
+  const s = getDashboardStats();
+  const sec = state.adminSection || "dashboard";
 
-  // Stat badges
-  const wkrLagerClass   = s.wkrInStock===0    ? "sbt-err"  : s.lowStockWkr>0 ? "sbt-warn" : "sbt-ok";
-  const dotClass        = s.dotWarnings>0      ? "sbt-warn" : "sbt-ok";
-  const inaktivClass    = s.inactiveTires>0    ? "sbt-err"  : "sbt-ok";
+  // Neue Business-Metriken aus Vororders berechnen
+  let offeneAnfragen = 0;
+  let umsatzPotenzial = 0;
+  let reservierteWKR = 0;
+
+  if (vororderLoaded && vororder) {
+    offeneAnfragen = vororder.filter(v => ["Kundenauswahl", "Offerte ausstehend"].includes(clean(v["Status"]))).length;
+    umsatzPotenzial = vororder.filter(v => ["Offeriert", "Sammelbestellung (Vororder26)", "Bestellt"].includes(clean(v["Status"]))).reduce((sum, v) => sum + (parsePrice(v["VK"]) || 0), 0);
+    reservierteWKR = vororder.filter(v => clean(v["Status"]) === "Reserviert").length;
+  }
+
+  // Farb-Klassen für die Badges (Grün=ok, Orange=warn, Grau=neu)
+  const wkrLagerClass = s.wkrInStock===0 ? "sbt-err" : s.lowStockWkr>0 ? "sbt-warn" : "sbt-ok";
+  const dotClass      = s.dotWarnings>0  ? "sbt-warn" : "sbt-ok";
+  const offeneClass   = offeneAnfragen>0 ? "sbt-warn" : "sbt-ok";
+  const umsatzClass   = umsatzPotenzial>0? "sbt-ok"   : "sbt-neu";
+  const resClass      = reservierteWKR>0 ? "sbt-ok"   : "sbt-neu";
 
   return `<div class="admin-sidebar">
     <div class="admin-sidebar-header">
@@ -1696,14 +1754,20 @@ function renderAdminSidebar(){
         <span class="sbl">Kritischer Lager</span>
         <span class="sbn">${s.lowStockWkr}</span>
       </div>
-      <div class="admin-stat-badge sbt-neu">
-        <span class="sbl">Reifen aktiv</span>
-        <span class="sbn">${s.activeTires} / ${s.totalTires}</span>
+      
+      <div class="admin-stat-badge ${offeneClass}" title="Status: Kundenauswahl / Offerte ausstehend">
+        <span class="sbl">Offene Anfragen</span>
+        <span class="sbn">${vororderLoaded ? offeneAnfragen : "—"}</span>
       </div>
-      <div class="admin-stat-badge ${inaktivClass}">
-        <span class="sbl">Reifen inaktiv</span>
-        <span class="sbn">${s.inactiveTires}</span>
+      <div class="admin-stat-badge ${umsatzClass}" title="Status: Offeriert / Bestellt / Sammelbestellung">
+        <span class="sbl">Pipeline Umsatz</span>
+        <span class="sbn">${vororderLoaded ? formatPrice(umsatzPotenzial) + " CHF" : "—"}</span>
       </div>
+      <div class="admin-stat-badge ${resClass}" title="Status: Reserviert">
+        <span class="sbl">Reservierte Aufträge</span>
+        <span class="sbn">${vororderLoaded ? reservierteWKR : "—"}</span>
+      </div>
+      
       <div class="admin-stat-badge ${dotClass}">
         <span class="sbl">DOT-Warnungen</span>
         <span class="sbn">${s.dotWarnings}</span>
@@ -1731,7 +1795,7 @@ function renderAdminSidebar(){
       <div class="admin-nav-label">Reifen</div>
       <button class="admin-nav-item ${sec==="reifen_list"?"active":""}" onclick="selectAdminSection('reifen_list')">
         <span class="nav-icon">⚫</span> ${e(t("admin_tires_all"))}
-     </button>
+      </button>
     </div>
     <div class="admin-nav-section">
       <div class="admin-nav-label">Vororder</div>
@@ -1739,7 +1803,7 @@ function renderAdminSidebar(){
         <span class="nav-icon">📋</span> Vororder-Übersicht
       </button>
     </div>
-<div class="admin-nav-section">
+    <div class="admin-nav-section">
       <div class="admin-nav-label">Tools</div>
       <button class="admin-nav-item ${sec==="inventur"?"active":""}" onclick="selectAdminSection('inventur')">
         <span class="nav-icon">📊</span> Inventur / Export
@@ -2329,6 +2393,7 @@ function renderAdminVororder(){
             <th style="padding:10px 12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Kunde</th>
             <th style="padding:10px 12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Fahrzeug</th>
             <th style="padding:10px 12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Typ / TN</th>
+            <th style="padding:10px 12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Verkäufer</th>
             <th style="padding:10px 12px;text-align:center;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Anzahl</th>
             <th style="padding:10px 12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Ablieferung</th>
             ${isSuperAdmin ? `<th style="padding:10px 12px;text-align:center;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Standort</th>` : ""}
@@ -2350,6 +2415,7 @@ function renderAdminVororder(){
           <div>${e(clean(v["Fahrzeug"]))||"—"}</div>
           ${clean(v["Fahrgestellnr"]) ? `<div style="font-size:11px;color:var(--text-muted);font-family:monospace;">FIN: ${e(clean(v["Fahrgestellnr"]))}</div>` : ""}
         </td>
+        <td style="padding:10px 12px;font-size:12px;">${e(clean(v["Verkaeufer"]))||"—"}</td>
         <td style="padding:10px 12px;">
           <div><span style="font-size:11px;background:var(--surface-3);padding:2px 6px;border-radius:3px;font-weight:600;">${e(clean(v["Typ"]))||"—"}</span></div>
           ${clean(v["TN"]) ? `<div style="font-size:11px;color:var(--text-muted);margin-top:3px;font-family:monospace;">${e(clean(v["TN"]))}</div>` : ""}
@@ -2378,7 +2444,7 @@ function renderAdminInventur(){
 
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;">
       <div style="font-size:16px;font-weight:700;margin-bottom:4px;">🛞 WKR Export</div>
-      <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Winterkompletträder als Excel oder Druckliste exportieren</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Winterkompletträder als Excel oder Inventurliste exportieren</div>
 
       <div class="filter-field" style="margin-bottom:12px;">
         <label>Standort</label>
@@ -2390,11 +2456,11 @@ function renderAdminInventur(){
       </div>
 
       <div class="filter-field" style="margin-bottom:12px;">
-        <label>Lager</label>
+        <label>Lager-Status</label>
         <select id="exportWkrLager">
           <option value="">Alle</option>
-          <option value="lager">Nur an Lager</option>
-          <option value="kein">Nur ohne Lager</option>
+          <option value="lager">Nur mit Bestand</option>
+          <option value="kein">Nur ohne Bestand</option>
         </select>
       </div>
 
@@ -2406,7 +2472,7 @@ function renderAdminInventur(){
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button class="btn btn-primary btn-sm" onclick="exportWkrXLSX()">⬇ Excel (.xlsx)</button>
         <button class="btn btn-secondary btn-sm" onclick="exportWkrCSV()">⬇ CSV</button>
-        <button class="btn btn-secondary btn-sm" onclick="printWkrInventur()">🖨 Drucken</button>
+        <button class="btn btn-secondary btn-sm" onclick="printWkrInventur()">🖨 Inventur drucken</button>
       </div>
     </div>
 
@@ -2477,10 +2543,11 @@ function renderAdminInventur(){
         </select>
       </div>
 
-     <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button class="btn btn-primary btn-sm" onclick="exportVororderXLSX()">⬇ Excel (.xlsx)</button>
         <button class="btn btn-secondary btn-sm" onclick="exportVororderCSV()">⬇ CSV</button>
         <button class="btn btn-secondary btn-sm" onclick="printVororderList()">🖨 Druckliste</button>
+        <button class="btn btn-primary btn-sm" onclick="printSammelbestellung()" style="background:#d97706;">📦 BMW-Sammelbestellung</button>
       </div>
     </div>
 
@@ -2731,7 +2798,182 @@ function exportVororderCSV(){
   a.download = `Vororder_Export_${new Date().toLocaleDateString("de-CH").replace(/\./g,"-")}.csv`;
   a.click();
 }
+/* ============================================================
+   SAMMELBESTELLUNG: Aggregiert nach TN (für BMW-Bestellung)
+   ============================================================ */
+function printSammelbestellung(){
+  const statusFilter = clean(document.getElementById("exportVoStatus")?.value) || "Sammelbestellung (Vororder26)";
+  const standortFilter = clean(document.getElementById("exportVoStandort")?.value);
 
+  if (!vororderLoaded) {
+    alert("Bitte lade zuerst die Vororder-Daten (gehe kurz ins Vororder-Menü).");
+    return;
+  }
+
+  // Alle Positionen durchgehen (nur WKR!) + Status-Filter + ggf. Standort-Filter
+  const alle = Object.values(positionenMap).flat();
+  const aggMap = {}; // { TN: { bezeichnung, dimension, reserviert, kunden: [...] } }
+
+  alle.forEach(p => {
+    const typ = clean(p["Typ"]);
+    const tn = normalizeTNFrontend(clean(p["TN"]));
+    const status = clean(p["Status"]);
+    const anzahl = parseInt(clean(p["Anzahl"]), 10) || 0;
+
+    // Nur WKR-Positionen, nur passender Status, nur mit TN
+    if (typ.toUpperCase() !== "WKR") return;
+    if (!tn) return;
+    if (status !== statusFilter) return;
+    if (anzahl <= 0) return;
+
+    // Standort-Filter: wir suchen die zugehörige Vororder
+    if (standortFilter) {
+      const vo = vororder.find(v => clean(v["ID"]) === clean(p["VororderID"]));
+      if (!vo || clean(vo["Standort_Bearbeitung"]) !== standortFilter) return;
+    }
+
+    if (!aggMap[tn]) {
+      // Details aus Produkte-Sheet holen
+      const prod = produkte.find(x => normalizeTNFrontend(clean(x["TN"])) === tn);
+      aggMap[tn] = {
+        tn: clean(p["TN"]),
+        bezeichnung: prod ? clean(prod["Bezeichnung"]) : clean(p["Bezeichnung"]),
+        dimension: prod ? clean(prod["Dimension"]) : clean(p["Dimension"]),
+        marke: prod ? clean(prod["Marke"]) : "",
+        reserviert: 0,
+        kunden: []
+      };
+    }
+    aggMap[tn].reserviert += anzahl;
+
+    const vo = vororder.find(v => clean(v["ID"]) === clean(p["VororderID"]));
+    if (vo) {
+      aggMap[tn].kunden.push({
+        kunde: clean(vo["Kundenname"]),
+        anzahl: anzahl,
+        voId: clean(vo["ID"])
+      });
+    }
+  });
+
+  const tns = Object.keys(aggMap).sort((a,b) => (aggMap[b].reserviert - aggMap[a].reserviert));
+
+  if (!tns.length) {
+    alert(`Keine WKR-Positionen mit Status "${statusFilter}" gefunden.`);
+    return;
+  }
+
+  const gesamtReserviert = tns.reduce((sum, tn) => sum + aggMap[tn].reserviert, 0);
+
+  const w = window.open("","_blank");
+  if (!w) { alert("Popup blockiert."); return; }
+
+  const datum = new Date().toLocaleDateString("de-CH");
+  const standortLabel = standortFilter ? (standortFilter === "GEB" ? "Gebenstorf" : "Hettenschwil") : "Alle Standorte";
+
+  const rows = tns.map((tn, idx) => {
+    const a = aggMap[tn];
+    const kundenStr = a.kunden.map(k => `${e(k.kunde)} (${k.anzahl})`).join(", ");
+    return `<tr>
+      <td>${idx + 1}</td>
+      <td style="font-family:monospace;font-weight:700;">${e(a.tn)}</td>
+      <td>${e(a.bezeichnung)}</td>
+      <td>${e(a.dimension)}</td>
+      <td>${e(a.marke)}</td>
+      <td style="text-align:center;font-weight:700;color:#1c69d4;font-size:14px;">${a.reserviert}</td>
+      <td class="count-cell" style="text-align:center;"></td>
+      <td class="count-cell" style="text-align:center;font-weight:700;"></td>
+      <td style="font-size:10px;color:#555;">${kundenStr}</td>
+    </tr>`;
+  }).join("");
+
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>BMW Sammelbestellung</title><style>
+    body{font-family:Arial,sans-serif;padding:20px;font-size:12px;color:#1a1a1a;}
+    .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #1c69d4;padding-bottom:16px;margin-bottom:20px;}
+    .header h1{margin:0 0 6px 0;font-size:22px;color:#1c69d4;}
+    .header .meta{font-size:12px;color:#555;}
+    .stats{display:flex;gap:20px;margin-bottom:20px;background:#f0f5ff;padding:14px;border-radius:6px;border-left:4px solid #1c69d4;}
+    .stat{font-size:12px;}
+    .stat .val{font-size:20px;font-weight:700;color:#1c69d4;display:block;}
+    .stat .lbl{color:#555;}
+    table{width:100%;border-collapse:collapse;font-size:11px;}
+    th{background:#1c69d4;color:white;padding:8px 6px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:0.4px;}
+    td{padding:7px 6px;border-bottom:1px solid #e0e0e0;vertical-align:top;}
+    tr:nth-child(even){background:#f9f9f9;}
+    .count-cell{background:#fffbe8;border-left:1px dashed #d97706;border-right:1px dashed #d97706;}
+    .count-head{background:#d97706 !important;}
+    .legend{margin-top:12px;font-size:11px;color:#555;padding:10px;background:#f9f9f9;border-radius:4px;}
+    .actions{margin-bottom:16px;}
+    .actions button{background:#1c69d4;color:white;border:none;padding:10px 16px;font-size:13px;cursor:pointer;margin-right:8px;border-radius:3px;}
+    .actions button.sec{background:#666;}
+    .footer{margin-top:40px;border-top:1px solid #ccc;padding-top:14px;font-size:11px;color:#666;}
+    .signature{margin-top:30px;display:flex;gap:40px;}
+    .signature div{flex:1;}
+    .signature .line{border-top:1px solid #333;margin-top:40px;padding-top:4px;font-size:10px;}
+    @media print{.actions{display:none;}body{padding:10mm;}table{page-break-inside:auto;}tr{page-break-inside:avoid;}}
+  </style></head><body>
+    <div class="actions">
+      <button onclick="window.print()">🖨 Drucken</button>
+      <button class="sec" onclick="window.close()">Schliessen</button>
+    </div>
+    <div class="header">
+      <div>
+        <h1>BMW Sammelbestellung Vororder 2026</h1>
+        <div class="meta">
+          Status: <b>${e(statusFilter)}</b><br>
+          Standort: <b>${e(standortLabel)}</b><br>
+          Erstellt am: <b>${datum}</b>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" style="height:44px;">
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><span class="val">${tns.length}</span><span class="lbl">Verschiedene TN</span></div>
+      <div class="stat"><span class="val">${gesamtReserviert}</span><span class="lbl">Reservierte Stück</span></div>
+      <div class="stat"><span class="val">—</span><span class="lbl">Lager-Bedarf (handschriftlich)</span></div>
+      <div class="stat"><span class="val">—</span><span class="lbl">Gesamtbestellung</span></div>
+    </div>
+
+    <div class="legend">
+      <b>💡 Anleitung:</b> Die <b>reservierte Menge</b> ist automatisch aus allen Positionen mit Status "${e(statusFilter)}" aggregiert.
+      Trag in der Spalte <b>"+ Lager"</b> deine zusätzliche Lager-Bestellung ein, die Spalte <b>"BESTELLEN"</b> ist dann die Summe für BMW.
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Teilenummer</th>
+          <th>Bezeichnung</th>
+          <th>Dimension</th>
+          <th>Marke</th>
+          <th style="text-align:center;">Reserviert</th>
+          <th class="count-head" style="text-align:center;">+ Lager</th>
+          <th class="count-head" style="text-align:center;">BESTELLEN</th>
+          <th>Kunden (Name, Stück)</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+
+    <div class="signature">
+      <div>
+        <div class="line">Bestellt von (Datum, Unterschrift)</div>
+      </div>
+    </div>
+    <div class="footer">
+      Emmenegger AG · BMW/MINI Händler · Vororder 2026 Sammelbestellung
+    </div>
+  </body></html>`);
+  w.document.close();
+}
+
+function normalizeTNFrontend(tn){
+  return String(tn || "").trim().replace(/\s+/g, "").toUpperCase();
+}
 function printVororderList(){
   const data = getVororderExportData();
   if(!data) return;
@@ -2786,6 +3028,10 @@ function printReifenInventur(){
 
 function renderAdminWkrItem(r){
   const lager=parseInt(clean(r["Lager"]),10)||0;
+  // NEU: Reservierte Menge auslesen und Verfügbarkeit berechnen
+  const reserviert=parseInt(clean(r["Reserviert"]),10)||0;
+  const verfuegbar=lager-reserviert;
+
   const bild=clean(r["Bild"])||"https://via.placeholder.com/220x140?text=Rad";
   const bezeichnung=clean(r["Bezeichnung"]);
   const marke=clean(r["Marke"]);
@@ -2801,12 +3047,22 @@ function renderAdminWkrItem(r){
   const nettopreis=clean(r["Nettopreis"]);
   const vpNum=parsePrice(vp),angebotNum=parsePrice(angebot);
   const hasDiscount=angebotNum>0&&vpNum>0&&angebotNum<vpNum;
-  const isLowStock=lager>0&&lager<=2;
-  let priceHtml="";
-  if(hasDiscount) priceHtml=`<div class="price-main sale">${e(formatPrice(angebot))} CHF</div><div class="price-old">UPE: ${e(formatPrice(vp))} CHF</div>`;
-  else if(angebotNum>0) priceHtml=`<div class="price-main">${e(formatPrice(angebot))} CHF</div>`;
-  else if(vpNum>0) priceHtml=`<div class="price-main">${e(formatPrice(vp))} CHF</div>`;
-  else priceHtml=`<div class="price-main">Preis offen</div>`;
+  
+  // NEU: Warnung basiert jetzt auf dem frei verfügbaren Bestand
+  const isLowStock=verfuegbar>0&&verfuegbar<=2;
+
+  let priceHtml = "";
+  if (hasDiscount) {
+    priceHtml = `<div class="price-old">VP (Brutto): ${e(formatPrice(vp))} CHF</div>
+                 <div class="price-main sale" style="font-size:20px;">Angebot: ${e(formatPrice(angebot))} CHF</div>`;
+  } else if (angebotNum > 0) {
+    priceHtml = `<div class="price-main" style="font-size:20px;">Angebot: ${e(formatPrice(angebot))} CHF</div>`;
+  } else if (vpNum > 0) {
+    priceHtml = `<div class="price-main" style="font-size:20px;">VP (Brutto): ${e(formatPrice(vp))} CHF</div>`;
+  } else {
+    priceHtml = `<div class="price-main" style="font-size:20px;">Preis offen</div>`;
+  }
+
   return `<div class="product-item">
     <div class="product-image-wrap"><img src="${e(bild)}" alt="${e(bezeichnung)}" onclick="toggleZoom(this)"></div>
     <div class="product-info">
@@ -2815,24 +3071,90 @@ function renderAdminWkrItem(r){
       <div class="product-sub">${e(markeReifen)}</div>
       <div class="product-sub" style="font-weight:700;">${e(dimension)}</div>
       <div class="product-detail-row"><b>Standort:</b> ${e(standort)}</div>
-      ${lagerort?`<div class="product-detail-row"><b>Lagerort:</b> ${e(lagerort)}</div>`:""}
-      ${teilenummer?`<div class="product-partnr">Teilenr.: ${e(teilenummer)}</div>`:""}
-      ${hinweistext?`<div class="product-note">${e(hinweistext)}</div>`:""}
-      ${verkaufshinweis?`<div class="product-detail-row"><b>Hinweis:</b> ${e(verkaufshinweis)}</div>`:""}
+      ${lagerort ? `<div class="product-detail-row"><b>Lagerort:</b> ${e(lagerort)}</div>` : ""}
+      ${teilenummer ? `<div class="product-partnr">Teilenr.: ${e(teilenummer)}</div>` : ""}
+      ${hinweistext ? `<div class="product-note">${e(hinweistext)}</div>` : ""}
+      ${verkaufshinweis ? `<div class="product-detail-row"><b>Hinweis:</b> ${e(verkaufshinweis)}</div>` : ""}
     </div>
     <div class="product-right">
-      <div class="price-label">Pro Satz inkl. Montage</div>
+      <div class="price-label">Preise Admin-Ansicht</div>
       ${priceHtml}
-      <div class="price-vat">inkl. MwSt.</div>
-      ${nettopreis?`<div class="product-detail-row" style="text-align:right;font-size:12px;"><b>Netto:</b> ${e(formatPrice(nettopreis))} CHF</div>`:""}
-      <div class="stock-count" style="color:${lager>0?"var(--success)":"var(--text-muted)"};">Lagerbestand: ${lager}</div>
-      ${isLowStock?`<span class="stock-warning-chip">⚠ Kritischer Lager</span>`:""}
+      ${nettopreis ? `<div class="product-detail-row" style="text-align:right;font-size:13px;margin-top:6px;"><b>Netto EK:</b> ${e(formatPrice(nettopreis))} CHF</div>` : ""}
+      
+      <div style="margin-top:16px; padding:10px; background:var(--surface-3); border-radius:6px; font-size:12px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+          <span>Lager (Physisch):</span>
+          <b>${lager}</b>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px; color:var(--warning);">
+          <span>Reserviert (aktiv):</span>
+          <b style="cursor:pointer; text-decoration:underline;" onclick="showReservationDetails('${js(teilenummer)}')">${reserviert}</b>
+        </div>
+        <div style="display:flex; justify-content:space-between; border-top:1px solid var(--border); padding-top:4px; margin-top:4px; font-weight:700; color:${verfuegbar > 0 ? 'var(--success)' : 'var(--error)'};">
+          <span>Frei verfügbar:</span>
+          <span>${verfuegbar}</span>
+        </div>
+      </div>
+
+      ${isLowStock ? `<span class="stock-warning-chip" style="margin-top:8px; display:inline-block;">⚠ Kritischer Lager</span>` : ""}
       <div class="product-actions" style="margin-top:12px;">
         <button class="btn btn-primary btn-sm" onclick="openEditWkrModal('${js(teilenummer)}')">Bearbeiten</button>
         <button class="btn btn-secondary btn-sm" onclick="printWkrLabel('${js(teilenummer)}')">Etikette drucken</button>
       </div>
     </div>
   </div>`;
+}
+/* ============================================================
+   RESERVIERUNGEN ANZEIGEN (Schönes Modal)
+   ============================================================ */
+function showReservationDetails(tn) {
+  if (!tn) return;
+  const searchTn = clean(tn).toLowerCase();
+
+  let html = "";
+  let found = false;
+
+  // 1. Suche in den Haupt-Vororders
+  vororder.forEach(v => {
+    if (clean(v["TN"]).toLowerCase() === searchTn && clean(v["Status"]) !== "Erledigt" && clean(v["Status"]) !== "Kunde verzichtet") {
+      html += `<div style="padding: 10px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 8px;">
+                 <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">${e(clean(v["Kundenname"])) || "Unbekannt"}</div>
+                 <div style="font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between;">
+                   <span>Menge: <b style="color:var(--accent);">${e(clean(v["Anzahl"]))} Stück</b></span>
+                   <span>VO-ID: ${e(v["ID"])}</span>
+                 </div>
+               </div>`;
+      found = true;
+    }
+  });
+
+  // 2. Suche in den Unter-Positionen
+  const matchingPositions = Object.values(positionenMap).flat().filter(p => clean(p["TN"]).toLowerCase() === searchTn && clean(p["Status"]) !== "Erledigt" && clean(p["Status"]) !== "Kunde verzichtet");
+  
+  matchingPositions.forEach(p => {
+    const voId = clean(p["VororderID"]);
+    // Vermeiden von Duplikaten
+    if (!html.includes(`VO-ID: ${voId}`)) {
+      const vo = vororder.find(v => clean(v["ID"]) === voId);
+      const kunde = vo ? clean(vo["Kundenname"]) : "Unbekannt";
+      html += `<div style="padding: 10px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 8px;">
+                 <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">${e(kunde)}</div>
+                 <div style="font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between;">
+                   <span>Menge: <b style="color:var(--accent);">${e(clean(p["Anzahl"]))} Stück</b></span>
+                   <span>VO-ID: ${e(voId)} (Pos)</span>
+                 </div>
+               </div>`;
+      found = true;
+    }
+  });
+
+  if (!found) {
+    html = `<div style="color: var(--warning); padding: 12px; background: var(--warning-bg); border-radius: 6px;">Keine aktiven Reservierungen für diese Teilenummer gefunden. (Evtl. Alt-Daten).</div>`;
+  }
+
+  document.getElementById("resInfoSubtitle").textContent = `Teilenummer: ${tn}`;
+  document.getElementById("resInfoContent").innerHTML = html;
+  document.getElementById("reservationInfoModal").classList.add("open");
 }
 
 /* ============================================================
@@ -2942,7 +3264,20 @@ function openEditWkrModal(tn){
   document.getElementById("editWkrModal").classList.add("open");
 }
 function closeEditWkrModal(){ document.getElementById("editWkrModal").classList.remove("open"); editingWkrTN=""; }
-
+function calcWkrDiscount(prefix) {
+  const vpInput = document.getElementById(`${prefix}WkrVP`);
+  const angebotInput = document.getElementById(`${prefix}WkrAngebotspreis`);
+  if (!vpInput || !angebotInput) return;
+  
+  const vp = parsePrice(vpInput.value);
+  if (vp && vp > 0) {
+    // 20% abziehen und auf ganze Franken runden
+    const discounted = Math.round(vp * 0.8);
+    angebotInput.value = discounted;
+  } else {
+    alert("Bitte gib zuerst einen gültigen VP ein.");
+  }
+}
 /* ============================================================
    SAVE/DELETE: TIRES
    ============================================================ */
@@ -3150,7 +3485,6 @@ function resetVororderFilter(){
   vororderFilter = { suche:"", status:"", typ:"", standort:"" };
   render();
 }
-
 async function reloadVororder(){
   vororderLoaded = false;
   vororder = [];
@@ -3158,29 +3492,35 @@ async function reloadVororder(){
   await loadVororder();
   render();
 }
-   /* ============================================================
-   VORORDER: Modal-Handling (Neu erfassen)
-   ============================================================ */
 let _vororderSaving = false;
 
 function openNewVororderModal(){
-  // Felder zurücksetzen
-  ["newVoKundenname","newVoDebitornr","newVoAdressnr","newVoEmail","newVoFahrzeug","newVoReihe","newVoModell","newVoMotor","newVoFIN","newVoOrdernr","newVoVertragsnr","newVoAuftrag","newVoAblieferung","newVoTN","newVoBezeichnung","newVoDimension","newVoVK","newVoKonditionen","newVoBemerkungen"].forEach(id => {
+  // Felder leeren
+  ["newVoKundenname","newVoDebitornr","newVoAdressnr","newVoEmail","newVoRechnungAn",
+   "newVoMarke","newVoFahrzeug","newVoReihe","newVoModell","newVoMotor",
+   "newVoFIN","newVoOrdernr","newVoVertragsnr","newVoAuftrag","newVoAblieferung",
+   "newVoTyp","newVoTN","newVoBezeichnung","newVoDimension","newVoVK","newVoKonditionen",
+   "newVoBemerkungen"].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = "";
   });
-  document.getElementById("newVoMarke").value = "";
-  document.getElementById("newVoRechnungAn").value = "";
-  document.getElementById("newVoTyp").value = "";
+
+  // Standard-Werte
   document.getElementById("newVoAnzahl").value = "4";
   document.getElementById("newVoStandort").value = currentUser?.standort || "GEB";
-  document.getElementById("newVoStatus").value = "Erfasst";
+  document.getElementById("newVoStatus").value = "Sammelbestellung (Vororder26)";
 
-  // Subtitle
-  const sub = document.getElementById("newVororderSubtitle");
-  if (sub) sub.textContent = `Erfasser: ${currentUser?.name || "—"} · Standort: ${standortLabel(currentUser?.standort || "")}`;
-
-  // TN-Vorschläge aus Produkte-Liste füllen
-  fillVoTnOptions();
+  // TN-Optionen aus Produkten
+  const datalist = document.getElementById("voTnOptions");
+  if (datalist) {
+    datalist.innerHTML = produkte.map(p => {
+      const tn = clean(p["TN"]);
+      const lager = parseInt(clean(p["Lager"]),10)||0;
+      const reserviert = parseInt(clean(p["Reserviert"]),10)||0;
+      const verfuegbar = lager - reserviert;
+      const label = `${clean(p["Bezeichnung"])} · ${clean(p["Dimension"])} · Verfügbar: ${verfuegbar}/${lager}`;
+      return `<option value="${e(tn)}">${e(label)}</option>`;
+    }).join("");
+  }
 
   document.getElementById("newVororderModal").classList.add("open");
 }
@@ -3189,28 +3529,8 @@ function closeNewVororderModal(){
   document.getElementById("newVororderModal").classList.remove("open");
 }
 
-function fillVoTnOptions(){
-  const datalist = document.getElementById("voTnOptions");
-  if (!datalist) return;
-  const marke = clean(document.getElementById("newVoMarke")?.value);
-  const standort = clean(document.getElementById("newVoStandort")?.value);
-  const filtered = produkte.filter(p => {
-    if (marke && marke !== "Andere" && clean(p["Marke"]) !== marke) return false;
-    if (standort && clean(p["Standort"]) !== standort) return false;
-    return true;
-  });
-  datalist.innerHTML = filtered.map(p => {
-    const tn = clean(p["TN"]);
-    const lager = parseInt(clean(p["Lager"]),10)||0;
-    const reserviert = parseInt(clean(p["Reserviert"]),10)||0;
-    const verfuegbar = lager - reserviert;
-    const label = `${clean(p["Bezeichnung"])} · ${clean(p["Dimension"])} · Verfügbar: ${verfuegbar}/${lager}`;
-    return `<option value="${e(tn)}">${e(label)}</option>`;
-  }).join("");
-}
-
 function onVoMarkeChange(){
-  fillVoTnOptions();
+  // Optional: könnte später Fahrzeug-Vorschläge bringen
 }
 
 function onVoTnChange(){
@@ -3222,13 +3542,14 @@ function onVoTnChange(){
     const dimEl = document.getElementById("newVoDimension");
     const vkEl = document.getElementById("newVoVK");
     const typEl = document.getElementById("newVoTyp");
+    const markeEl = document.getElementById("newVoMarke");
     if (bezEl && !bezEl.value) bezEl.value = clean(prod["Bezeichnung"]);
     if (dimEl && !dimEl.value) dimEl.value = clean(prod["Dimension"]);
-    if (vkEl && !vkEl.value)   vkEl.value  = clean(prod["Angebotspreis"]) || clean(prod["VP"]);
+    // vkEl ist jetzt Verkäufer-Feld, kein Auto-Fill vom Produkt
     if (typEl && !typEl.value) typEl.value = "WKR";
+    if (markeEl && !markeEl.value) markeEl.value = clean(prod["Marke"]);
   }
 }
-
 async function saveNewVororder(){
   if (_vororderSaving) return;
 
@@ -3244,21 +3565,6 @@ async function saveNewVororder(){
   if (!kundenname || !typ || !anzahl || !marke || !fahrzeug || !standort || !status) {
     alert("Bitte Pflichtfelder ausfüllen: Kundenname, Typ, Anzahl, Marke, Fahrzeug, Standort, Status");
     return;
-  }
-
-  // Bestandswarnung bei WKR mit TN
-  if (status === "Erfasst" && typ === "WKR" && tn) {
-    const prod = produkte.find(p => clean(p["TN"]) === tn);
-    if (prod) {
-      const lager = parseInt(clean(prod["Lager"]),10) || 0;
-      const reserviert = parseInt(clean(prod["Reserviert"]),10) || 0;
-      const verfuegbar = lager - reserviert;
-      if (anzahl > verfuegbar) {
-        if (!confirm(`⚠ Warnung: Verfügbar sind nur ${verfuegbar} Stück (Lager: ${lager}, bereits reserviert: ${reserviert}).\nTrotzdem ${anzahl} Stück reservieren?`)) {
-          return;
-        }
-      }
-    }
   }
 
   const row = {
@@ -3282,7 +3588,7 @@ async function saveNewVororder(){
     "Bezeichnung": clean(document.getElementById("newVoBezeichnung").value),
     "Dimension": clean(document.getElementById("newVoDimension").value),
     "Anzahl": anzahl,
-    "VK": clean(document.getElementById("newVoVK").value),
+ "Verkaeufer": clean(document.getElementById("newVoVK").value),
     "Konditionen": clean(document.getElementById("newVoKonditionen").value),
     "Standort_Bearbeitung": standort,
     "Status": status,
@@ -3294,17 +3600,33 @@ async function saveNewVororder(){
   try {
     const res = await postToScript({ action: "vororderAdd", row: row });
     if (res && res.status === "OK") {
-      alert(`✅ Vororder ${res.id} erfolgreich gespeichert.`);
+      // Automatische Position anlegen
+      if (typ && anzahl > 0) {
+        const posRow = {
+          "Typ": typ, "TN": tn, "Bezeichnung": row["Bezeichnung"], "Dimension": row["Dimension"],
+          "Anzahl": anzahl, "Verkaeufer": row["Verkaeufer"], "Konditionen": row["Konditionen"],
+          "Status": status, "Bemerkungen": ""
+        };
+        await postToScript({ action: "vororderPositionAdd", vororderId: res.id, row: posRow });
+      }
+      const newVoId = res.id;
       closeNewVororderModal();
       await reloadVororder();
-      // Auch Produkte neu laden, damit der aktualisierte Reserviert-Wert gezeigt wird
-      try {
-        const p = await fetch(URLS.produkte).then(r=>r.json());
-        if (Array.isArray(p)) produkte = p;
-      } catch(e){}
       render();
+      // Detail-Modal automatisch öffnen für weitere Positionen
+   if (newVoId) {
+        // Produkte neu laden (für aktualisierte Reserviert-Werte)
+        try {
+          const p = await fetch(URLS.produkte).then(r=>r.json());
+          if (Array.isArray(p)) produkte = p;
+        } catch(e){}
+        // Vororder + Positionen neu laden
+        await loadVororder();
+        render();
+        setTimeout(() => openVororderDetail(newVoId), 100);
+      }
     } else {
-      alert("Fehler beim Speichern: " + JSON.stringify(res));
+      alert("Fehler: " + JSON.stringify(res));
     }
   } catch(err) {
     alert("Fehler: " + err.message);
@@ -3312,7 +3634,6 @@ async function saveNewVororder(){
     _vororderSaving = false;
   }
 }
-
 /* ============================================================
    VORORDER: Detail-Ansicht
    ============================================================ */
@@ -3342,7 +3663,7 @@ function toggleVoEditMode(){
 
 function renderVororderDetail(){
   const vo = vororder.find(v => clean(v["ID"]) === clean(_voDetailId));
-  if (!vo) { alert("Vororder nicht gefunden."); return; }
+  if (!vo) return; // Still abbrechen, während die Daten im Hintergrund neu laden
 
   const content = document.getElementById("voDetailContent");
   if (!content) return;
@@ -3382,9 +3703,10 @@ function renderVororderDetail(){
       </div>
       <div style="display:flex;gap:8px;">
         ${edit 
-          ? `<button class="btn btn-primary btn-sm" onclick="saveVoDetailChanges()">💾 Speichern</button>
+                ? `<button class="btn btn-primary btn-sm" onclick="saveVoDetailChanges()">💾 Speichern</button>
              <button class="btn btn-secondary btn-sm" onclick="toggleVoEditMode()">✖ Abbrechen</button>`
           : `<button class="btn btn-secondary btn-sm" onclick="toggleVoEditMode()">✏️ Bearbeiten</button>
+             <button class="btn btn-danger btn-sm" onclick="deleteVororder('${js(clean(vo["ID"]))}')">🗑️ Löschen</button>
              <button class="btn btn-secondary btn-sm" onclick="closeVororderDetail()">✕ Schliessen</button>`
         }
       </div>
@@ -3398,11 +3720,13 @@ function renderVororderDetail(){
           ${f("Adressnr","voEdit_Adressnr",vo["Adressnr"])}
           ${f("Kunden E-Mail","voEdit_KundenEmail",vo["KundenEmail"],{type:"email"})}
           ${f("Rechnung an","voEdit_RechnungAn",vo["RechnungAn"],{type:"select",options:["","An Kunde","Im Leasing (Intern)","Spezialpreis"]})}
+          ${f("Verkäufer","voEdit_Verkaeufer",vo["Verkaeufer"],{full:true})}
         </div>` : `
           <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${e(clean(vo["Kundenname"]))||"—"}</div>
           ${clean(vo["Debitornr"])?`<div style="font-size:12px;">Debitor: ${e(clean(vo["Debitornr"]))}</div>`:""}
           ${clean(vo["Adressnr"])?`<div style="font-size:12px;">Adresse: ${e(clean(vo["Adressnr"]))}</div>`:""}
           ${clean(vo["KundenEmail"])?`<div style="font-size:12px;">E-Mail: ${e(clean(vo["KundenEmail"]))}</div>`:""}
+          ${clean(vo["Verkaeufer"])?`<div style="font-size:12px;margin-top:6px;">👤 Verkäufer: <b>${e(clean(vo["Verkaeufer"]))}</b></div>`:""}
           ${clean(vo["RechnungAn"])?`<div style="font-size:12px;margin-top:6px;">💰 ${e(clean(vo["RechnungAn"]))}</div>`:""}
         `}
       </div>
@@ -3440,6 +3764,7 @@ function renderVororderDetail(){
         </select>
         <button class="btn btn-primary btn-sm" onclick="saveVororderStatus('${js(clean(vo["ID"]))}')">Status speichern</button>
         <button class="btn btn-secondary btn-sm" onclick="printVororderSammelEtikette('${js(clean(vo["ID"]))}')">🏷️ Etikette drucken</button>
+        <button class="btn btn-secondary btn-sm" onclick="openInternalMailModal('${js(clean(vo["ID"]))}')">✉️ Link an Kunde senden</button>
               </div>
     </div>` : ""}
 
@@ -3457,7 +3782,45 @@ function renderVororderDetail(){
     </div>`:""}
   `;
 }
+async function deleteVororder(id){
+  const vo = vororder.find(v => clean(v["ID"]) === clean(id));
+  if (!vo) { alert("Vororder nicht gefunden."); return; }
 
+  const kunde = clean(vo["Kundenname"]) || "(kein Name)";
+  const positionenCount = (positionenMap[id] || []).length;
+
+  const msg = `⚠ Vororder ${id} wirklich löschen?\n\n` +
+              `Kunde: ${kunde}\n` +
+              `Positionen: ${positionenCount}\n\n` +
+              `Alle Positionen und aktive Reservierungen werden automatisch aufgelöst.\n` +
+              `Diese Aktion kann NICHT rückgängig gemacht werden!`;
+
+  if (!confirm(msg)) return;
+
+  const confirm2 = prompt(`Zur Bestätigung bitte "LÖSCHEN" eintippen:`);
+  if (clean(confirm2).toUpperCase() !== "LÖSCHEN") {
+    alert("Abgebrochen — der Text stimmt nicht überein.");
+    return;
+  }
+
+  try {
+    const res = await postToScript({ action: "vororderDelete", id: id });
+    if (res && res.status === "OK") {
+      alert(`✅ Vororder ${id} wurde gelöscht.`);
+      closeVororderDetail();
+      await reloadVororder();
+      try {
+        const p = await fetch(URLS.produkte).then(r=>r.json());
+        if (Array.isArray(p)) produkte = p;
+      } catch(e){}
+      render();
+    } else {
+      alert("Fehler: " + JSON.stringify(res));
+    }
+  } catch(err) {
+    alert("Fehler: " + err.message);
+  }
+}
 async function saveVororderStatus(id){
   const newStatus = clean(document.getElementById("voDetailStatus")?.value);
   if (!newStatus) return;
@@ -3495,15 +3858,98 @@ async function saveVororderStatus(id){
     alert("Fehler: " + err.message);
   }
 }
+/* ============================================================
+   INTERNAL MAILER (VARIANTE 2)
+   ============================================================ */
 
+let _currentMailVoId = null;
+
+function openInternalMailModal(id) {
+  const vo = vororder.find(v => clean(v["ID"]) === clean(id));
+  if (!vo) return;
+
+  const email = clean(vo["KundenEmail"]);
+  if (!email) {
+    alert("⚠ Bitte zuerst eine E-Mail-Adresse beim Kunden hinterlegen.");
+    return;
+  }
+
+  _currentMailVoId = id;
+
+  // Link generieren
+  const params = new URLSearchParams();
+  if (vo["Marke"]) params.set("marke", clean(vo["Marke"]));
+  if (vo["Standort_Bearbeitung"]) params.set("standort", clean(vo["Standort_Bearbeitung"]));
+  if (vo["Reihe"]) params.set("reihe", clean(vo["Reihe"]));
+  if (vo["Modell"]) params.set("modell", clean(vo["Modell"]));
+  if (vo["Motor"]) params.set("motor", clean(vo["Motor"]));
+  const link = window.location.href.split("?")[0] + "?" + params.toString();
+
+  // Felder füllen
+  document.getElementById("mailRecipient").value = email;
+  document.getElementById("mailSubject").value = `Angebote für Ihren ${clean(vo["Fahrzeug"])}`;
+  document.getElementById("mailBody").value = `Guten Tag ${clean(vo["Kundenname"])},\n\nwie besprochen senden wir Ihnen hier den Zugang zu den passenden Angeboten für Ihr Fahrzeug:\n\n${link}\n\nDort können Sie die verfügbaren Winterkompletträder direkt einsehen.\n\nBei Fragen stehen wir Ihnen gerne zur Verfügung.\n\nFreundliche Grüsse\nIhr Emmenegger Team`;
+
+  document.getElementById("internalMailModal").classList.add("open");
+}
+
+function closeInternalMailModal() {
+  document.getElementById("internalMailModal").classList.remove("open");
+  _currentMailVoId = null;
+}
+
+async function submitInternalMail() {
+  const btn = document.getElementById("confirmSendMailBtn");
+  const voId = _currentMailVoId;
+  const recipient = document.getElementById("mailRecipient").value;
+  const subject = document.getElementById("mailSubject").value;
+  const body = document.getElementById("mailBody").value;
+
+  btn.disabled = true;
+  btn.textContent = "Wird gesendet...";
+
+  try {
+    const res = await postToScript({
+      action: "sendInternalEmail", 
+      to: recipient,
+      subject: subject,
+      body: body,
+      voId: voId,
+      user: currentUser?.name || "Admin"
+    });
+
+    if (res && res.status === "OK") {
+      alert("✅ E-Mail wurde erfolgreich versendet.");
+      closeInternalMailModal();
+      
+      // Status automatisch auf "Offeriert" setzen
+      await postToScript({
+        action: "vororderUpdate",
+        id: voId,
+        user: currentUser?.name || "Admin",
+        updates: { Status: "Offeriert" }
+      });
+      
+      await reloadVororder();
+      render();
+    } else {
+      alert("Fehler beim Senden: " + (res.message || JSON.stringify(res)));
+    }
+  } catch (err) {
+    alert("Fehler: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "E-Mail jetzt senden";
+  }
+}
 async function saveVoDetailChanges(){
   if (!_voDetailId) return;
   const vo = vororder.find(v => clean(v["ID"]) === clean(_voDetailId));
   if (!vo) { alert("Vororder nicht gefunden."); return; }
 
-  const fields = ["Kundenname","Debitornr","Adressnr","KundenEmail","RechnungAn",
+ const fields = ["Kundenname","Debitornr","Adressnr","KundenEmail","RechnungAn","Verkaeufer",
                   "Marke","Fahrzeug","Fahrgestellnr","Ordernr","Vertragsnr","Auftrag","Ablieferung",
-                  "Typ","Anzahl","TN","Bezeichnung","Dimension","VK","Konditionen","Standort_Bearbeitung",
+                  "Typ","Anzahl","TN","Bezeichnung","Dimension","Konditionen","Standort_Bearbeitung",
                   "Bemerkungen"];
 
   const updates = {};
@@ -3636,7 +4082,7 @@ function openEditPositionModal(posId){
   document.getElementById("posTN").value = clean(pos["TN"]);
   document.getElementById("posBezeichnung").value = clean(pos["Bezeichnung"]);
   document.getElementById("posDimension").value = clean(pos["Dimension"]);
-  document.getElementById("posVK").value = clean(pos["VK"]);
+  document.getElementById("posVK").value = clean(pos["Verkaeufer"]);
   document.getElementById("posKonditionen").value = clean(pos["Konditionen"]);
   document.getElementById("posStatus").value = clean(pos["Status"]) || "Offerte ausstehend";
   document.getElementById("posBemerkungen").value = clean(pos["Bemerkungen"]);
@@ -3679,7 +4125,7 @@ function onPosTnChange(){
     const typEl = document.getElementById("posTyp");
     if (bezEl && !bezEl.value) bezEl.value = clean(prod["Bezeichnung"]);
     if (dimEl && !dimEl.value) dimEl.value = clean(prod["Dimension"]);
-    if (vkEl && !vkEl.value)   vkEl.value  = clean(prod["Angebotspreis"]) || clean(prod["VP"]);
+    // vkEl ist jetzt Verkäufer-Feld, kein Auto-Fill vom Produkt
     if (typEl && !typEl.value) typEl.value = "WKR";
   }
 }
@@ -3698,7 +4144,7 @@ async function savePosition(){
     "Bezeichnung": clean(document.getElementById("posBezeichnung").value),
     "Dimension": clean(document.getElementById("posDimension").value),
     "Anzahl": anzahl,
-    "VK": clean(document.getElementById("posVK").value),
+   "Verkaeufer": clean(document.getElementById("posVK").value),
     "Konditionen": clean(document.getElementById("posKonditionen").value),
     "Status": clean(document.getElementById("posStatus").value),
  "Bemerkungen": clean(document.getElementById("posBemerkungen").value),
