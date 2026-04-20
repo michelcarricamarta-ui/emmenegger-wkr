@@ -2374,9 +2374,8 @@ function renderAdminInventur(){
     <div class="admin-content-sub">Excel-Export oder Druckliste nach Standort und weiteren Kriterien filtern</div>
   </div>
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px;">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:20px;margin-bottom:28px;">
 
-    <!-- WKR EXPORT -->
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;">
       <div style="font-size:16px;font-weight:700;margin-bottom:4px;">🛞 WKR Export</div>
       <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Winterkompletträder als Excel oder Druckliste exportieren</div>
@@ -2411,7 +2410,6 @@ function renderAdminInventur(){
       </div>
     </div>
 
-    <!-- REIFEN EXPORT -->
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;">
       <div style="font-size:16px;font-weight:700;margin-bottom:4px;">⚫ Reifen Export</div>
       <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Reifen als Excel oder Druckliste exportieren</div>
@@ -2452,6 +2450,35 @@ function renderAdminInventur(){
         <button class="btn btn-primary btn-sm" onclick="exportReifenXLSX()">⬇ Excel (.xlsx)</button>
         <button class="btn btn-secondary btn-sm" onclick="exportReifenCSV()">⬇ CSV</button>
         <button class="btn btn-secondary btn-sm" onclick="printReifenInventur()">🖨 Drucken</button>
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;">
+      <div style="font-size:16px;font-weight:700;margin-bottom:4px;">📋 Vororder Export</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Sammelbestellungen oder erledigte Aufträge drucken</div>
+
+      <div class="filter-field" style="margin-bottom:12px;">
+        <label>Status</label>
+        <select id="exportVoStatus">
+          <option value="">Alle</option>
+          <option value="Sammelbestellung (Vororder26)">Sammelbestellung (Vororder26)</option>
+          <option value="Bestellt">Bestellt</option>
+          <option value="Reserviert">Reserviert</option>
+          <option value="Erledigt">Erledigt</option>
+        </select>
+      </div>
+
+      <div class="filter-field" style="margin-bottom:16px;">
+        <label>Standort</label>
+        <select id="exportVoStandort">
+          <option value="">Alle Standorte</option>
+          <option value="GEB">Gebenstorf</option>
+          <option value="HET">Hettenschwil</option>
+        </select>
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-secondary btn-sm" onclick="printVororderList()">🖨 Druckliste</button>
       </div>
     </div>
 
