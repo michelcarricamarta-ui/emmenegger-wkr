@@ -3384,59 +3384,6 @@ async function saveNewVororder(){
     _vororderSaving = false;
   }
 }
-
-  const row = {
-    "Kundenname": kundenname,
-    "Debitornr": clean(document.getElementById("newVoDebitornr").value),
-    "Adressnr": clean(document.getElementById("newVoAdressnr").value),
-    "KundenEmail": clean(document.getElementById("newVoEmail").value),
-    "RechnungAn": clean(document.getElementById("newVoRechnungAn").value),
-    "Marke": marke,
-    "Fahrzeug": fahrzeug,
-    "Reihe": clean(document.getElementById("newVoReihe").value),
-    "Modell": clean(document.getElementById("newVoModell").value),
-    "Motor": clean(document.getElementById("newVoMotor").value),
-    "Fahrgestellnr": clean(document.getElementById("newVoFIN").value),
-    "Ordernr": clean(document.getElementById("newVoOrdernr").value),
-    "Vertragsnr": clean(document.getElementById("newVoVertragsnr").value),
-    "Auftrag": clean(document.getElementById("newVoAuftrag").value),
-    "Ablieferung": clean(document.getElementById("newVoAblieferung").value),
-    "Typ": typ,
-    "TN": tn,
-    "Bezeichnung": clean(document.getElementById("newVoBezeichnung").value),
-    "Dimension": clean(document.getElementById("newVoDimension").value),
-    "Anzahl": anzahl,
-    "VK": clean(document.getElementById("newVoVK").value),
-    "Konditionen": clean(document.getElementById("newVoKonditionen").value),
-    "Standort_Bearbeitung": standort,
-    "Status": status,
-    "Erfasser": currentUser?.name || currentUser?.email || "Unknown",
-    "Bemerkungen": clean(document.getElementById("newVoBemerkungen").value)
-  };
-
-  _vororderSaving = true;
-  try {
-    const res = await postToScript({ action: "vororderAdd", row: row });
-    if (res && res.status === "OK") {
-      alert(`✅ Vororder ${res.id} erfolgreich gespeichert.`);
-      closeNewVororderModal();
-      await reloadVororder();
-      // Auch Produkte neu laden, damit der aktualisierte Reserviert-Wert gezeigt wird
-      try {
-        const p = await fetch(URLS.produkte).then(r=>r.json());
-        if (Array.isArray(p)) produkte = p;
-      } catch(e){}
-      render();
-    } else {
-      alert("Fehler beim Speichern: " + JSON.stringify(res));
-    }
-  } catch(err) {
-    alert("Fehler: " + err.message);
-  } finally {
-    _vororderSaving = false;
-  }
-}
-
 /* ============================================================
    VORORDER: Detail-Ansicht
    ============================================================ */
