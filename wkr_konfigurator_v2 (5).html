@@ -3478,7 +3478,7 @@ function openNewPositionModal(voId){
   document.getElementById("positionModalTitle").textContent = "Neue Position";
   document.getElementById("positionModalSubtitle").textContent = `Für Vororder ${voId}`;
   // Felder leeren
-  ["posTyp","posTN","posBezeichnung","posDimension","posVK","posKonditionen","posBemerkungen","posLagerort"]
+ ["posTyp","posTN","posBezeichnung","posDimension","posVK","posKonditionen","posBemerkungen","posLagerort"].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = "";
   });
   document.getElementById("posAnzahl").value = "";
