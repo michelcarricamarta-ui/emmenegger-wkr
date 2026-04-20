@@ -2477,7 +2477,9 @@ function renderAdminInventur(){
         </select>
       </div>
 
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+     <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-primary btn-sm" onclick="exportVororderXLSX()">⬇ Excel (.xlsx)</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportVororderCSV()">⬇ CSV</button>
         <button class="btn btn-secondary btn-sm" onclick="printVororderList()">🖨 Druckliste</button>
       </div>
     </div>
@@ -2641,7 +2643,113 @@ function exportReifenXLSX(){
   const datum = new Date().toLocaleDateString("de-CH").replace(/\./g,"-");
   XLSX.writeFile(wb, `Reifen_Inventur_${datum}.xlsx`);
 }
+/* ============================================================
+   EXPORT: VORORDER (Excel, CSV, Print)
+   ============================================================ */
 
+function getVororderExportData(){
+  const statusFilter = clean(document.getElementById("exportVoStatus")?.value);
+  const standortFilter = clean(document.getElementById("exportVoStandort")?.value);
+  
+  if (!vororderLoaded) { 
+    alert("Bitte lade zuerst die Vororder-Daten (gehe kurz ins Vororder-Menü)."); 
+    return null; 
+  }
+
+  return vororder.filter(v => {
+    return (!statusFilter || clean(v["Status"]) === statusFilter) &&
+           (!standortFilter || clean(v["Standort_Bearbeitung"]) === standortFilter);
+  });
+}
+
+function exportVororderXLSX(){
+  const data = getVororderExportData();
+  if(!data) return;
+  if(data.length === 0) { alert("Keine Vororder-Daten für diesen Filter gefunden."); return; }
+  if(typeof XLSX==="undefined"){ alert("Excel-Bibliothek nicht geladen. Bitte Seite neu laden."); return; }
+
+  // Spaltenköpfe für Excel
+  const headers = ["ID", "Status", "Standort", "Kunde", "Fahrzeug", "Typ", "Teilenummer", "Bezeichnung", "Dimension", "Anzahl", "Ablieferung", "Erfasst am", "Erfasser", "Bemerkungen"];
+  
+  const rows = data.map(v => [
+    clean(v["ID"]),
+    clean(v["Status"]),
+    clean(v["Standort_Bearbeitung"]),
+    clean(v["Kundenname"]),
+    clean(v["Fahrzeug"]),
+    clean(v["Typ"]),
+    clean(v["TN"]),
+    clean(v["Bezeichnung"]),
+    clean(v["Dimension"]),
+    parseInt(clean(v["Anzahl"]), 10) || 0,
+    clean(v["Ablieferung"]),
+    clean(v["ErfasstAm"]),
+    clean(v["Erfasser"]),
+    clean(v["Bemerkungen"])
+  ]);
+
+  const aoa = [headers, ...rows];
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+  // Spaltenbreiten anpassen
+  ws["!cols"] = [
+    {wch:15}, {wch:18}, {wch:12}, {wch:20}, {wch:20}, {wch:10}, {wch:15}, {wch:25}, {wch:15}, {wch:8}, {wch:12}, {wch:12}, {wch:15}, {wch:30}
+  ];
+
+  // Header fett machen
+  const range = XLSX.utils.decode_range(ws["!ref"]);
+  for(let c=range.s.c; c<=range.e.c; c++){
+    const addr = XLSX.utils.encode_cell({r:0, c});
+    if(ws[addr]) ws[addr].s = {font:{bold:true}};
+  }
+  
+  // Filter und fixierte Kopfzeile
+  ws["!autofilter"] = { ref: XLSX.utils.encode_range({s:{r:0,c:range.s.c},e:{r:range.e.r,c:range.e.c}}) };
+  ws["!freeze"] = { xSplit: 0, ySplit: 1 };
+
+  const wb = XLSX.utils.book_new();
+  const standort = clean(document.getElementById("exportVoStandort")?.value) || "Alle";
+  XLSX.utils.book_append_sheet(wb, ws, `Vororder_${standort}`);
+  
+  const datum = new Date().toLocaleDateString("de-CH").replace(/\./g,"-");
+  XLSX.writeFile(wb, `Vororder_Export_${datum}.xlsx`);
+}
+
+function exportVororderCSV(){
+  const data = getVororderExportData();
+  if(!data) return;
+  if(data.length === 0) { alert("Keine Vororder-Daten für diesen Filter gefunden."); return; }
+
+  const headers = ["ID", "Status", "Standort_Bearbeitung", "Kundenname", "Fahrzeug", "Typ", "TN", "Bezeichnung", "Dimension", "Anzahl", "Ablieferung", "ErfasstAm", "Erfasser", "Bemerkungen"];
+  const rows = data.map(v => headers.map(h => `"${clean(v[h]).replace(/"/g,'""')}"`).join(";"));
+  
+  // \uFEFF erzwingt UTF-8 in Excel
+  const csv = "\uFEFF" + headers.join(";") + "\n" + rows.join("\n");
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `Vororder_Export_${new Date().toLocaleDateString("de-CH").replace(/\./g,"-")}.csv`;
+  a.click();
+}
+
+function printVororderList(){
+  const data = getVororderExportData();
+  if(!data) return;
+  if(data.length === 0) { alert("Keine Vororder-Daten für diesen Filter gefunden."); return; }
+
+  const statusFilter = clean(document.getElementById("exportVoStatus")?.value);
+  const standortFilter = clean(document.getElementById("exportVoStandort")?.value);
+  
+  const w = window.open("","_blank");
+  if(!w) return;
+  
+  const rows = data.map(v => `<tr><td>${e(clean(v["ID"]))}</td><td>${e(clean(v["Kundenname"]))}</td><td>${e(clean(v["Fahrzeug"]))}</td><td>${e(clean(v["Typ"]))} / ${e(clean(v["TN"]))}</td><td style="text-align:center;font-weight:700;">${e(clean(v["Anzahl"]))}</td><td>${e(clean(v["Standort_Bearbeitung"]))}</td><td>${e(clean(v["Status"]))}</td></tr>`).join("");
+  
+  const filterInfo = `Status: ${statusFilter || "Alle"} | Standort: ${standortFilter ? standortLabel(standortFilter) : "Alle"}`;
+  
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Vororder Liste</title><style>body{font-family:Arial,sans-serif;padding:20px;font-size:12px;}h2{margin-bottom:4px;}p{color:#666;margin-bottom:16px;}table{width:100%;border-collapse:collapse;}th{background:#1c69d4;color:white;padding:8px 6px;text-align:left;font-size:11px;}td{padding:8px 6px;border-bottom:1px solid #ccc;}tr:nth-child(even){background:#f9f9f9;}.actions{margin-bottom:16px;}button{background:#1c69d4;color:white;border:none;padding:8px 14px;cursor:pointer;margin-right:8px;}@media print{.actions{display:none;}}</style></head><body><div class="actions"><button onclick="window.print()">Drucken</button><button onclick="window.close()">Schliessen</button></div><h2>Vororder Liste</h2><p>${filterInfo} — Einträge: ${data.length}</p><table><thead><tr><th>ID</th><th>Kunde</th><th>Fahrzeug</th><th>Typ / TN</th><th>Anzahl</th><th>Standort</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></body></html>`);
+  w.document.close();
+}
 /* ============================================================
    EXPORT: PRINT
    ============================================================ */
