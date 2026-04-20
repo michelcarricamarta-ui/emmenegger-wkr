@@ -3246,7 +3246,42 @@ function renderVororderDetail(){
         }
       </div>
     </div>
-
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+      <div style="background:var(--surface-2);border-radius:8px;padding:14px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Kunde</div>
+        ${edit ? `<div class="form-grid">
+          ${f("Kundenname","voEdit_Kundenname",vo["Kundenname"],{full:true,showEmpty:true})}
+          ${f("Debitornr","voEdit_Debitornr",vo["Debitornr"])}
+          ${f("Adressnr","voEdit_Adressnr",vo["Adressnr"])}
+          ${f("Kunden E-Mail","voEdit_KundenEmail",vo["KundenEmail"],{type:"email"})}
+          ${f("Rechnung an","voEdit_RechnungAn",vo["RechnungAn"],{type:"select",options:["","An Kunde","Im Leasing (Intern)","Spezialpreis"]})}
+        </div>` : `
+          <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${e(clean(vo["Kundenname"]))||"—"}</div>
+          ${clean(vo["Debitornr"])?`<div style="font-size:12px;">Debitor: ${e(clean(vo["Debitornr"]))}</div>`:""}
+          ${clean(vo["Adressnr"])?`<div style="font-size:12px;">Adresse: ${e(clean(vo["Adressnr"]))}</div>`:""}
+          ${clean(vo["KundenEmail"])?`<div style="font-size:12px;">E-Mail: ${e(clean(vo["KundenEmail"]))}</div>`:""}
+          ${clean(vo["RechnungAn"])?`<div style="font-size:12px;margin-top:6px;">💰 ${e(clean(vo["RechnungAn"]))}</div>`:""}
+        `}
+      </div>
+      <div style="background:var(--surface-2);border-radius:8px;padding:14px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px;">Fahrzeug</div>
+        ${edit ? `<div class="form-grid">
+          ${f("Marke","voEdit_Marke",vo["Marke"],{type:"select",options:["","BMW","MINI","Andere"]})}
+          ${f("Fahrzeug","voEdit_Fahrzeug",vo["Fahrzeug"],{full:true,showEmpty:true})}
+          ${f("Fahrgestellnr","voEdit_Fahrgestellnr",vo["Fahrgestellnr"])}
+          ${f("Ordernr","voEdit_Ordernr",vo["Ordernr"])}
+          ${f("Vertragsnr","voEdit_Vertragsnr",vo["Vertragsnr"])}
+          ${f("Auftrag","voEdit_Auftrag",vo["Auftrag"])}
+          ${f("Ablieferung","voEdit_Ablieferung",vo["Ablieferung"],{type:"date"})}
+        </div>` : `
+          <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${e(clean(vo["Fahrzeug"]))||"—"}</div>
+          ${clean(vo["Fahrgestellnr"])?`<div style="font-size:12px;font-family:monospace;">FIN: ${e(clean(vo["Fahrgestellnr"]))}</div>`:""}
+          ${clean(vo["Ordernr"])?`<div style="font-size:12px;font-family:monospace;">Order: ${e(clean(vo["Ordernr"]))}</div>`:""}
+          ${clean(vo["Auftrag"])?`<div style="font-size:12px;">Auftrag: ${e(clean(vo["Auftrag"]))}</div>`:""}
+          ${clean(vo["Ablieferung"])?`<div style="font-size:12px;margin-top:6px;">📅 Ablieferung: ${e(formatVororderDate(vo["Ablieferung"]))}</div>`:""}
+        `}
+      </div>
+    </div>
     <div style="background:var(--surface-2);border-radius:8px;padding:14px;margin-bottom:12px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Positionen</div>
