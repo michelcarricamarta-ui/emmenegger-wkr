@@ -1678,14 +1678,30 @@ function getDashboardStats(){
 /* ============================================================
    RENDER ADMIN SIDEBAR  ← NEU
    ============================================================ */
+/* ============================================================
+   RENDER ADMIN SIDEBAR
+   ============================================================ */
 function renderAdminSidebar(){
-  const s=getDashboardStats();
-  const sec=state.adminSection||"dashboard";
+  const s = getDashboardStats();
+  const sec = state.adminSection || "dashboard";
 
-  // Stat badges
-  const wkrLagerClass   = s.wkrInStock===0    ? "sbt-err"  : s.lowStockWkr>0 ? "sbt-warn" : "sbt-ok";
-  const dotClass        = s.dotWarnings>0      ? "sbt-warn" : "sbt-ok";
-  const inaktivClass    = s.inactiveTires>0    ? "sbt-err"  : "sbt-ok";
+  // Neue Business-Metriken aus Vororders berechnen
+  let offeneAnfragen = 0;
+  let umsatzPotenzial = 0;
+  let reservierteWKR = 0;
+
+  if (vororderLoaded && vororder) {
+    offeneAnfragen = vororder.filter(v => ["Kundenauswahl", "Offerte ausstehend"].includes(clean(v["Status"]))).length;
+    umsatzPotenzial = vororder.filter(v => ["Offeriert", "Sammelbestellung (Vororder26)", "Bestellt"].includes(clean(v["Status"]))).reduce((sum, v) => sum + (parsePrice(v["VK"]) || 0), 0);
+    reservierteWKR = vororder.filter(v => clean(v["Status"]) === "Reserviert").length;
+  }
+
+  // Farb-Klassen für die Badges (Grün=ok, Orange=warn, Grau=neu)
+  const wkrLagerClass = s.wkrInStock===0 ? "sbt-err" : s.lowStockWkr>0 ? "sbt-warn" : "sbt-ok";
+  const dotClass      = s.dotWarnings>0  ? "sbt-warn" : "sbt-ok";
+  const offeneClass   = offeneAnfragen>0 ? "sbt-warn" : "sbt-ok";
+  const umsatzClass   = umsatzPotenzial>0? "sbt-ok"   : "sbt-neu";
+  const resClass      = reservierteWKR>0 ? "sbt-ok"   : "sbt-neu";
 
   return `<div class="admin-sidebar">
     <div class="admin-sidebar-header">
@@ -1702,14 +1718,20 @@ function renderAdminSidebar(){
         <span class="sbl">Kritischer Lager</span>
         <span class="sbn">${s.lowStockWkr}</span>
       </div>
-      <div class="admin-stat-badge sbt-neu">
-        <span class="sbl">Reifen aktiv</span>
-        <span class="sbn">${s.activeTires} / ${s.totalTires}</span>
+      
+      <div class="admin-stat-badge ${offeneClass}" title="Status: Kundenauswahl / Offerte ausstehend">
+        <span class="sbl">Offene Anfragen</span>
+        <span class="sbn">${vororderLoaded ? offeneAnfragen : "—"}</span>
       </div>
-      <div class="admin-stat-badge ${inaktivClass}">
-        <span class="sbl">Reifen inaktiv</span>
-        <span class="sbn">${s.inactiveTires}</span>
+      <div class="admin-stat-badge ${umsatzClass}" title="Status: Offeriert / Bestellt / Sammelbestellung">
+        <span class="sbl">Pipeline Umsatz</span>
+        <span class="sbn">${vororderLoaded ? formatPrice(umsatzPotenzial) + " CHF" : "—"}</span>
       </div>
+      <div class="admin-stat-badge ${resClass}" title="Status: Reserviert">
+        <span class="sbl">Reservierte Aufträge</span>
+        <span class="sbn">${vororderLoaded ? reservierteWKR : "—"}</span>
+      </div>
+      
       <div class="admin-stat-badge ${dotClass}">
         <span class="sbl">DOT-Warnungen</span>
         <span class="sbn">${s.dotWarnings}</span>
@@ -1737,7 +1759,7 @@ function renderAdminSidebar(){
       <div class="admin-nav-label">Reifen</div>
       <button class="admin-nav-item ${sec==="reifen_list"?"active":""}" onclick="selectAdminSection('reifen_list')">
         <span class="nav-icon">⚫</span> ${e(t("admin_tires_all"))}
-     </button>
+      </button>
     </div>
     <div class="admin-nav-section">
       <div class="admin-nav-label">Vororder</div>
@@ -1745,7 +1767,7 @@ function renderAdminSidebar(){
         <span class="nav-icon">📋</span> Vororder-Übersicht
       </button>
     </div>
-<div class="admin-nav-section">
+    <div class="admin-nav-section">
       <div class="admin-nav-label">Tools</div>
       <button class="admin-nav-item ${sec==="inventur"?"active":""}" onclick="selectAdminSection('inventur')">
         <span class="nav-icon">📊</span> Inventur / Export
