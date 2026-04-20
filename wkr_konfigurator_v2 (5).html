@@ -3428,10 +3428,14 @@ async function saveNewVororder(){
         };
         await postToScript({ action: "vororderPositionAdd", vororderId: res.id, row: posRow });
       }
-      alert(`✅ Vororder ${res.id} erfolgreich gespeichert.`);
+      const newVoId = res.id;
       closeNewVororderModal();
       await reloadVororder();
       render();
+      // Detail-Modal automatisch öffnen für weitere Positionen
+      if (newVoId) {
+        setTimeout(() => openVororderDetail(newVoId), 200);
+      }
     } else {
       alert("Fehler: " + JSON.stringify(res));
     }
