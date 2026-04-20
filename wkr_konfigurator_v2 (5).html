@@ -3433,8 +3433,13 @@ async function saveNewVororder(){
       await reloadVororder();
       render();
       // Detail-Modal automatisch öffnen für weitere Positionen
-    if (newVoId) {
-        // Sicherstellen dass die Vororder + Positionen vollständig geladen sind
+   if (newVoId) {
+        // Produkte neu laden (für aktualisierte Reserviert-Werte)
+        try {
+          const p = await fetch(URLS.produkte).then(r=>r.json());
+          if (Array.isArray(p)) produkte = p;
+        } catch(e){}
+        // Vororder + Positionen neu laden
         await loadVororder();
         render();
         setTimeout(() => openVororderDetail(newVoId), 100);
