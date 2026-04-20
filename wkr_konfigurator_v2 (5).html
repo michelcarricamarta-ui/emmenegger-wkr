@@ -1190,6 +1190,91 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
     </div>
   </div>
 </div>
+   async function saveNewVororder(){
+  if (_vororderSaving) return;
+
+  const kundenname = clean(document.getElementById("newVoKundenname").value);
+  const typ = clean(document.getElementById("newVoTyp").value);
+  const anzahl = parseInt(clean(document.getElementById("newVoAnzahl").value),10) || 0;
+  const marke = clean(document.getElementById("newVoMarke").value);
+  const fahrzeug = clean(document.getElementById("newVoFahrzeug").value);
+  const standort = clean(document.getElementById("newVoStandort").value);
+  const status = clean(document.getElementById("newVoStatus").value);
+  const tn = clean(document.getElementById("newVoTN").value);
+
+  if (!kundenname || !typ || !anzahl || !marke || !fahrzeug || !standort || !status) {
+    alert("Bitte Pflichtfelder ausfüllen: Kundenname, Typ, Anzahl, Marke, Fahrzeug, Standort, Status");
+    return;
+  }
+
+  const row = {
+    "Kundenname": kundenname,
+    "Debitornr": clean(document.getElementById("newVoDebitornr").value),
+    "Adressnr": clean(document.getElementById("newVoAdressnr").value),
+    "KundenEmail": clean(document.getElementById("newVoEmail").value),
+    "RechnungAn": clean(document.getElementById("newVoRechnungAn").value),
+    "Marke": marke,
+    "Fahrzeug": fahrzeug,
+    "Reihe": clean(document.getElementById("newVoReihe").value),
+    "Modell": clean(document.getElementById("newVoModell").value),
+    "Motor": clean(document.getElementById("newVoMotor").value),
+    "Fahrgestellnr": clean(document.getElementById("newVoFIN").value),
+    "Ordernr": clean(document.getElementById("newVoOrdernr").value),
+    "Vertragsnr": clean(document.getElementById("newVoVertragsnr").value),
+    "Auftrag": clean(document.getElementById("newVoAuftrag").value),
+    "Ablieferung": clean(document.getElementById("newVoAblieferung").value),
+    "Typ": typ,
+    "TN": tn,
+    "Bezeichnung": clean(document.getElementById("newVoBezeichnung").value),
+    "Dimension": clean(document.getElementById("newVoDimension").value),
+    "Anzahl": anzahl,
+    "VK": clean(document.getElementById("newVoVK").value),
+    "Konditionen": clean(document.getElementById("newVoKonditionen").value),
+    "Standort_Bearbeitung": standort,
+    "Status": status,
+    "Erfasser": currentUser?.name || currentUser?.email || "Unknown",
+    "Bemerkungen": clean(document.getElementById("newVoBemerkungen").value)
+  };
+
+  _vororderSaving = true;
+  try {
+    const res = await postToScript({ action: "vororderAdd", row: row });
+    if (res && res.status === "OK") {
+      
+      // NEU: Sofort die gewählte Position (Rad) hinzufügen
+      if (typ && anzahl > 0) {
+        const posRow = {
+          "Typ": typ,
+          "TN": tn,
+          "Bezeichnung": row["Bezeichnung"],
+          "Dimension": row["Dimension"],
+          "Anzahl": anzahl,
+          "VK": row["VK"],
+          "Konditionen": row["Konditionen"],
+          "Status": status,
+          "Bemerkungen": ""
+        };
+        await postToScript({ action: "vororderPositionAdd", vororderId: res.id, row: posRow });
+      }
+
+      alert(`✅ Vororder ${res.id} erfolgreich gespeichert.`);
+      closeNewVororderModal();
+      await reloadVororder();
+      
+      try {
+        const p = await fetch(URLS.produkte).then(r=>r.json());
+        if (Array.isArray(p)) produkte = p;
+      } catch(e){}
+      render();
+    } else {
+      alert("Fehler beim Speichern: " + JSON.stringify(res));
+    }
+  } catch(err) {
+    alert("Fehler: " + err.message);
+  } finally {
+    _vororderSaving = false;
+  }
+}
 <!-- ============================================================
      JAVASCRIPT
      ============================================================ -->
@@ -2914,20 +2999,26 @@ function renderAdminWkrItem(r){
     </div>
   </div>`;
 }
- /* ============================================================
-   RESERVIERUNGEN ANZEIGEN (Popup)
+/* ============================================================
+   RESERVIERUNGEN ANZEIGEN (Schönes Modal)
    ============================================================ */
 function showReservationDetails(tn) {
   if (!tn) return;
   const searchTn = clean(tn).toLowerCase();
 
-  let info = `Aktive Reservierungen für TN ${tn}:\n\n`;
+  let html = "";
   let found = false;
 
   // 1. Suche in den Haupt-Vororders
   vororder.forEach(v => {
     if (clean(v["TN"]).toLowerCase() === searchTn && clean(v["Status"]) !== "Erledigt" && clean(v["Status"]) !== "Kunde verzichtet") {
-      info += `• ${clean(v["Kundenname"]) || "Unbekannt"}: ${clean(v["Anzahl"])} Stück (VO-ID: ${v["ID"]})\n`;
+      html += `<div style="padding: 10px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 8px;">
+                 <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">${e(clean(v["Kundenname"])) || "Unbekannt"}</div>
+                 <div style="font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between;">
+                   <span>Menge: <b style="color:var(--accent);">${e(clean(v["Anzahl"]))} Stück</b></span>
+                   <span>VO-ID: ${e(v["ID"])}</span>
+                 </div>
+               </div>`;
       found = true;
     }
   });
@@ -2937,20 +3028,28 @@ function showReservationDetails(tn) {
   
   matchingPositions.forEach(p => {
     const voId = clean(p["VororderID"]);
-    // Vermeiden, dass es doppelt angezeigt wird, falls es in beiden Listen steht
-    if (!info.includes(`(VO-ID: ${voId})`)) {
+    // Vermeiden von Duplikaten
+    if (!html.includes(`VO-ID: ${voId}`)) {
       const vo = vororder.find(v => clean(v["ID"]) === voId);
       const kunde = vo ? clean(vo["Kundenname"]) : "Unbekannt";
-      info += `• ${kunde}: ${clean(p["Anzahl"])} Stück (VO-ID: ${voId} / Pos)\n`;
+      html += `<div style="padding: 10px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 8px;">
+                 <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">${e(kunde)}</div>
+                 <div style="font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between;">
+                   <span>Menge: <b style="color:var(--accent);">${e(clean(p["Anzahl"]))} Stück</b></span>
+                   <span>VO-ID: ${e(voId)} (Pos)</span>
+                 </div>
+               </div>`;
       found = true;
     }
   });
 
   if (!found) {
-    alert("Hinweis: Das System meldet Bestand als reserviert, aber in der aktuellen Liste gibt es keine offene Vororder mit dieser Teilenummer. (Evtl. Alt-Daten im Google Sheet).");
-  } else {
-    alert(info);
+    html = `<div style="color: var(--warning); padding: 12px; background: var(--warning-bg); border-radius: 6px;">Keine aktiven Reservierungen für diese Teilenummer gefunden. (Evtl. Alt-Daten).</div>`;
   }
+
+  document.getElementById("resInfoSubtitle").textContent = `Teilenummer: ${tn}`;
+  document.getElementById("resInfoContent").innerHTML = html;
+  document.getElementById("reservationInfoModal").classList.add("open");
 }
 
 /* ============================================================
@@ -3289,77 +3388,6 @@ async function reloadVororder(){
   await loadVororder();
   render();
 }
-   /* ============================================================
-   VORORDER: Modal-Handling (Neu erfassen)
-   ============================================================ */
-let _vororderSaving = false;
-
-function openNewVororderModal(){
-  // Felder zurücksetzen
-  ["newVoKundenname","newVoDebitornr","newVoAdressnr","newVoEmail","newVoFahrzeug","newVoReihe","newVoModell","newVoMotor","newVoFIN","newVoOrdernr","newVoVertragsnr","newVoAuftrag","newVoAblieferung","newVoTN","newVoBezeichnung","newVoDimension","newVoVK","newVoKonditionen","newVoBemerkungen"].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = "";
-  });
-  document.getElementById("newVoMarke").value = "";
-  document.getElementById("newVoRechnungAn").value = "";
-  document.getElementById("newVoTyp").value = "";
-  document.getElementById("newVoAnzahl").value = "4";
-  document.getElementById("newVoStandort").value = currentUser?.standort || "GEB";
-  document.getElementById("newVoStatus").value = "Erfasst";
-
-  // Subtitle
-  const sub = document.getElementById("newVororderSubtitle");
-  if (sub) sub.textContent = `Erfasser: ${currentUser?.name || "—"} · Standort: ${standortLabel(currentUser?.standort || "")}`;
-
-  // TN-Vorschläge aus Produkte-Liste füllen
-  fillVoTnOptions();
-
-  document.getElementById("newVororderModal").classList.add("open");
-}
-
-function closeNewVororderModal(){
-  document.getElementById("newVororderModal").classList.remove("open");
-}
-
-function fillVoTnOptions(){
-  const datalist = document.getElementById("voTnOptions");
-  if (!datalist) return;
-  const marke = clean(document.getElementById("newVoMarke")?.value);
-  const standort = clean(document.getElementById("newVoStandort")?.value);
-  const filtered = produkte.filter(p => {
-    if (marke && marke !== "Andere" && clean(p["Marke"]) !== marke) return false;
-    if (standort && clean(p["Standort"]) !== standort) return false;
-    return true;
-  });
-  datalist.innerHTML = filtered.map(p => {
-    const tn = clean(p["TN"]);
-    const lager = parseInt(clean(p["Lager"]),10)||0;
-    const reserviert = parseInt(clean(p["Reserviert"]),10)||0;
-    const verfuegbar = lager - reserviert;
-    const label = `${clean(p["Bezeichnung"])} · ${clean(p["Dimension"])} · Verfügbar: ${verfuegbar}/${lager}`;
-    return `<option value="${e(tn)}">${e(label)}</option>`;
-  }).join("");
-}
-
-function onVoMarkeChange(){
-  fillVoTnOptions();
-}
-
-function onVoTnChange(){
-  const tn = clean(document.getElementById("newVoTN")?.value);
-  if (!tn) return;
-  const prod = produkte.find(p => clean(p["TN"]) === tn);
-  if (prod) {
-    const bezEl = document.getElementById("newVoBezeichnung");
-    const dimEl = document.getElementById("newVoDimension");
-    const vkEl = document.getElementById("newVoVK");
-    const typEl = document.getElementById("newVoTyp");
-    if (bezEl && !bezEl.value) bezEl.value = clean(prod["Bezeichnung"]);
-    if (dimEl && !dimEl.value) dimEl.value = clean(prod["Dimension"]);
-    if (vkEl && !vkEl.value)   vkEl.value  = clean(prod["Angebotspreis"]) || clean(prod["VP"]);
-    if (typEl && !typEl.value) typEl.value = "WKR";
-  }
-}
-
 async function saveNewVororder(){
   if (_vororderSaving) return;
 
@@ -3377,18 +3405,74 @@ async function saveNewVororder(){
     return;
   }
 
-  // Bestandswarnung bei WKR mit TN
-  if (status === "Erfasst" && typ === "WKR" && tn) {
-    const prod = produkte.find(p => clean(p["TN"]) === tn);
-    if (prod) {
-      const lager = parseInt(clean(prod["Lager"]),10) || 0;
-      const reserviert = parseInt(clean(prod["Reserviert"]),10) || 0;
-      const verfuegbar = lager - reserviert;
-      if (anzahl > verfuegbar) {
-        if (!confirm(`⚠ Warnung: Verfügbar sind nur ${verfuegbar} Stück (Lager: ${lager}, bereits reserviert: ${reserviert}).\nTrotzdem ${anzahl} Stück reservieren?`)) {
-          return;
-        }
+  const row = {
+    "Kundenname": kundenname,
+    "Debitornr": clean(document.getElementById("newVoDebitornr").value),
+    "Adressnr": clean(document.getElementById("newVoAdressnr").value),
+    "KundenEmail": clean(document.getElementById("newVoEmail").value),
+    "RechnungAn": clean(document.getElementById("newVoRechnungAn").value),
+    "Marke": marke,
+    "Fahrzeug": fahrzeug,
+    "Reihe": clean(document.getElementById("newVoReihe").value),
+    "Modell": clean(document.getElementById("newVoModell").value),
+    "Motor": clean(document.getElementById("newVoMotor").value),
+    "Fahrgestellnr": clean(document.getElementById("newVoFIN").value),
+    "Ordernr": clean(document.getElementById("newVoOrdernr").value),
+    "Vertragsnr": clean(document.getElementById("newVoVertragsnr").value),
+    "Auftrag": clean(document.getElementById("newVoAuftrag").value),
+    "Ablieferung": clean(document.getElementById("newVoAblieferung").value),
+    "Typ": typ,
+    "TN": tn,
+    "Bezeichnung": clean(document.getElementById("newVoBezeichnung").value),
+    "Dimension": clean(document.getElementById("newVoDimension").value),
+    "Anzahl": anzahl,
+    "VK": clean(document.getElementById("newVoVK").value),
+    "Konditionen": clean(document.getElementById("newVoKonditionen").value),
+    "Standort_Bearbeitung": standort,
+    "Status": status,
+    "Erfasser": currentUser?.name || currentUser?.email || "Unknown",
+    "Bemerkungen": clean(document.getElementById("newVoBemerkungen").value)
+  };
+
+  _vororderSaving = true;
+  try {
+    const res = await postToScript({ action: "vororderAdd", row: row });
+    if (res && res.status === "OK") {
+      
+      // NEU: Sofort die gewählte Position (Rad) hinzufügen
+      if (typ && anzahl > 0) {
+        const posRow = {
+          "Typ": typ,
+          "TN": tn,
+          "Bezeichnung": row["Bezeichnung"],
+          "Dimension": row["Dimension"],
+          "Anzahl": anzahl,
+          "VK": row["VK"],
+          "Konditionen": row["Konditionen"],
+          "Status": status,
+          "Bemerkungen": ""
+        };
+        await postToScript({ action: "vororderPositionAdd", vororderId: res.id, row: posRow });
       }
+
+      alert(`✅ Vororder ${res.id} erfolgreich gespeichert.`);
+      closeNewVororderModal();
+      await reloadVororder();
+      
+      try {
+        const p = await fetch(URLS.produkte).then(r=>r.json());
+        if (Array.isArray(p)) produkte = p;
+      } catch(e){}
+      render();
+    } else {
+      alert("Fehler beim Speichern: " + JSON.stringify(res));
+    }
+  } catch(err) {
+    alert("Fehler: " + err.message);
+  } finally {
+    _vororderSaving = false;
+  }
+}
     }
   }
 
