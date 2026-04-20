@@ -2252,13 +2252,12 @@ function render(){
   /* ── Internal tire search ── */
   if (internalMode && state.internalSection === "reifen") html += renderTireSearch();
 
-  document.getElementById("app").innerHTML = html;
+ document.getElementById("app").innerHTML = html;
   updateHero();
-    updateBrandTheme();
-    applyTranslations();
-    updateTopbarContext();
-    return;
-  }
+  updateBrandTheme();
+  applyTranslations();
+  updateTopbarContext();
+}
 /* ============================================================
    WKR FLOW (shared between public, internal, admin)
    ============================================================ */
