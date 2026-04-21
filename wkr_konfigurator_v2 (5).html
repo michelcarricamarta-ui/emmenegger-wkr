@@ -5039,14 +5039,14 @@ document.querySelectorAll(".modal-overlay").forEach(overlay=>{
 /* ============================================================
    INIT
 ============================================================ */
-  function loadFromUrl(){
+ async function loadFromUrl(){
   try {
     const p = new URLSearchParams(window.location.search);
     
     // Token-Check zuerst (Kunden-Link)
     const token = clean(p.get("token"));
     if (token) {
-      loadCustomerToken(token);
+      await loadCustomerToken(token);
       return;
     }
     
@@ -5086,20 +5086,21 @@ loadFromUrl();
 initTheme();
 
 Promise.all([
+  loadFromUrl(),
   fetch(URLS.produkte).then(r=>r.json()),
   fetch(URLS.mapping).then(r=>r.json()),
   fetch(URLS.fahrzeuge).then(r=>r.json()),
   fetch(URLS.reifen).then(r=>r.json())
-]).then(([p,m,f,r])=>{
+]).then(([_, p, m, f, r])=>{
   produkte=Array.isArray(p)?p:[];
   mapping=Array.isArray(m)?m:[];
   fahrzeuge=Array.isArray(f)?f:[];
   reifen=Array.isArray(r)?r:[];
- if (window.isFirebaseAdminLoggedIn) {
-  applyFirebaseAdminState();
-} else {
-  render();
-}
+  if (window.isFirebaseAdminLoggedIn) {
+    applyFirebaseAdminState();
+  } else {
+    render();
+  }
 }).catch(()=>{
   document.getElementById("app").innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div>Daten konnten nicht geladen werden. Bitte Seite neu laden.</div>`;
 });
