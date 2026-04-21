@@ -2056,7 +2056,22 @@ function renderAdminDashboard(){
         </div>
       </div>
     </div>
-
+    <!-- ═══════════════ KUNDE HAT BESTELLT (Rote Warnung) ═══════════════ -->
+    ${kundeBestellt > 0 ? `
+    <div style="background:linear-gradient(135deg, #fee2e2 0%, #fef2f2 100%);border:1px solid #f87171;border-radius:12px;padding:22px;margin-bottom:24px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;gap:12px;flex-wrap:wrap;">
+        <div>
+          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#991b1b;margin-bottom:4px;">🚨 Aktion erforderlich</div>
+          <div style="font-size:18px;font-weight:700;color:#7f1d1d;">Kunde hat bestellt — noch nicht an BMW</div>
+          <div style="font-size:12px;color:#991b1b;margin-top:2px;">
+            ${kundeBestellt} Kunde${kundeBestellt > 1 ? "n" : ""} wollen direkt kaufen — bitte bei BMW bestellen
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="vororderFilter.status='Kunde hat bestellt';selectAdminSection('vororder')" style="background:#dc2626;">
+          Alle anzeigen →
+        </button>
+      </div>
+    </div>` : ""}
     <!-- ═══════════════ DRINGEND: Ablieferung diese Woche ═══════════════ -->
 
     ${dringendeVororders.length > 0 ? `
