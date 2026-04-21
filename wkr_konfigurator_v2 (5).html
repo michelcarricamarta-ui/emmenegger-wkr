@@ -3585,7 +3585,11 @@ function openInquiryModal(bezeichnung,marke,dimension,preis,empfaengerMail,bild,
   
   document.getElementById("inquiryModal").classList.add("open");
 }
-
+function closeInquiryModal(){
+  const modal = document.getElementById("inquiryModal");
+  if (modal) modal.classList.remove("open");
+  selectedProduct = null;
+}
 /* ============================================================
    MODAL: ADD/EDIT TIRE
    ============================================================ */
