@@ -1937,9 +1937,8 @@ function renderAdminDashboard(){
   const s = getDashboardStats();
 
   // ─── Business-Metriken ───
- let offeneVororders = 0, umsatzPotenzial = 0, reservierteWKR = 0, sammelbestellung = 0;
+  let offeneVororders = 0, umsatzPotenzial = 0, reservierteWKR = 0, sammelbestellung = 0;
   let offeneAnfragen = 0, bestellt = 0;
-  let offeneAnfragenNeu = 0, kundeBestellt = 0;
   let dringendeVororders = [];
   
   if (vororderLoaded && vororder) {
@@ -1949,8 +1948,6 @@ function renderAdminDashboard(){
     sammelbestellung = vororder.filter(v => clean(v["Status"]) === "Sammelbestellung (Vororder26)").length;
     offeneAnfragen = vororder.filter(v => ["Kundenauswahl", "Offerte ausstehend"].includes(clean(v["Status"]))).length;
     bestellt = vororder.filter(v => clean(v["Status"]) === "Bestellt").length;
-     offeneAnfragenNeu = vororder.filter(v => clean(v["Status"]) === "Offeriert").length;
-    kundeBestellt = vororder.filter(v => clean(v["Status"]) === "Kunde hat bestellt").length;
 
     // Dringend: Ablieferung in den nächsten 7 Tagen + Status nicht "Erledigt" oder "Kunde verzichtet"
     const now = new Date();
@@ -2038,13 +2035,11 @@ function renderAdminDashboard(){
         <div style="font-size:12px;color:var(--text-secondary);">Für BMW-Vororder 2026</div>
       </div>
 
-      <!-- 4. Neue Kunden-Aktionen -->
-      <div style="${spotlightStyle} border-top:4px solid #8b5cf6;${(offeneAnfragenNeu + kundeBestellt)>0?'background:linear-gradient(135deg, #f5f3ff 0%, #faf5ff 100%);':''}" onclick="selectAdminSection('vororder')" onmouseover="${spotlightHover}" onmouseout="${spotlightOut}">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;">🔔 Neue Kunden-Aktionen</div>
-        <div style="font-size:36px;font-weight:800;color:#8b5cf6;line-height:1;margin-bottom:8px;">${vororderLoaded ? (offeneAnfragenNeu + kundeBestellt) : "—"}</div>
-        <div style="font-size:12px;color:var(--text-secondary);">
-          ${vororderLoaded ? `<b style="color:#8b5cf6;">${offeneAnfragenNeu}</b> Anfragen · <b style="color:#dc2626;">${kundeBestellt}</b> Bestellungen` : "Online-Anfragen"}
-        </div>
+      <!-- 4. Pipeline Umsatz -->
+      <div style="${spotlightStyle} border-top:4px solid #8b5cf6;" onclick="selectAdminSection('vororder')" onmouseover="${spotlightHover}" onmouseout="${spotlightOut}">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;">💰 Pipeline Umsatz</div>
+        <div style="font-size:28px;font-weight:800;color:#8b5cf6;line-height:1;margin-bottom:8px;">${vororderLoaded && umsatzPotenzial > 0 ? formatPrice(umsatzPotenzial) : "—"}<span style="font-size:14px;font-weight:400;color:var(--text-muted);"> CHF</span></div>
+        <div style="font-size:12px;color:var(--text-secondary);">Offeriert + Bestellt</div>
       </div>
 
       <!-- 5. WKR Lager -->
@@ -2056,36 +2051,34 @@ function renderAdminDashboard(){
         </div>
       </div>
     </div>
-    <!-- ═══════════════ KUNDE HAT BESTELLT (Rote Warnung) ═══════════════ -->
-    ${kundeBestellt > 0 ? `
-    <div style="background:linear-gradient(135deg, #fee2e2 0%, #fef2f2 100%);border:1px solid #f87171;border-radius:12px;padding:22px;margin-bottom:24px;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;gap:12px;flex-wrap:wrap;">
-        <div>
-          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#991b1b;margin-bottom:4px;">🚨 Aktion erforderlich</div>
-          <div style="font-size:18px;font-weight:700;color:#7f1d1d;">Kunde hat bestellt — noch nicht an BMW</div>
-          <div style="font-size:12px;color:#991b1b;margin-top:2px;">
-            ${kundeBestellt} Kunde${kundeBestellt > 1 ? "n" : ""} wollen direkt kaufen — bitte bei BMW bestellen
-          </div>
-        </div>
-        <button class="btn btn-primary btn-sm" onclick="vororderFilter.status='Kunde hat bestellt';selectAdminSection('vororder')" style="background:#dc2626;">
-          Alle anzeigen →
-        </button>
-      </div>
-    </div>` : ""}
+
     <!-- ═══════════════ DRINGEND: Ablieferung diese Woche ═══════════════ -->
     ${dringendeVororders.length > 0 ? `
     <div style="background:linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);border:1px solid #fbbf24;border-radius:12px;padding:22px;margin-bottom:24px;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;gap:12px;flex-wrap:wrap;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
         <div>
           <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#92400e;margin-bottom:4px;">⚡ Dringend</div>
           <div style="font-size:18px;font-weight:700;color:#78350f;">Ablieferung in den nächsten 7 Tagen</div>
-          <div style="font-size:12px;color:#92400e;margin-top:2px;">
-            ${dringendeVororders.length} Vororder${dringendeVororders.length > 1 ? "s" : ""} brauchen Aufmerksamkeit
-          </div>
+          <div style="font-size:12px;color:#92400e;margin-top:2px;">${dringendeVororders.length} Vororder${dringendeVororders.length>1?"s":""} brauchen Aufmerksamkeit</div>
         </div>
-        <button class="btn btn-primary btn-sm" onclick="vororderFilter.status='';selectAdminSection('vororder')" style="background:#d97706;">
-          Alle anzeigen →
-        </button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:10px;">
+        ${dringendeVororders.map(v => {
+          const daysLeft = Math.ceil((new Date(clean(v["Ablieferung"])) - new Date()) / (1000*60*60*24));
+          return `
+          <div style="background:white;border:1px solid #fbbf24;border-radius:8px;padding:12px;cursor:pointer;transition:all 0.2s;" 
+               onclick="openVororderDetail('${js(clean(v["ID"]))}')"
+               onmouseover="this.style.borderColor='#d97706';this.style.transform='translateY(-1px)';"
+               onmouseout="this.style.borderColor='#fbbf24';this.style.transform='none';">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span style="font-family:monospace;font-size:11px;color:#92400e;font-weight:700;">${e(clean(v["ID"]))}</span>
+              <span style="background:#d97706;color:white;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;">${daysLeft === 0 ? "HEUTE" : daysLeft === 1 ? "MORGEN" : daysLeft + " TAGE"}</span>
+            </div>
+            <div style="font-weight:700;color:#1a1a1a;margin-bottom:2px;font-size:14px;">${e(clean(v["Kundenname"]))||"—"}</div>
+            <div style="font-size:12px;color:#555;">${e(clean(v["Fahrzeug"]))||"—"}</div>
+            <div style="font-size:11px;color:#92400e;margin-top:6px;">${vororderStatusBadge(v["Status"])} · ${e(formatVororderDate(v["Ablieferung"]))}</div>
+          </div>`;
+        }).join("")}
       </div>
     </div>` : ""}
     <!-- ═══════════════ WKR ═══════════════ -->
