@@ -1187,6 +1187,7 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
         <label>Status *</label>
         <select id="newVoStatus">
   <option value="Kundenauswahl">Kundenauswahl (Kunde wählt online)</option>
+   <option value="Kunde hat bestellt">Kunde hat bestellt (noch nicht an BMW)</option>
   <option value="Offerte ausstehend">Offerte ausstehend</option>
   <option value="Offeriert">Offeriert</option>
   <option value="Sammelbestellung (Vororder26)" selected>Sammelbestellung (Vororder26)</option>
@@ -1237,6 +1238,7 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
         <label>Status</label>
         <select id="posStatus">
           <option value="Kundenauswahl">Kundenauswahl</option>
+          <option value="Kunde hat bestellt">Kunde hat bestellt</option>
           <option value="Offerte ausstehend" selected>Offerte ausstehend</option>
           <option value="Offeriert">Offeriert</option>
           <option value="Sammelbestellung (Vororder26)">Sammelbestellung (Vororder26)</option>
@@ -1935,8 +1937,9 @@ function renderAdminDashboard(){
   const s = getDashboardStats();
 
   // ─── Business-Metriken ───
-  let offeneVororders = 0, umsatzPotenzial = 0, reservierteWKR = 0, sammelbestellung = 0;
+ let offeneVororders = 0, umsatzPotenzial = 0, reservierteWKR = 0, sammelbestellung = 0;
   let offeneAnfragen = 0, bestellt = 0;
+  let offeneAnfragenNeu = 0, kundeBestellt = 0;
   let dringendeVororders = [];
   
   if (vororderLoaded && vororder) {
@@ -1946,6 +1949,8 @@ function renderAdminDashboard(){
     sammelbestellung = vororder.filter(v => clean(v["Status"]) === "Sammelbestellung (Vororder26)").length;
     offeneAnfragen = vororder.filter(v => ["Kundenauswahl", "Offerte ausstehend"].includes(clean(v["Status"]))).length;
     bestellt = vororder.filter(v => clean(v["Status"]) === "Bestellt").length;
+     offeneAnfragenNeu = vororder.filter(v => clean(v["Status"]) === "Offeriert").length;
+    kundeBestellt = vororder.filter(v => clean(v["Status"]) === "Kunde hat bestellt").length;
 
     // Dringend: Ablieferung in den nächsten 7 Tagen + Status nicht "Erledigt" oder "Kunde verzichtet"
     const now = new Date();
@@ -2033,11 +2038,13 @@ function renderAdminDashboard(){
         <div style="font-size:12px;color:var(--text-secondary);">Für BMW-Vororder 2026</div>
       </div>
 
-      <!-- 4. Pipeline Umsatz -->
-      <div style="${spotlightStyle} border-top:4px solid #8b5cf6;" onclick="selectAdminSection('vororder')" onmouseover="${spotlightHover}" onmouseout="${spotlightOut}">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;">💰 Pipeline Umsatz</div>
-        <div style="font-size:28px;font-weight:800;color:#8b5cf6;line-height:1;margin-bottom:8px;">${vororderLoaded && umsatzPotenzial > 0 ? formatPrice(umsatzPotenzial) : "—"}<span style="font-size:14px;font-weight:400;color:var(--text-muted);"> CHF</span></div>
-        <div style="font-size:12px;color:var(--text-secondary);">Offeriert + Bestellt</div>
+      <!-- 4. Neue Kunden-Aktionen -->
+      <div style="${spotlightStyle} border-top:4px solid #8b5cf6;${(offeneAnfragenNeu + kundeBestellt)>0?'background:linear-gradient(135deg, #f5f3ff 0%, #faf5ff 100%);':''}" onclick="selectAdminSection('vororder')" onmouseover="${spotlightHover}" onmouseout="${spotlightOut}">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;">🔔 Neue Kunden-Aktionen</div>
+        <div style="font-size:36px;font-weight:800;color:#8b5cf6;line-height:1;margin-bottom:8px;">${vororderLoaded ? (offeneAnfragenNeu + kundeBestellt) : "—"}</div>
+        <div style="font-size:12px;color:var(--text-secondary);">
+          ${vororderLoaded ? `<b style="color:#8b5cf6;">${offeneAnfragenNeu}</b> Anfragen · <b style="color:#dc2626;">${kundeBestellt}</b> Bestellungen` : "Online-Anfragen"}
+        </div>
       </div>
 
       <!-- 5. WKR Lager -->
@@ -2051,6 +2058,33 @@ function renderAdminDashboard(){
     </div>
 
     <!-- ═══════════════ DRINGEND: Ablieferung diese Woche ═══════════════ -->
+    <!-- ═══════════════ KUNDE HAT BESTELLT (Rote Warnung) ═══════════════ -->
+    ${kundeBestellt > 0 ? `
+    <div style="background:linear-gradient(135deg, #fee2e2 0%, #fef2f2 100%);border:1px solid #f87171;border-radius:12px;padding:22px;margin-bottom:24px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+        <div>
+          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#991b1b;margin-bottom:4px;">🚨 Aktion erforderlich</div>
+          <div style="font-size:18px;font-weight:700;color:#7f1d1d;">Kunde hat bestellt — noch nicht an BMW</div>
+          <div style="font-size:12px;color:#991b1b;margin-top:2px;">${kundeBestellt} Kunde${kundeBestellt>1?'n':''} wollen direkt kaufen — bitte bei BMW bestellen</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="vororderFilter.status='Kunde hat bestellt';selectAdminSection('vororder')" style="background:#dc2626;">Alle anzeigen →</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:10px;">
+        ${vororder.filter(v => clean(v["Status"]) === "Kunde hat bestellt").slice(0, 5).map(v => `
+          <div style="background:white;border:1px solid #f87171;border-radius:8px;padding:12px;cursor:pointer;transition:all 0.2s;" 
+               onclick="openVororderDetail('${js(clean(v["ID"]))}')"
+               onmouseover="this.style.borderColor='#dc2626';this.style.transform='translateY(-1px)';"
+               onmouseout="this.style.borderColor='#f87171';this.style.transform='none';">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span style="font-family:monospace;font-size:11px;color:#991b1b;font-weight:700;">${e(clean(v["ID"]))}</span>
+              <span style="background:#dc2626;color:white;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;">BESTELLEN</span>
+            </div>
+            <div style="font-weight:700;color:#1a1a1a;margin-bottom:2px;font-size:14px;">${e(clean(v["Kundenname"]))||"—"}</div>
+            <div style="font-size:12px;color:#555;">${e(clean(v["Fahrzeug"]))||"—"}</div>
+            <div style="font-size:11px;color:#991b1b;margin-top:6px;">TN: <b>${e(clean(v["TN"]))||"—"}</b> · ${e(clean(v["Anzahl"]))||"—"} Stück</div>
+          </div>`).join("")}
+      </div>
+    </div>` : ""}
     ${dringendeVororders.length > 0 ? `
     <div style="background:linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);border:1px solid #fbbf24;border-radius:12px;padding:22px;margin-bottom:24px;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
@@ -2704,7 +2738,7 @@ function renderAdminVororder(){
     abgesagt: results.filter(v => clean(v["Status"]) === "Kunde verzichtet").length
   };
 
-  const statusOptions = ["Kundenauswahl","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt","Reserviert","Erledigt","Kunde verzichtet"];
+  const statusOptions = ["Kundenauswahl","Kunde hat bestellt","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt","Reserviert","Erledigt","Kunde verzichtet"];
 
   let html = `<div class="admin-content-header">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
@@ -3861,8 +3895,7 @@ function getFilteredVororder(){
     return true;
   }).sort((a,b) => {
     // Sortierung: Offene zuerst, dann nach Datum absteigend
-    const openStatuses = ["Kundenauswahl","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt","Reserviert"];
-    const aOpen = openStatuses.indexOf(clean(a["Status"])) !== -1 ? 0 : 1;
+const openStatuses = ["Kunde hat bestellt","Kundenauswahl","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt","Reserviert"];    const aOpen = openStatuses.indexOf(clean(a["Status"])) !== -1 ? 0 : 1;
     const bOpen = openStatuses.indexOf(clean(b["Status"])) !== -1 ? 0 : 1;
     if (aOpen !== bOpen) return aOpen - bOpen;
     return clean(b["ErfasstAm"]).localeCompare(clean(a["ErfasstAm"]));
@@ -3873,6 +3906,7 @@ function vororderStatusBadge(status){
   const s = clean(status);
   const styles = {
     "Kundenauswahl":                  "background:#e0f2fe;color:#0c4a6e;",
+     "Kunde hat bestellt":             "background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;",
     "Offerte ausstehend":             "background:#fef3c7;color:#92400e;",
     "Offeriert":                      "background:#dbeafe;color:#1e40af;",
     "Sammelbestellung (Vororder26)":  "background:#e0e7ff;color:#3730a3;",
@@ -4089,7 +4123,7 @@ function renderVororderDetail(){
   const content = document.getElementById("voDetailContent");
   if (!content) return;
 
-  const allStatuses = ["Kundenauswahl","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt","Reserviert","Erledigt","Kunde verzichtet"];
+  const allStatuses = ["Kundenauswahl","Kunde hat bestellt","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt","Reserviert","Erledigt","Kunde verzichtet"];
   const currentStatus = clean(vo["Status"]);
   const historie = clean(vo["HistorieLog"]);
   const edit = _voDetailEditMode;
@@ -4915,9 +4949,13 @@ async function sendCustomerRequest(){
   sendBtn.disabled = true;
   
   try {
+    const art = clean(document.getElementById("kundeArt")?.value) || "Anfrage";
+  
+  try {
     const res = await postToScript({
       action: "customerSubmit",
       token: clean(customerVororder["Token"]),
+      art: art,
       updates: {
         TN: selectedProduct.teilenummer,
         Typ: "WKR",
@@ -4933,7 +4971,7 @@ async function sendCustomerRequest(){
    if (res && res.status === "OK") {
       const bezeichnung = selectedProduct.bezeichnung;  // Vorher merken!
       closeInquiryModal();
-      showCustomerThankYou(bezeichnung);
+      showCustomerThankYou(bezeichnung, art);
     } else {
       alert("Fehler: " + (res.message || JSON.stringify(res)));
     }
@@ -4945,7 +4983,7 @@ async function sendCustomerRequest(){
   }
 }
 
-function showCustomerThankYou(bezeichnung){
+function showCustomerThankYou(bezeichnung, art){
   const appEl = document.getElementById("app");
   if (!appEl) return;
   
@@ -4960,13 +4998,14 @@ function showCustomerThankYou(bezeichnung){
     bemerkung: clean(document.getElementById("kundeBemerkung")?.value)
   };
   window._customerThankYouData = customerSnapshot;
-  
+  window._customerThankYouData.art = art || "Anfrage";
+  const isBestellung = art === "Bestellung";
   appEl.innerHTML = `
     <div style="max-width:600px;margin:40px auto;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;text-align:center;box-shadow:var(--shadow-md);">
       <div style="font-size:60px;margin-bottom:16px;">✅</div>
-      <h2 style="font-size:24px;margin-bottom:12px;color:var(--text-primary);">Vielen Dank für Ihre Anfrage!</h2>
+      <h2 style="font-size:24px;margin-bottom:12px;color:var(--text-primary);">Vielen Dank für Ihre ${isBestellung ? "Bestellung" : "Anfrage"}!</h2>
       <p style="font-size:15px;color:var(--text-secondary);line-height:1.6;margin-bottom:20px;">
-        Ihre Auswahl <b>${e(bezeichnung)}</b> wurde erfolgreich übermittelt.<br>
+       Ihre ${isBestellung ? "Bestellung" : "Auswahl"} <b>${e(bezeichnung)}</b> wurde erfolgreich übermittelt.<br>
         Unser Team wird sich in Kürze bei Ihnen melden.
       </p>
       <div style="background:var(--surface-2);border-left:3px solid var(--accent);padding:14px 18px;border-radius:0 6px 6px 0;margin:20px 0;text-align:left;font-size:13px;color:var(--text-secondary);">
