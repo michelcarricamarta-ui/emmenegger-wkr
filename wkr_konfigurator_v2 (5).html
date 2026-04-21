@@ -4284,7 +4284,10 @@ function openInternalMailModal(id) {
   _currentMailVoId = id;
 
   // Link generieren
-  const params = new URLSearchParams();
+ const params = new URLSearchParams();
+  // Token ZUERST (für Kunden-Flow)
+  if (vo["Token"]) params.set("token", clean(vo["Token"]));
+  // Fallback-Daten (falls kein Token)
   if (vo["Marke"]) params.set("marke", clean(vo["Marke"]));
   if (vo["Standort_Bearbeitung"]) params.set("standort", clean(vo["Standort_Bearbeitung"]));
   if (vo["Reihe"]) params.set("reihe", clean(vo["Reihe"]));
