@@ -1455,7 +1455,7 @@ function tireSize(row){ const b=clean(row["Profilbreite"]),q=clean(row["Querschn
 function isDotOld(dot){ const m=clean(dot).match(/^(\d{2})\/(\d{2})$/); if(!m)return false; const d=new Date(2000+parseInt(m[2]),0,1+(parseInt(m[1])-1)*7); return(new Date()-d)/(1000*60*60*24*365.25)>3; }
 function getTireImage(h,t_){ const b=clean(h).toLowerCase(),tp=clean(t_).toLowerCase(); return(tp==="sommer"||tp==="winter")?TIRE_IMAGES[`${b}_${tp}`]||"":""; }
 function getTireLogo(h){ return TIRE_LOGOS[clean(h).toLowerCase()]||""; }
-function splitMotors(v){ return clean(v).split(",").map(x=>x.trim()).filter(Boolean); }
+function splitMotors(v){ return clean(v).split(/[\r\n,]+/).map(x=>x.trim()).filter(Boolean); }
 function motorMatch(mm,sm){ return splitMotors(mm).includes(clean(sm)); }
 function qtyOptions(max){ const q=parseInt(clean(max),10)||0; return[1,2,4].filter(n=>n<=q); }
 function parseDirectTire(input){ const raw=clean(input).toUpperCase().replace(/\s+/g,"").replace(/-/g,"/").replace(/R/g,"/"); const m=raw.match(/^(\d{3})\/(\d{2})\/(\d{2})$/); return m?{profilbreite:m[1],querschnitt:m[2],zoll:m[3]}:null; }
