@@ -4920,9 +4920,10 @@ async function sendCustomerRequest(){
       }
     });
     
-    if (res && res.status === "OK") {
+   if (res && res.status === "OK") {
+      const bezeichnung = selectedProduct.bezeichnung;  // Vorher merken!
       closeInquiryModal();
-      showCustomerThankYou(selectedProduct.bezeichnung);
+      showCustomerThankYou(bezeichnung);
     } else {
       alert("Fehler: " + (res.message || JSON.stringify(res)));
     }
