@@ -4933,23 +4933,22 @@ async function sendMail(){
    CUSTOMER FLOW: Anfrage senden
    ============================================================ */
 async function sendCustomerRequest(){
-  if (!selectedProduct || !customerVororder) { alert("Fehler: Keine Daten."); return; }
+  if (!selectedProduct) return;
   
-  const plate = clean(document.getElementById("kundeKontrollschild").value);
-  const email = clean(document.getElementById("kundeEmail").value);
-  const name = clean(document.getElementById("kundeName").value);
-  const bemerkung = clean(document.getElementById("kundeBemerkung").value);
-  const sendBtn = document.getElementById("sendBtn");
+  const plate = clean(document.getElementById("kundeKontrollschild")?.value);
+  const email = clean(document.getElementById("kundeEmail")?.value);
+  const name = clean(document.getElementById("kundeName")?.value);
+  const bemerkung = clean(document.getElementById("kundeBemerkung")?.value);
+  const art = clean(document.getElementById("kundeArt")?.value) || "Anfrage";
   
-  if (!plate) { alert("Bitte Kontrollschild eintragen."); return; }
-  if (!/^[^ ]+@[^ ]+\.[a-z]{2,}$/i.test(email)) { alert("Ungültige E-Mail."); return; }
+  if (!plate) { alert("Bitte Kontrollschild eingeben."); return; }
+  if (!email) { alert("Bitte E-Mail eingeben."); return; }
   
-  const orig = sendBtn.textContent;
-  sendBtn.textContent = "Wird gesendet…";
-  sendBtn.disabled = true;
-  
-  try {
-    const art = clean(document.getElementById("kundeArt")?.value) || "Anfrage";
+  const submitBtn = document.querySelector("#inquiryModal .btn-primary");
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = "⏳ Wird gesendet...";
+  }
   
   try {
     const res = await postToScript({
@@ -4968,21 +4967,25 @@ async function sendCustomerRequest(){
       }
     });
     
-   if (res && res.status === "OK") {
-      const bezeichnung = selectedProduct.bezeichnung;  // Vorher merken!
+    if (res && res.status === "OK") {
+      const bezeichnung = selectedProduct.bezeichnung;
       closeInquiryModal();
       showCustomerThankYou(bezeichnung, art);
     } else {
       alert("Fehler: " + (res.message || JSON.stringify(res)));
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "✓ Anfrage senden";
+      }
     }
   } catch(err) {
-    alert("Fehler: " + err.message);
-  } finally {
-    sendBtn.textContent = orig;
-    sendBtn.disabled = false;
+    alert("Fehler beim Senden: " + err.message);
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "✓ Anfrage senden";
+    }
   }
 }
-
 function showCustomerThankYou(bezeichnung, art){
   const appEl = document.getElementById("app");
   if (!appEl) return;
