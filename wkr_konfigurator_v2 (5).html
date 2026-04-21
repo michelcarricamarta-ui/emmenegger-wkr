@@ -1424,6 +1424,8 @@ const TRANSLATIONS = {
    APP STATE
    ============================================================ */
 let lang = "de", darkMode = false, internalMode = false, adminMode = false;
+   let customerMode = false;      // Kunde mit Token-Link
+let customerVororder = null;   // Die Vororder die zum Token gehört
 let produkte = [], mapping = [], fahrzeuge = [], reifen = [];
 let state = { standort:null,marke:null,reihe:null,modell:null,motor:null,internalSection:null,adminSection:null };
 let tireSearch = { direkt:"",profilbreite:"",querschnitt:"",zoll:"" };
@@ -1760,9 +1762,9 @@ function updateHero(){
   const hero=document.getElementById("heroBanner");
   const info=document.getElementById("infoSection");
   if(!hero)return;
-  const showHero=(!adminMode&&!internalMode)||state.internalSection==="wkr"||state.adminSection==="wkr_model";
+  const showHero=(!adminMode&&!internalMode&&!customerMode)||state.internalSection==="wkr"||state.adminSection==="wkr_model";
   hero.style.display=showHero?"block":"none";
-  if(info) info.style.display=adminMode?"none":"block";
+  if(info) info.style.display=(adminMode||customerMode)?"none":"block";
   const img=state.marke==="BMW"?HERO_IMAGES.BMW:state.marke==="MINI"?HERO_IMAGES.MINI:HERO_IMAGES.start;
   hero.style.backgroundImage=`url('${img}')`;
 }
@@ -3570,11 +3572,20 @@ function toggleZoom(img){
 function openInquiryModal(bezeichnung,marke,dimension,preis,empfaengerMail,bild,teilenummer,hinweistext,verkaufshinweis,nettopreis){
   selectedProduct={bezeichnung,marke,dimension,preis,nettopreis,empfaengerMail,bild,teilenummer,hinweistext,verkaufshinweis};
   const priceFormatted=formatPrice(preis)||preis;
-  document.getElementById("modalProductInfo").innerHTML=`<b>Produkt:</b> ${e(bezeichnung)}<br>${e(marke)} ${e(dimension)}<br>`+(preis?`<b>Preis:</b> ${e(priceFormatted)} CHF<br>`:"")+((internalMode||adminMode)&&nettopreis?`<b>Netto:</b> ${e(formatPrice(nettopreis))} CHF`:"");
+  document.getElementById("modalProductInfo").innerHTML=`<b>Produkt:</b> ${e(bezeichnung)}<br>${e(marke)} ${e(dimension)}<br>`+(preis?`<b>Preis:</b> ${e(priceFormatted)} CHF <span style="color:var(--text-muted);font-size:11px;">· Preisänderungen vorbehalten</span><br>`:"")+((internalMode||adminMode)&&nettopreis?`<b>Netto:</b> ${e(formatPrice(nettopreis))} CHF`:"");
   document.getElementById("internalFields").style.display=internalMode?"block":"none";
+  
+  // Kunden-Modus: Daten aus Vororder vorausfüllen
+  if (customerMode && customerVororder) {
+    const vo = customerVororder;
+    const nameEl = document.getElementById("kundeName");
+    const emailEl = document.getElementById("kundeEmail");
+    if (nameEl) nameEl.value = clean(vo["Kundenname"]) || "";
+    if (emailEl) emailEl.value = clean(vo["KundenEmail"]) || "";
+  }
+  
   document.getElementById("inquiryModal").classList.add("open");
 }
-function closeInquiryModal(){ document.getElementById("inquiryModal").classList.remove("open"); }
 
 /* ============================================================
    MODAL: ADD/EDIT TIRE
@@ -4832,6 +4843,10 @@ function updateTirePrice(selectEl,basePrice){
    ============================================================ */
 async function sendMail(){
   if(!selectedProduct){alert("Kein Produkt ausgewählt.");return;}
+   // Kunden-Modus: anderen Flow nutzen
+  if (customerMode && customerVororder) {
+    return sendCustomerRequest();
+  }
   const name=clean(document.getElementById("kundeName").value);
   const email=clean(document.getElementById("kundeEmail").value);
   const plate=clean(document.getElementById("kundeKontrollschild").value);
@@ -4864,7 +4879,80 @@ async function sendMail(){
   formData.append("message",message);
   try{const response=await fetch("https://api.web3forms.com/submit",{method:"POST",body:formData});const data=await response.json();if(response.ok){alert("Anfrage erfolgreich gesendet.");["kundeName","kundeEmail","kundeKontrollschild","kundeBemerkung"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});document.getElementById("kundeArt").value="Anfrage";["interneAuftragsnummer","internerKundenname","interneOrderOderFIN","internesAblieferdatum"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});closeInquiryModal();}else{alert("Fehler: "+(data.message||"Unbekannter Fehler."));}}catch{alert("Fehler. Bitte erneut versuchen.");}finally{sendBtn.textContent=orig;sendBtn.disabled=false;}
 }
+/* ============================================================
+   CUSTOMER FLOW: Anfrage senden
+   ============================================================ */
+async function sendCustomerRequest(){
+  if (!selectedProduct || !customerVororder) { alert("Fehler: Keine Daten."); return; }
+  
+  const plate = clean(document.getElementById("kundeKontrollschild").value);
+  const email = clean(document.getElementById("kundeEmail").value);
+  const name = clean(document.getElementById("kundeName").value);
+  const bemerkung = clean(document.getElementById("kundeBemerkung").value);
+  const sendBtn = document.getElementById("sendBtn");
+  
+  if (!plate) { alert("Bitte Kontrollschild eintragen."); return; }
+  if (!/^[^ ]+@[^ ]+\.[a-z]{2,}$/i.test(email)) { alert("Ungültige E-Mail."); return; }
+  
+  const orig = sendBtn.textContent;
+  sendBtn.textContent = "Wird gesendet…";
+  sendBtn.disabled = true;
+  
+  try {
+    const res = await postToScript({
+      action: "customerSubmit",
+      token: clean(customerVororder["Token"]),
+      updates: {
+        TN: selectedProduct.teilenummer,
+        Typ: "WKR",
+        Bezeichnung: selectedProduct.bezeichnung,
+        Dimension: selectedProduct.dimension,
+        Anzahl: 4,
+        Kontrollschild: plate,
+        KundenEmail: email,
+        Bemerkungen: bemerkung
+      }
+    });
+    
+    if (res && res.status === "OK") {
+      closeInquiryModal();
+      showCustomerThankYou(selectedProduct.bezeichnung);
+    } else {
+      alert("Fehler: " + (res.message || JSON.stringify(res)));
+    }
+  } catch(err) {
+    alert("Fehler: " + err.message);
+  } finally {
+    sendBtn.textContent = orig;
+    sendBtn.disabled = false;
+  }
+}
 
+function showCustomerThankYou(bezeichnung){
+  const appEl = document.getElementById("app");
+  if (!appEl) return;
+  appEl.innerHTML = `
+    <div style="max-width:600px;margin:40px auto;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;text-align:center;box-shadow:var(--shadow-md);">
+      <div style="font-size:60px;margin-bottom:16px;">✅</div>
+      <h2 style="font-size:24px;margin-bottom:12px;color:var(--text-primary);">Vielen Dank für Ihre Anfrage!</h2>
+      <p style="font-size:15px;color:var(--text-secondary);line-height:1.6;margin-bottom:20px;">
+        Ihre Auswahl <b>${e(bezeichnung)}</b> wurde erfolgreich übermittelt.<br>
+        Unser Team wird sich in Kürze bei Ihnen melden.
+      </p>
+      <div style="background:var(--surface-2);border-left:3px solid var(--accent);padding:14px 18px;border-radius:0 6px 6px 0;margin:20px 0;text-align:left;font-size:13px;color:var(--text-secondary);">
+        <b>Was passiert als Nächstes?</b><br>
+        • Wir prüfen Ihre Anfrage<br>
+        • Sie erhalten ein verbindliches Angebot<br>
+        • Bei Fragen: <a href="mailto:tv-g-fp@emmeneggerag.ch" style="color:var(--accent);">tv-g-fp@emmeneggerag.ch</a>
+      </div>
+    </div>
+  `;
+  // Hero + Info ausblenden
+  const hero = document.getElementById("heroBanner");
+  const info = document.getElementById("infoSection");
+  if (hero) hero.style.display = "none";
+  if (info) info.style.display = "none";
+}
 /* ============================================================
    PDF OFFER
    ============================================================ */
@@ -4949,15 +5037,48 @@ document.querySelectorAll(".modal-overlay").forEach(overlay=>{
 /* ============================================================
    INIT
 ============================================================ */
-   function loadFromUrl(){
+  function loadFromUrl(){
   try {
     const p = new URLSearchParams(window.location.search);
+    
+    // Token-Check zuerst (Kunden-Link)
+    const token = clean(p.get("token"));
+    if (token) {
+      loadCustomerToken(token);
+      return;
+    }
+    
     if(p.get("marke"))    state.marke    = p.get("marke");
     if(p.get("standort")) state.standort = p.get("standort");
     if(p.get("reihe"))    state.reihe    = p.get("reihe");
     if(p.get("modell"))   state.modell   = p.get("modell");
     if(p.get("motor"))    state.motor    = p.get("motor");
   } catch(e){}
+}
+
+async function loadCustomerToken(token){
+  try {
+    const res = await postToScript({ action: "vororderGetByToken", token: token });
+    if (res && res.status === "OK" && res.vororder) {
+      customerMode = true;
+      customerVororder = res.vororder;
+      
+      // Fahrzeug-State aus Vororder setzen
+      const vo = res.vororder;
+      state.marke    = clean(vo["Marke"])    || null;
+      state.standort = clean(vo["Standort_Bearbeitung"]) || null;
+      state.reihe    = clean(vo["Reihe"])    || null;
+      state.modell   = clean(vo["Modell"])   || null;
+      state.motor    = clean(vo["Motor"])    || null;
+      
+      render();
+    } else {
+      alert("⚠ Link ungültig oder abgelaufen.\n\nBitte kontaktieren Sie Emmenegger direkt:\ntv-g-fp@emmeneggerag.ch");
+    }
+  } catch(err) {
+    console.error("Token-Fehler:", err);
+    alert("Fehler beim Laden des Links. Bitte nochmal versuchen.");
+  }
 }
 loadFromUrl();
 initTheme();
