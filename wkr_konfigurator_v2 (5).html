@@ -2073,7 +2073,21 @@ function renderAdminDashboard(){
       </div>
     </div>` : ""}
     <!-- ═══════════════ DRINGEND: Ablieferung diese Woche ═══════════════ -->
-
+    ${dringendeVororders.length > 0 ? `
+    <div style="background:linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);border:1px solid #fbbf24;border-radius:12px;padding:22px;margin-bottom:24px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;gap:12px;flex-wrap:wrap;">
+        <div>
+          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#92400e;margin-bottom:4px;">⚡ Dringend</div>
+          <div style="font-size:18px;font-weight:700;color:#78350f;">Ablieferung in den nächsten 7 Tagen</div>
+          <div style="font-size:12px;color:#92400e;margin-top:2px;">
+            ${dringendeVororders.length} Vororder${dringendeVororders.length > 1 ? "s" : ""} brauchen Aufmerksamkeit
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="vororderFilter.status='';selectAdminSection('vororder')" style="background:#d97706;">
+          Alle anzeigen →
+        </button>
+      </div>
+    </div>` : ""}
     <!-- ═══════════════ WKR ═══════════════ -->
     <div style="${groupStyle}">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);">
