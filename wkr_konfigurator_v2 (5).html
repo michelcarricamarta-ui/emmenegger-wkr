@@ -3789,7 +3789,15 @@ async function loadVororder(){
   if (vororderLoading) return;
   vororderLoading = true;
   try {
-    const res = await postToScript({ action: "vororderList" });
+    // ── NEU: Standort-Filter serverseitig mitgeben ──
+    const isSuperAdmin = currentUser?.rolle === "SuperAdmin";
+    const userStandort = currentUser?.standort || "";
+    const payload = { action: "vororderList" };
+    if (!isSuperAdmin && userStandort) {
+      payload.standort = userStandort;
+    }
+
+    const res = await postToScript(payload);  // ← war: postToScript({ action: "vororderList" })
     if (res && res.status === "OK" && Array.isArray(res.data)) {
       vororder = res.data;
       vororderLoaded = true;
