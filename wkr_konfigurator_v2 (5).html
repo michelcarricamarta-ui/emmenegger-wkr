@@ -2286,6 +2286,16 @@ function handleGlobalSearch(query){
 function render(){
   let html = "";
 
+  // Login-Buttons im Kunden-Modus ausblenden (Security)
+  if (customerMode) {
+    const ids = ["adminLoginBtn","internalLoginBtn","backHomeBtn","menuToggle"];
+    ids.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "none"; });
+    const dt = document.getElementById("desktopActions");
+    if (dt) dt.style.display = "none";
+    const mm = document.getElementById("mobileMenu");
+    if (mm) mm.style.display = "none";
+  }
+
   const isWkrFlow = (!internalMode && !adminMode)
     || state.internalSection === "wkr"
     || state.adminSection === "wkr_model";
