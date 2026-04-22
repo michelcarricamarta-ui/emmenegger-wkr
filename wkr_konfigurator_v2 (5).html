@@ -1928,6 +1928,7 @@ function renderAdminSidebar(){
   </div>`;
 }
 
+
     <div class="admin-nav-section">
       <div class="admin-nav-label">Übersicht</div>
       <button class="admin-nav-item ${sec==="dashboard"?"active":""}" onclick="selectAdminSection('dashboard')">
@@ -2730,7 +2731,7 @@ function renderAdminWkrList(){
 /* ============================================================
    RENDER: INVENTUR / EXPORT
    ============================================================ */
-   /* ============================================================
+/* ============================================================
    RENDER: VORORDER ÜBERSICHT
    ============================================================ */
 function renderAdminVororder(){
@@ -2738,13 +2739,12 @@ function renderAdminVororder(){
   const userStandort = currentUser?.standort || "";
   const results = getFilteredVororder();
 
-  // Stats
-  // Stats
+  // Stats (Angepasst: "Kunde hat bestellt" hinzugefügt)
   const stats = {
-    offen: results.filter(v => ["Kundenauswahl","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt"].includes(clean(v["Status"]))).length,
+    offen: results.filter(v => ["Kundenauswahl","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)"].includes(clean(v["Status"]))).length,
+    bestellt: results.filter(v => clean(v["Status"]) === "Kunde hat bestellt").length,
     eingetroffen: results.filter(v => clean(v["Status"]) === "Reserviert").length,
-    abgeschlossen: results.filter(v => clean(v["Status"]) === "Erledigt").length,
-    abgesagt: results.filter(v => clean(v["Status"]) === "Kunde verzichtet").length
+    abgeschlossen: results.filter(v => clean(v["Status"]) === "Erledigt").length
   };
 
   const statusOptions = ["Kundenauswahl","Kunde hat bestellt","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt","Reserviert","Erledigt","Kunde verzichtet"];
@@ -2765,23 +2765,23 @@ function renderAdminVororder(){
     </div>
   </div>`;
 
-  // Status-Stats
-  html += `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px;">
+  // Status-Stats (Angepasst: Neues Layout mit "Kunde hat bestellt")
+  html += `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px;">
     <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px;">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#92400e;margin-bottom:4px;">Offen</div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#92400e;margin-bottom:4px;">Anfragen/Offerten</div>
       <div style="font-size:22px;font-weight:700;color:#92400e;">${stats.offen}</div>
     </div>
+    <div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:14px;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#991b1b;margin-bottom:4px;">Kunde hat bestellt</div>
+      <div style="font-size:22px;font-weight:700;color:#991b1b;">${stats.bestellt}</div>
+    </div>
     <div style="background:#ecfccb;border:1px solid #bef264;border-radius:8px;padding:14px;">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#3f6212;margin-bottom:4px;">Reserviert</div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#3f6212;margin-bottom:4px;">Reserviert</div>
       <div style="font-size:22px;font-weight:700;color:#3f6212;">${stats.eingetroffen}</div>
     </div>
     <div style="background:#f3f4f6;border:1px solid #d1d5db;border-radius:8px;padding:14px;">
-     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#374151;margin-bottom:4px;">Erledigt</div>
+     <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#374151;margin-bottom:4px;">Erledigt</div>
       <div style="font-size:22px;font-weight:700;color:#374151;">${stats.abgeschlossen}</div>
-    </div>
-    <div style="background:#fee2e2;border:1px solid #fecaca;border-radius:8px;padding:14px;">
-     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#7f1d1d;margin-bottom:4px;">Kunde verzichtet</div>
-      <div style="font-size:22px;font-weight:700;color:#7f1d1d;">${stats.abgesagt}</div>
     </div>
   </div>`;
 
@@ -2858,10 +2858,12 @@ function renderAdminVororder(){
           <div>${e(clean(v["Fahrzeug"]))||"—"}</div>
           ${clean(v["Fahrgestellnr"]) ? `<div style="font-size:11px;color:var(--text-muted);font-family:monospace;">FIN: ${e(clean(v["Fahrgestellnr"]))}</div>` : ""}
         </td>
-        <td style="padding:10px 12px;font-size:12px;">${e(clean(v["Verkaeufer"]))||"—"}</td>
         <td style="padding:10px 12px;">
           <div><span style="font-size:11px;background:var(--surface-3);padding:2px 6px;border-radius:3px;font-weight:600;">${e(clean(v["Typ"]))||"—"}</span></div>
           ${clean(v["TN"]) ? `<div style="font-size:11px;color:var(--text-muted);margin-top:3px;font-family:monospace;">${e(clean(v["TN"]))}</div>` : ""}
+        </td>
+        <td style="padding:10px 12px;font-size:12px;font-weight:600;color:var(--text-secondary);">
+          ${e(clean(v["Verkaeufer"]))||"—"}
         </td>
         <td style="padding:10px 12px;text-align:center;font-weight:600;">${e(clean(v["Anzahl"]))||"—"}</td>
         <td style="padding:10px 12px;font-size:12px;">${e(formatVororderDate(v["Ablieferung"]))||"—"}</td>
