@@ -4462,6 +4462,7 @@ async function saveVoDetailChanges(){
         <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">Typ / TN</th>
         <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">Bezeichnung</th>
         <th style="padding:8px;text-align:center;font-size:11px;color:var(--text-muted);font-weight:700;">Anz.</th>
+        <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">Konditionen</th>
         <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">Status</th>
         <th style="padding:8px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:700;">Preis</th>
         <th style="padding:8px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:700;">Aktion</th>
@@ -4481,6 +4482,7 @@ async function saveVoDetailChanges(){
           ${clean(p["Lagerort_Rad"])?`<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">📦 Lager: <b>${e(clean(p["Lagerort_Rad"]))}</b></div>`:""}
         </td>
         <td style="padding:8px;text-align:center;font-weight:700;">${e(clean(p["Anzahl"]))||"—"}</td>
+        <td style="padding:8px;font-size:11px;color:var(--text-secondary);">${e(clean(p["Konditionen"]))||"—"}</td>
         <td style="padding:8px;">${vororderStatusBadge(p["Status"])}</td>
         <td style="padding:8px;text-align:right;font-weight:700;color:var(--accent);">${clean(p["VK"]) ? e(formatPrice(p["VK"])) + " CHF" : "—"}</td>
         <td style="padding:8px;text-align:right;white-space:nowrap;">
