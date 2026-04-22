@@ -1038,15 +1038,23 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
 <div id="addWkrModal" class="modal-overlay">
   <div class="modal-box wide">
     <div class="modal-title">Neues Winterkomplettrad hinzufügen</div>
+    <div class="modal-subtitle">Das Rad wird automatisch auch der Fahrzeug-Zuordnung hinzugefügt.</div>
     <div class="form-grid">
       <div class="form-field"><label>Marke *</label><select id="newWkrMarke"><option value="">Bitte wählen</option><option value="BMW">BMW</option><option value="MINI">MINI</option></select></div>
       <div class="form-field"><label>Standort *</label><select id="newWkrStandort"><option value="">Bitte wählen</option><option value="GEB">Gebenstorf</option><option value="HET">Hettenschwil</option></select></div>
-      <div class="form-field"><label>Bezeichnung *</label><input id="newWkrBezeichnung" type="text" placeholder="Bezeichnung"></div>
+      <div class="form-field full"><label>Bezeichnung *</label><input id="newWkrBezeichnung" type="text" placeholder="z.B. V-Speiche 474"></div>
+      
+      <div style="grid-column: 1 / -1; background: var(--surface-3); padding: 10px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-top: 10px;">FAHRZEUG-ZUORDNUNG (Wichtig für Konfigurator)</div>
+      <div class="form-field"><label>Reihe (z.B. U11, F40) *</label><input id="newWkrReihe" type="text" placeholder="Baureihe"></div>
+      <div class="form-field"><label>Modell (z.B. X1, 1er) *</label><input id="newWkrModell" type="text" placeholder="Modellbezeichnung"></div>
+      <div class="form-field full"><label>Motor-Varianten (mit Komma trennen) *</label><input id="newWkrMotor" type="text" placeholder="z.B. 18d, 20d, 20i"></div>
+      
+      <div style="grid-column: 1 / -1; height: 10px;"></div>
       <div class="form-field"><label>Reifenmarke</label><input id="newWkrReifen" type="text" placeholder="z. B. Pirelli"></div>
-      <div class="form-field"><label>Dimension</label><input id="newWkrDimension" type="text" placeholder="Dimension"></div>
+      <div class="form-field"><label>Dimension</label><input id="newWkrDimension" type="text" placeholder="225/45 R18"></div>
       <div class="form-field"><label>Teilenummer (TN) *</label><input id="newWkrTN" type="text" placeholder="TN"></div>
       <div class="form-field"><label>Lagerbestand</label><input id="newWkrLager" type="number" min="0" value="0"></div>
-      <div class="form-field"><label>Lagerort</label><input id="newWkrLagerort" type="text" placeholder="Regal A3 / Platz 12"></div>
+      <div class="form-field"><label>Lagerort</label><input id="newWkrLagerort" type="text" placeholder="Regal A3"></div>
       <div class="form-field full"><label>Bild URL</label><input id="newWkrBild" type="text" placeholder="https://..."></div>
       <div class="form-field"><label>VP (Brutto)</label><input id="newWkrVP" type="text" placeholder="2490"></div>
       <div class="form-field">
@@ -1056,12 +1064,11 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
       <div class="form-field"><label>Nettopreis</label><input id="newWkrNettopreis" type="text" placeholder="1850"></div>
       <div class="form-field full"><label>Empfänger Mail</label><input id="newWkrEmpfaengerMail" type="email" placeholder="tv-g-fp@emmeneggerag.ch"></div>
       <div class="form-field full"><label>Hinweistext</label><textarea id="newWkrHinweistext" placeholder="Freier Hinweistext"></textarea></div>
-      <div class="form-field full"><label>Verkaufshinweis</label><textarea id="newWkrVerkaufshinweis" placeholder="Interner / externer Hinweis"></textarea></div>
+      <div class="form-field full"><label>Verkaufshinweis</label><textarea id="newWkrVerkaufshinweis" placeholder="Interner Hinweis"></textarea></div>
     </div>
-    <p class="required-note">* Pflichtfelder</p>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeAddWkrModal()">Schliessen</button>
-      <button class="btn btn-primary" onclick="saveNewWkr()">WKR speichern</button>
+      <button class="btn btn-primary" onclick="saveNewWkr()">WKR & Zuordnung speichern</button>
     </div>
   </div>
 </div>
@@ -1431,8 +1438,7 @@ let customerVororder = null;   // Die Vororder die zum Token gehört
 let produkte = [], mapping = [], fahrzeuge = [], reifen = [];
 let state = { standort:null,marke:null,reihe:null,modell:null,motor:null,internalSection:null,adminSection:null };
 let tireSearch = { direkt:"",profilbreite:"",querschnitt:"",zoll:"" };
-let adminWkrFilter    = { suche:"",marke:"",standort:"",nurAnLager:false };
-let adminReifenFilter = { suche:"",standort:"",reifentyp:"",aktivStatus:"",nurAnLager:false };
+let adminWkrFilter    = { suche:"",marke:"",standort:"",reihe:"",modell:"",nurAnLager:false };let adminReifenFilter = { suche:"",standort:"",reifentyp:"",aktivStatus:"",nurAnLager:false };
 let selectedProduct = null, editingTireId = "", editingWkrTN = "";
 let _saving = { newTire:false,editTire:false,deleteTire:false,newWkr:false,deleteWkr:false };
    let currentUser = null;  // { email, name, standort, rolle, aktiv }
@@ -1777,14 +1783,30 @@ function updateBrandTheme(){ document.body.classList.toggle("mini-brand",state.m
    ============================================================ */
 function getFilteredAdminWkr(){
   return produkte.filter(p=>{
+    const tn = clean(p["TN"]);
+    // Passende Reihen und Modelle aus der Zuordnungs-Liste holen
+    const mapped = mapping.filter(m => clean(m["TN"]) === tn);
+    const reihen = [...new Set(mapped.map(m => clean(m["Reihe"])).filter(Boolean))];
+    const modelle = [...new Set(mapped.map(m => clean(m["Modell"])).filter(Boolean))];
+
     const s=adminWkrFilter.suche.toLowerCase();
     const lager=parseInt(clean(p["Lager"]),10)||0;
-    return(!s||["Marke","Bezeichnung","Reifen","Dimension","TN","Hinweistext"].some(f=>clean(p[f]).toLowerCase().includes(s)))
+    
+    // Suche auf Reihe und Modell erweitern
+    const matchesSearch = !s || 
+      ["Marke","Bezeichnung","Reifen","Dimension","TN","Hinweistext"].some(f=>clean(p[f]).toLowerCase().includes(s)) ||
+      reihen.some(r => r.toLowerCase().includes(s)) ||
+      modelle.some(m => m.toLowerCase().includes(s));
+
+    return matchesSearch
       &&(!adminWkrFilter.marke||clean(p["Marke"])===adminWkrFilter.marke)
       &&(!adminWkrFilter.standort||clean(p["Standort"])===adminWkrFilter.standort)
+      &&(!adminWkrFilter.reihe||reihen.includes(adminWkrFilter.reihe))
+      &&(!adminWkrFilter.modell||modelle.includes(adminWkrFilter.modell))
       &&(!adminWkrFilter.nurAnLager||lager>0);
   }).sort((a,b)=>{const ma=clean(a["Marke"]),mb=clean(b["Marke"]);return ma!==mb?ma.localeCompare(mb,"de"):clean(a["Bezeichnung"]).localeCompare(clean(b["Bezeichnung"]),"de");});
 }
+
 function getFilteredAdminReifen(){
   return reifen.filter(r=>{
     const s=adminReifenFilter.suche.toLowerCase();
@@ -1796,19 +1818,33 @@ function getFilteredAdminReifen(){
       &&(!adminReifenFilter.nurAnLager||anzahl>0);
   }).sort((a,b)=>{const aa=clean(a["Aktiv"])==="Ja"?0:1,ab=clean(b["Aktiv"])==="Ja"?0:1;if(aa!==ab)return aa-ab;const ha=clean(a["Hersteller"]),hb=clean(b["Hersteller"]);return ha!==hb?ha.localeCompare(hb,"de"):clean(a["Profil"]).localeCompare(clean(b["Profil"]),"de");});
 }
+
 function getFilteredReifen(){
   let pb=tireSearch.profilbreite,qs=tireSearch.querschnitt,zl=tireSearch.zoll;
   if(clean(tireSearch.direkt)){const p=parseDirectTire(tireSearch.direkt);if(!p)return[];pb=p.profilbreite;qs=p.querschnitt;zl=p.zoll;}
   if(!pb||!qs||!zl)return[];
   return reifen.filter(r=>clean(r["Aktiv"]).toLowerCase()==="ja"&&clean(r["Profilbreite"])===pb&&clean(r["Querschnitt"])===qs&&clean(r["Zoll"])===zl);
 }
-function applyAdminWkrFilter(){ adminWkrFilter.suche=clean(document.getElementById("adminWkrSuche")?.value);adminWkrFilter.marke=clean(document.getElementById("adminWkrMarke")?.value);adminWkrFilter.standort=clean(document.getElementById("adminWkrStandort")?.value);adminWkrFilter.nurAnLager=!!document.getElementById("adminWkrNurLager")?.checked;render(); }
-function resetAdminWkrFilter(){ adminWkrFilter={suche:"",marke:"",standort:"",nurAnLager:false};render(); }
+
+function applyAdminWkrFilter(){ 
+  adminWkrFilter.suche=clean(document.getElementById("adminWkrSuche")?.value);
+  adminWkrFilter.marke=clean(document.getElementById("adminWkrMarke")?.value);
+  adminWkrFilter.standort=clean(document.getElementById("adminWkrStandort")?.value);
+  adminWkrFilter.reihe=clean(document.getElementById("adminWkrReihe")?.value);
+  adminWkrFilter.modell=clean(document.getElementById("adminWkrModell")?.value);
+  adminWkrFilter.nurAnLager=!!document.getElementById("adminWkrNurLager")?.checked;
+  render(); 
+}
+
+function resetAdminWkrFilter(){ 
+  adminWkrFilter={suche:"",marke:"",standort:"",reihe:"",modell:"",nurAnLager:false};
+  render(); 
+}
+
 function applyAdminReifenFilter(){ adminReifenFilter.suche=clean(document.getElementById("adminReifenSuche")?.value);adminReifenFilter.standort=clean(document.getElementById("adminReifenStandort")?.value);adminReifenFilter.reifentyp=clean(document.getElementById("adminReifenTyp")?.value);adminReifenFilter.aktivStatus=clean(document.getElementById("adminReifenAktiv")?.value);adminReifenFilter.nurAnLager=!!document.getElementById("adminReifenNurLager")?.checked;render(); }
 function resetAdminReifenFilter(){ adminReifenFilter={suche:"",standort:"",reifentyp:"",aktivStatus:"",nurAnLager:false};render(); }
 function applyTireSearch(){ tireSearch.direkt=clean(document.getElementById("tireDirektInput")?.value);tireSearch.profilbreite=clean(document.getElementById("tireBreiteInput")?.value);tireSearch.querschnitt=clean(document.getElementById("tireQuerschnittInput")?.value);tireSearch.zoll=clean(document.getElementById("tireZollInput")?.value);render(); }
 function resetTireSearch(){ tireSearch={direkt:"",profilbreite:"",querschnitt:"",zoll:""};render(); }
-
 /* ============================================================
    DASHBOARD STATS
    ============================================================ */
@@ -3424,30 +3460,40 @@ function printReifenInventur(){
   w.document.close();
 }
 
+/* ============================================================
+   RENDER: ADMIN WKR ITEM (Kombiniert: Fahrzeuge & Reservierung)
+   ============================================================ */
 function renderAdminWkrItem(r){
-  const lager=parseInt(clean(r["Lager"]),10)||0;
-  // NEU: Reservierte Menge auslesen und Verfügbarkeit berechnen
-  const reserviert=parseInt(clean(r["Reserviert"]),10)||0;
-  const verfuegbar=lager-reserviert;
-
-  const bild=clean(r["Bild"])||"https://via.placeholder.com/220x140?text=Rad";
-  const bezeichnung=clean(r["Bezeichnung"]);
-  const marke=clean(r["Marke"]);
-  const standort=standortLabel(clean(r["Standort"]));
-  const lagerort=clean(r["Lagerort"]);
-  const markeReifen=clean(r["Reifen"]);
-  const dimension=clean(r["Dimension"]);
-  const hinweistext=clean(r["Hinweistext"]);
-  const verkaufshinweis=clean(r["Verkaufshinweis"]);
-  const teilenummer=clean(r["TN"]);
-  const vp=clean(r["VP"]);
-  const angebot=clean(r["Angebotspreis"]);
-  const nettopreis=clean(r["Nettopreis"]);
-  const vpNum=parsePrice(vp),angebotNum=parsePrice(angebot);
-  const hasDiscount=angebotNum>0&&vpNum>0&&angebotNum<vpNum;
+  const tn = clean(r["TN"]);
+  const lager = parseInt(clean(r["Lager"]), 10) || 0;
   
-  // NEU: Warnung basiert jetzt auf dem frei verfügbaren Bestand
-  const isLowStock=verfuegbar>0&&verfuegbar<=2;
+  // Reservierte Menge auslesen und Verfügbarkeit berechnen
+  const reserviert = parseInt(clean(r["Reserviert"]), 10) || 0;
+  const verfuegbar = lager - reserviert;
+
+  // Fahrzeuge aus dem Mapping suchen
+  const mapped = mapping.filter(m => normalizeTN(m["TN"]) === normalizeTN(tn));
+  const models = [...new Set(mapped.map(m => `${clean(m["Reihe"])} (${clean(m["Modell"])})`))].join(", ");
+
+  const bild = clean(r["Bild"]) || "https://via.placeholder.com/220x140?text=Rad";
+  const bezeichnung = clean(r["Bezeichnung"]);
+  const marke = clean(r["Marke"]);
+  const standort = standortLabel(clean(r["Standort"]));
+  const lagerort = clean(r["Lagerort"]);
+  const markeReifen = clean(r["Reifen"]);
+  const dimension = clean(r["Dimension"]);
+  const hinweistext = clean(r["Hinweistext"]);
+  const verkaufshinweis = clean(r["Verkaufshinweis"]);
+  
+  const vp = clean(r["VP"]);
+  const angebot = clean(r["Angebotspreis"]);
+  const nettopreis = clean(r["Nettopreis"]);
+  const vpNum = parsePrice(vp);
+  const angebotNum = parsePrice(angebot);
+  const hasDiscount = angebotNum > 0 && vpNum > 0 && angebotNum < vpNum;
+  
+  // Warnung basiert auf dem frei verfügbaren Bestand
+  const isLowStock = verfuegbar > 0 && verfuegbar <= 2;
 
   let priceHtml = "";
   if (hasDiscount) {
@@ -3465,28 +3511,34 @@ function renderAdminWkrItem(r){
     <div class="product-image-wrap"><img src="${e(bild)}" alt="${e(bezeichnung)}" onclick="toggleZoom(this)"></div>
     <div class="product-info">
       <div class="product-name">${e(bezeichnung)}</div>
+      
+      <div style="font-size:12px; color:var(--accent); font-weight:700; margin-bottom:8px;">
+        🚗 Passend für: ${e(models) || 'Keine Zuordnung gefunden'}
+      </div>
+      
       <div class="product-sub">${e(marke)}</div>
       <div class="product-sub">${e(markeReifen)}</div>
       <div class="product-sub" style="font-weight:700;">${e(dimension)}</div>
       <div class="product-detail-row"><b>Standort:</b> ${e(standort)}</div>
       ${lagerort ? `<div class="product-detail-row"><b>Lagerort:</b> ${e(lagerort)}</div>` : ""}
-      ${teilenummer ? `<div class="product-partnr">Teilenr.: ${e(teilenummer)}</div>` : ""}
+      ${tn ? `<div class="product-partnr">Teilenr.: ${e(tn)}</div>` : ""}
       ${hinweistext ? `<div class="product-note">${e(hinweistext)}</div>` : ""}
       ${verkaufshinweis ? `<div class="product-detail-row"><b>Hinweis:</b> ${e(verkaufshinweis)}</div>` : ""}
     </div>
+    
     <div class="product-right">
       <div class="price-label">Preise Admin-Ansicht</div>
       ${priceHtml}
       ${nettopreis ? `<div class="product-detail-row" style="text-align:right;font-size:13px;margin-top:6px;"><b>Netto EK:</b> ${e(formatPrice(nettopreis))} CHF</div>` : ""}
       
-      <div style="margin-top:16px; padding:10px; background:var(--surface-3); border-radius:6px; font-size:12px;">
+      <div style="margin-top:16px; padding:10px; background:var(--surface-3); border-radius:6px; font-size:12px; text-align:left;">
         <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
           <span>Lager (Physisch):</span>
           <b>${lager}</b>
         </div>
         <div style="display:flex; justify-content:space-between; margin-bottom:4px; color:var(--warning);">
           <span>Reserviert (aktiv):</span>
-          <b style="cursor:pointer; text-decoration:underline;" onclick="showReservationDetails('${js(teilenummer)}')">${reserviert}</b>
+          <b style="cursor:pointer; text-decoration:underline;" onclick="showReservationDetails('${js(tn)}')">${reserviert}</b>
         </div>
         <div style="display:flex; justify-content:space-between; border-top:1px solid var(--border); padding-top:4px; margin-top:4px; font-weight:700; color:${verfuegbar > 0 ? 'var(--success)' : 'var(--error)'};">
           <span>Frei verfügbar:</span>
@@ -3495,9 +3547,10 @@ function renderAdminWkrItem(r){
       </div>
 
       ${isLowStock ? `<span class="stock-warning-chip" style="margin-top:8px; display:inline-block;">⚠ Kritischer Lager</span>` : ""}
+      
       <div class="product-actions" style="margin-top:12px;">
-        <button class="btn btn-primary btn-sm" onclick="openEditWkrModal('${js(teilenummer)}')">Bearbeiten</button>
-        <button class="btn btn-secondary btn-sm" onclick="printWkrLabel('${js(teilenummer)}')">Etikette drucken</button>
+        <button class="btn btn-primary btn-sm" onclick="openEditWkrModal('${js(tn)}')">Bearbeiten</button>
+        <button class="btn btn-secondary btn-sm" onclick="printWkrLabel('${js(tn)}')">Etikette drucken</button>
       </div>
     </div>
   </div>`;
@@ -3758,29 +3811,75 @@ async function deleteTire(){
 /* ============================================================
    SAVE/DELETE: WKR
    ============================================================ */
-async function saveNewWkr(){
-  if(_saving.newWkr)return;
-  const marke=clean(document.getElementById("newWkrMarke").value);
-  const standort=clean(document.getElementById("newWkrStandort").value);
-  const bezeichnung=clean(document.getElementById("newWkrBezeichnung").value);
-  const reifenmarke=clean(document.getElementById("newWkrReifen").value);
-  const dimension=clean(document.getElementById("newWkrDimension").value);
-  const tn=clean(document.getElementById("newWkrTN").value);
-  const lager=clean(document.getElementById("newWkrLager").value);
-  const lagerort=clean(document.getElementById("newWkrLagerort").value);
-  const bild=clean(document.getElementById("newWkrBild").value);
-  const vp=clean(document.getElementById("newWkrVP").value);
-  const angebotspreis=clean(document.getElementById("newWkrAngebotspreis").value);
-  const nettopreis=clean(document.getElementById("newWkrNettopreis").value);
-  const empfaengerMail=clean(document.getElementById("newWkrEmpfaengerMail").value);
-  const hinweistext=clean(document.getElementById("newWkrHinweistext").value);
-  const verkaufshinweis=clean(document.getElementById("newWkrVerkaufshinweis").value);
-  if(!marke||!standort||!bezeichnung||!tn){alert("Pflichtfelder ausfüllen.");return;}
-  if(produkte.some(p=>clean(p["TN"])===tn)){alert("TN existiert bereits.");return;}
-  _saving.newWkr=true;
-  const row={"Marke":marke,"Standort":standort,"Bezeichnung":bezeichnung,"Reifen":reifenmarke,"Dimension":dimension,"TN":tn,"Lager":lager,"Lagerort":lagerort,"Bild":bild,"VP":vp,"Angebotspreis":angebotspreis,"Nettopreis":nettopreis,"EmpfaengerMail":empfaengerMail,"Hinweistext":hinweistext,"Verkaufshinweis":verkaufshinweis};
-  try{const res=await postToScript({action:"appendRow",sheet:"Produkte",row});if(res&&res.status==="OK"){produkte.push(row);alert("WKR gespeichert.");closeAddWkrModal();render();}else{alert("Fehler: "+JSON.stringify(res));}}catch(err){alert("Fehler: "+err.message);}finally{_saving.newWkr=false;}
+
+// Hilfsfunktion für die Suche
+function normalizeTN(v) { return clean(v).replace(/\s+/g, "").toUpperCase(); }
+
+// Felder leeren beim Öffnen des Modals
+function clearWkrForm(prefix){
+  ["Marke","Standort","Bezeichnung","Reifen","Dimension","TN","Lagerort","Bild","VP","Angebotspreis","Nettopreis","EmpfaengerMail","Hinweistext","Verkaufshinweis","Reihe","Modell","Motor"].forEach(f=>{const el=document.getElementById(`${prefix}Wkr${f}`);if(el)el.value="";});
+  const lager=document.getElementById(`${prefix}WkrLager`);if(lager)lager.value="0";
 }
+
+async function saveNewWkr(){
+  if(_saving.newWkr) return;
+  
+  const marke = clean(document.getElementById("newWkrMarke").value);
+  const reihe = clean(document.getElementById("newWkrReihe").value);
+  const modell = clean(document.getElementById("newWkrModell").value);
+  const motor = clean(document.getElementById("newWkrMotor").value);
+  const tn = clean(document.getElementById("newWkrTN").value);
+  const bezeichnung = clean(document.getElementById("newWkrBezeichnung").value);
+  const standort = clean(document.getElementById("newWkrStandort").value);
+
+  if(!marke || !reihe || !modell || !motor || !tn || !bezeichnung) {
+    alert("Bitte alle mit * markierten Felder ausfüllen (inkl. Fahrzeug-Zuordnung).");
+    return;
+  }
+
+  if(produkte.some(p=>clean(p["TN"])===tn)){alert("TN existiert bereits.");return;}
+
+  _saving.newWkr = true;
+  
+  // 1. Daten für Tabelle "Produkte"
+  const prodRow = {
+    "Marke": marke, "Standort": standort, "Bezeichnung": bezeichnung, 
+    "Reifen": clean(document.getElementById("newWkrReifen").value),
+    "Dimension": clean(document.getElementById("newWkrDimension").value),
+    "TN": tn, "Lager": clean(document.getElementById("newWkrLager").value),
+    "Lagerort": clean(document.getElementById("newWkrLagerort").value),
+    "Bild": clean(document.getElementById("newWkrBild").value),
+    "VP": clean(document.getElementById("newWkrVP").value),
+    "Angebotspreis": clean(document.getElementById("newWkrAngebotspreis").value),
+    "Nettopreis": clean(document.getElementById("newWkrNettopreis").value),
+    "EmpfaengerMail": clean(document.getElementById("newWkrEmpfaengerMail").value),
+    "Hinweistext": clean(document.getElementById("newWkrHinweistext").value),
+    "Verkaufshinweis": clean(document.getElementById("newWkrVerkaufshinweis").value)
+  };
+
+  // 2. Daten für Tabelle "Zuordnung"
+  const mapRow = { "Marke": marke, "Reihe": reihe, "Modell": modell, "Motor": motor, "TN": tn };
+
+  try {
+    // Beides nacheinander speichern (Produkte UND Zuordnung)
+    await postToScript({ action: "appendRow", sheet: "Produkte", row: prodRow });
+    await postToScript({ action: "appendRow", sheet: "Zuordnung", row: mapRow });
+
+    alert("Erfolgreich gespeichert! Das Rad ist nun auch im Konfigurator sichtbar.");
+    
+    // Daten lokal aktualisieren
+    produkte.push(prodRow);
+    mapping.push(mapRow);
+    
+    closeAddWkrModal();
+    render();
+  } catch(err) {
+    alert("Fehler beim Speichern: " + err.message);
+  } finally {
+    _saving.newWkr = false;
+  }
+}
+
 async function saveEditedWkr(){
   if(!editingWkrTN){alert("Keine TN.");return;}
   const marke=clean(document.getElementById("editWkrMarke").value);
@@ -3791,6 +3890,7 @@ async function saveEditedWkr(){
   const updates={"Marke":marke,"Standort":standort,"Bezeichnung":bezeichnung,"Reifen":clean(document.getElementById("editWkrReifen").value),"Dimension":clean(document.getElementById("editWkrDimension").value),"TN":tn,"Lager":clean(document.getElementById("editWkrLager").value),"Lagerort":clean(document.getElementById("editWkrLagerort").value),"Bild":clean(document.getElementById("editWkrBild").value),"VP":clean(document.getElementById("editWkrVP").value),"Angebotspreis":clean(document.getElementById("editWkrAngebotspreis").value),"Nettopreis":clean(document.getElementById("editWkrNettopreis").value),"EmpfaengerMail":clean(document.getElementById("editWkrEmpfaengerMail").value),"Hinweistext":clean(document.getElementById("editWkrHinweistext").value),"Verkaufshinweis":clean(document.getElementById("editWkrVerkaufshinweis").value)};
   try{const res=await postToScript({sheet:"Produkte",keyField:"TN",keyValue:editingWkrTN,updates});if(res==="OK"||(res&&res.status==="OK")){const row=produkte.find(p=>clean(p["TN"])===clean(editingWkrTN));if(row)Object.assign(row,updates);editingWkrTN=tn;alert("WKR aktualisiert.");closeEditWkrModal();render();}else{alert("Fehler: "+JSON.stringify(res));}}catch(err){alert("Fehler: "+err.message);}
 }
+
 async function deleteWkr(){
   if(!editingWkrTN)return;
   if(!confirm("WKR wirklich löschen?"))return;
@@ -4386,7 +4486,7 @@ async function saveVoDetailChanges(){
   const vo = vororder.find(v => clean(v["ID"]) === clean(_voDetailId));
   if (!vo) { alert("Vororder nicht gefunden."); return; }
 
- const fields = ["Kundenname","Debitornr","Adressnr","KundenEmail","RechnungAn","Verkaeufer", "VK",
+  const fields = ["Kundenname","Debitornr","Adressnr","KundenEmail","RechnungAn","Verkaeufer", "VK",
                   "Marke","Fahrzeug","Fahrgestellnr","Ordernr","Vertragsnr","Auftrag","Ablieferung",
                   "Typ","Anzahl","TN","Bezeichnung","Dimension","Konditionen","Standort_Bearbeitung",
                   "Bemerkungen"];
@@ -4405,7 +4505,7 @@ async function saveVoDetailChanges(){
   });
 
   if (!hasChanges) {
-    alert("Keine Änderungen zum Speichern.");
+    // Wenn nichts geändert wurde, einfach sofort schliessen
     _voDetailEditMode = false;
     renderVororderDetail();
     return;
@@ -4421,6 +4521,12 @@ async function saveVoDetailChanges(){
 
   const user = currentUser?.name || currentUser?.email || "Unknown";
 
+  // 1. SOFORT die Bearbeitungsmaske schliessen und die neuen Daten lokal anzeigen (fühlt sich blitzschnell an)
+  _voDetailEditMode = false;
+  Object.assign(vo, updates); // Lokale Kopie direkt anpassen
+  renderVororderDetail();     // Schliesst den Edit-Modus und zeigt die Leseansicht
+
+  // 2. Daten still und leise im Hintergrund an den Server senden
   try {
     const res = await postToScript({
       action: "vororderUpdate",
@@ -4428,21 +4534,28 @@ async function saveVoDetailChanges(){
       user: user,
       updates: updates
     });
+    
     if (res && res.status === "OK") {
-      alert(`✅ ${res.changedFields?.length || 0} Feld(er) gespeichert.`);
-      _voDetailEditMode = false;
+      // Im Hintergrund die Datenbank neu laden, ohne dich beim Arbeiten zu blockieren
       await reloadVororder();
       try {
         const p = await fetch(URLS.produkte).then(r=>r.json());
         if (Array.isArray(p)) produkte = p;
       } catch(e){}
+      
+      // Noch einmal sicherheitshalber das aktuelle Bild rendern
       renderVororderDetail();
       render();
     } else {
-      alert("Fehler: " + JSON.stringify(res));
+      alert("Fehler beim Speichern: " + JSON.stringify(res));
+      // Bei einem Fehler machen wir die Maske wieder auf
+      _voDetailEditMode = true; 
+      renderVororderDetail();
     }
   } catch(err) {
-    alert("Fehler: " + err.message);
+    alert("Netzwerkfehler: " + err.message);
+    _voDetailEditMode = true;
+    renderVororderDetail();
   }
 }
    function renderPositionenList(voId, edit){
