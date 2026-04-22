@@ -3963,14 +3963,28 @@ function onVoTnChange(){
   if (prod) {
     const bezEl = document.getElementById("newVoBezeichnung");
     const dimEl = document.getElementById("newVoDimension");
-    const vkEl = document.getElementById("newVoVK");
     const typEl = document.getElementById("newVoTyp");
     const markeEl = document.getElementById("newVoMarke");
+    const preisEl = document.getElementById("newVoPreis"); // Hier sprechen wir dein neues Preis-Feld an
+
     if (bezEl && !bezEl.value) bezEl.value = clean(prod["Bezeichnung"]);
     if (dimEl && !dimEl.value) dimEl.value = clean(prod["Dimension"]);
-    // vkEl ist jetzt Verkäufer-Feld, kein Auto-Fill vom Produkt
     if (typEl && !typEl.value) typEl.value = "WKR";
     if (markeEl && !markeEl.value) markeEl.value = clean(prod["Marke"]);
+
+    // NEU: Preis automatisch ausfüllen
+    if (preisEl && !preisEl.value) {
+      // Holt die Preise aus der WKR-Datenbank (und macht saubere Zahlen daraus)
+      const angebot = parsePrice(prod["Angebotspreis"]);
+      const vp = parsePrice(prod["VP"]);
+
+      // Nimmt bevorzugt den Angebotspreis. Wenn der leer ist, nimmt er den regulären VP.
+      if (angebot && angebot > 0) {
+        preisEl.value = angebot;
+      } else if (vp && vp > 0) {
+        preisEl.value = vp;
+      }
+    }
   }
 }
 async function saveNewVororder(){
