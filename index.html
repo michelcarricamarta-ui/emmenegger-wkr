@@ -1168,8 +1168,9 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
       </div>
       <div class="form-field"><label>Bezeichnung</label><input id="newVoBezeichnung" type="text" placeholder="z.B. V-Speiche 474"></div>
       <div class="form-field"><label>Dimension</label><input id="newVoDimension" type="text" placeholder="z.B. 225/45R18"></div>
-      <div class="form-field"><label>Verkäufer</label><input id="newVoVK" type="text" placeholder="z.B. Marco"></div>
-      <div class="form-field"><label>Konditionen</label><input id="newVoKonditionen" type="text" placeholder="z.B. 0.2"></div>
+      <div class="form-field"><label>Verkäufer</label><input id="newVoVerkaeufer" type="text" placeholder="z.B. Marco"></div>
+      <div class="form-field"><label>Verkaufspreis (CHF)</label><input id="newVoPreis" type="text" placeholder="z.B. 2336"></div>
+      <div class="form-field"><label>Konditionen</label><input id="newVoKonditionen" type="text" placeholder="z.B. Rabatt 20%"></div>
     </div>
 
     <div style="background:var(--surface-2);border-left:3px solid var(--accent);padding:10px 14px;margin:18px 0 12px;border-radius:0 6px 6px 0;">
@@ -1231,7 +1232,7 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
       </div>
       <div class="form-field"><label>Bezeichnung</label><input id="posBezeichnung" type="text"></div>
       <div class="form-field"><label>Dimension</label><input id="posDimension" type="text"></div>
-     <div class="form-field"><label>Verkäufer</label><input id="posVK" type="text" placeholder="z.B. Marco"></div>
+    <div class="form-field"><label>Verkaufspreis (CHF)</label><input id="posVK" type="text" placeholder="z.B. 2336"></div>
        <div class="form-field"><label>Lagerort</label><input id="posLagerort" type="text" placeholder="z.B. Regal A3 / Platz 12"></div>
       <div class="form-field"><label>Konditionen</label><input id="posKonditionen" type="text"></div>
       <div class="form-field full">
@@ -3962,14 +3963,28 @@ function onVoTnChange(){
   if (prod) {
     const bezEl = document.getElementById("newVoBezeichnung");
     const dimEl = document.getElementById("newVoDimension");
-    const vkEl = document.getElementById("newVoVK");
     const typEl = document.getElementById("newVoTyp");
     const markeEl = document.getElementById("newVoMarke");
+    const preisEl = document.getElementById("newVoPreis"); // Hier sprechen wir dein neues Preis-Feld an
+
     if (bezEl && !bezEl.value) bezEl.value = clean(prod["Bezeichnung"]);
     if (dimEl && !dimEl.value) dimEl.value = clean(prod["Dimension"]);
-    // vkEl ist jetzt Verkäufer-Feld, kein Auto-Fill vom Produkt
     if (typEl && !typEl.value) typEl.value = "WKR";
     if (markeEl && !markeEl.value) markeEl.value = clean(prod["Marke"]);
+
+    // NEU: Preis automatisch ausfüllen
+    if (preisEl && !preisEl.value) {
+      // Holt die Preise aus der WKR-Datenbank (und macht saubere Zahlen daraus)
+      const angebot = parsePrice(prod["Angebotspreis"]);
+      const vp = parsePrice(prod["VP"]);
+
+      // Nimmt bevorzugt den Angebotspreis. Wenn der leer ist, nimmt er den regulären VP.
+      if (angebot && angebot > 0) {
+        preisEl.value = angebot;
+      } else if (vp && vp > 0) {
+        preisEl.value = vp;
+      }
+    }
   }
 }
 async function saveNewVororder(){
@@ -4010,7 +4025,8 @@ async function saveNewVororder(){
     "Bezeichnung": clean(document.getElementById("newVoBezeichnung").value),
     "Dimension": clean(document.getElementById("newVoDimension").value),
     "Anzahl": anzahl,
- "Verkaeufer": clean(document.getElementById("newVoVK").value),
+ "Verkaeufer": clean(document.getElementById("newVoVerkaeufer").value),
+      "VK": clean(document.getElementById("newVoPreis").value),
     "Konditionen": clean(document.getElementById("newVoKonditionen").value),
     "Standort_Bearbeitung": standort,
     "Status": status,
@@ -4026,7 +4042,7 @@ async function saveNewVororder(){
       if (typ && anzahl > 0) {
         const posRow = {
           "Typ": typ, "TN": tn, "Bezeichnung": row["Bezeichnung"], "Dimension": row["Dimension"],
-          "Anzahl": anzahl, "Verkaeufer": row["Verkaeufer"], "Konditionen": row["Konditionen"],
+          "Anzahl": anzahl, "Verkaeufer": row["Verkaeufer"], "VK": row["VK"], "Konditionen": row["Konditionen"],
           "Status": status, "Bemerkungen": ""
         };
         await postToScript({ action: "vororderPositionAdd", vororderId: res.id, row: posRow });
@@ -4142,13 +4158,15 @@ function renderVororderDetail(){
           ${f("Adressnr","voEdit_Adressnr",vo["Adressnr"])}
           ${f("Kunden E-Mail","voEdit_KundenEmail",vo["KundenEmail"],{type:"email"})}
           ${f("Rechnung an","voEdit_RechnungAn",vo["RechnungAn"],{type:"select",options:["","An Kunde","Im Leasing (Intern)","Spezialpreis"]})}
-          ${f("Verkäufer","voEdit_Verkaeufer",vo["Verkaeufer"],{full:true})}
+          ${f("Verkäufer","voEdit_Verkaeufer",vo["Verkaeufer"])}
+          ${f("Verkaufspreis (CHF)","voEdit_VK",vo["VK"])}
         </div>` : `
           <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${e(clean(vo["Kundenname"]))||"—"}</div>
           ${clean(vo["Debitornr"])?`<div style="font-size:12px;">Debitor: ${e(clean(vo["Debitornr"]))}</div>`:""}
           ${clean(vo["Adressnr"])?`<div style="font-size:12px;">Adresse: ${e(clean(vo["Adressnr"]))}</div>`:""}
           ${clean(vo["KundenEmail"])?`<div style="font-size:12px;">E-Mail: ${e(clean(vo["KundenEmail"]))}</div>`:""}
           ${clean(vo["Verkaeufer"])?`<div style="font-size:12px;margin-top:6px;">👤 Verkäufer: <b>${e(clean(vo["Verkaeufer"]))}</b></div>`:""}
+          ${clean(vo["VK"])?`<div style="font-size:12px;margin-top:6px;color:var(--accent);">💰 Verkaufspreis: <b>${e(formatPrice(vo["VK"]))} CHF</b></div>`:""}
           ${clean(vo["RechnungAn"])?`<div style="font-size:12px;margin-top:6px;">💰 ${e(clean(vo["RechnungAn"]))}</div>`:""}
         `}
       </div>
@@ -4372,7 +4390,7 @@ async function saveVoDetailChanges(){
   const vo = vororder.find(v => clean(v["ID"]) === clean(_voDetailId));
   if (!vo) { alert("Vororder nicht gefunden."); return; }
 
- const fields = ["Kundenname","Debitornr","Adressnr","KundenEmail","RechnungAn","Verkaeufer",
+ const fields = ["Kundenname","Debitornr","Adressnr","KundenEmail","RechnungAn","Verkaeufer", "VK",
                   "Marke","Fahrzeug","Fahrgestellnr","Ordernr","Vertragsnr","Auftrag","Ablieferung",
                   "Typ","Anzahl","TN","Bezeichnung","Dimension","Konditionen","Standort_Bearbeitung",
                   "Bemerkungen"];
@@ -4444,7 +4462,9 @@ async function saveVoDetailChanges(){
         <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">Typ / TN</th>
         <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">Bezeichnung</th>
         <th style="padding:8px;text-align:center;font-size:11px;color:var(--text-muted);font-weight:700;">Anz.</th>
+        <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">Konditionen</th>
         <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">Status</th>
+        <th style="padding:8px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:700;">Preis</th>
         <th style="padding:8px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:700;">Aktion</th>
       </tr>
     </thead>
@@ -4462,7 +4482,9 @@ async function saveVoDetailChanges(){
           ${clean(p["Lagerort_Rad"])?`<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">📦 Lager: <b>${e(clean(p["Lagerort_Rad"]))}</b></div>`:""}
         </td>
         <td style="padding:8px;text-align:center;font-weight:700;">${e(clean(p["Anzahl"]))||"—"}</td>
+        <td style="padding:8px;font-size:11px;color:var(--text-secondary);">${e(clean(p["Konditionen"]))||"—"}</td>
         <td style="padding:8px;">${vororderStatusBadge(p["Status"])}</td>
+        <td style="padding:8px;text-align:right;font-weight:700;color:var(--accent);">${clean(p["VK"]) ? e(formatPrice(p["VK"])) + " CHF" : "—"}</td>
         <td style="padding:8px;text-align:right;white-space:nowrap;">
           <button class="btn btn-secondary btn-sm" onclick="openEditPositionModal('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;">✏️</button>
           ${clean(p["Typ"])==="WKR"?`<button class="btn btn-secondary btn-sm" onclick="printPositionLabel('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;" title="Etikette drucken">🏷️</button>`:""}
@@ -4507,8 +4529,8 @@ function openEditPositionModal(posId){
   document.getElementById("posTN").value = clean(pos["TN"]);
   document.getElementById("posBezeichnung").value = clean(pos["Bezeichnung"]);
   document.getElementById("posDimension").value = clean(pos["Dimension"]);
-  document.getElementById("posVK").value = clean(pos["Verkaeufer"]);
-  document.getElementById("posKonditionen").value = clean(pos["Konditionen"]);
+document.getElementById("posVK").value = clean(pos["VK"]);
+   document.getElementById("posKonditionen").value = clean(pos["Konditionen"]);
   document.getElementById("posStatus").value = clean(pos["Status"]) || "Offerte ausstehend";
   document.getElementById("posBemerkungen").value = clean(pos["Bemerkungen"]);
    document.getElementById("posLagerort").value = clean(pos["Lagerort_Rad"]);
@@ -4546,12 +4568,24 @@ function onPosTnChange(){
   if (prod) {
     const bezEl = document.getElementById("posBezeichnung");
     const dimEl = document.getElementById("posDimension");
-    const vkEl = document.getElementById("posVK");
     const typEl = document.getElementById("posTyp");
+    const preisEl = document.getElementById("posVK"); // Das Preis-Feld
+
     if (bezEl && !bezEl.value) bezEl.value = clean(prod["Bezeichnung"]);
     if (dimEl && !dimEl.value) dimEl.value = clean(prod["Dimension"]);
-    // vkEl ist jetzt Verkäufer-Feld, kein Auto-Fill vom Produkt
     if (typEl && !typEl.value) typEl.value = "WKR";
+
+    // NEU: Preis automatisch ausfüllen (Angebot bevorzugt, sonst regulärer VP)
+    if (preisEl && !preisEl.value) {
+      const angebot = parsePrice(prod["Angebotspreis"]);
+      const vp = parsePrice(prod["VP"]);
+      
+      if (angebot && angebot > 0) {
+        preisEl.value = angebot;
+      } else if (vp && vp > 0) {
+        preisEl.value = vp;
+      }
+    }
   }
 }
 async function savePosition(){
@@ -4569,7 +4603,7 @@ async function savePosition(){
     "Bezeichnung": clean(document.getElementById("posBezeichnung").value),
     "Dimension": clean(document.getElementById("posDimension").value),
     "Anzahl": anzahl,
-   "Verkaeufer": clean(document.getElementById("posVK").value),
+   "VK": clean(document.getElementById("posVK").value),
     "Konditionen": clean(document.getElementById("posKonditionen").value),
     "Status": clean(document.getElementById("posStatus").value),
  "Bemerkungen": clean(document.getElementById("posBemerkungen").value),
