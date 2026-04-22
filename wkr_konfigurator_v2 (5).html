@@ -1431,8 +1431,7 @@ let customerVororder = null;   // Die Vororder die zum Token gehört
 let produkte = [], mapping = [], fahrzeuge = [], reifen = [];
 let state = { standort:null,marke:null,reihe:null,modell:null,motor:null,internalSection:null,adminSection:null };
 let tireSearch = { direkt:"",profilbreite:"",querschnitt:"",zoll:"" };
-let adminWkrFilter    = { suche:"",marke:"",standort:"",nurAnLager:false };
-let adminReifenFilter = { suche:"",standort:"",reifentyp:"",aktivStatus:"",nurAnLager:false };
+let adminWkrFilter    = { suche:"",marke:"",standort:"",reihe:"",modell:"",nurAnLager:false };let adminReifenFilter = { suche:"",standort:"",reifentyp:"",aktivStatus:"",nurAnLager:false };
 let selectedProduct = null, editingTireId = "", editingWkrTN = "";
 let _saving = { newTire:false,editTire:false,deleteTire:false,newWkr:false,deleteWkr:false };
    let currentUser = null;  // { email, name, standort, rolle, aktiv }
@@ -1777,14 +1776,30 @@ function updateBrandTheme(){ document.body.classList.toggle("mini-brand",state.m
    ============================================================ */
 function getFilteredAdminWkr(){
   return produkte.filter(p=>{
+    const tn = clean(p["TN"]);
+    // Passende Reihen und Modelle aus der Zuordnungs-Liste holen
+    const mapped = mapping.filter(m => clean(m["TN"]) === tn);
+    const reihen = [...new Set(mapped.map(m => clean(m["Reihe"])).filter(Boolean))];
+    const modelle = [...new Set(mapped.map(m => clean(m["Modell"])).filter(Boolean))];
+
     const s=adminWkrFilter.suche.toLowerCase();
     const lager=parseInt(clean(p["Lager"]),10)||0;
-    return(!s||["Marke","Bezeichnung","Reifen","Dimension","TN","Hinweistext"].some(f=>clean(p[f]).toLowerCase().includes(s)))
+    
+    // Suche auf Reihe und Modell erweitern
+    const matchesSearch = !s || 
+      ["Marke","Bezeichnung","Reifen","Dimension","TN","Hinweistext"].some(f=>clean(p[f]).toLowerCase().includes(s)) ||
+      reihen.some(r => r.toLowerCase().includes(s)) ||
+      modelle.some(m => m.toLowerCase().includes(s));
+
+    return matchesSearch
       &&(!adminWkrFilter.marke||clean(p["Marke"])===adminWkrFilter.marke)
       &&(!adminWkrFilter.standort||clean(p["Standort"])===adminWkrFilter.standort)
+      &&(!adminWkrFilter.reihe||reihen.includes(adminWkrFilter.reihe))
+      &&(!adminWkrFilter.modell||modelle.includes(adminWkrFilter.modell))
       &&(!adminWkrFilter.nurAnLager||lager>0);
   }).sort((a,b)=>{const ma=clean(a["Marke"]),mb=clean(b["Marke"]);return ma!==mb?ma.localeCompare(mb,"de"):clean(a["Bezeichnung"]).localeCompare(clean(b["Bezeichnung"]),"de");});
 }
+
 function getFilteredAdminReifen(){
   return reifen.filter(r=>{
     const s=adminReifenFilter.suche.toLowerCase();
@@ -1796,19 +1811,33 @@ function getFilteredAdminReifen(){
       &&(!adminReifenFilter.nurAnLager||anzahl>0);
   }).sort((a,b)=>{const aa=clean(a["Aktiv"])==="Ja"?0:1,ab=clean(b["Aktiv"])==="Ja"?0:1;if(aa!==ab)return aa-ab;const ha=clean(a["Hersteller"]),hb=clean(b["Hersteller"]);return ha!==hb?ha.localeCompare(hb,"de"):clean(a["Profil"]).localeCompare(clean(b["Profil"]),"de");});
 }
+
 function getFilteredReifen(){
   let pb=tireSearch.profilbreite,qs=tireSearch.querschnitt,zl=tireSearch.zoll;
   if(clean(tireSearch.direkt)){const p=parseDirectTire(tireSearch.direkt);if(!p)return[];pb=p.profilbreite;qs=p.querschnitt;zl=p.zoll;}
   if(!pb||!qs||!zl)return[];
   return reifen.filter(r=>clean(r["Aktiv"]).toLowerCase()==="ja"&&clean(r["Profilbreite"])===pb&&clean(r["Querschnitt"])===qs&&clean(r["Zoll"])===zl);
 }
-function applyAdminWkrFilter(){ adminWkrFilter.suche=clean(document.getElementById("adminWkrSuche")?.value);adminWkrFilter.marke=clean(document.getElementById("adminWkrMarke")?.value);adminWkrFilter.standort=clean(document.getElementById("adminWkrStandort")?.value);adminWkrFilter.nurAnLager=!!document.getElementById("adminWkrNurLager")?.checked;render(); }
-function resetAdminWkrFilter(){ adminWkrFilter={suche:"",marke:"",standort:"",nurAnLager:false};render(); }
+
+function applyAdminWkrFilter(){ 
+  adminWkrFilter.suche=clean(document.getElementById("adminWkrSuche")?.value);
+  adminWkrFilter.marke=clean(document.getElementById("adminWkrMarke")?.value);
+  adminWkrFilter.standort=clean(document.getElementById("adminWkrStandort")?.value);
+  adminWkrFilter.reihe=clean(document.getElementById("adminWkrReihe")?.value);
+  adminWkrFilter.modell=clean(document.getElementById("adminWkrModell")?.value);
+  adminWkrFilter.nurAnLager=!!document.getElementById("adminWkrNurLager")?.checked;
+  render(); 
+}
+
+function resetAdminWkrFilter(){ 
+  adminWkrFilter={suche:"",marke:"",standort:"",reihe:"",modell:"",nurAnLager:false};
+  render(); 
+}
+
 function applyAdminReifenFilter(){ adminReifenFilter.suche=clean(document.getElementById("adminReifenSuche")?.value);adminReifenFilter.standort=clean(document.getElementById("adminReifenStandort")?.value);adminReifenFilter.reifentyp=clean(document.getElementById("adminReifenTyp")?.value);adminReifenFilter.aktivStatus=clean(document.getElementById("adminReifenAktiv")?.value);adminReifenFilter.nurAnLager=!!document.getElementById("adminReifenNurLager")?.checked;render(); }
 function resetAdminReifenFilter(){ adminReifenFilter={suche:"",standort:"",reifentyp:"",aktivStatus:"",nurAnLager:false};render(); }
 function applyTireSearch(){ tireSearch.direkt=clean(document.getElementById("tireDirektInput")?.value);tireSearch.profilbreite=clean(document.getElementById("tireBreiteInput")?.value);tireSearch.querschnitt=clean(document.getElementById("tireQuerschnittInput")?.value);tireSearch.zoll=clean(document.getElementById("tireZollInput")?.value);render(); }
 function resetTireSearch(){ tireSearch={direkt:"",profilbreite:"",querschnitt:"",zoll:""};render(); }
-
 /* ============================================================
    DASHBOARD STATS
    ============================================================ */
