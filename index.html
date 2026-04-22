@@ -616,7 +616,103 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
    ============================================================ */
 [data-theme="dark"] .topbar { background: var(--surface); border-color: var(--border); }
 [data-theme="dark"] .hero::after { background: linear-gradient(105deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.25) 60%, transparent 100%); }
+/* ============================================================
+   ADMIN TOPBAR ADDON (Suche + Bell)
+   ============================================================ */
+.admin-topbar-addon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  justify-content: flex-end;
+  min-width: 0;
+}
+.admin-search-wrap {
+  position: relative;
+  width: 280px;
+  max-width: 100%;
+}
+.admin-search-input {
+  width: 100%;
+  padding: 7px 14px 7px 32px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 12px;
+  background: var(--surface-2);
+  color: var(--text-primary);
+  transition: var(--transition);
+}
+.admin-search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(28,105,212,0.1);
+}
+.admin-search-wrap::before {
+  content: "🔍";
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  pointer-events: none;
+}
+.admin-search-results {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  width: 380px;
+  max-width: 95vw;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  max-height: 420px;
+  overflow-y: auto;
+  z-index: 200;
+}
+.admin-bell-btn {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+.admin-bell-btn:hover {
+  background: var(--surface-3);
+  border-color: var(--accent);
+}
+.admin-bell-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--error);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+  line-height: 1;
+}
 
+@media (max-width: 900px) {
+  .admin-search-wrap { width: 200px; }
+  .admin-search-results { width: 300px; }
+}
+@media (max-width: 600px) {
+  .admin-topbar-addon { display: none !important; }
+}
 /* ============================================================
    LANG SWITCHER
    ============================================================ */
@@ -760,7 +856,19 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
   <button id="backHomeBtn" class="back-btn" onclick="goToHome()">← <span data-i18n="back_home">Startseite</span></button>
   <button id="darkToggle" class="icon-btn" onclick="toggleDark()" title="Dunkelmodus">🌙</button>
   <button class="icon-btn" onclick="toggleMobileMenu()" id="menuToggle" style="font-size:20px;width:40px;height:40px;">☰</button>
-  
+  <div id="adminTopbarAddon" class="admin-topbar-addon" style="display:none;">
+      <div class="admin-search-wrap">
+        <input id="globalSearch" type="text" class="admin-search-input" placeholder="Suche: Kunde, TN, FIN, Auftrag..."
+               oninput="handleGlobalSearch(this.value)"
+               onblur="setTimeout(()=>{const r=document.getElementById('globalSearchResults');if(r)r.style.display='none';}, 200)"
+               onfocus="if(this.value)document.getElementById('globalSearchResults').style.display='block'">
+        <div id="globalSearchResults" class="admin-search-results"></div>
+      </div>
+      <button id="adminBellBtn" class="admin-bell-btn" onclick="showUrgentModal()" title="Dringende Aufgaben">
+        🔔
+        <span id="adminBellBadge" class="admin-bell-badge" style="display:none;">0</span>
+      </button>
+    </div>
   <div id="desktopActions" style="display:flex;align-items:center;gap:8px;">
     <button id="internalLoginBtn" class="login-btn" onclick="activateInternalMode()">Interner Login</button>
     <button id="adminLoginBtn" class="login-btn" onclick="activateAdminMode()">Admin Login</button>
@@ -1079,6 +1187,7 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
         <label>Status *</label>
         <select id="newVoStatus">
   <option value="Kundenauswahl">Kundenauswahl (Kunde wählt online)</option>
+   <option value="Kunde hat bestellt">Kunde hat bestellt (noch nicht an BMW)</option>
   <option value="Offerte ausstehend">Offerte ausstehend</option>
   <option value="Offeriert">Offeriert</option>
   <option value="Sammelbestellung (Vororder26)" selected>Sammelbestellung (Vororder26)</option>
@@ -1129,6 +1238,7 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
         <label>Status</label>
         <select id="posStatus">
           <option value="Kundenauswahl">Kundenauswahl</option>
+          <option value="Kunde hat bestellt">Kunde hat bestellt</option>
           <option value="Offerte ausstehend" selected>Offerte ausstehend</option>
           <option value="Offeriert">Offeriert</option>
           <option value="Sammelbestellung (Vororder26)">Sammelbestellung (Vororder26)</option>
@@ -1270,8 +1380,7 @@ const TRANSLATIONS = {
     dot_warning:"⚠ DOT älter als 3 Jahre",stock_warning:"Nur noch",stock_warning_unit:"Stück an Lager",
     admin_dashboard:"Dashboard",admin_wkr_by_model:"WKR Konfigurator-Ansicht",admin_wkr_all:"WKR Gesamtübersicht",admin_tires_all:"Reifen Gesamtübersicht",
     total_wkr:"WKR Total",total_tires:"Reifen Total",in_stock_wkr:"WKR an Lager",in_stock_tires:"Reifen an Lager",
-    low_stock_wkr:"WKR kritischer Lager",inactive_tires:"Inaktive Reifen",active_tires:"Aktive Reifen"
-  },
+      },
   fr: {
     back_home:"Accueil",internal_login:"Login interne",admin_login:"Admin Login",public_view:"Vue publique",
     hero_title:"Jantes hiver d'origine",hero_sub:"Parfaitement adaptées à votre véhicule.",
@@ -1316,6 +1425,8 @@ const TRANSLATIONS = {
    APP STATE
    ============================================================ */
 let lang = "de", darkMode = false, internalMode = false, adminMode = false;
+   let customerMode = false;      // Kunde mit Token-Link
+let customerVororder = null;   // Die Vororder die zum Token gehört
 let produkte = [], mapping = [], fahrzeuge = [], reifen = [];
 let state = { standort:null,marke:null,reihe:null,modell:null,motor:null,internalSection:null,adminSection:null };
 let tireSearch = { direkt:"",profilbreite:"",querschnitt:"",zoll:"" };
@@ -1344,7 +1455,7 @@ function tireSize(row){ const b=clean(row["Profilbreite"]),q=clean(row["Querschn
 function isDotOld(dot){ const m=clean(dot).match(/^(\d{2})\/(\d{2})$/); if(!m)return false; const d=new Date(2000+parseInt(m[2]),0,1+(parseInt(m[1])-1)*7); return(new Date()-d)/(1000*60*60*24*365.25)>3; }
 function getTireImage(h,t_){ const b=clean(h).toLowerCase(),tp=clean(t_).toLowerCase(); return(tp==="sommer"||tp==="winter")?TIRE_IMAGES[`${b}_${tp}`]||"":""; }
 function getTireLogo(h){ return TIRE_LOGOS[clean(h).toLowerCase()]||""; }
-function splitMotors(v){ return clean(v).split(",").map(x=>x.trim()).filter(Boolean); }
+function splitMotors(v){ return clean(v).split(/[\r\n,]+/).map(x=>x.trim()).filter(Boolean); }
 function motorMatch(mm,sm){ return splitMotors(mm).includes(clean(sm)); }
 function qtyOptions(max){ const q=parseInt(clean(max),10)||0; return[1,2,4].filter(n=>n<=q); }
 function parseDirectTire(input){ const raw=clean(input).toUpperCase().replace(/\s+/g,"").replace(/-/g,"/").replace(/R/g,"/"); const m=raw.match(/^(\d{3})\/(\d{2})\/(\d{2})$/); return m?{profilbreite:m[1],querschnitt:m[2],zoll:m[3]}:null; }
@@ -1652,9 +1763,9 @@ function updateHero(){
   const hero=document.getElementById("heroBanner");
   const info=document.getElementById("infoSection");
   if(!hero)return;
-  const showHero=(!adminMode&&!internalMode)||state.internalSection==="wkr"||state.adminSection==="wkr_model";
+  const showHero=(!adminMode&&!internalMode&&!customerMode)||state.internalSection==="wkr"||state.adminSection==="wkr_model";
   hero.style.display=showHero?"block":"none";
-  if(info) info.style.display=adminMode?"none":"block";
+  if(info) info.style.display=(adminMode||customerMode)?"none":"block";
   const img=state.marke==="BMW"?HERO_IMAGES.BMW:state.marke==="MINI"?HERO_IMAGES.MINI:HERO_IMAGES.start;
   hero.style.backgroundImage=`url('${img}')`;
 }
@@ -1970,7 +2081,6 @@ function renderAdminDashboard(){
         }).join("")}
       </div>
     </div>` : ""}
-
     <!-- ═══════════════ WKR ═══════════════ -->
     <div style="${groupStyle}">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);">
@@ -2042,47 +2152,23 @@ function renderAdminDashboard(){
    TOPBAR: Kontextabhängiger Inhalt
    ============================================================ */
 function updateTopbarContext(){
-  const el = document.getElementById("topbarContext");
-  if (!el) return; // kein Topbar-Context-Div vorhanden, nichts zu tun
-   
+  const addon = document.getElementById("adminTopbarAddon");
+  const badge = document.getElementById("adminBellBadge");
+  if (!addon) return;
+
   if (adminMode) {
-    // Admin: Globale Suche + Benachrichtigungs-Bell
+    addon.style.display = "flex";
     const urgentCount = getUrgentCount();
-    el.innerHTML = `
-      <div style="position:relative;flex:1;max-width:420px;">
-        <input id="globalSearch" type="text" placeholder="🔍 Suche: Kunde, TN, FIN, Auftrag..." 
-               oninput="handleGlobalSearch(this.value)" 
-               onblur="setTimeout(()=>document.getElementById('globalSearchResults').style.display='none', 200)"
-               onfocus="if(this.value)document.getElementById('globalSearchResults').style.display='block'"
-               style="width:100%;padding:8px 14px;border:1px solid var(--border);border-radius:20px;font-size:13px;background:var(--surface-2);">
-        <div id="globalSearchResults" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-lg);max-height:400px;overflow-y:auto;z-index:200;"></div>
-      </div>
-      <button onclick="showUrgentModal()" title="Dringende Aufgaben" style="position:relative;background:none;border:1px solid var(--border);border-radius:50%;width:38px;height:38px;cursor:pointer;font-size:16px;transition:all 0.2s;" onmouseover="this.style.background='var(--surface-3)';" onmouseout="this.style.background='none';">
-        🔔
-        ${urgentCount > 0 ? `<span style="position:absolute;top:-4px;right:-4px;background:#dc2626;color:white;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;min-width:18px;text-align:center;">${urgentCount}</span>` : ""}
-      </button>
-    `;
-  } else if (internalMode) {
-    // Intern: Nur globale Suche
-    el.innerHTML = `
-      <div style="position:relative;flex:1;max-width:420px;">
-        <input id="globalSearch" type="text" placeholder="🔍 Suche: Kunde, TN, FIN, Auftrag..." 
-               oninput="handleGlobalSearch(this.value)"
-               onblur="setTimeout(()=>document.getElementById('globalSearchResults').style.display='none', 200)"
-               onfocus="if(this.value)document.getElementById('globalSearchResults').style.display='block'"
-               style="width:100%;padding:8px 14px;border:1px solid var(--border);border-radius:20px;font-size:13px;background:var(--surface-2);">
-        <div id="globalSearchResults" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-lg);max-height:400px;overflow-y:auto;z-index:200;"></div>
-      </div>
-    `;
+    if (badge) {
+      if (urgentCount > 0) {
+        badge.textContent = urgentCount;
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+    }
   } else {
-    // Öffentlich: Datum/Uhrzeit
-    const now = new Date();
-    const datumStr = now.toLocaleDateString("de-CH", { weekday:"long", day:"2-digit", month:"long", year:"numeric" });
-    el.innerHTML = `
-      <div style="font-size:12px;color:var(--text-muted);font-weight:500;">
-        📅 ${datumStr}
-      </div>
-    `;
+    addon.style.display = "none";
   }
 }
 
@@ -2200,6 +2286,16 @@ function handleGlobalSearch(query){
    ============================================================ */
 function render(){
   let html = "";
+
+  // Login-Buttons im Kunden-Modus ausblenden (Security)
+  if (customerMode) {
+    const ids = ["adminLoginBtn","internalLoginBtn","backHomeBtn","menuToggle"];
+    ids.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "none"; });
+    const dt = document.getElementById("desktopActions");
+    if (dt) dt.style.display = "none";
+    const mm = document.getElementById("mobileMenu");
+    if (mm) mm.style.display = "none";
+  }
 
   const isWkrFlow = (!internalMode && !adminMode)
     || state.internalSection === "wkr"
@@ -2609,7 +2705,7 @@ function renderAdminVororder(){
     abgesagt: results.filter(v => clean(v["Status"]) === "Kunde verzichtet").length
   };
 
-  const statusOptions = ["Kundenauswahl","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt","Reserviert","Erledigt","Kunde verzichtet"];
+  const statusOptions = ["Kundenauswahl","Kunde hat bestellt","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt","Reserviert","Erledigt","Kunde verzichtet"];
 
   let html = `<div class="admin-content-header">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
@@ -3486,12 +3582,25 @@ function toggleZoom(img){
 function openInquiryModal(bezeichnung,marke,dimension,preis,empfaengerMail,bild,teilenummer,hinweistext,verkaufshinweis,nettopreis){
   selectedProduct={bezeichnung,marke,dimension,preis,nettopreis,empfaengerMail,bild,teilenummer,hinweistext,verkaufshinweis};
   const priceFormatted=formatPrice(preis)||preis;
-  document.getElementById("modalProductInfo").innerHTML=`<b>Produkt:</b> ${e(bezeichnung)}<br>${e(marke)} ${e(dimension)}<br>`+(preis?`<b>Preis:</b> ${e(priceFormatted)} CHF<br>`:"")+((internalMode||adminMode)&&nettopreis?`<b>Netto:</b> ${e(formatPrice(nettopreis))} CHF`:"");
+  document.getElementById("modalProductInfo").innerHTML=`<b>Produkt:</b> ${e(bezeichnung)}<br>${e(marke)} ${e(dimension)}<br>`+(preis?`<b>Preis:</b> ${e(priceFormatted)} CHF <span style="color:var(--text-muted);font-size:11px;">· Preisänderungen vorbehalten</span><br>`:"")+((internalMode||adminMode)&&nettopreis?`<b>Netto:</b> ${e(formatPrice(nettopreis))} CHF`:"");
   document.getElementById("internalFields").style.display=internalMode?"block":"none";
+  
+  // Kunden-Modus: Daten aus Vororder vorausfüllen
+  if (customerMode && customerVororder) {
+    const vo = customerVororder;
+    const nameEl = document.getElementById("kundeName");
+    const emailEl = document.getElementById("kundeEmail");
+    if (nameEl) nameEl.value = clean(vo["Kundenname"]) || "";
+    if (emailEl) emailEl.value = clean(vo["KundenEmail"]) || "";
+  }
+  
   document.getElementById("inquiryModal").classList.add("open");
 }
-function closeInquiryModal(){ document.getElementById("inquiryModal").classList.remove("open"); }
-
+function closeInquiryModal(){
+  const modal = document.getElementById("inquiryModal");
+  if (modal) modal.classList.remove("open");
+  selectedProduct = null;
+}
 /* ============================================================
    MODAL: ADD/EDIT TIRE
    ============================================================ */
@@ -3705,7 +3814,15 @@ async function loadVororder(){
   if (vororderLoading) return;
   vororderLoading = true;
   try {
-    const res = await postToScript({ action: "vororderList" });
+    // ── NEU: Standort-Filter serverseitig mitgeben ──
+    const isSuperAdmin = currentUser?.rolle === "SuperAdmin";
+    const userStandort = currentUser?.standort || "";
+    const payload = { action: "vororderList" };
+    if (!isSuperAdmin && userStandort) {
+      payload.standort = userStandort;
+    }
+
+    const res = await postToScript(payload);  // ← war: postToScript({ action: "vororderList" })
     if (res && res.status === "OK" && Array.isArray(res.data)) {
       vororder = res.data;
       vororderLoaded = true;
@@ -3745,8 +3862,7 @@ function getFilteredVororder(){
     return true;
   }).sort((a,b) => {
     // Sortierung: Offene zuerst, dann nach Datum absteigend
-    const openStatuses = ["Kundenauswahl","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt","Reserviert"];
-    const aOpen = openStatuses.indexOf(clean(a["Status"])) !== -1 ? 0 : 1;
+const openStatuses = ["Kunde hat bestellt","Kundenauswahl","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt","Reserviert"];    const aOpen = openStatuses.indexOf(clean(a["Status"])) !== -1 ? 0 : 1;
     const bOpen = openStatuses.indexOf(clean(b["Status"])) !== -1 ? 0 : 1;
     if (aOpen !== bOpen) return aOpen - bOpen;
     return clean(b["ErfasstAm"]).localeCompare(clean(a["ErfasstAm"]));
@@ -3757,6 +3873,7 @@ function vororderStatusBadge(status){
   const s = clean(status);
   const styles = {
     "Kundenauswahl":                  "background:#e0f2fe;color:#0c4a6e;",
+     "Kunde hat bestellt":             "background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;",
     "Offerte ausstehend":             "background:#fef3c7;color:#92400e;",
     "Offeriert":                      "background:#dbeafe;color:#1e40af;",
     "Sammelbestellung (Vororder26)":  "background:#e0e7ff;color:#3730a3;",
@@ -3973,7 +4090,7 @@ function renderVororderDetail(){
   const content = document.getElementById("voDetailContent");
   if (!content) return;
 
-  const allStatuses = ["Kundenauswahl","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt","Reserviert","Erledigt","Kunde verzichtet"];
+  const allStatuses = ["Kundenauswahl","Kunde hat bestellt","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt","Reserviert","Erledigt","Kunde verzichtet"];
   const currentStatus = clean(vo["Status"]);
   const historie = clean(vo["HistorieLog"]);
   const edit = _voDetailEditMode;
@@ -4182,7 +4299,10 @@ function openInternalMailModal(id) {
   _currentMailVoId = id;
 
   // Link generieren
-  const params = new URLSearchParams();
+ const params = new URLSearchParams();
+  // Token ZUERST (für Kunden-Flow)
+  if (vo["Token"]) params.set("token", clean(vo["Token"]));
+  // Fallback-Daten (falls kein Token)
   if (vo["Marke"]) params.set("marke", clean(vo["Marke"]));
   if (vo["Standort_Bearbeitung"]) params.set("standort", clean(vo["Standort_Bearbeitung"]));
   if (vo["Reihe"]) params.set("reihe", clean(vo["Reihe"]));
@@ -4740,6 +4860,10 @@ function updateTirePrice(selectEl,basePrice){
    ============================================================ */
 async function sendMail(){
   if(!selectedProduct){alert("Kein Produkt ausgewählt.");return;}
+   // Kunden-Modus: anderen Flow nutzen
+  if (customerMode && customerVororder) {
+    return sendCustomerRequest();
+  }
   const name=clean(document.getElementById("kundeName").value);
   const email=clean(document.getElementById("kundeEmail").value);
   const plate=clean(document.getElementById("kundeKontrollschild").value);
@@ -4772,7 +4896,230 @@ async function sendMail(){
   formData.append("message",message);
   try{const response=await fetch("https://api.web3forms.com/submit",{method:"POST",body:formData});const data=await response.json();if(response.ok){alert("Anfrage erfolgreich gesendet.");["kundeName","kundeEmail","kundeKontrollschild","kundeBemerkung"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});document.getElementById("kundeArt").value="Anfrage";["interneAuftragsnummer","internerKundenname","interneOrderOderFIN","internesAblieferdatum"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});closeInquiryModal();}else{alert("Fehler: "+(data.message||"Unbekannter Fehler."));}}catch{alert("Fehler. Bitte erneut versuchen.");}finally{sendBtn.textContent=orig;sendBtn.disabled=false;}
 }
-
+/* ============================================================
+   CUSTOMER FLOW: Anfrage senden
+   ============================================================ */
+async function sendCustomerRequest(){
+  if (!selectedProduct) return;
+  
+  const plate = clean(document.getElementById("kundeKontrollschild")?.value);
+  const email = clean(document.getElementById("kundeEmail")?.value);
+  const name = clean(document.getElementById("kundeName")?.value);
+  const bemerkung = clean(document.getElementById("kundeBemerkung")?.value);
+  const art = clean(document.getElementById("kundeArt")?.value) || "Anfrage";
+  
+  if (!plate) { alert("Bitte Kontrollschild eingeben."); return; }
+  if (!email) { alert("Bitte E-Mail eingeben."); return; }
+  
+  const submitBtn = document.querySelector("#inquiryModal .btn-primary");
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = "⏳ Wird gesendet...";
+  }
+  
+  try {
+    const res = await postToScript({
+      action: "customerSubmit",
+      token: clean(customerVororder["Token"]),
+      art: art,
+      updates: {
+        TN: selectedProduct.teilenummer,
+        Typ: "WKR",
+        Bezeichnung: selectedProduct.bezeichnung,
+        Dimension: selectedProduct.dimension,
+        Anzahl: 4,
+        Kontrollschild: plate,
+        KundenEmail: email,
+        Bemerkungen: bemerkung
+      }
+    });
+    
+    if (res && res.status === "OK") {
+      const bezeichnung = selectedProduct.bezeichnung;
+      closeInquiryModal();
+      showCustomerThankYou(bezeichnung, art);
+    } else {
+      alert("Fehler: " + (res.message || JSON.stringify(res)));
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "✓ Anfrage senden";
+      }
+    }
+  } catch(err) {
+    alert("Fehler beim Senden: " + err.message);
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "✓ Anfrage senden";
+    }
+  }
+}
+function showCustomerThankYou(bezeichnung, art){
+  const appEl = document.getElementById("app");
+  if (!appEl) return;
+  
+  // Anfrage-Daten für PDF merken (bevor alles zurückgesetzt wird)
+  const customerSnapshot = {
+    vororder: customerVororder,
+    product: selectedProduct,
+    bezeichnung: bezeichnung,
+    kontrollschild: clean(document.getElementById("kundeKontrollschild")?.value),
+    email: clean(document.getElementById("kundeEmail")?.value),
+    name: clean(document.getElementById("kundeName")?.value),
+    bemerkung: clean(document.getElementById("kundeBemerkung")?.value)
+  };
+  window._customerThankYouData = customerSnapshot;
+  window._customerThankYouData.art = art || "Anfrage";
+  const isBestellung = art === "Bestellung";
+  appEl.innerHTML = `
+    <div style="max-width:600px;margin:40px auto;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;text-align:center;box-shadow:var(--shadow-md);">
+      <div style="font-size:60px;margin-bottom:16px;">✅</div>
+      <h2 style="font-size:24px;margin-bottom:12px;color:var(--text-primary);">Vielen Dank für Ihre ${isBestellung ? "Bestellung" : "Anfrage"}!</h2>
+      <p style="font-size:15px;color:var(--text-secondary);line-height:1.6;margin-bottom:20px;">
+       Ihre ${isBestellung ? "Bestellung" : "Auswahl"} <b>${e(bezeichnung)}</b> wurde erfolgreich übermittelt.<br>
+        Unser Team wird sich in Kürze bei Ihnen melden.
+      </p>
+      <div style="background:var(--surface-2);border-left:3px solid var(--accent);padding:14px 18px;border-radius:0 6px 6px 0;margin:20px 0;text-align:left;font-size:13px;color:var(--text-secondary);">
+        <b>Was passiert als Nächstes?</b><br>
+        • Wir prüfen Ihre Anfrage<br>
+        • Sie erhalten ein verbindliches Angebot<br>
+        • Bei Fragen: <a href="mailto:tv-g-fp@emmeneggerag.ch" style="color:var(--accent);">tv-g-fp@emmeneggerag.ch</a>
+      </div>
+      <div style="margin-top:24px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="printCustomerOffer()">🖨️ Offerte drucken / speichern</button>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:14px;">
+        Tipp: Beim Druck-Dialog "Als PDF speichern" wählen
+      </div>
+    </div>
+  `;
+  // Hero + Info ausblenden
+  const hero = document.getElementById("heroBanner");
+  const info = document.getElementById("infoSection");
+  if (hero) hero.style.display = "none";
+  if (info) info.style.display = "none";
+}
+   /* ============================================================
+   CUSTOMER: Offerte drucken / als PDF speichern
+   ============================================================ */
+function printCustomerOffer(){
+  const data = window._customerThankYouData;
+  if (!data) { alert("Daten nicht verfügbar."); return; }
+  
+  const vo = data.vororder || {};
+  const p = data.product || {};
+  const today = new Date().toLocaleDateString("de-CH");
+  const priceFormatted = p.preis ? (formatPrice(p.preis) || p.preis) : "";
+  
+  const w = window.open("","_blank");
+  if (!w) { alert("Popup blockiert. Bitte Popups erlauben."); return; }
+  
+  w.document.write(`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Ihre Anfrage — ${e(clean(vo["ID"]))}</title><style>
+    body{font-family:Arial,sans-serif;color:#1f1f1f;padding:40px;background:white;}
+    .offer-wrap{max-width:960px;margin:0 auto;}
+    .hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #1c69d4;padding-bottom:20px;margin-bottom:30px;}
+    .hdr img{width:200px;}
+    .hdr-right h1{margin:0 0 6px;font-size:28px;color:#1c69d4;}
+    .hdr-right .meta{font-size:13px;color:#555;line-height:1.6;}
+    .bestaetigung{background:#f0fdf4;border-left:4px solid #16a34a;padding:14px 18px;margin-bottom:28px;border-radius:0 8px 8px 0;}
+    .bestaetigung b{color:#166534;}
+    h2{font-size:16px;border-bottom:1px solid #ddd;padding-bottom:6px;margin:24px 0 12px;color:#1c69d4;}
+    table{width:100%;border-collapse:collapse;}
+    td{padding:7px 0;font-size:13px;vertical-align:top;}
+    td:first-child{width:220px;font-weight:700;color:#555;}
+    .product-block{display:flex;gap:20px;margin-top:10px;}
+    .product-block img{width:200px;height:auto;object-fit:contain;border:1px solid #ddd;padding:8px;border-radius:6px;}
+    .price-box{margin-top:12px;padding:14px;background:#f0f5ff;border-left:4px solid #1c69d4;border-radius:0 6px 6px 0;}
+    .price-box .lbl{font-size:11px;color:#555;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.6px;}
+    .price-box .val{font-size:26px;font-weight:700;color:#1c69d4;}
+    .price-box .note{font-size:11px;color:#555;margin-top:4px;}
+    .note-box{background:#fffbeb;border-left:3px solid #d97706;padding:10px 14px;font-size:12px;margin-top:10px;border-radius:0 6px 6px 0;}
+    .footer{margin-top:40px;padding-top:20px;border-top:1px solid #ccc;font-size:11px;color:#777;text-align:center;}
+    .next-steps{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px;margin-top:24px;}
+    .next-steps h3{margin:0 0 10px;font-size:14px;color:#1e40af;}
+    .next-steps ul{margin:0;padding-left:20px;font-size:13px;color:#1e3a8a;line-height:1.7;}
+    .actions{margin-top:30px;text-align:center;}
+    .actions button{background:#1c69d4;color:white;border:none;padding:12px 24px;font-size:14px;font-weight:600;cursor:pointer;border-radius:6px;margin:0 6px;}
+    .actions button.sec{background:#666;}
+    @media print{
+      .actions{display:none !important;}
+      body{padding:15mm;}
+    }
+  </style></head><body>
+    <div class="offer-wrap">
+      <div class="hdr">
+        <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" alt="Emmenegger Logo">
+        <div class="hdr-right">
+          <h1>Ihre Anfrage</h1>
+          <div class="meta">
+            Datum: <b>${today}</b><br>
+            Referenz: <b>${e(clean(vo["ID"]))}</b>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bestaetigung">
+        <b>✅ Bestätigung:</b> Ihre Anfrage wurde erfolgreich übermittelt. Unser Team wird sich in Kürze bei Ihnen melden.
+      </div>
+      
+      <h2>Ihre Angaben</h2>
+      <table>
+        <tr><td>Name</td><td>${e(data.name)}</td></tr>
+        <tr><td>E-Mail</td><td>${e(data.email)}</td></tr>
+        <tr><td>Kontrollschild</td><td>${e(data.kontrollschild)}</td></tr>
+        ${data.bemerkung ? `<tr><td>Bemerkung</td><td>${e(data.bemerkung)}</td></tr>` : ""}
+      </table>
+      
+      <h2>Fahrzeug</h2>
+      <table>
+        <tr><td>Marke</td><td>${e(clean(vo["Marke"]))}</td></tr>
+        <tr><td>Fahrzeug</td><td>${e(clean(vo["Fahrzeug"]))}</td></tr>
+        ${clean(vo["Reihe"])?`<tr><td>Reihe</td><td>${e(clean(vo["Reihe"]))}</td></tr>`:""}
+        ${clean(vo["Modell"])?`<tr><td>Modell</td><td>${e(clean(vo["Modell"]))}</td></tr>`:""}
+        ${clean(vo["Motor"])?`<tr><td>Motor</td><td>${e(clean(vo["Motor"]))}</td></tr>`:""}
+      </table>
+      
+      <h2>Gewähltes Produkt</h2>
+      <div class="product-block">
+        ${p.bild ? `<img src="${e(p.bild)}" alt="${e(p.bezeichnung)}">` : ""}
+        <div style="flex:1;">
+          <table>
+            <tr><td>Bezeichnung</td><td>${e(p.bezeichnung||"")}</td></tr>
+            ${p.marke ? `<tr><td>Reifen</td><td>${e(p.marke)}</td></tr>` : ""}
+            ${p.dimension ? `<tr><td>Dimension</td><td>${e(p.dimension)}</td></tr>` : ""}
+            ${p.teilenummer ? `<tr><td>Teilenummer</td><td>${e(p.teilenummer)}</td></tr>` : ""}
+            <tr><td>Anzahl</td><td>4 Stück (kompletter Satz)</td></tr>
+          </table>
+          ${priceFormatted ? `<div class="price-box">
+            <div class="lbl">Preis pro Satz inkl. Montage</div>
+            <div class="val">${e(priceFormatted)} CHF</div>
+            <div class="note">Preise inkl. MwSt. · Preisänderungen vorbehalten</div>
+          </div>` : `<div class="price-box">
+            <div class="val" style="font-size:18px;">Preis auf Anfrage</div>
+          </div>`}
+          ${p.verkaufshinweis ? `<div class="note-box"><b>Hinweis:</b> ${e(p.verkaufshinweis)}</div>` : ""}
+          ${p.hinweistext ? `<div class="note-box">${e(p.hinweistext)}</div>` : ""}
+        </div>
+      </div>
+      
+      <div class="next-steps">
+        <h3>📋 Wie geht es weiter?</h3>
+        <ul>
+          <li>Wir prüfen Ihre Anfrage in Kürze</li>
+          <li>Sie erhalten ein verbindliches Angebot per E-Mail</li>
+         <li>Bei Fragen melden Sie sich direkt bei uns</li>
+        </ul>
+      </div>
+      <div class="actions">
+        <button onclick="window.print()">🖨️ Drucken / Als PDF speichern</button>
+        <button class="sec" onclick="window.close()">Schliessen</button>
+      </div>
+      <div class="footer">
+        Emmenegger AG · Diese Anfrage wurde über den WKR-Konfigurator erstellt.
+      </div>
+    </div>
+  </body></html>`);
+  w.document.close();
+}
 /* ============================================================
    PDF OFFER
    ============================================================ */
@@ -4857,9 +5204,17 @@ document.querySelectorAll(".modal-overlay").forEach(overlay=>{
 /* ============================================================
    INIT
 ============================================================ */
-   function loadFromUrl(){
+ async function loadFromUrl(){
   try {
     const p = new URLSearchParams(window.location.search);
+    
+    // Token-Check zuerst (Kunden-Link)
+    const token = clean(p.get("token"));
+    if (token) {
+      await loadCustomerToken(token);
+      return;
+    }
+    
     if(p.get("marke"))    state.marke    = p.get("marke");
     if(p.get("standort")) state.standort = p.get("standort");
     if(p.get("reihe"))    state.reihe    = p.get("reihe");
@@ -4867,24 +5222,50 @@ document.querySelectorAll(".modal-overlay").forEach(overlay=>{
     if(p.get("motor"))    state.motor    = p.get("motor");
   } catch(e){}
 }
+
+async function loadCustomerToken(token){
+  try {
+    const res = await postToScript({ action: "vororderGetByToken", token: token });
+    if (res && res.status === "OK" && res.vororder) {
+      customerMode = true;
+      customerVororder = res.vororder;
+      
+      // Fahrzeug-State aus Vororder setzen
+      const vo = res.vororder;
+      state.marke    = clean(vo["Marke"])    || null;
+      state.standort = clean(vo["Standort_Bearbeitung"]) || null;
+      state.reihe    = clean(vo["Reihe"])    || null;
+      state.modell   = clean(vo["Modell"])   || null;
+      state.motor    = clean(vo["Motor"])    || null;
+      
+      render();
+    } else {
+      alert("⚠ Link ungültig oder abgelaufen.\n\nBitte kontaktieren Sie Emmenegger direkt:\ntv-g-fp@emmeneggerag.ch");
+    }
+  } catch(err) {
+    console.error("Token-Fehler:", err);
+    alert("Fehler beim Laden des Links. Bitte nochmal versuchen.");
+  }
+}
 loadFromUrl();
 initTheme();
 
 Promise.all([
+  loadFromUrl(),
   fetch(URLS.produkte).then(r=>r.json()),
   fetch(URLS.mapping).then(r=>r.json()),
   fetch(URLS.fahrzeuge).then(r=>r.json()),
   fetch(URLS.reifen).then(r=>r.json())
-]).then(([p,m,f,r])=>{
+]).then(([_, p, m, f, r])=>{
   produkte=Array.isArray(p)?p:[];
   mapping=Array.isArray(m)?m:[];
   fahrzeuge=Array.isArray(f)?f:[];
   reifen=Array.isArray(r)?r:[];
- if (window.isFirebaseAdminLoggedIn) {
-  applyFirebaseAdminState();
-} else {
-  render();
-}
+  if (window.isFirebaseAdminLoggedIn) {
+    applyFirebaseAdminState();
+  } else {
+    render();
+  }
 }).catch(()=>{
   document.getElementById("app").innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div>Daten konnten nicht geladen werden. Bitte Seite neu laden.</div>`;
 });
