@@ -1168,8 +1168,9 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
       </div>
       <div class="form-field"><label>Bezeichnung</label><input id="newVoBezeichnung" type="text" placeholder="z.B. V-Speiche 474"></div>
       <div class="form-field"><label>Dimension</label><input id="newVoDimension" type="text" placeholder="z.B. 225/45R18"></div>
-      <div class="form-field"><label>Verkäufer</label><input id="newVoVK" type="text" placeholder="z.B. Marco"></div>
-      <div class="form-field"><label>Konditionen</label><input id="newVoKonditionen" type="text" placeholder="z.B. 0.2"></div>
+      <div class="form-field"><label>Verkäufer</label><input id="newVoVerkaeufer" type="text" placeholder="z.B. Marco"></div>
+      <div class="form-field"><label>Verkaufspreis (CHF)</label><input id="newVoPreis" type="text" placeholder="z.B. 2336"></div>
+      <div class="form-field"><label>Konditionen</label><input id="newVoKonditionen" type="text" placeholder="z.B. Rabatt 20%"></div>
     </div>
 
     <div style="background:var(--surface-2);border-left:3px solid var(--accent);padding:10px 14px;margin:18px 0 12px;border-radius:0 6px 6px 0;">
@@ -4010,7 +4011,8 @@ async function saveNewVororder(){
     "Bezeichnung": clean(document.getElementById("newVoBezeichnung").value),
     "Dimension": clean(document.getElementById("newVoDimension").value),
     "Anzahl": anzahl,
- "Verkaeufer": clean(document.getElementById("newVoVK").value),
+ "Verkaeufer": clean(document.getElementById("newVoVerkaeufer").value),
+      "VK": clean(document.getElementById("newVoPreis").value),
     "Konditionen": clean(document.getElementById("newVoKonditionen").value),
     "Standort_Bearbeitung": standort,
     "Status": status,
@@ -4026,7 +4028,7 @@ async function saveNewVororder(){
       if (typ && anzahl > 0) {
         const posRow = {
           "Typ": typ, "TN": tn, "Bezeichnung": row["Bezeichnung"], "Dimension": row["Dimension"],
-          "Anzahl": anzahl, "Verkaeufer": row["Verkaeufer"], "Konditionen": row["Konditionen"],
+          "Anzahl": anzahl, "Verkaeufer": row["Verkaeufer"], "VK": row["VK"], "Konditionen": row["Konditionen"],
           "Status": status, "Bemerkungen": ""
         };
         await postToScript({ action: "vororderPositionAdd", vororderId: res.id, row: posRow });
@@ -4142,13 +4144,15 @@ function renderVororderDetail(){
           ${f("Adressnr","voEdit_Adressnr",vo["Adressnr"])}
           ${f("Kunden E-Mail","voEdit_KundenEmail",vo["KundenEmail"],{type:"email"})}
           ${f("Rechnung an","voEdit_RechnungAn",vo["RechnungAn"],{type:"select",options:["","An Kunde","Im Leasing (Intern)","Spezialpreis"]})}
-          ${f("Verkäufer","voEdit_Verkaeufer",vo["Verkaeufer"],{full:true})}
+          ${f("Verkäufer","voEdit_Verkaeufer",vo["Verkaeufer"])}
+          ${f("Verkaufspreis (CHF)","voEdit_VK",vo["VK"])}
         </div>` : `
           <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${e(clean(vo["Kundenname"]))||"—"}</div>
           ${clean(vo["Debitornr"])?`<div style="font-size:12px;">Debitor: ${e(clean(vo["Debitornr"]))}</div>`:""}
           ${clean(vo["Adressnr"])?`<div style="font-size:12px;">Adresse: ${e(clean(vo["Adressnr"]))}</div>`:""}
           ${clean(vo["KundenEmail"])?`<div style="font-size:12px;">E-Mail: ${e(clean(vo["KundenEmail"]))}</div>`:""}
           ${clean(vo["Verkaeufer"])?`<div style="font-size:12px;margin-top:6px;">👤 Verkäufer: <b>${e(clean(vo["Verkaeufer"]))}</b></div>`:""}
+          ${clean(vo["VK"])?`<div style="font-size:12px;margin-top:6px;color:var(--accent);">💰 Verkaufspreis: <b>${e(formatPrice(vo["VK"]))} CHF</b></div>`:""}
           ${clean(vo["RechnungAn"])?`<div style="font-size:12px;margin-top:6px;">💰 ${e(clean(vo["RechnungAn"]))}</div>`:""}
         `}
       </div>
@@ -4372,7 +4376,7 @@ async function saveVoDetailChanges(){
   const vo = vororder.find(v => clean(v["ID"]) === clean(_voDetailId));
   if (!vo) { alert("Vororder nicht gefunden."); return; }
 
- const fields = ["Kundenname","Debitornr","Adressnr","KundenEmail","RechnungAn","Verkaeufer",
+ const fields = ["Kundenname","Debitornr","Adressnr","KundenEmail","RechnungAn","Verkaeufer", "VK",
                   "Marke","Fahrzeug","Fahrgestellnr","Ordernr","Vertragsnr","Auftrag","Ablieferung",
                   "Typ","Anzahl","TN","Bezeichnung","Dimension","Konditionen","Standort_Bearbeitung",
                   "Bemerkungen"];
