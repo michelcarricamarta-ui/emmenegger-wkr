@@ -1823,7 +1823,6 @@ function getDashboardStats(){
   const dotWarnings=reifen.filter(r=>isDotOld(r["DOT"])).length;
   return{totalWkr,wkrInStock,lowStockWkr,totalTires,activeTires,inactiveTires,tiresInStock,dotWarnings};
 }
-
 /* ============================================================
    RENDER ADMIN SIDEBAR
    ============================================================ */
@@ -1831,7 +1830,7 @@ function renderAdminSidebar(){
   const s = getDashboardStats();
   const sec = state.adminSection || "dashboard";
 
-  // Neue Business-Metriken aus Vororders berechnen (Umsatz entfernt, "Kunde hat bestellt" hinzugefügt)
+  // Neue Business-Metriken aus Vororders berechnen
   let offeneAnfragen = 0;
   let kundeBestellt = 0;
   let reservierteWKR = 0;
@@ -1842,7 +1841,7 @@ function renderAdminSidebar(){
     reservierteWKR = vororder.filter(v => clean(v["Status"]) === "Reserviert").length;
   }
 
-  // Farb-Klassen für die Badges (Grün=ok, Orange=warn, Grau=neu)
+  // Farb-Klassen für die Badges
   const wkrLagerClass = s.wkrInStock===0 ? "sbt-err" : s.lowStockWkr>0 ? "sbt-warn" : "sbt-ok";
   const dotClass      = s.dotWarnings>0  ? "sbt-warn" : "sbt-ok";
   const offeneClass   = offeneAnfragen>0 ? "sbt-warn" : "sbt-ok";
@@ -1927,52 +1926,6 @@ function renderAdminSidebar(){
     </div>
   </div>`;
 }
-
-
-    <div class="admin-nav-section">
-      <div class="admin-nav-label">Übersicht</div>
-      <button class="admin-nav-item ${sec==="dashboard"?"active":""}" onclick="selectAdminSection('dashboard')">
-        <span class="nav-icon">🏠</span> Dashboard
-      </button>
-    </div>
-
-    <div class="admin-nav-section">
-      <div class="admin-nav-label">WKR</div>
-      <button class="admin-nav-item ${sec==="wkr_model"?"active":""}" onclick="selectAdminSection('wkr_model')">
-        <span class="nav-icon">🔍</span> ${e(t("admin_wkr_by_model"))}
-      </button>
-      <button class="admin-nav-item ${sec==="wkr_list"?"active":""}" onclick="selectAdminSection('wkr_list')">
-        <span class="nav-icon">🛞</span> ${e(t("admin_wkr_all"))}
-      </button>
-    </div>
-
-    <div class="admin-nav-section">
-      <div class="admin-nav-label">Reifen</div>
-      <button class="admin-nav-item ${sec==="reifen_list"?"active":""}" onclick="selectAdminSection('reifen_list')">
-        <span class="nav-icon">⚫</span> ${e(t("admin_tires_all"))}
-      </button>
-    </div>
-    <div class="admin-nav-section">
-      <div class="admin-nav-label">Vororder</div>
-      <button class="admin-nav-item ${sec==="vororder"?"active":""}" onclick="selectAdminSection('vororder')">
-        <span class="nav-icon">📋</span> Vororder-Übersicht
-      </button>
-    </div>
-    <div class="admin-nav-section">
-      <div class="admin-nav-label">Tools</div>
-      <button class="admin-nav-item ${sec==="inventur"?"active":""}" onclick="selectAdminSection('inventur')">
-        <span class="nav-icon">📊</span> Inventur / Export
-      </button>
-    </div>
-    <div class="admin-nav-section" style="border-top:1px solid var(--border); padding-top:8px; margin-top:8px;">
-      <div class="admin-nav-label">Konto</div>
-      <button class="admin-nav-item" onclick="logoutAdmin()" style="color:var(--error);">
-        <span class="nav-icon">🚪</span> Logout
-      </button>
-    </div>
-  </div>`;
-}
-
 /* ============================================================
    RENDER ADMIN DASHBOARD (compact)  ← NEU
    ============================================================ */
