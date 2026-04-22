@@ -1823,10 +1823,6 @@ function getDashboardStats(){
   const dotWarnings=reifen.filter(r=>isDotOld(r["DOT"])).length;
   return{totalWkr,wkrInStock,lowStockWkr,totalTires,activeTires,inactiveTires,tiresInStock,dotWarnings};
 }
-
-/* ============================================================
-   RENDER ADMIN SIDEBAR  ← NEU
-   ============================================================ */
 /* ============================================================
    RENDER ADMIN SIDEBAR
    ============================================================ */
@@ -1836,20 +1832,20 @@ function renderAdminSidebar(){
 
   // Neue Business-Metriken aus Vororders berechnen
   let offeneAnfragen = 0;
-  let umsatzPotenzial = 0;
+  let kundeBestellt = 0;
   let reservierteWKR = 0;
 
   if (vororderLoaded && vororder) {
     offeneAnfragen = vororder.filter(v => ["Kundenauswahl", "Offerte ausstehend"].includes(clean(v["Status"]))).length;
-    umsatzPotenzial = vororder.filter(v => ["Offeriert", "Sammelbestellung (Vororder26)", "Bestellt"].includes(clean(v["Status"]))).reduce((sum, v) => sum + (parsePrice(v["VK"]) || 0), 0);
+    kundeBestellt = vororder.filter(v => clean(v["Status"]) === "Kunde hat bestellt").length;
     reservierteWKR = vororder.filter(v => clean(v["Status"]) === "Reserviert").length;
   }
 
-  // Farb-Klassen für die Badges (Grün=ok, Orange=warn, Grau=neu)
+  // Farb-Klassen für die Badges
   const wkrLagerClass = s.wkrInStock===0 ? "sbt-err" : s.lowStockWkr>0 ? "sbt-warn" : "sbt-ok";
   const dotClass      = s.dotWarnings>0  ? "sbt-warn" : "sbt-ok";
   const offeneClass   = offeneAnfragen>0 ? "sbt-warn" : "sbt-ok";
-  const umsatzClass   = umsatzPotenzial>0? "sbt-ok"   : "sbt-neu";
+  const bestelltClass = kundeBestellt>0  ? "sbt-warn" : "sbt-neu";
   const resClass      = reservierteWKR>0 ? "sbt-ok"   : "sbt-neu";
 
   return `<div class="admin-sidebar">
@@ -1872,9 +1868,9 @@ function renderAdminSidebar(){
         <span class="sbl">Offene Anfragen</span>
         <span class="sbn">${vororderLoaded ? offeneAnfragen : "—"}</span>
       </div>
-      <div class="admin-stat-badge ${umsatzClass}" title="Status: Offeriert / Bestellt / Sammelbestellung">
-        <span class="sbl">Pipeline Umsatz</span>
-        <span class="sbn">${vororderLoaded ? formatPrice(umsatzPotenzial) + " CHF" : "—"}</span>
+      <div class="admin-stat-badge ${bestelltClass}" title="Status: Kunde hat bestellt">
+        <span class="sbl">Kunde hat bestellt</span>
+        <span class="sbn">${vororderLoaded ? kundeBestellt : "—"}</span>
       </div>
       <div class="admin-stat-badge ${resClass}" title="Status: Reserviert">
         <span class="sbl">Reservierte Aufträge</span>
@@ -1930,7 +1926,6 @@ function renderAdminSidebar(){
     </div>
   </div>`;
 }
-
 /* ============================================================
    RENDER ADMIN DASHBOARD (compact)  ← NEU
    ============================================================ */
@@ -2689,7 +2684,7 @@ function renderAdminWkrList(){
 /* ============================================================
    RENDER: INVENTUR / EXPORT
    ============================================================ */
-   /* ============================================================
+/* ============================================================
    RENDER: VORORDER ÜBERSICHT
    ============================================================ */
 function renderAdminVororder(){
@@ -2697,13 +2692,12 @@ function renderAdminVororder(){
   const userStandort = currentUser?.standort || "";
   const results = getFilteredVororder();
 
-  // Stats
-  // Stats
+  // Stats (Angepasst: "Kunde hat bestellt" hinzugefügt)
   const stats = {
-    offen: results.filter(v => ["Kundenauswahl","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt"].includes(clean(v["Status"]))).length,
+    offen: results.filter(v => ["Kundenauswahl","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)"].includes(clean(v["Status"]))).length,
+    bestellt: results.filter(v => clean(v["Status"]) === "Kunde hat bestellt").length,
     eingetroffen: results.filter(v => clean(v["Status"]) === "Reserviert").length,
-    abgeschlossen: results.filter(v => clean(v["Status"]) === "Erledigt").length,
-    abgesagt: results.filter(v => clean(v["Status"]) === "Kunde verzichtet").length
+    abgeschlossen: results.filter(v => clean(v["Status"]) === "Erledigt").length
   };
 
   const statusOptions = ["Kundenauswahl","Kunde hat bestellt","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt","Reserviert","Erledigt","Kunde verzichtet"];
@@ -2724,23 +2718,23 @@ function renderAdminVororder(){
     </div>
   </div>`;
 
-  // Status-Stats
-  html += `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px;">
+  // Status-Stats (Angepasst: Neues Layout mit "Kunde hat bestellt")
+  html += `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px;">
     <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px;">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#92400e;margin-bottom:4px;">Offen</div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#92400e;margin-bottom:4px;">Anfragen/Offerten</div>
       <div style="font-size:22px;font-weight:700;color:#92400e;">${stats.offen}</div>
     </div>
+    <div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:14px;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#991b1b;margin-bottom:4px;">Kunde hat bestellt</div>
+      <div style="font-size:22px;font-weight:700;color:#991b1b;">${stats.bestellt}</div>
+    </div>
     <div style="background:#ecfccb;border:1px solid #bef264;border-radius:8px;padding:14px;">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#3f6212;margin-bottom:4px;">Reserviert</div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#3f6212;margin-bottom:4px;">Reserviert</div>
       <div style="font-size:22px;font-weight:700;color:#3f6212;">${stats.eingetroffen}</div>
     </div>
     <div style="background:#f3f4f6;border:1px solid #d1d5db;border-radius:8px;padding:14px;">
-     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#374151;margin-bottom:4px;">Erledigt</div>
+     <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#374151;margin-bottom:4px;">Erledigt</div>
       <div style="font-size:22px;font-weight:700;color:#374151;">${stats.abgeschlossen}</div>
-    </div>
-    <div style="background:#fee2e2;border:1px solid #fecaca;border-radius:8px;padding:14px;">
-     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#7f1d1d;margin-bottom:4px;">Kunde verzichtet</div>
-      <div style="font-size:22px;font-weight:700;color:#7f1d1d;">${stats.abgesagt}</div>
     </div>
   </div>`;
 
@@ -2817,10 +2811,12 @@ function renderAdminVororder(){
           <div>${e(clean(v["Fahrzeug"]))||"—"}</div>
           ${clean(v["Fahrgestellnr"]) ? `<div style="font-size:11px;color:var(--text-muted);font-family:monospace;">FIN: ${e(clean(v["Fahrgestellnr"]))}</div>` : ""}
         </td>
-        <td style="padding:10px 12px;font-size:12px;">${e(clean(v["Verkaeufer"]))||"—"}</td>
         <td style="padding:10px 12px;">
           <div><span style="font-size:11px;background:var(--surface-3);padding:2px 6px;border-radius:3px;font-weight:600;">${e(clean(v["Typ"]))||"—"}</span></div>
           ${clean(v["TN"]) ? `<div style="font-size:11px;color:var(--text-muted);margin-top:3px;font-family:monospace;">${e(clean(v["TN"]))}</div>` : ""}
+        </td>
+        <td style="padding:10px 12px;font-size:12px;font-weight:600;color:var(--text-secondary);">
+          ${e(clean(v["Verkaeufer"]))||"—"}
         </td>
         <td style="padding:10px 12px;text-align:center;font-weight:600;">${e(clean(v["Anzahl"]))||"—"}</td>
         <td style="padding:10px 12px;font-size:12px;">${e(formatVororderDate(v["Ablieferung"]))||"—"}</td>
