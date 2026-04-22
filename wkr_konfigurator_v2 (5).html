@@ -4386,7 +4386,7 @@ async function saveVoDetailChanges(){
   const vo = vororder.find(v => clean(v["ID"]) === clean(_voDetailId));
   if (!vo) { alert("Vororder nicht gefunden."); return; }
 
- const fields = ["Kundenname","Debitornr","Adressnr","KundenEmail","RechnungAn","Verkaeufer", "VK",
+  const fields = ["Kundenname","Debitornr","Adressnr","KundenEmail","RechnungAn","Verkaeufer", "VK",
                   "Marke","Fahrzeug","Fahrgestellnr","Ordernr","Vertragsnr","Auftrag","Ablieferung",
                   "Typ","Anzahl","TN","Bezeichnung","Dimension","Konditionen","Standort_Bearbeitung",
                   "Bemerkungen"];
@@ -4405,7 +4405,7 @@ async function saveVoDetailChanges(){
   });
 
   if (!hasChanges) {
-    alert("Keine Änderungen zum Speichern.");
+    // Wenn nichts geändert wurde, einfach sofort schliessen
     _voDetailEditMode = false;
     renderVororderDetail();
     return;
@@ -4421,6 +4421,12 @@ async function saveVoDetailChanges(){
 
   const user = currentUser?.name || currentUser?.email || "Unknown";
 
+  // 1. SOFORT die Bearbeitungsmaske schliessen und die neuen Daten lokal anzeigen (fühlt sich blitzschnell an)
+  _voDetailEditMode = false;
+  Object.assign(vo, updates); // Lokale Kopie direkt anpassen
+  renderVororderDetail();     // Schliesst den Edit-Modus und zeigt die Leseansicht
+
+  // 2. Daten still und leise im Hintergrund an den Server senden
   try {
     const res = await postToScript({
       action: "vororderUpdate",
@@ -4428,21 +4434,28 @@ async function saveVoDetailChanges(){
       user: user,
       updates: updates
     });
+    
     if (res && res.status === "OK") {
-      alert(`✅ ${res.changedFields?.length || 0} Feld(er) gespeichert.`);
-      _voDetailEditMode = false;
+      // Im Hintergrund die Datenbank neu laden, ohne dich beim Arbeiten zu blockieren
       await reloadVororder();
       try {
         const p = await fetch(URLS.produkte).then(r=>r.json());
         if (Array.isArray(p)) produkte = p;
       } catch(e){}
+      
+      // Noch einmal sicherheitshalber das aktuelle Bild rendern
       renderVororderDetail();
       render();
     } else {
-      alert("Fehler: " + JSON.stringify(res));
+      alert("Fehler beim Speichern: " + JSON.stringify(res));
+      // Bei einem Fehler machen wir die Maske wieder auf
+      _voDetailEditMode = true; 
+      renderVororderDetail();
     }
   } catch(err) {
-    alert("Fehler: " + err.message);
+    alert("Netzwerkfehler: " + err.message);
+    _voDetailEditMode = true;
+    renderVororderDetail();
   }
 }
    function renderPositionenList(voId, edit){
