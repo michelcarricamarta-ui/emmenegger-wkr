@@ -1080,7 +1080,15 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
     <div class="form-grid">
       <div class="form-field"><label>Marke *</label><select id="editWkrMarke"><option value="">Bitte wählen</option><option value="BMW">BMW</option><option value="MINI">MINI</option></select></div>
       <div class="form-field"><label>Standort *</label><select id="editWkrStandort"><option value="">Bitte wählen</option><option value="GEB">Gebenstorf</option><option value="HET">Hettenschwil</option></select></div>
-      <div class="form-field"><label>Bezeichnung *</label><input id="editWkrBezeichnung" type="text" placeholder="Bezeichnung"></div>
+      <div class="form-field full"><label>Bezeichnung *</label><input id="editWkrBezeichnung" type="text" placeholder="Bezeichnung"></div>
+
+      <div style="grid-column: 1 / -1; background: var(--surface-3); padding: 10px; border-radius: 6px; font-size: 11px; font-weight: 700; margin-top: 10px; color: var(--text-secondary);">FAHRZEUG-ZUORDNUNG AKTUALISIEREN</div>
+      <div class="form-field"><label>Reihe (z.B. U11)</label><input id="editWkrReihe" type="text" placeholder="Baureihe"></div>
+      <div class="form-field"><label>Modell (z.B. X1)</label><input id="editWkrModell" type="text" placeholder="Modellbezeichnung"></div>
+      <div class="form-field full"><label>Motor (Varianten mit Komma)</label><input id="editWkrMotor" type="text" placeholder="z.B. 18d, 20d, 20i"></div>
+      
+      <div style="grid-column: 1 / -1; height: 10px;"></div>
+
       <div class="form-field"><label>Reifenmarke</label><input id="editWkrReifen" type="text" placeholder="z. B. Pirelli"></div>
       <div class="form-field"><label>Dimension</label><input id="editWkrDimension" type="text" placeholder="Dimension"></div>
       <div class="form-field"><label>Teilenummer (TN) *</label><input id="editWkrTN" type="text" placeholder="TN"></div>
@@ -2042,9 +2050,8 @@ function renderAdminDashboard(){
     </div>
 
     <!-- ═══════════════ SPOTLIGHT KPIs (5 Kacheln) ═══════════════ -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;margin-bottom:24px;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:14px;margin-bottom:24px;">
       
-      <!-- 1. Offene Vororders (primär) -->
       <div style="${spotlightStyle} border-top:4px solid var(--accent);" onclick="selectAdminSection('vororder')" onmouseover="${spotlightHover}" onmouseout="${spotlightOut}">
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;">📋 Offene Vororders</div>
         <div style="font-size:48px;font-weight:800;color:var(--accent);line-height:1;margin-bottom:8px;">${vororderLoaded ? offeneVororders : "—"}</div>
@@ -2053,28 +2060,24 @@ function renderAdminDashboard(){
         </div>
       </div>
 
-      <!-- 2. Reserviert -->
       <div style="${spotlightStyle} border-top:4px solid #10b981;" onclick="vororderFilter.status='Reserviert';selectAdminSection('vororder')" onmouseover="${spotlightHover}" onmouseout="${spotlightOut}">
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;">✅ Reserviert</div>
         <div style="font-size:48px;font-weight:800;color:#10b981;line-height:1;margin-bottom:8px;">${vororderLoaded ? reservierteWKR : "—"}</div>
         <div style="font-size:12px;color:var(--text-secondary);">Ware eingetroffen, bereit</div>
       </div>
 
-      <!-- 3. Sammelbestellung -->
       <div style="${spotlightStyle} border-top:4px solid #d97706;" onclick="vororderFilter.status='Sammelbestellung (Vororder26)';selectAdminSection('vororder')" onmouseover="${spotlightHover}" onmouseout="${spotlightOut}">
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;">📦 Sammelbestellung</div>
         <div style="font-size:48px;font-weight:800;color:#d97706;line-height:1;margin-bottom:8px;">${vororderLoaded ? sammelbestellung : "—"}</div>
         <div style="font-size:12px;color:var(--text-secondary);">Für BMW-Vororder 2026</div>
       </div>
 
-      <!-- 4. Pipeline Umsatz -->
-      <div style="${spotlightStyle} border-top:4px solid #8b5cf6;" onclick="selectAdminSection('vororder')" onmouseover="${spotlightHover}" onmouseout="${spotlightOut}">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;">💰 Pipeline Umsatz</div>
-        <div style="font-size:28px;font-weight:800;color:#8b5cf6;line-height:1;margin-bottom:8px;">${vororderLoaded && umsatzPotenzial > 0 ? formatPrice(umsatzPotenzial) : "—"}<span style="font-size:14px;font-weight:400;color:var(--text-muted);"> CHF</span></div>
-        <div style="font-size:12px;color:var(--text-secondary);">Offeriert + Bestellt</div>
+      <div style="${spotlightStyle} border-top:4px solid #ef4444;" onclick="vororderFilter.status='Kunde hat bestellt';selectAdminSection('vororder')" onmouseover="${spotlightHover}" onmouseout="${spotlightOut}">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;">🚨 Kunde hat bestellt</div>
+        <div style="font-size:48px;font-weight:800;color:#ef4444;line-height:1;margin-bottom:8px;">${vororderLoaded ? vororder.filter(v => clean(v["Status"]) === "Kunde hat bestellt").length : "—"}</div>
+        <div style="font-size:12px;color:var(--text-secondary);">Dringend: Bei BMW bestellen!</div>
       </div>
 
-      <!-- 5. WKR Lager -->
       <div style="${spotlightStyle} border-top:4px solid #0ea5e9;" onclick="selectAdminSection('wkr_list')" onmouseover="${spotlightHover}" onmouseout="${spotlightOut}">
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;">🛞 WKR Lager</div>
         <div style="font-size:48px;font-weight:800;color:#0ea5e9;line-height:1;margin-bottom:8px;">${s.wkrInStock}<span style="font-size:18px;color:var(--text-muted);font-weight:400;"> / ${s.totalWkr}</span></div>
@@ -2082,6 +2085,7 @@ function renderAdminDashboard(){
           ${s.lowStockWkr > 0 ? `<span style="color:var(--warning);font-weight:700;">⚠ ${s.lowStockWkr} kritisch</span>` : "Alle Modelle verfügbar"}
         </div>
       </div>
+      
     </div>
 
     <!-- ═══════════════ DRINGEND: Ablieferung diese Woche ═══════════════ -->
@@ -3707,39 +3711,88 @@ function clearWkrForm(prefix){
   const lager=document.getElementById(`${prefix}WkrLager`);if(lager)lager.value="0";
 }
 function openEditWkrModal(tn){
-  const row=produkte.find(p=>clean(p["TN"])===clean(tn));
-  if(!row){alert("WKR nicht gefunden.");return;}
-  editingWkrTN=clean(row["TN"]);
-  document.getElementById("editWkrMarke").value=clean(row["Marke"]);
-  document.getElementById("editWkrStandort").value=clean(row["Standort"]);
-  document.getElementById("editWkrBezeichnung").value=clean(row["Bezeichnung"]);
-  document.getElementById("editWkrReifen").value=clean(row["Reifen"]);
-  document.getElementById("editWkrDimension").value=clean(row["Dimension"]);
-  document.getElementById("editWkrTN").value=clean(row["TN"]);
-  document.getElementById("editWkrLager").value=clean(row["Lager"]);
-  document.getElementById("editWkrLagerort").value=clean(row["Lagerort"]);
-  document.getElementById("editWkrBild").value=clean(row["Bild"]);
-  document.getElementById("editWkrVP").value=clean(row["VP"]);
-  document.getElementById("editWkrAngebotspreis").value=clean(row["Angebotspreis"]);
-  document.getElementById("editWkrNettopreis").value=clean(row["Nettopreis"]);
-  document.getElementById("editWkrEmpfaengerMail").value=clean(row["EmpfängerMail"]||row["EmpfaengerMail"]);
-  document.getElementById("editWkrHinweistext").value=clean(row["Hinweistext"]);
-  document.getElementById("editWkrVerkaufshinweis").value=clean(row["Verkaufshinweis"]);
+  const row = produkte.find(p => clean(p["TN"]) === clean(tn));
+  if(!row) { alert("WKR nicht gefunden."); return; }
+  
+  editingWkrTN = clean(row["TN"]);
+  
+  // Fahrzeug-Daten aus dem Mapping suchen
+  const mapEntry = mapping.find(m => normalizeTN(m["TN"]) === normalizeTN(editingWkrTN));
+  
+  document.getElementById("editWkrMarke").value = clean(row["Marke"]);
+  document.getElementById("editWkrStandort").value = clean(row["Standort"]);
+  document.getElementById("editWkrBezeichnung").value = clean(row["Bezeichnung"]);
+  document.getElementById("editWkrReifen").value = clean(row["Reifen"]);
+  document.getElementById("editWkrDimension").value = clean(row["Dimension"]);
+  document.getElementById("editWkrTN").value = clean(row["TN"]);
+  document.getElementById("editWkrLager").value = clean(row["Lager"]);
+  document.getElementById("editWkrLagerort").value = clean(row["Lagerort"]);
+  document.getElementById("editWkrBild").value = clean(row["Bild"]);
+  document.getElementById("editWkrVP").value = clean(row["VP"]);
+  document.getElementById("editWkrAngebotspreis").value = clean(row["Angebotspreis"]);
+  document.getElementById("editWkrNettopreis").value = clean(row["Nettopreis"]);
+  document.getElementById("editWkrEmpfaengerMail").value = clean(row["EmpfängerMail"] || row["EmpfaengerMail"]);
+  document.getElementById("editWkrHinweistext").value = clean(row["Hinweistext"]);
+  document.getElementById("editWkrVerkaufshinweis").value = clean(row["Verkaufshinweis"]);
+
+  // Neue Zuordnungs-Felder füllen
+  document.getElementById("editWkrReihe").value = mapEntry ? clean(mapEntry["Reihe"]) : "";
+  document.getElementById("editWkrModell").value = mapEntry ? clean(mapEntry["Modell"]) : "";
+  document.getElementById("editWkrMotor").value = mapEntry ? clean(mapEntry["Motor"]) : "";
+
   document.getElementById("editWkrModal").classList.add("open");
 }
-function closeEditWkrModal(){ document.getElementById("editWkrModal").classList.remove("open"); editingWkrTN=""; }
-function calcWkrDiscount(prefix) {
-  const vpInput = document.getElementById(`${prefix}WkrVP`);
-  const angebotInput = document.getElementById(`${prefix}WkrAngebotspreis`);
-  if (!vpInput || !angebotInput) return;
+
+async function saveEditedWkr(){
+  if(!editingWkrTN) return;
   
-  const vp = parsePrice(vpInput.value);
-  if (vp && vp > 0) {
-    // 20% abziehen und auf ganze Franken runden
-    const discounted = Math.round(vp * 0.8);
-    angebotInput.value = discounted;
-  } else {
-    alert("Bitte gib zuerst einen gültigen VP ein.");
+  const tn = clean(document.getElementById("editWkrTN").value);
+  const marke = clean(document.getElementById("editWkrMarke").value);
+  const reihe = clean(document.getElementById("editWkrReihe").value);
+  const modell = clean(document.getElementById("editWkrModell").value);
+  const motor = clean(document.getElementById("editWkrMotor").value);
+
+  if(!marke || !tn) { alert("Marke und TN sind Pflichtfelder."); return; }
+
+  const updates = {
+    "Marke": marke,
+    "Standort": clean(document.getElementById("editWkrStandort").value),
+    "Bezeichnung": clean(document.getElementById("editWkrBezeichnung").value),
+    "Reifen": clean(document.getElementById("editWkrReifen").value),
+    "Dimension": clean(document.getElementById("editWkrDimension").value),
+    "TN": tn,
+    "Lager": clean(document.getElementById("editWkrLager").value),
+    "Lagerort": clean(document.getElementById("editWkrLagerort").value),
+    "Bild": clean(document.getElementById("editWkrBild").value),
+    "VP": clean(document.getElementById("editWkrVP").value),
+    "Angebotspreis": clean(document.getElementById("editWkrAngebotspreis").value),
+    "Nettopreis": clean(document.getElementById("editWkrNettopreis").value),
+    "EmpfaengerMail": clean(document.getElementById("editWkrEmpfaengerMail").value),
+    "Hinweistext": clean(document.getElementById("editWkrHinweistext").value),
+    "Verkaufshinweis": clean(document.getElementById("editWkrVerkaufshinweis").value)
+  };
+
+  try {
+    // 1. Produkt-Daten aktualisieren
+    await postToScript({ sheet:"Produkte", keyField:"TN", keyValue:editingWkrTN, updates: updates });
+    
+    // 2. Zuordnung aktualisieren (Falls Daten eingegeben wurden)
+    if (reihe || modell) {
+      const mapUpdates = { "Marke": marke, "Reihe": reihe, "Modell": modell, "Motor": motor, "TN": tn };
+      // Wir fügen die Aktualisierung einfach als neuen Eintrag an, da die Zuordnung das aktuellste Mapping liest.
+      await postToScript({ action: "appendRow", sheet: "Zuordnung", row: mapUpdates });
+    }
+
+    alert("WKR und Zuordnung erfolgreich aktualisiert.");
+    
+    // Lokal aktualisieren
+    const idx = produkte.findIndex(p => clean(p["TN"]) === editingWkrTN);
+    if(idx !== -1) produkte[idx] = Object.assign(produkte[idx], updates);
+    
+    closeEditWkrModal();
+    render();
+  } catch(err) {
+    alert("Fehler: " + err.message);
   }
 }
 /* ============================================================
