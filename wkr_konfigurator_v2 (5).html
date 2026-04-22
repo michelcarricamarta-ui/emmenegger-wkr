@@ -3481,7 +3481,7 @@ function printSammelbestellung(){
                   const lagInp = document.getElementById('lager_' + tn);
                   const lagCount = parseInt(lagInp.value, 10) || 0;
                   
-                  // Wir generieren pro eingetipptem RÄDERSATZ 1 Etikette (oder 1 pro Rad? Hier gehen wir von 1 Etikette pro eingetippter Menge aus)
+                  // Wir generieren pro eingetipptem RÄDERSATZ 1 Etikette
                   for(let i=0; i < lagCount; i++) {
                       const bcId = 'bc_lag_' + safeTnId + '_' + i;
                       html += \`
@@ -3534,7 +3534,7 @@ function printSammelbestellung(){
           \`);
           lw.document.close();
       }
-    </script>
+    <\/script>
   </body></html>`);
   w.document.close();
 }
