@@ -3244,20 +3244,36 @@ function exportVororderCSV(){
 // Diese Hilfsfunktion speichert die Daten im Hintergrund in der "Produkte"-Tabelle
 window.saveLagerBestellungBatch = async function(updates) {
   try {
+      let hasError = false;
+      let errorMessage = "";
+
       for (let d of updates) {
-          await postToScript({
+          const res = await postToScript({
               sheet: "Produkte",
               keyField: "TN",
-              keyValue: d.tn,
+              keyValue: d.tn, // Nutzt jetzt die exakte Schreibweise aus der Datenbank
               updates: { "Lager_Bestellung": d.val }
           });
-          // Lokal aktualisieren, damit es beim nächsten Öffnen direkt da ist
-          let p = produkte.find(x => clean(x["TN"]) === d.tn);
-          if (p) p["Lager_Bestellung"] = d.val;
+          
+          // Prüfen, ob das Google Sheet den Befehl WIRKLICH akzeptiert hat
+          if (res === "OK" || (res && res.status === "OK")) {
+              // Lokal aktualisieren, damit es beim nächsten Öffnen direkt da ist
+              let p = produkte.find(x => clean(x["TN"]) === d.tn);
+              if (p) p["Lager_Bestellung"] = d.val;
+          } else {
+              hasError = true;
+              errorMessage = JSON.stringify(res);
+              console.error("Fehler vom Server:", res);
+          }
       }
-      alert("✅ Lager-Bestellungen erfolgreich gespeichert!");
+
+      if (hasError) {
+          alert("❌ Fehler beim Speichern im Google Sheet!\n\nServer-Antwort: " + errorMessage + "\n\n(Tipp: Heisst die neue Spalte im Google Sheet exakt 'Lager_Bestellung'?)");
+      } else {
+          alert("✅ Lager-Bestellungen erfolgreich im Google Sheet gespeichert!");
+      }
   } catch(e) {
-      alert("❌ Fehler beim Speichern: " + e.message);
+      alert("❌ Skript-Fehler: " + e.message);
   }
 };
 
@@ -3294,11 +3310,12 @@ function printSammelbestellung(){
     if (!aggMap[tn]) {
       const prod = produkte.find(x => normalizeTNFrontend(clean(x["TN"])) === tn);
       aggMap[tn] = {
-        tn: clean(p["TN"]),
+        // NEU: Nimmt bevorzugt die TN exakt so, wie sie in der "Produkte" Tabelle steht (mit Leerzeichen!)
+        tn: prod ? clean(prod["TN"]) : clean(p["TN"]), 
         bezeichnung: prod ? clean(prod["Bezeichnung"]) : clean(p["Bezeichnung"]),
         dimension: prod ? clean(prod["Dimension"]) : clean(p["Dimension"]),
         marke: prod ? clean(prod["Marke"]) : "",
-        // Lade die bisher gespeicherte Lager-Bestellung aus der Datenbank!
+        // Lade die bisher gespeicherte Lager-Bestellung aus der Datenbank
         lagerBestellung: prod ? (parseInt(clean(prod["Lager_Bestellung"]), 10) || 0) : 0,
         reserviert: 0,
         kunden: []
@@ -3334,7 +3351,7 @@ function printSammelbestellung(){
   const datum = new Date().toLocaleDateString("de-CH");
   const standortLabel = standortFilter ? (standortFilter === "GEB" ? "Gebenstorf" : "Hettenschwil") : "Alle Standorte";
 
-  // Tabellenzeilen mit Eingabefeldern generieren (Laden den alten Wert rein!)
+  // Tabellenzeilen mit Eingabefeldern generieren
   const rows = tns.map((tn, idx) => {
     const a = aggMap[tn];
     const kundenStr = a.kunden.map(k => `${e(k.kunde)} (${k.anzahl})`).join(", ");
@@ -3346,7 +3363,7 @@ function printSammelbestellung(){
       <td>${e(a.marke)}</td>
       <td style="text-align:center;font-weight:700;color:#1c69d4;font-size:14px;">${a.reserviert}</td>
       <td class="count-cell" style="text-align:center; padding:4px;">
-         <input type="number" min="0" value="${a.lagerBestellung}" class="lager-input" id="lager_${e(tn)}" data-tn="${e(tn)}" data-res="${a.reserviert}" data-orig="${a.lagerBestellung}" oninput="calcSum(this)" style="width:60px; text-align:center; font-size:14px; font-weight:700; padding:4px; border:1px solid #ccc; border-radius:4px;">
+         <input type="number" min="0" value="${a.lagerBestellung}" class="lager-input" id="lager_${e(tn)}" data-tn="${e(a.tn)}" data-res="${a.reserviert}" data-orig="${a.lagerBestellung}" oninput="calcSum(this)" style="width:60px; text-align:center; font-size:14px; font-weight:700; padding:4px; border:1px solid #ccc; border-radius:4px;">
       </td>
       <td class="count-cell" style="text-align:center;font-weight:800;font-size:16px;color:#d97706;" id="sum_${e(tn)}">${a.reserviert + a.lagerBestellung}</td>
       <td style="font-size:10px;color:#555;">${kundenStr}</td>
@@ -3462,7 +3479,11 @@ function printSammelbestellung(){
           const tn = inp.getAttribute('data-tn');
           const res = parseInt(inp.getAttribute('data-res'), 10) || 0;
           const lager = parseInt(inp.value, 10) || 0;
-          document.getElementById('sum_' + tn).innerText = res + lager;
+          
+          // Achtung! Die Element-ID für das Summenfeld darf keine Leerzeichen enthalten
+          const tnSafe = tn.replace(/[^a-zA-Z0-9]/g, '');
+          const sumEl = document.querySelector('[id="sum_' + tn + '"]');
+          if(sumEl) sumEl.innerText = res + lager;
           
           let tRes = 0, tLag = 0, tBest = 0;
           document.querySelectorAll('.lager-input').forEach(i => {
@@ -3487,7 +3508,6 @@ function printSammelbestellung(){
               const val = parseInt(i.value, 10) || 0;
               const orig = parseInt(i.getAttribute('data-orig'), 10) || 0;
               
-              // Nur geänderte Werte senden (Spart massiv Ladezeit)
               if (val !== orig) {
                   updates.push({ tn: tn, val: String(val) });
               }
@@ -3500,10 +3520,8 @@ function printSammelbestellung(){
               return;
           }
           
-          // Ruft die Funktion aus dem Hauptfenster (WKR-Konfigurator) auf!
           if (window.opener && window.opener.saveLagerBestellungBatch) {
               window.opener.saveLagerBestellungBatch(updates).then(() => {
-                  // Neue Basiswerte setzen, damit man nicht 2x speichert
                   document.querySelectorAll('.lager-input').forEach(i => {
                       i.setAttribute('data-orig', i.value);
                   });
@@ -3526,7 +3544,6 @@ function printSammelbestellung(){
               const a = aggMap[tn];
               const safeTnId = tn.replace(/[^a-zA-Z0-9]/g, ''); 
               
-              // 1. Etiketten für Reservierungen
               if (mode === 'reserviert' || mode === 'alle') {
                   a.kunden.forEach((k, i) => {
                       const bcId = 'bc_res_' + safeTnId + '_' + i;
@@ -3547,26 +3564,27 @@ function printSammelbestellung(){
                   });
               }
 
-              // 2. Etiketten für das Lager
               if (mode === 'lager' || mode === 'alle') {
-                  const lagInp = document.getElementById('lager_' + tn);
-                  const lagCount = parseInt(lagInp.value, 10) || 0;
-                  
-                  for(let i=0; i < lagCount; i++) {
-                      const bcId = 'bc_lag_' + safeTnId + '_' + i;
-                      html += \`
-                          <div class="label-page">
-                              <div style="position:absolute; top:5mm; right:5mm; background:#1c69d4; color:white; padding:2px 6px; font-size:8pt; font-weight:700; border-radius:3px;">LAGER</div>
-                              <div style="font-size:13pt;font-weight:700;margin-bottom:2mm;max-width:80%;">\${a.bezeichnung}</div>
-                              <div style="font-size:10pt;margin-bottom:1.5mm;">\${a.marke} · \${a.dimension}</div>
-                              <div style="font-size:10pt;font-weight:700;margin-top:2mm;">Teilenr.: \${a.tn}</div>
-                              <div style="margin-top:auto;text-align:center;border-top:1px solid #ddd;padding-top:1mm;">
-                                  <svg id="\${bcId}"></svg>
-                                  <div style="font-size:7.5pt;margin-top:0.5mm;font-weight:700;">\${a.tn}</div>
+                  // Hier muss per Attribut gesucht werden, da IDs keine Leerzeichen mögen
+                  const lagInp = document.querySelector('[data-tn="' + tn + '"]');
+                  if(lagInp) {
+                      const lagCount = parseInt(lagInp.value, 10) || 0;
+                      for(let i=0; i < lagCount; i++) {
+                          const bcId = 'bc_lag_' + safeTnId + '_' + i;
+                          html += \`
+                              <div class="label-page">
+                                  <div style="position:absolute; top:5mm; right:5mm; background:#1c69d4; color:white; padding:2px 6px; font-size:8pt; font-weight:700; border-radius:3px;">LAGER</div>
+                                  <div style="font-size:13pt;font-weight:700;margin-bottom:2mm;max-width:80%;">\${a.bezeichnung}</div>
+                                  <div style="font-size:10pt;margin-bottom:1.5mm;">\${a.marke} · \${a.dimension}</div>
+                                  <div style="font-size:10pt;font-weight:700;margin-top:2mm;">Teilenr.: \${a.tn}</div>
+                                  <div style="margin-top:auto;text-align:center;border-top:1px solid #ddd;padding-top:1mm;">
+                                      <svg id="\${bcId}"></svg>
+                                      <div style="font-size:7.5pt;margin-top:0.5mm;font-weight:700;">\${a.tn}</div>
+                                  </div>
                               </div>
-                          </div>
-                      \`;
-                      barcodes.push({ id: bcId, val: a.tn });
+                          \`;
+                          barcodes.push({ id: bcId, val: a.tn });
+                      }
                   }
               }
           });
