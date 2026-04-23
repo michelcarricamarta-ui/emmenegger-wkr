@@ -2863,8 +2863,7 @@ function renderAdminVororder(){
       else if (marke === "MINI") brandIcon = `<img src="https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/MINI_Logo.jpg?raw=true" style="height:16px; width:20px; object-fit:contain; margin-right:12px; flex-shrink:0;">`;
       else brandIcon = `<div style="width:20px; margin-right:12px; flex-shrink:0;"></div>`;
 
-      const kundeName = clean(v["Kundenname"]) || "Unbekannt";
-      const initial = kundeName.charAt(0).toUpperCase();
+const kundeName = clean(v["Kundenname"]) || "Unbekannt";
 
       html += `<tr style="border-bottom:1px solid var(--border); transition: background 0.2s;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'">
         ${adminMode ? `<td style="padding:12px;font-weight:600;color:var(--text-primary);font-family:monospace;">${e(clean(v["ID"]))}</td>` : ""}
@@ -2872,13 +2871,8 @@ function renderAdminVororder(){
         <td style="padding:12px;">${vororderStatusBadge(v["Status"])}</td>
         
         <td style="padding:12px;">
-          <div style="display:flex; align-items:center; gap:12px;">
-            <div style="width:32px;height:32px;border-radius:50%;background:var(--surface-3);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;border:1px solid var(--border);">${e(initial)}</div>
-            <div>
-              <div style="font-weight:700;color:var(--text-primary);font-size:14px;">${e(kundeName)}</div>
-              ${clean(v["Debitornr"]) ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Deb: ${e(clean(v["Debitornr"]))}</div>` : ""}
-            </div>
-          </div>
+          <div style="font-weight:700;color:var(--text-primary);font-size:14px;">${e(kundeName)}</div>
+          ${clean(v["Debitornr"]) ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Deb: ${e(clean(v["Debitornr"]))}</div>` : ""}
         </td>
         
         <td style="padding:12px;">
