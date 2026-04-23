@@ -2368,12 +2368,26 @@ function render(){
     return;
   }
 
-  /* ── Internal start ── */
+/* ── Internal start ── */
   if (internalMode && !state.internalSection) {
     html += `<div class="section-title">${e(t("what_search"))}</div>`;
     html += `<div class="card-grid">
       <div class="sel-card" onclick="selectInternalSection('wkr')">🛞 <span>${e(t("wkr_label"))}</span></div>
       <div class="sel-card mini-theme" onclick="selectInternalSection('reifen')">⚫ <span>${e(t("tire_label"))}</span></div>
+      <div class="sel-card" onclick="selectInternalSection('vororder')" style="border-top-color: var(--warning);">📋 <span>Vororder Einsicht</span></div>
+    </div>`;
+  }
+
+  /* ── Internal Vororder View (Verwendet Admin-Ansicht schreibgeschützt) ── */
+  if (internalMode && state.internalSection === "vororder") {
+    if (!vororderLoaded && !vororderLoading) {
+        loadVororder().then(() => render());
+    }
+    html += `<div class="admin-content" style="padding-top:0;">
+        <div style="margin-bottom: 20px; margin-top: 20px;">
+            <button class="btn btn-secondary btn-sm" onclick="resetInternalSection()">← Zurück zur Auswahl</button>
+        </div>
+        ${renderAdminVororder()}
     </div>`;
   }
 
@@ -2753,7 +2767,7 @@ function renderAdminVororder(){
       </div>
       <div style="display:flex;gap:8px;">
         <button class="btn btn-secondary btn-sm" onclick="reloadVororder()">🔄 Neu laden</button>
-        <button class="btn btn-primary btn-sm" onclick="openNewVororderModal()">+ Neue Vororder</button>
+        ${adminMode ? `<button class="btn btn-primary btn-sm" onclick="openNewVororderModal()">+ Neue Vororder</button>` : ""}
       </div>
     </div>
   </div>`;
@@ -4506,10 +4520,10 @@ function renderVororderDetail(){
       </div>
       <div style="display:flex;gap:8px;">
         ${edit 
-                ? `<button class="btn btn-primary btn-sm" onclick="saveVoDetailChanges()">💾 Speichern</button>
+          ? `<button class="btn btn-primary btn-sm" onclick="saveVoDetailChanges()">💾 Speichern</button>
              <button class="btn btn-secondary btn-sm" onclick="toggleVoEditMode()">✖ Abbrechen</button>`
-          : `<button class="btn btn-secondary btn-sm" onclick="toggleVoEditMode()">✏️ Bearbeiten</button>
-             <button class="btn btn-danger btn-sm" onclick="deleteVororder('${js(clean(vo["ID"]))}')">🗑️ Löschen</button>
+          : `${adminMode ? `<button class="btn btn-secondary btn-sm" onclick="toggleVoEditMode()">✏️ Bearbeiten</button>
+             <button class="btn btn-danger btn-sm" onclick="deleteVororder('${js(clean(vo["ID"]))}')">🗑️ Löschen</button>` : ""}
              <button class="btn btn-secondary btn-sm" onclick="closeVororderDetail()">✕ Schliessen</button>`
         }
       </div>
@@ -4557,11 +4571,11 @@ function renderVororderDetail(){
     <div style="background:var(--surface-2);border-radius:8px;padding:14px;margin-bottom:12px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Positionen</div>
-        ${!edit ? `<button class="btn btn-primary btn-sm" onclick="openNewPositionModal('${js(clean(vo["ID"]))}')">+ Position hinzufügen</button>` : ""}
-      </div>
+      ${(!edit && adminMode) ? `<button class="btn btn-primary btn-sm" onclick="openNewPositionModal('${js(clean(vo["ID"]))}')">+ Position hinzufügen</button>` : ""}
+    </div>
       ${renderPositionenList(clean(vo["ID"]), edit)}
     </div>
-    ${!edit ? `<div style="background:var(--warning-bg);border:1px solid var(--warning);border-radius:8px;padding:14px;margin-bottom:12px;">
+    ${(!edit && adminMode) ? `<div style="background:var(--warning-bg);border:1px solid var(--warning);border-radius:8px;padding:14px;margin-bottom:12px;">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--warning);margin-bottom:10px;">Status ändern</div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
         <select id="voDetailStatus" style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-weight:600;">
@@ -4843,8 +4857,8 @@ async function saveVoDetailChanges(){
         <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">Konditionen</th>
         <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">Status</th>
         <th style="padding:8px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:700;">Preis</th>
-        <th style="padding:8px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:700;">Aktion</th>
-      </tr>
+${adminMode ? `<th style="padding:8px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:700;">Aktion</th>` : ""}
+</tr>
     </thead>
     <tbody>
       ${positionen.map((p, idx) => `<tr style="border-top:1px solid var(--border);">
@@ -4863,11 +4877,11 @@ async function saveVoDetailChanges(){
         <td style="padding:8px;font-size:11px;color:var(--text-secondary);">${e(clean(p["Konditionen"]))||"—"}</td>
         <td style="padding:8px;">${vororderStatusBadge(p["Status"])}</td>
         <td style="padding:8px;text-align:right;font-weight:700;color:var(--accent);">${clean(p["VK"]) ? e(formatPrice(p["VK"])) + " CHF" : "—"}</td>
-        <td style="padding:8px;text-align:right;white-space:nowrap;">
+        ${adminMode ? `<td style="padding:8px;text-align:right;white-space:nowrap;">
           <button class="btn btn-secondary btn-sm" onclick="openEditPositionModal('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;">✏️</button>
           ${clean(p["Typ"])==="WKR"?`<button class="btn btn-secondary btn-sm" onclick="printPositionLabel('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;" title="Etikette drucken">🏷️</button>`:""}
           <button class="btn btn-danger btn-sm" onclick="deletePosition('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;">🗑️</button>
-        </td>
+        </td>` : ""}
       </tr>`).join("")}
     </tbody>
   </table>`;
