@@ -4520,15 +4520,11 @@ function renderVororderDetail(){
       </div>
       <div style="display:flex;gap:8px;">
         ${edit 
-                <div style="display:flex;gap:8px;">
-        ${edit 
           ? `<button class="btn btn-primary btn-sm" onclick="saveVoDetailChanges()">💾 Speichern</button>
              <button class="btn btn-secondary btn-sm" onclick="toggleVoEditMode()">✖ Abbrechen</button>`
           : `${adminMode ? `<button class="btn btn-secondary btn-sm" onclick="toggleVoEditMode()">✏️ Bearbeiten</button>
              <button class="btn btn-danger btn-sm" onclick="deleteVororder('${js(clean(vo["ID"]))}')">🗑️ Löschen</button>` : ""}
              <button class="btn btn-secondary btn-sm" onclick="closeVororderDetail()">✕ Schliessen</button>`
-        }
-      </div>
         }
       </div>
     </div>
