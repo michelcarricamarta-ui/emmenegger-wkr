@@ -1909,11 +1909,319 @@ function goToCheckout() {
   openCheckoutModal();
 }
 
-// Platzhalter — wird in Schritt A4 mit Leben gefüllt
+/* ============================================================
+   CHECKOUT: Warenkorb abschliessen
+   ============================================================ */
 function openCheckoutModal() {
-  alert("Checkout-Formular kommt in Schritt A4.\n\nWarenkorb enthält " + cart.length + " Produkt(e).\nGesamt: CHF " + getCartTotal().toLocaleString("de-CH"));
+  if (cart.length === 0) {
+    alert("Ihre Auswahl ist leer. Bitte zuerst Produkte auswählen.");
+    return;
+  }
+
+  closeCartModal();
+  renderCheckoutSummary();
+
+  if (customerMode && customerVororder) {
+    // Kunden-Modus: Daten vorausfüllen, Fahrzeug-ID ausblenden
+    const vo = customerVororder;
+    document.getElementById("ckName").value    = clean(vo["Kundenname"]);
+    document.getElementById("ckEmail").value   = clean(vo["KundenEmail"]);
+    document.getElementById("ckPhone").value   = clean(vo["Telefon"]);
+    document.getElementById("ckAddress").value = clean(vo["Adresse"]);
+    document.getElementById("ckRemark").value  = "";
+
+    const vehSection = document.getElementById("checkoutVehicleSection");
+    if (vehSection) vehSection.style.display = "none";
+    const tokenHint = document.getElementById("checkoutTokenHint");
+    if (tokenHint) tokenHint.style.display = "block";
+  } else {
+    // Public-Modus: leer, Fahrzeug-Sektion sichtbar
+    ["ckName","ckEmail","ckPhone","ckAddress","ckIdType","ckIdValue","ckRemark"].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = "";
+    });
+    const vehSection = document.getElementById("checkoutVehicleSection");
+    if (vehSection) vehSection.style.display = "block";
+    const tokenHint = document.getElementById("checkoutTokenHint");
+    if (tokenHint) tokenHint.style.display = "none";
+    const idField = document.getElementById("ckIdValueField");
+    if (idField) idField.style.display = "none";
+    const idHint = document.getElementById("ckIdUnknownHint");
+    if (idHint) idHint.style.display = "none";
+  }
+
+  const privacy = document.getElementById("ckPrivacy");
+  if (privacy) privacy.checked = false;
+
+  document.getElementById("checkoutModal").classList.add("open");
 }
 
+function closeCheckoutModal() {
+  document.getElementById("checkoutModal").classList.remove("open");
+}
+
+function renderCheckoutSummary() {
+  const line = document.getElementById("checkoutSummaryLine");
+  const details = document.getElementById("checkoutSummaryDetails");
+  const toggle = document.getElementById("checkoutSummaryToggle");
+  if (!line || !details) return;
+
+  const count = cart.length;
+  const total = getCartTotal();
+  line.textContent = `${count} ${count === 1 ? "Produkt" : "Produkte"} · ca. CHF ${total.toLocaleString("de-CH", {maximumFractionDigits: 0})}`;
+
+  details.innerHTML = cart.map(item => {
+    const p = parsePrice(item.preis);
+    return `<div style="display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:700;">${e(item.bezeichnung)}</div>
+        <div style="font-size:11px;color:var(--text-muted);">${e(item.marke)}${item.dimension?" · "+e(item.dimension):""} · ${item.anzahl} Stk</div>
+      </div>
+      <div style="text-align:right;font-weight:700;color:var(--accent);white-space:nowrap;">
+        ${p ? formatPrice(item.preis) + " CHF" : "auf Anfrage"}
+      </div>
+    </div>`;
+  }).join("");
+
+  details.style.display = "none";
+  if (toggle) toggle.textContent = "Details anzeigen ▾";
+}
+
+function toggleCheckoutSummary() {
+  const details = document.getElementById("checkoutSummaryDetails");
+  const toggle = document.getElementById("checkoutSummaryToggle");
+  if (!details || !toggle) return;
+  if (details.style.display === "none") {
+    details.style.display = "block";
+    toggle.textContent = "Details verbergen ▴";
+  } else {
+    details.style.display = "none";
+    toggle.textContent = "Details anzeigen ▾";
+  }
+}
+
+function updateIdentificationField() {
+  const idType = clean(document.getElementById("ckIdType")?.value);
+  const field  = document.getElementById("ckIdValueField");
+  const label  = document.getElementById("ckIdValueLabel");
+  const input  = document.getElementById("ckIdValue");
+  const hint   = document.getElementById("ckIdUnknownHint");
+  if (!field || !label || !input || !hint) return;
+
+  if (idType === "unbekannt") {
+    field.style.display = "none";
+    hint.style.display  = "block";
+    input.value = "";
+  } else if (idType) {
+    field.style.display = "block";
+    hint.style.display  = "none";
+    if (idType === "kontrollschild") { label.textContent = "Kontrollschild"; input.placeholder = "z.B. AG 123456"; }
+    else if (idType === "fin")       { label.textContent = "FIN / Fahrgestellnummer"; input.placeholder = "17-stellige Fahrgestellnummer"; }
+    else if (idType === "ordernr")   { label.textContent = "BMW/MINI Ordernummer"; input.placeholder = "z.B. 123456"; }
+  } else {
+    field.style.display = "none";
+    hint.style.display  = "none";
+  }
+}
+
+async function submitCheckout() {
+  if (cart.length === 0) { alert("Ihre Auswahl ist leer."); return; }
+
+  const name    = clean(document.getElementById("ckName")?.value);
+  const email   = clean(document.getElementById("ckEmail")?.value);
+  const phone   = clean(document.getElementById("ckPhone")?.value);
+  const address = clean(document.getElementById("ckAddress")?.value);
+  const remark  = clean(document.getElementById("ckRemark")?.value);
+  const privacy = document.getElementById("ckPrivacy")?.checked;
+
+  if (!name)    { alert("Bitte Name/Firma ausfüllen."); document.getElementById("ckName")?.focus();  return; }
+  if (!email)   { alert("Bitte E-Mail ausfüllen.");      document.getElementById("ckEmail")?.focus(); return; }
+  if (!phone)   { alert("Bitte Telefon ausfüllen.");     document.getElementById("ckPhone")?.focus(); return; }
+  if (!/^[^ ]+@[^ ]+\.[a-z]{2,}$/i.test(email)) { alert("Bitte eine gültige E-Mail-Adresse eingeben."); return; }
+  if (!privacy) { alert("Bitte Datenschutzerklärung bestätigen."); document.getElementById("ckPrivacy")?.focus(); return; }
+
+  let vehicleIdType = "", vehicleIdValue = "";
+  if (!customerMode) {
+    vehicleIdType  = clean(document.getElementById("ckIdType")?.value);
+    vehicleIdValue = clean(document.getElementById("ckIdValue")?.value);
+    if (!vehicleIdType) { alert("Bitte Fahrzeug-Identifikation wählen."); return; }
+    if (vehicleIdType !== "unbekannt" && !vehicleIdValue) {
+      alert("Bitte den Wert für die Fahrzeug-Identifikation eingeben.");
+      document.getElementById("ckIdValue")?.focus();
+      return;
+    }
+  }
+
+  const btn = document.querySelector("#checkoutModal .btn-primary");
+  const origText = btn ? btn.textContent : "";
+  if (btn) { btn.disabled = true; btn.textContent = "⏳ Wird gesendet..."; }
+
+  const payload = customerMode
+    ? {
+        action: "customerCheckout",
+        token: clean(customerVororder["Token"]),
+        cart: cart,
+        contact: { name, email, phone, address, remark }
+      }
+    : {
+        action: "publicCheckout",
+        cart: cart,
+        contact: { name, email, phone, address, remark },
+        vehicle: { idType: vehicleIdType, idValue: vehicleIdValue },
+        konfigState: {
+          marke:    state.marke    || "",
+          standort: state.standort || "",
+          reihe:    state.reihe    || "",
+          modell:   state.modell   || "",
+          motor:    state.motor    || ""
+        }
+      };
+
+  try {
+    const res = await postToScript(payload);
+    if (res && res.status === "OK") {
+      window._checkoutSnapshot = {
+        vororderId: res.vororderId || "—",
+        cart: JSON.parse(JSON.stringify(cart)),
+        contact: { name, email, phone, address, remark },
+        vehicle: { idType: vehicleIdType, idValue: vehicleIdValue },
+        customerMode: !!customerMode
+      };
+      clearCart();
+      closeCheckoutModal();
+      showCheckoutThankYou();
+    } else {
+      alert("Fehler: " + (res && res.message ? res.message : JSON.stringify(res)));
+    }
+  } catch (err) {
+    alert("Netzwerkfehler: " + err.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = origText; }
+  }
+}
+
+function showCheckoutThankYou() {
+  const appEl = document.getElementById("app");
+  if (!appEl) return;
+  const snap = window._checkoutSnapshot || {};
+  const voId = snap.vororderId || "—";
+
+  appEl.innerHTML = `
+    <div style="max-width:640px;margin:40px auto;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;text-align:center;box-shadow:var(--shadow-md);">
+      <div style="font-size:60px;margin-bottom:12px;">✅</div>
+      <h2 style="font-size:24px;margin-bottom:10px;color:var(--text-primary);">Vielen Dank für Ihre Bestellanfrage!</h2>
+      <p style="font-size:15px;color:var(--text-secondary);line-height:1.6;margin-bottom:8px;">
+        Ihre Anfrage ${voId !== "—" ? `<b>${e(voId)}</b>` : ""} wurde erfolgreich übermittelt.<br>
+        Eine Bestätigungs-E-Mail wurde an <b>${e(snap.contact?.email||"")}</b> gesendet.
+      </p>
+      <div style="background:var(--surface-2);border-left:3px solid var(--accent);padding:14px 18px;border-radius:0 6px 6px 0;margin:20px 0;text-align:left;font-size:13px;color:var(--text-secondary);">
+        <b>Wie geht es weiter?</b><br>
+        • Unser Team prüft Ihre Bestellanfrage<br>
+        • Sie erhalten innerhalb von <b>1–2 Werktagen</b> eine verbindliche Bestätigung<br>
+        • Der Kaufvertrag kommt erst durch unsere schriftliche Rückbestätigung zustande<br>
+        • Bei Fragen: <a href="mailto:tv-g-fp@emmeneggerag.ch" style="color:var(--accent);">tv-g-fp@emmeneggerag.ch</a>
+      </div>
+      <div style="margin-top:24px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="printCheckoutReceipt()">🖨️ Bestätigung drucken / PDF</button>
+        <button class="btn btn-secondary" onclick="goToHome()">← Zur Startseite</button>
+      </div>
+    </div>
+  `;
+  const hero = document.getElementById("heroBanner"); if (hero) hero.style.display = "none";
+  const info = document.getElementById("infoSection"); if (info) info.style.display = "none";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function printCheckoutReceipt() {
+  const snap = window._checkoutSnapshot;
+  if (!snap) { alert("Daten nicht verfügbar."); return; }
+  const today = new Date().toLocaleDateString("de-CH");
+  const c = snap.contact || {};
+  const v = snap.vehicle || {};
+  const items = snap.cart || [];
+
+  const total = items.reduce((sum, it) => {
+    const p = parsePrice(it.preis);
+    return sum + (p || 0);
+  }, 0);
+
+  const itemsHtml = items.map(it => {
+    const p = parsePrice(it.preis);
+    return `<tr>
+      <td style="padding:8px 6px;border-bottom:1px solid #eee;">${e(it.bezeichnung)}<br><span style="font-size:11px;color:#666;">${e(it.marke)}${it.dimension?" · "+e(it.dimension):""}${it.tn?" · TN: "+e(it.tn):""}</span></td>
+      <td style="padding:8px 6px;border-bottom:1px solid #eee;text-align:center;">${e(it.anzahl)} Stk</td>
+      <td style="padding:8px 6px;border-bottom:1px solid #eee;text-align:right;font-weight:700;">${p ? formatPrice(it.preis) + " CHF" : "—"}</td>
+    </tr>`;
+  }).join("");
+
+  const vehicleLine = v.idType === "kontrollschild" ? "Kontrollschild: " + e(v.idValue)
+                    : v.idType === "fin"            ? "FIN: " + e(v.idValue)
+                    : v.idType === "ordernr"        ? "Ordernr: " + e(v.idValue)
+                    : v.idType === "unbekannt"      ? "Fahrzeug wird im Telefongespräch geklärt"
+                    : "";
+
+  const w = window.open("","_blank");
+  if (!w) { alert("Popup blockiert."); return; }
+  w.document.write(`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Bestellanfrage ${e(snap.vororderId)}</title><style>
+    body{font-family:Arial,sans-serif;padding:40px;color:#1f1f1f;background:white;}
+    .wrap{max-width:900px;margin:0 auto;}
+    .hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #1c69d4;padding-bottom:20px;margin-bottom:24px;}
+    .hdr img{width:200px;}
+    .hdr h1{margin:0 0 4px;font-size:26px;color:#1c69d4;}
+    .hdr .meta{font-size:13px;color:#555;}
+    .ok-bar{background:#f0fdf4;border-left:4px solid #16a34a;padding:12px 18px;margin-bottom:24px;border-radius:0 8px 8px 0;font-size:14px;}
+    h2{font-size:16px;border-bottom:1px solid #ddd;padding-bottom:6px;margin:20px 0 10px;color:#1c69d4;}
+    table{width:100%;border-collapse:collapse;}
+    td:first-child{font-weight:700;width:180px;color:#555;padding:4px 0;}
+    td{padding:4px 0;font-size:13px;}
+    .items{width:100%;border-collapse:collapse;}
+    .items th{background:#f0f5ff;text-align:left;padding:8px 6px;font-size:12px;color:#555;text-transform:uppercase;letter-spacing:0.5px;}
+    .total{background:#eff6ff;padding:14px 18px;margin-top:12px;border-radius:6px;display:flex;justify-content:space-between;align-items:center;}
+    .total .val{font-size:22px;font-weight:700;color:#1c69d4;}
+    .footer{margin-top:30px;padding-top:16px;border-top:1px solid #ccc;font-size:11px;color:#666;text-align:center;}
+    .actions{margin-top:24px;text-align:center;}
+    .actions button{background:#1c69d4;color:white;border:none;padding:12px 24px;font-size:14px;cursor:pointer;border-radius:6px;margin:0 6px;font-weight:600;}
+    .actions button.sec{background:#666;}
+    @media print{.actions{display:none;}body{padding:15mm;}}
+  </style></head><body>
+  <div class="wrap">
+    <div class="hdr">
+      <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" alt="Logo">
+      <div><h1>Bestellanfrage</h1><div class="meta">Datum: <b>${today}</b><br>Referenz: <b>${e(snap.vororderId)}</b></div></div>
+    </div>
+    <div class="ok-bar">✅ Ihre Bestellanfrage wurde erfolgreich übermittelt. Wir melden uns innerhalb von 1–2 Werktagen.</div>
+
+    <h2>Ihre Angaben</h2>
+    <table>
+      <tr><td>Name / Firma</td><td>${e(c.name)}</td></tr>
+      <tr><td>E-Mail</td><td>${e(c.email)}</td></tr>
+      <tr><td>Telefon</td><td>${e(c.phone)}</td></tr>
+      ${c.address?`<tr><td>Adresse</td><td>${e(c.address)}</td></tr>`:""}
+      ${vehicleLine?`<tr><td>Fahrzeug</td><td>${vehicleLine}</td></tr>`:""}
+      ${c.remark?`<tr><td>Bemerkung</td><td style="white-space:pre-line;">${e(c.remark)}</td></tr>`:""}
+    </table>
+
+    <h2>Ihre Auswahl (${items.length} ${items.length===1?"Produkt":"Produkte"})</h2>
+    <table class="items">
+      <thead><tr><th>Produkt</th><th style="text-align:center;">Anzahl</th><th style="text-align:right;">Preis</th></tr></thead>
+      <tbody>${itemsHtml}</tbody>
+    </table>
+    <div class="total">
+      <div><b>Geschätzte Gesamtsumme (unverbindlich)</b><div style="font-size:11px;color:#666;">inkl. MwSt. · Preisänderungen vorbehalten</div></div>
+      <div class="val">${total > 0 ? "CHF " + total.toLocaleString("de-CH", {maximumFractionDigits:0}) : "auf Anfrage"}</div>
+    </div>
+
+    <div class="footer">
+      <b>Wichtig:</b> Diese Eingabe ist eine unverbindliche Bestellanfrage. Der Kaufvertrag kommt erst durch unsere schriftliche Bestätigung zustande.<br>
+      Emmenegger AG · BMW/MINI Händler · Gebenstorf / Hettenschwil
+    </div>
+    <div class="actions">
+      <button onclick="window.print()">🖨️ Drucken / PDF</button>
+      <button class="sec" onclick="window.close()">Schliessen</button>
+    </div>
+  </div>
+  </body></html>`);
+  w.document.close();
+}
 /* ============================================================
    HELPERS
    ============================================================ */
