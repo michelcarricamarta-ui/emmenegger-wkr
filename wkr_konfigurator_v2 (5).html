@@ -1038,6 +1038,73 @@ body.mini-brand .btn-cart:hover { background: #111; color: white; }
      MODALS (unverändert)
      ============================================================ -->
 <!-- Admin Login Modal -->
+
+
+   
+<div id="checkoutModal" class="modal-overlay">
+  <div class="modal-box wide">
+    <div class="modal-title">Bestellanfrage abschliessen</div>
+    <div class="modal-subtitle">Bitte geben Sie Ihre Daten ein, um die Anfrage abzusenden.</div>
+
+    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;font-weight:700;">
+        <span id="checkoutSummaryLine">0 Produkte · 0 CHF</span>
+        <button id="checkoutSummaryToggle" onclick="toggleCheckoutSummary()" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;font-weight:600;">Details anzeigen ▾</button>
+      </div>
+      <div id="checkoutSummaryDetails" style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);display:none;"></div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-field"><label>Name / Firma *</label><input id="ckName" type="text" placeholder="Vorname Nachname"></div>
+      <div class="form-field"><label>E-Mail *</label><input id="ckEmail" type="email" placeholder="name@beispiel.ch"></div>
+      <div class="form-field"><label>Telefon *</label><input id="ckPhone" type="tel" placeholder="079 123 45 67"></div>
+      <div class="form-field"><label>Adresse (optional)</label><input id="ckAddress" type="text" placeholder="Strasse, PLZ Ort"></div>
+
+      <div id="checkoutVehicleSection" style="grid-column: 1 / -1;">
+        <div style="background:var(--surface-3);padding:10px 14px;border-radius:6px;font-size:12px;font-weight:700;margin:10px 0;">Fahrzeug-Identifikation</div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Art der Identifikation *</label>
+            <select id="ckIdType" onchange="updateIdentificationField()">
+              <option value="">Bitte wählen...</option>
+              <option value="kontrollschild">Kontrollschild</option>
+              <option value="fin">Fahrgestellnummer (FIN)</option>
+              <option value="ordernr">BMW/MINI Ordernummer</option>
+              <option value="unbekannt">Weiss ich nicht / Später klären</option>
+            </select>
+          </div>
+          <div class="form-field" id="ckIdValueField" style="display:none;">
+            <label id="ckIdValueLabel">Wert *</label>
+            <input id="ckIdValue" type="text">
+          </div>
+        </div>
+        <div id="ckIdUnknownHint" style="display:none;font-size:12px;color:var(--warning);margin-top:8px;">
+          ⚠ Wir werden die genauen Fahrzeugdaten bei unserer telefonischen Bestätigung mit Ihnen klären.
+        </div>
+      </div>
+
+      <div id="checkoutTokenHint" style="grid-column: 1 / -1; display:none;font-size:12px;color:var(--success);margin-top:8px;">
+        ✅ Ihr Fahrzeug ist bereits über Ihren persönlichen Link hinterlegt.
+      </div>
+
+      <div class="form-field full"><label>Bemerkung (optional)</label><textarea id="ckRemark" placeholder="Zusätzliche Infos, Wunschtermine etc."></textarea></div>
+    </div>
+
+    <div style="margin-top:16px;display:flex;align-items:flex-start;gap:10px;padding:12px;background:var(--surface-3);border-radius:6px;">
+      <input id="ckPrivacy" type="checkbox" style="margin-top:3px;flex-shrink:0;width:18px;height:18px;cursor:pointer;">
+      <label for="ckPrivacy" style="font-size:12px;line-height:1.5;color:var(--text-secondary);cursor:pointer;">
+        Ich habe den <a href="https://emmeneggerag.ch/datenschutz/" target="_blank" style="color:var(--accent);text-decoration:underline;">Datenschutzhinweis</a> zur Kenntnis genommen und stimme zu, dass meine Angaben zur Beantwortung meiner Anfrage gespeichert werden. *
+      </label>
+    </div>
+    <p class="required-note">* Pflichtfelder</p>
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeCheckoutModal()">← Zurück</button>
+      <button class="btn btn-primary" onclick="submitCheckout()">Bestellanfrage senden</button>
+    </div>
+  </div>
+</div>
+
 <div id="adminLoginModal" class="modal-overlay">
   <div class="modal-box" style="max-width:460px;">
     <div class="modal-title">Admin Login</div>
