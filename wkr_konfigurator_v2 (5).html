@@ -3344,7 +3344,7 @@ function printSammelbestellung(){
 
   alle.forEach(p => {
     const typ = clean(p["Typ"]);
-    const tn = normalizeTNFrontend(clean(p["TN"]));
+    const tn = normalizeTN(clean(p["TN"]));
     const status = clean(p["Status"]);
     const anzahl = parseInt(clean(p["Anzahl"]), 10) || 0;
 
@@ -3359,7 +3359,7 @@ function printSammelbestellung(){
     }
 
     if (!aggMap[tn]) {
-      const prod = produkte.find(x => normalizeTNFrontend(clean(x["TN"])) === tn);
+      const prod = produkte.find(x => normalizeTN(clean(x["TN"])) === tn);
       aggMap[tn] = {
         // NEU: Nimmt bevorzugt die TN exakt so, wie sie in der "Produkte" Tabelle steht (mit Leerzeichen!)
         tn: prod ? clean(prod["TN"]) : clean(p["TN"]), 
@@ -3675,9 +3675,6 @@ function printSammelbestellung(){
     <\/script>
   </body></html>`);
   w.document.close();
-}
-function normalizeTNFrontend(tn){
-  return String(tn || "").trim().replace(/\s+/g, "").toUpperCase();
 }
 function printVororderList(){
   const data = getVororderExportData();
