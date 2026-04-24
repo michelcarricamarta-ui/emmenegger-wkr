@@ -1300,6 +1300,7 @@ body.mini-brand .btn-cart:hover { background: #111; color: white; }
     <div class="form-grid">
       <div class="form-field"><label>Marke *</label><select id="newWkrMarke"><option value="">Bitte wählen</option><option value="BMW">BMW</option><option value="MINI">MINI</option></select></div>
       <div class="form-field"><label>Standort *</label><select id="newWkrStandort"><option value="">Bitte wählen</option><option value="GEB">Gebenstorf</option><option value="HET">Hettenschwil</option></select></div>
+       <div class="form-field"><label>Aktiv *</label><select id="newWkrAktiv"><option value="Ja" selected>Ja</option><option value="Nein">Nein</option></select></div>
       <div class="form-field full"><label>Bezeichnung *</label><input id="newWkrBezeichnung" type="text" placeholder="z.B. V-Speiche 474"></div>
       
       <div style="grid-column: 1 / -1; background: var(--surface-3); padding: 10px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-top: 10px;">FAHRZEUG-ZUORDNUNG (Wichtig für Konfigurator)</div>
@@ -1338,6 +1339,7 @@ body.mini-brand .btn-cart:hover { background: #111; color: white; }
     <div class="form-grid">
       <div class="form-field"><label>Marke *</label><select id="editWkrMarke"><option value="">Bitte wählen</option><option value="BMW">BMW</option><option value="MINI">MINI</option></select></div>
       <div class="form-field"><label>Standort *</label><select id="editWkrStandort"><option value="">Bitte wählen</option><option value="GEB">Gebenstorf</option><option value="HET">Hettenschwil</option></select></div>
+       <div class="form-field"><label>Aktiv *</label><select id="editWkrAktiv"><option value="Ja">Ja</option><option value="Nein">Nein</option></select></div>
       <div class="form-field full"><label>Bezeichnung *</label><input id="editWkrBezeichnung" type="text" placeholder="Bezeichnung"></div>
 
       <div style="grid-column: 1 / -1; background: var(--surface-3); padding: 10px; border-radius: 6px; font-size: 11px; font-weight: 700; margin-top: 10px; color: var(--text-secondary);">FAHRZEUG-ZUORDNUNG AKTUALISIEREN</div>
@@ -3317,7 +3319,12 @@ function renderWkrFlow(){
   const fzBild=clean(fz?.Bild)||"https://via.placeholder.com/220x130?text=Fahrzeug";
   const fzCode=clean(fz?.Code)||state.modell;
   const tnList=[...new Set(mapping.filter(x=>clean(x["Marke"])===state.marke&&clean(x["Reihe"])===state.reihe&&clean(x["Modell"])===state.modell&&motorMatch(x["Motor"],state.motor)).map(x=>clean(x["TN"])).filter(Boolean))];
-  const results=produkte.filter(p=>clean(p["Standort"])===state.standort&&clean(p["Marke"])===state.marke&&tnList.includes(clean(p["TN"])));
+const results=produkte.filter(p=>
+    clean(p["Standort"])===state.standort && 
+    clean(p["Marke"])===state.marke && 
+    tnList.includes(clean(p["TN"])) &&
+    clean(p["Aktiv"]) !== "Nein" // NEU: Inaktive Räder komplett ignorieren
+);
 
   html+=`<div class="auswahl-box" style="background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:16px 20px;margin-bottom:28px;box-shadow:var(--shadow-sm);">
     <div class="auswahl-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
@@ -4607,6 +4614,7 @@ function renderAdminWkrItem(r){
   const vpNum = parsePrice(vp);
   const angebotNum = parsePrice(angebot);
   const hasDiscount = angebotNum > 0 && vpNum > 0 && angebotNum < vpNum;
+  const aktivStatus = clean(r["Aktiv"]) !== "Nein" ? "Ja" : "Nein";
   
   // Warnung basiert auf dem frei verfügbaren Bestand
   const isLowStock = verfuegbar > 0 && verfuegbar <= 2;
@@ -4630,6 +4638,7 @@ function renderAdminWkrItem(r){
       
       <div style="font-size:12px; color:var(--accent); font-weight:700; margin-bottom:8px;">
         🚗 Passend für: ${e(models) || 'Keine Zuordnung gefunden'}
+        ${aktivStatus === "Nein" ? `<div style="margin-bottom:8px;"><span class="badge badge-error" style="font-size:12px;">🚫 INAKTIV (Versteckt)</span></div>` : ""}
       </div>
       
       <div class="product-sub">${e(marke)}</div>
@@ -4844,6 +4853,7 @@ function openEditWkrModal(tn){
   
   document.getElementById("editWkrMarke").value = clean(row["Marke"]);
   document.getElementById("editWkrStandort").value = clean(row["Standort"]);
+   document.getElementById("editWkrAktiv").value = clean(row["Aktiv"]) !== "Nein" ? "Ja" : "Nein";
   document.getElementById("editWkrBezeichnung").value = clean(row["Bezeichnung"]);
   document.getElementById("editWkrReifen").value = clean(row["Reifen"]);
   document.getElementById("editWkrDimension").value = clean(row["Dimension"]);
@@ -4893,6 +4903,7 @@ async function saveEditedWkr(){
     "EmpfaengerMail": clean(document.getElementById("editWkrEmpfaengerMail").value),
     "Hinweistext": clean(document.getElementById("editWkrHinweistext").value),
     "Verkaufshinweis": clean(document.getElementById("editWkrVerkaufshinweis").value)
+     "Aktiv": clean(document.getElementById("editWkrAktiv").value) // NEU
   };
 
   try {
@@ -4995,6 +5006,7 @@ function normalizeTN(v) { return clean(v).replace(/\s+/g, "").toUpperCase(); }
 function clearWkrForm(prefix){
   ["Marke","Standort","Bezeichnung","Reifen","Dimension","TN","Lagerort","Bild","VP","Angebotspreis","Nettopreis","EmpfaengerMail","Hinweistext","Verkaufshinweis","Reihe","Modell","Motor"].forEach(f=>{const el=document.getElementById(`${prefix}Wkr${f}`);if(el)el.value="";});
   const lager=document.getElementById(`${prefix}WkrLager`);if(lager)lager.value="0";
+  const aktiv=document.getElementById(`${prefix}WkrAktiv`);if(aktiv)aktiv.value="Ja"; // NEU
 }
 
 async function saveNewWkr(){
@@ -5031,6 +5043,7 @@ async function saveNewWkr(){
     "EmpfaengerMail": clean(document.getElementById("newWkrEmpfaengerMail").value),
     "Hinweistext": clean(document.getElementById("newWkrHinweistext").value),
     "Verkaufshinweis": clean(document.getElementById("newWkrVerkaufshinweis").value)
+    "Aktiv": clean(document.getElementById("newWkrAktiv").value) // NEU
   };
 
   // 2. Daten für Tabelle "Zuordnung"
