@@ -1025,6 +1025,75 @@ body.mini-brand .btn-cart:hover { background: #111; color: white; }
   color: var(--accent);
 }
 .info-section h2 { font-weight: 700; font-size: 28px; letter-spacing: -0.3px; }
+/* ============================================================
+   PREMIUM AUSWAHL-SCHRITTE (STANDORT, REIHE, MODELL, MOTOR)
+   ============================================================ */
+/* 1. Allgemeine Auswahlkarten sanfter machen (Standort, Reihe) */
+.sel-card {
+  border: none !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.05) !important;
+  border-bottom: 4px solid var(--border) !important; /* Dezente Basis-Linie unten */
+  border-top: none !important;
+  border-radius: var(--radius-lg) !important;
+  background: var(--surface) !important;
+}
+.sel-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+  border-bottom-color: var(--accent) !important;
+}
+.sel-card.mini-theme:hover { border-bottom-color: var(--mini-black) !important; }
+
+/* 2. Modell-Karten (mit Autobild) verbessern */
+.model-card {
+  padding: 24px 16px !important;
+  min-height: 200px !important;
+}
+.model-card img {
+  mix-blend-mode: darken; /* Entfernt weisse Ränder bei JPGs */
+  transform: scale(1.05);
+  transition: transform 0.4s ease;
+}
+.model-card:hover img {
+  transform: scale(1.15); /* Auto zoomt leicht beim Hovern */
+}
+
+/* 3. NEU: Motor-Auswahl kompakt (Pillen-Design statt riesigen Kacheln) */
+.engine-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  max-width: 850px;
+  margin: 0 auto 40px;
+}
+.engine-pill {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+  border-radius: 30px; /* Schön runde Pillen */
+  padding: 10px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-body);
+}
+.engine-pill:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(28, 105, 212, 0.2);
+}
+body.mini-brand .engine-pill:hover {
+  background: var(--mini-black);
+  border-color: var(--mini-black);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+   
 </style>
 </head>
 <body>
@@ -3372,10 +3441,10 @@ function renderWkrFlow(){
     return html;
   }
 
-  if (!state.motor) {
+ if (!state.motor) {
     const motors=[...new Set(mapping.filter(x=>clean(x["Marke"])===state.marke&&clean(x["Reihe"])===state.reihe&&clean(x["Modell"])===state.modell).flatMap(x=>splitMotors(x["Motor"])))];
-    html+=`<div class="section-title">${e(t("select_engine"))}</div><div class="card-grid">`;
-    motors.forEach(m=>{ html+=`<div class="sel-card" onclick="selectMotor('${js(m)}')">${e(m)}</div>`; });
+    html+=`<div class="section-title">${e(t("select_engine"))}</div><div class="engine-grid">`;
+    motors.forEach(m=>{ html+=`<button class="engine-pill" onclick="selectMotor('${js(m)}')">${e(m)}</button>`; });
     html+=`</div>`;
     return html;
   }
