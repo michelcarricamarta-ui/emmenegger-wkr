@@ -957,8 +957,74 @@ body.mini-brand .btn-cart:hover { background: #111; color: white; }
 }
 
 @media print {
-  .topbar, .back-btn, .mode-banner, .info-section, .admin-sidebar, .search-section { display: none !important; }
+  .topbar, .back-btn, .mode-banner, .info-section, .admin-sidebar, .search-section { display: none !important; }
 }
+
+/* ============================================================
+   STARTSEITE REDESIGN (PREMIUM LOOK)
+   ============================================================ */
+.hero {
+  height: 420px;
+  border-radius: 0 0 32px 32px;
+  margin: 0 0 40px 0;
+  box-shadow: var(--shadow-md);
+}
+.hero-content {
+  bottom: 90px;
+  left: 60px;
+}
+.hero-content h1 { font-size: 44px; font-weight: 700; text-shadow: 0 2px 15px rgba(0,0,0,0.5); letter-spacing: -0.5px; }
+.hero-content p { font-size: 18px; font-weight: 500; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+
+.start-card-grid {
+  margin-top: -120px;
+  position: relative;
+  z-index: 10;
+}
+
+.brand-card {
+  background: var(--surface);
+  border: none;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+  border-bottom: 5px solid var(--accent);
+  border-top: none;
+  border-radius: var(--radius-lg);
+  min-width: 260px;
+  padding: 40px 32px;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease;
+}
+.brand-card.mini-theme { border-bottom-color: var(--mini-black); }
+.brand-card:hover {
+  transform: translateY(-12px) scale(1.02);
+  box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+}
+
+[data-theme="dark"] .brand-card { box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+[data-theme="dark"] .brand-card:hover { box-shadow: 0 25px 50px rgba(0,0,0,0.7); }
+
+.info-section {
+  margin: 60px auto 40px;
+  text-align: center;
+  padding: 56px 40px;
+  border: none;
+  background: var(--surface);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.04);
+}
+[data-theme="dark"] .info-section { box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+
+.info-icon {
+  font-size: 28px;
+  margin-bottom: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+  height: 70px;
+  background: var(--surface-3);
+  border-radius: 50%;
+  color: var(--accent);
+}
+.info-section h2 { font-weight: 700; font-size: 28px; letter-spacing: -0.3px; }
 </style>
 </head>
 <body>
@@ -1028,9 +1094,10 @@ body.mini-brand .btn-cart:hover { background: #111; color: white; }
   </div>
   <div id="app"></div>
   <div class="info-section" id="infoSection">
+    <div class="info-icon">❄️</div>
     <h2 data-i18n="info_title">Eiskalte Fahrfreude mit maximalem Grip</h2>
-    <p data-i18n="info_p1">Ob im Alltag, auf dem Weg in die Berge oder unterwegs zur Skipiste: Mit Original Winterkompletträdern bleiben Sie auch bei Schnee, Regen und tiefen Temperaturen sicher unterwegs.</p>
-    <p data-i18n="info_p2">Entdecken Sie jetzt über unseren Konfigurator die verfügbaren Angebote von Emmenegger und finden Sie die passenden Winterkompletträder für Ihr Fahrzeug.</p>
+    <p data-i18n="info_p1" style="max-width: 650px; margin: 0 auto 16px;">Ob im Alltag, auf dem Weg in die Berge oder unterwegs zur Skipiste: Mit Original Winterkompletträdern bleiben Sie auch bei Schnee, Regen und tiefen Temperaturen sicher unterwegs.</p>
+    <p data-i18n="info_p2" style="max-width: 650px; margin: 0 auto;">Entdecken Sie jetzt über unseren Konfigurator die verfügbaren Angebote von Emmenegger und finden Sie die passenden Winterkompletträder für Ihr Fahrzeug.</p>
   </div>
 </div>
 
@@ -3262,15 +3329,14 @@ function renderWkrFlow(){
   let html = "";
   const isWkrFlow = true;
 
-  if (!state.marke) {
-    html += `<div class="section-title">${e(t("select_brand"))}</div>`;
-    html += `<div class="card-grid">
+ if (!state.marke) {
+    html += `<div class="card-grid start-card-grid">
       <div class="sel-card brand-card" onclick="selectMarke('BMW')">
-        <img src="https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/BMW_Logo.jpg?raw=true" alt="BMW Logo" style="height:52px;width:auto;object-fit:contain;">
+        <img src="https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/BMW_Logo.jpg?raw=true" alt="BMW Logo" style="height:65px;width:auto;object-fit:contain;margin-bottom:12px;">
         <div class="brand-name">BMW</div>
       </div>
       <div class="sel-card brand-card mini-theme" onclick="selectMarke('MINI')">
-        <img src="https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/MINI_Logo.jpg?raw=true"alt="MINI Logo" style="height:44px;width:auto;object-fit:contain;">
+        <img src="https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/MINI_Logo.jpg?raw=true" alt="MINI Logo" style="height:55px;width:auto;object-fit:contain;margin-bottom:12px;">
         <div class="brand-name">MINI</div>
       </div>
     </div>`;
