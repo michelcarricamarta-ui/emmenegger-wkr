@@ -1717,6 +1717,34 @@ function getCartTotal(){
   }, 0);
 }
 
+// Kunden-Aktion: Rad per TN aus produkte[] in den Warenkorb legen
+function handleAddToCart(tn){
+  const p = produkte.find(x => clean(x["TN"]) === clean(tn));
+  if (!p) { alert("Produkt nicht gefunden."); return; }
+
+  const result = addToCart({
+    tn: clean(p["TN"]),
+    bezeichnung: clean(p["Bezeichnung"]),
+    marke: clean(p["Reifen"]),
+    dimension: clean(p["Dimension"]),
+    bild: clean(p["Bild"]),
+    preis: clean(p["Angebotspreis"]) || clean(p["VP"]),
+    nettopreis: clean(p["Nettopreis"]),
+    empfaengerMail: clean(p["EmpfängerMail"] || p["EmpfaengerMail"]),
+    hinweistext: clean(p["Hinweistext"]),
+    verkaufshinweis: clean(p["Verkaufshinweis"]),
+    anzahl: 4
+  });
+
+  if (result.alreadyIn) {
+    alert("Dieses Produkt ist bereits in Ihrer Auswahl.");
+    return;
+  }
+
+  // UI aktualisieren (Button wird zu "✓ In Auswahl")
+  render();
+}
+
 function updateCartBar(){
   const bar = document.getElementById("cartBar");
   if (!bar) return;
@@ -2857,18 +2885,27 @@ function renderWkrProduct(r){
   else if(isOrderable){ statusHtml=`<div class="status-badge order">${e(t("on_order"))}</div><div class="delivery-note-text">${e(t("delivery_days"))}</div>`; }
   else{ statusHtml=`<div class="status-badge in-stock">${e(t("in_stock"))}</div><div class="delivery-note-text">${e(t("delivery_immediate"))}</div>`; if(isLowStock)statusHtml+=`<span class="stock-warning-chip">⚠ ${lager} ${e(t("stock_warning_unit"))}</span>`; }
 
-  let actionHtml="";
+ let actionHtml="";
   if(adminMode){
     actionHtml=`<div class="product-actions">
       <button class="btn btn-primary btn-sm" onclick="openEditWkrModal('${js(teilenummer)}')">Bearbeiten</button>
       <button class="btn btn-secondary btn-sm" onclick="printWkrLabel('${js(teilenummer)}')">Etikette</button>
     </div>`;
+  } else if (internalMode) {
+    // Interner Modus: direkt auswählen (wie bisher, für schnellen Verkauf)
+    actionHtml = isSoldOut
+      ? `<button class="btn btn-disabled">${e(t("sold_out"))}</button>`
+      : `<button class="btn btn-primary" onclick="openInquiryModal('${js(bezeichnung)}','${js(markeReifen)}','${js(dimension)}','${js(angebot||vp)}','${js(empfaengerMail)}','${js(bild)}','${js(teilenummer)}','${js(hinweistext)}','${js(verkaufshinweis)}','${js(nettopreis)}')">${e(t("select_action"))}</button>`;
   } else {
-    actionHtml=isSoldOut
-      ?`<button class="btn btn-disabled">${e(t("sold_out"))}</button>`
-      :`<button class="btn btn-primary" onclick="openInquiryModal('${js(bezeichnung)}','${js(markeReifen)}','${js(dimension)}','${js(angebot||vp)}','${js(empfaengerMail)}','${js(bild)}','${js(teilenummer)}','${js(hinweistext)}','${js(verkaufshinweis)}','${js(nettopreis)}')">${e(t("select_action"))}</button>`;
+    // Public + Customer-Modus: Warenkorb-Logik
+    if (isSoldOut) {
+      actionHtml = `<button class="btn btn-disabled">${e(t("sold_out"))}</button>`;
+    } else if (cartContains(teilenummer)) {
+      actionHtml = `<button class="btn btn-cart in-cart" onclick="removeFromCart('${js(teilenummer)}')">✓ In Auswahl</button>`;
+    } else {
+      actionHtml = `<button class="btn btn-cart" onclick="handleAddToCart('${js(teilenummer)}')">+ In Auswahl aufnehmen</button>`;
+    }
   }
-
   return `<div class="product-item ${isSoldOut?"sold-out":""}">
     <div class="product-image-wrap"><img src="${e(bild)}" alt="${e(bezeichnung)}" onclick="toggleZoom(this)"></div>
     <div class="product-info">
