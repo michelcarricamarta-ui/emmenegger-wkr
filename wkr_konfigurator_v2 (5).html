@@ -2822,19 +2822,20 @@ function renderAdminDashboard(){
     offeneAnfragen = vororder.filter(v => ["Kundenauswahl", "Offerte ausstehend"].includes(clean(v["Status"]))).length;
     bestellt = vororder.filter(v => clean(v["Status"]) === "Bestellt").length;
 
-    // Dringend: Ablieferung in den nächsten 7 Tagen + Status nicht "Erledigt" oder "Kunde verzichtet"
-    const now = new Date();
-    const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+   // NEU: Fokus auf offene Anfragen und neue Bestellungen
     dringendeVororders = vororder.filter(v => {
       const status = clean(v["Status"]);
-      if (status === "Erledigt" || status === "Kunde verzichtet") return false;
-      const abl = clean(v["Ablieferung"]);
-      if (!abl) return false;
-      try {
-        const d = new Date(abl);
-        return !isNaN(d.getTime()) && d >= now && d <= in7Days;
-      } catch(e) { return false; }
-    }).sort((a,b) => clean(a["Ablieferung"]).localeCompare(clean(b["Ablieferung"]))).slice(0, 5);
+      return status === "Kunde hat bestellt" || status === "Kundenauswahl";
+    }).sort((a,b) => {
+      // Priorität 1: Bestellungen ganz nach oben
+      const statusA = clean(a["Status"]);
+      const statusB = clean(b["Status"]);
+      if (statusA === "Kunde hat bestellt" && statusB !== "Kunde hat bestellt") return -1;
+      if (statusB === "Kunde hat bestellt" && statusA !== "Kunde hat bestellt") return 1;
+      
+      // Priorität 2: Älteste Anfragen zuerst (damit nichts liegen bleibt)
+      return new Date(clean(a["ErfasstAm"])) - new Date(clean(b["ErfasstAm"]));
+    }).slice(0, 6);
   }
 
   // ─── Styles als Konstanten ───
@@ -2921,31 +2922,37 @@ function renderAdminDashboard(){
       
     </div>
 
-    <!-- ═══════════════ DRINGEND: Ablieferung diese Woche ═══════════════ -->
+    <!-- ═══════════════ DRINGEND: Bestellungen - Anfragen ═══════════════ -->
     ${dringendeVororders.length > 0 ? `
     <div style="background:linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);border:1px solid #fbbf24;border-radius:12px;padding:22px;margin-bottom:24px;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
         <div>
-          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#92400e;margin-bottom:4px;">⚡ Dringend</div>
-          <div style="font-size:18px;font-weight:700;color:#78350f;">Ablieferung in den nächsten 7 Tagen</div>
-          <div style="font-size:12px;color:#92400e;margin-top:2px;">${dringendeVororders.length} Vororder${dringendeVororders.length>1?"s":""} brauchen Aufmerksamkeit</div>
+          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#92400e;margin-bottom:4px;">⚡ Neu eingetroffen</div>
+          <div style="font-size:18px;font-weight:700;color:#78350f;">Offene Anfragen & Bestellungen</div>
+          <div style="font-size:12px;color:#92400e;margin-top:2px;">${dringendeVororders.length} Vorgänge warten auf Bearbeitung</div>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:10px;">
         ${dringendeVororders.map(v => {
-          const daysLeft = Math.ceil((new Date(clean(v["Ablieferung"])) - new Date()) / (1000*60*60*24));
+          const status = clean(v["Status"]);
+          const isBestellung = status === "Kunde hat bestellt";
+          const badgeBg = isBestellung ? "#ef4444" : "#0ea5e9";
+          const badgeText = isBestellung ? "BESTELLUNG" : "ANFRAGE";
           return `
-          <div style="background:white;border:1px solid #fbbf24;border-radius:8px;padding:12px;cursor:pointer;transition:all 0.2s;" 
+          <div style="background:white;border:1px solid ${isBestellung ? '#fca5a5' : '#fbbf24'};border-radius:8px;padding:12px;cursor:pointer;transition:all 0.2s;" 
                onclick="openVororderDetail('${js(clean(v["ID"]))}')"
-               onmouseover="this.style.borderColor='#d97706';this.style.transform='translateY(-1px)';"
-               onmouseout="this.style.borderColor='#fbbf24';this.style.transform='none';">
+               onmouseover="this.style.borderColor='${isBestellung ? '#ef4444' : '#d97706'}';this.style.transform='translateY(-1px)';"
+               onmouseout="this.style.borderColor='${isBestellung ? '#fca5a5' : '#fbbf24'}';this.style.transform='none';">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
               <span style="font-family:monospace;font-size:11px;color:#92400e;font-weight:700;">${e(clean(v["ID"]))}</span>
-              <span style="background:#d97706;color:white;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;">${daysLeft === 0 ? "HEUTE" : daysLeft === 1 ? "MORGEN" : daysLeft + " TAGE"}</span>
+              <span style="background:${badgeBg};color:white;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;">${badgeText}</span>
             </div>
             <div style="font-weight:700;color:#1a1a1a;margin-bottom:2px;font-size:14px;">${e(clean(v["Kundenname"]))||"—"}</div>
             <div style="font-size:12px;color:#555;">${e(clean(v["Fahrzeug"]))||"—"}</div>
-            <div style="font-size:11px;color:#92400e;margin-top:6px;">${vororderStatusBadge(v["Status"])} · ${e(formatVororderDate(v["Ablieferung"]))}</div>
+            <div style="font-size:11px;color:#92400e;margin-top:6px; display:flex; justify-content:space-between; align-items:center;">
+              ${vororderStatusBadge(status)}
+              <span style="color:var(--text-muted);">Erfasst: ${e(formatVororderDate(v["ErfasstAm"]))}</span>
+            </div>
           </div>`;
         }).join("")}
       </div>
