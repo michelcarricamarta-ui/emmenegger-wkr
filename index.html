@@ -4842,6 +4842,7 @@ function closeEditTireModal(){ document.getElementById("editTireModal").classLis
    ============================================================ */
 function openAddWkrModal(){ clearWkrForm("new"); document.getElementById("addWkrModal").classList.add("open"); }
 function closeAddWkrModal(){ document.getElementById("addWkrModal").classList.remove("open"); }
+function closeEditWkrModal(){ document.getElementById("editWkrModal").classList.remove("open"); editingWkrTN=""; }
 function openEditWkrModal(tn){
   const row = produkte.find(p => clean(p["TN"]) === clean(tn));
   if(!row) { alert("WKR nicht gefunden."); return; }
