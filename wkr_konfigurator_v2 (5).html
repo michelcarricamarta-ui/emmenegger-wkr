@@ -1067,6 +1067,22 @@ body.mini-brand .btn-cart:hover { background: #111; color: white; }
     </div>
   </div>
 </div>
+<!-- Cart Modal (Warenkorb-Übersicht für Kunden) -->
+<div id="cartModal" class="modal-overlay">
+  <div class="modal-box wide">
+    <div class="modal-title">Ihre Auswahl</div>
+    <div class="modal-subtitle" id="cartModalSubtitle">Überprüfen Sie Ihre ausgewählten Produkte</div>
+
+    <div id="cartModalContent"></div>
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeCartModal()">← Weiter einkaufen</button>
+      <button class="btn btn-danger" onclick="clearCartWithConfirm()" id="cartClearBtn">🗑️ Alles entfernen</button>
+      <button class="btn btn-primary" onclick="goToCheckout()" id="cartCheckoutBtn">Weiter zum Abschluss →</button>
+    </div>
+  </div>
+</div>
+
 <!-- Inquiry modal -->
 <div id="inquiryModal" class="modal-overlay">
   <div class="modal-box">
@@ -1774,13 +1790,128 @@ function updateCartBar(){
   }
 }
 
-// Platzhalter — werden in Schritt A3 bzw. A4 mit Leben gefüllt
+/* ============================================================
+   WARENKORB-MODAL
+   ============================================================ */
+
 function openCartModal() {
-  alert("Warenkorb-Ansicht kommt in Schritt A3. Aktuell im Warenkorb:\n\n" + 
-    cart.map((c, i) => (i+1) + ". " + c.bezeichnung + " · " + c.dimension + " (Anzahl: " + c.anzahl + ")").join("\n"));
+  if (cart.length === 0) {
+    alert("Ihre Auswahl ist leer.\nFügen Sie zuerst Produkte hinzu.");
+    return;
+  }
+  renderCartModal();
+  document.getElementById("cartModal").classList.add("open");
 }
+
+function closeCartModal() {
+  document.getElementById("cartModal").classList.remove("open");
+}
+
+function renderCartModal() {
+  const contentEl = document.getElementById("cartModalContent");
+  const subtitleEl = document.getElementById("cartModalSubtitle");
+  const clearBtn = document.getElementById("cartClearBtn");
+  const checkoutBtn = document.getElementById("cartCheckoutBtn");
+  if (!contentEl) return;
+
+  if (cart.length === 0) {
+    contentEl.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🛒</div>
+        <p>Ihre Auswahl ist leer.</p>
+        <p style="font-size:13px;color:var(--text-muted);margin-top:8px;">Gehen Sie zurück zum Konfigurator und wählen Sie Produkte aus.</p>
+      </div>`;
+    if (subtitleEl) subtitleEl.textContent = "Keine Produkte ausgewählt";
+    if (clearBtn) clearBtn.style.display = "none";
+    if (checkoutBtn) checkoutBtn.style.display = "none";
+    return;
+  }
+
+  if (clearBtn) clearBtn.style.display = "";
+  if (checkoutBtn) checkoutBtn.style.display = "";
+
+  const total = getCartTotal();
+  if (subtitleEl) {
+    subtitleEl.textContent = cart.length === 1
+      ? "1 Produkt ausgewählt"
+      : `${cart.length} Produkte ausgewählt`;
+  }
+
+  let html = `<div style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px;">`;
+
+  cart.forEach((item, idx) => {
+    const preis = parsePrice(item.preis);
+    const priceFormatted = preis ? formatPrice(item.preis) : null;
+    const bild = item.bild || "https://via.placeholder.com/120x90?text=Rad";
+
+    html += `
+      <div style="display:flex;gap:14px;padding:14px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;align-items:center;">
+
+        <img src="${e(bild)}" alt="${e(item.bezeichnung)}" style="width:110px;height:85px;object-fit:contain;border-radius:6px;flex-shrink:0;background:white;">
+
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:700;font-size:15px;color:var(--text-primary);margin-bottom:3px;">${e(item.bezeichnung)}</div>
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:2px;">${e(item.marke)}${item.marke && item.dimension ? " · " : ""}${e(item.dimension)}</div>
+          ${item.tn ? `<div style="font-size:11px;color:var(--text-muted);font-family:monospace;">TN: ${e(item.tn)}</div>` : ""}
+
+          <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
+            <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Anzahl:</label>
+            <input type="number" min="1" max="20" value="${item.anzahl}"
+                   onchange="updateCartItemAnzahl('${js(item.tn)}', this.value); renderCartModal();"
+                   style="width:65px;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:13px;text-align:center;">
+            <span style="font-size:11px;color:var(--text-muted);">Stück (Standard: 4 = 1 Satz)</span>
+          </div>
+        </div>
+
+        <div style="text-align:right;flex-shrink:0;min-width:130px;">
+          ${priceFormatted
+            ? `<div style="font-size:18px;font-weight:700;color:var(--text-primary);">${e(priceFormatted)} CHF</div>
+               <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px;">pro Satz</div>`
+            : `<div style="font-size:14px;font-weight:600;color:var(--text-muted);margin-bottom:8px;">Preis auf Anfrage</div>`}
+          <button class="btn btn-secondary btn-sm" onclick="removeFromCart('${js(item.tn)}'); renderCartModal();" style="padding:5px 10px;font-size:11px;">🗑️ Entfernen</button>
+        </div>
+      </div>`;
+  });
+
+  html += `</div>`;
+
+  // Gesamtsumme
+  html += `
+    <div style="background:var(--surface-3);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);margin-bottom:2px;">Geschätzte Gesamtsumme</div>
+          <div style="font-size:10px;color:var(--text-muted);">${cart.length} ${cart.length === 1 ? "Produkt" : "Produkte"} · Preise inkl. MwSt. · vorbehaltlich Preisänderung</div>
+        </div>
+        <div style="font-size:24px;font-weight:700;color:var(--accent);">
+          ${total > 0 ? "CHF " + total.toLocaleString("de-CH", {maximumFractionDigits: 0}) : "auf Anfrage"}
+        </div>
+      </div>
+    </div>`;
+
+  contentEl.innerHTML = html;
+}
+
+function clearCartWithConfirm() {
+  if (cart.length === 0) return;
+  if (!confirm(`Alle ${cart.length} Produkt${cart.length === 1 ? "" : "e"} aus Ihrer Auswahl entfernen?`)) return;
+  clearCart();
+  renderCartModal();
+  render();
+}
+
+function goToCheckout() {
+  if (cart.length === 0) {
+    alert("Ihre Auswahl ist leer.");
+    return;
+  }
+  closeCartModal();
+  openCheckoutModal();
+}
+
+// Platzhalter — wird in Schritt A4 mit Leben gefüllt
 function openCheckoutModal() {
-  alert("Checkout-Formular kommt in Schritt A4. Warenkorb enthält " + cart.length + " Produkt(e).");
+  alert("Checkout-Formular kommt in Schritt A4.\n\nWarenkorb enthält " + cart.length + " Produkt(e).\nGesamt: CHF " + getCartTotal().toLocaleString("de-CH"));
 }
 
 /* ============================================================
@@ -6145,6 +6276,18 @@ Promise.all([
   mapping=Array.isArray(m)?m:[];
   fahrzeuge=Array.isArray(f)?f:[];
   reifen=Array.isArray(r)?r:[];
+
+  // Warenkorb-Leichen aufräumen: nur Produkte behalten, die es noch gibt
+  if (cart.length > 0) {
+    const validTNs = new Set(produkte.map(x => clean(x["TN"])));
+    const before = cart.length;
+    cart = cart.filter(item => validTNs.has(clean(item.tn)));
+    if (cart.length !== before) {
+      saveCartToStorage();
+      updateCartBar();
+    }
+  }
+
   if (window.isFirebaseAdminLoggedIn) {
     applyFirebaseAdminState();
   } else {
