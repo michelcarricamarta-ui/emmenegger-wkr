@@ -3531,9 +3531,8 @@ function printSammelbestellung(){
           const res = parseInt(inp.getAttribute('data-res'), 10) || 0;
           const lager = parseInt(inp.value, 10) || 0;
           
-          // Achtung! Die Element-ID für das Summenfeld darf keine Leerzeichen enthalten
-          const tnSafe = tn.replace(/[^a-zA-Z0-9]/g, '');
-          const sumEl = document.querySelector('[id="sum_' + tn + '"]');
+          // CSS.escape() sorgt dafür, dass auch TNs mit Sonderzeichen sicher funktionieren
+          const sumEl = document.querySelector('[id="sum_' + CSS.escape(tn) + '"]');
           if(sumEl) sumEl.innerText = res + lager;
           
           let tRes = 0, tLag = 0, tBest = 0;
@@ -3615,9 +3614,9 @@ function printSammelbestellung(){
                   });
               }
 
-              if (mode === 'lager' || mode === 'alle') {
-                  // Hier muss per Attribut gesucht werden, da IDs keine Leerzeichen mögen
-                  const lagInp = document.querySelector('[data-tn="' + tn + '"]');
+             if (mode === 'lager' || mode === 'alle') {
+                  // CSS.escape() für robustes Attribut-Matching, auch bei Sonderzeichen in TN
+                  const lagInp = document.querySelector('[data-tn="' + CSS.escape(tn) + '"]');
                   if(lagInp) {
                       const lagCount = parseInt(lagInp.value, 10) || 0;
                       for(let i=0; i < lagCount; i++) {
