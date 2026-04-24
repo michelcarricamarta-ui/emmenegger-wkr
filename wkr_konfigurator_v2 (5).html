@@ -2191,6 +2191,16 @@ function updateTopbarContext(){
   const addon = document.getElementById("adminTopbarAddon");
   const badge = document.getElementById("adminBellBadge");
   if (!addon) return;
+// Im Kunden-Modus IMMER ausblenden (Security first)
+  if (customerMode) {
+    addon.style.display = "none";
+    return;
+  }
+  // Im Kunden-Modus IMMER ausblenden (Security first)
+  if (customerMode) {
+    addon.style.display = "none";
+    return;
+  }
 
   if (adminMode) {
     addon.style.display = "flex";
@@ -3963,10 +3973,6 @@ function closeEditTireModal(){ document.getElementById("editTireModal").classLis
    ============================================================ */
 function openAddWkrModal(){ clearWkrForm("new"); document.getElementById("addWkrModal").classList.add("open"); }
 function closeAddWkrModal(){ document.getElementById("addWkrModal").classList.remove("open"); }
-function clearWkrForm(prefix){
-  ["Marke","Standort","Bezeichnung","Reifen","Dimension","TN","Lagerort","Bild","VP","Angebotspreis","Nettopreis","EmpfaengerMail","Hinweistext","Verkaufshinweis"].forEach(f=>{const el=document.getElementById(`${prefix}Wkr${f}`);if(el)el.value="";});
-  const lager=document.getElementById(`${prefix}WkrLager`);if(lager)lager.value="0";
-}
 function openEditWkrModal(tn){
   const row = produkte.find(p => clean(p["TN"]) === clean(tn));
   if(!row) { alert("WKR nicht gefunden."); return; }
@@ -4190,16 +4196,7 @@ async function saveNewWkr(){
   }
 }
 
-async function saveEditedWkr(){
-  if(!editingWkrTN){alert("Keine TN.");return;}
-  const marke=clean(document.getElementById("editWkrMarke").value);
-  const standort=clean(document.getElementById("editWkrStandort").value);
-  const bezeichnung=clean(document.getElementById("editWkrBezeichnung").value);
-  const tn=clean(document.getElementById("editWkrTN").value);
-  if(!marke||!standort||!bezeichnung||!tn){alert("Pflichtfelder ausfüllen.");return;}
-  const updates={"Marke":marke,"Standort":standort,"Bezeichnung":bezeichnung,"Reifen":clean(document.getElementById("editWkrReifen").value),"Dimension":clean(document.getElementById("editWkrDimension").value),"TN":tn,"Lager":clean(document.getElementById("editWkrLager").value),"Lagerort":clean(document.getElementById("editWkrLagerort").value),"Bild":clean(document.getElementById("editWkrBild").value),"VP":clean(document.getElementById("editWkrVP").value),"Angebotspreis":clean(document.getElementById("editWkrAngebotspreis").value),"Nettopreis":clean(document.getElementById("editWkrNettopreis").value),"EmpfaengerMail":clean(document.getElementById("editWkrEmpfaengerMail").value),"Hinweistext":clean(document.getElementById("editWkrHinweistext").value),"Verkaufshinweis":clean(document.getElementById("editWkrVerkaufshinweis").value)};
-  try{const res=await postToScript({sheet:"Produkte",keyField:"TN",keyValue:editingWkrTN,updates});if(res==="OK"||(res&&res.status==="OK")){const row=produkte.find(p=>clean(p["TN"])===clean(editingWkrTN));if(row)Object.assign(row,updates);editingWkrTN=tn;alert("WKR aktualisiert.");closeEditWkrModal();render();}else{alert("Fehler: "+JSON.stringify(res));}}catch(err){alert("Fehler: "+err.message);}
-}
+// (saveEditedWkr wurde nach oben zu "MODAL: ADD/EDIT WKR" verschoben — dies war ein Duplikat)
 
 async function deleteWkr(){
   if(!editingWkrTN)return;
@@ -4217,38 +4214,51 @@ async function deleteWkr(){
    /* ============================================================
    VORORDER: Laden + Helpers
    ============================================================ */
-async function loadVororder(){
-  if (vororderLoading) return;
-  vororderLoading = true;
-  try {
-    // ── NEU: Standort-Filter serverseitig mitgeben ──
-    const isSuperAdmin = currentUser?.rolle === "SuperAdmin";
-    const userStandort = currentUser?.standort || "";
-    const payload = { action: "vororderList" };
-    if (!isSuperAdmin && userStandort) {
-      payload.standort = userStandort;
-    }
+let _vororderLoadingPromise = null;
 
-    const res = await postToScript(payload);  // ← war: postToScript({ action: "vororderList" })
-    if (res && res.status === "OK" && Array.isArray(res.data)) {
-      vororder = res.data;
-      vororderLoaded = true;
-    }
-    // Positionen laden
-    const posRes = await postToScript({ action: "vororderPositionenList" });
-    if (posRes && posRes.status === "OK" && Array.isArray(posRes.data)) {
-      positionenMap = {};
-      posRes.data.forEach(p => {
-        const voId = clean(p["VororderID"]);
-        if (!positionenMap[voId]) positionenMap[voId] = [];
-        positionenMap[voId].push(p);
-      });
-    }
-  } catch(err) {
-    console.error("Vororder-Ladefehler:", err);
-  } finally {
-    vororderLoading = false;
+async function loadVororder(){
+  // Wenn bereits eine Ladung läuft, warte auf diese (statt neu zu starten oder stumm abzubrechen)
+  if (_vororderLoadingPromise) {
+    return _vororderLoadingPromise;
   }
+
+  vororderLoading = true;
+
+  _vororderLoadingPromise = (async () => {
+    try {
+      // Standort-Filter serverseitig mitgeben
+      const isSuperAdmin = currentUser?.rolle === "SuperAdmin";
+      const userStandort = currentUser?.standort || "";
+      const payload = { action: "vororderList" };
+      if (!isSuperAdmin && userStandort) {
+        payload.standort = userStandort;
+      }
+
+      const res = await postToScript(payload);
+      if (res && res.status === "OK" && Array.isArray(res.data)) {
+        vororder = res.data;
+        vororderLoaded = true;
+      }
+
+      // Positionen laden
+      const posRes = await postToScript({ action: "vororderPositionenList" });
+      if (posRes && posRes.status === "OK" && Array.isArray(posRes.data)) {
+        positionenMap = {};
+        posRes.data.forEach(p => {
+          const voId = clean(p["VororderID"]);
+          if (!positionenMap[voId]) positionenMap[voId] = [];
+          positionenMap[voId].push(p);
+        });
+      }
+    } catch(err) {
+      console.error("Vororder-Ladefehler:", err);
+    } finally {
+      vororderLoading = false;
+      _vororderLoadingPromise = null;
+    }
+  })();
+
+  return _vororderLoadingPromise;
 }
 function getFilteredVororder(){
   // SuperAdmin darf auch nach Standort filtern, Normal-Admin nur eigenen Standort
