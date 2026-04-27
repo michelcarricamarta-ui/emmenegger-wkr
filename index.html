@@ -329,6 +329,27 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
 .product-detail-row { font-size: 13px; color: var(--text-secondary); margin-bottom: 5px; display: flex; gap: 6px; }
 .product-detail-row b { color: var(--text-primary); font-weight: 600; min-width: 80px; }
 .product-note { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-top: 10px; white-space: pre-line; background: var(--surface-2); border-left: 3px solid var(--border-strong); padding: 8px 12px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+   .product-warning {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  margin-bottom: 12px;
+  background: linear-gradient(90deg, rgba(245,158,11,0.12), rgba(245,158,11,0.04));
+  border: 1px solid rgba(245,158,11,0.3);
+  border-left: 4px solid var(--warning);
+  color: #92400e;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+.product-warning b { color: #78350f; font-weight: 700; }
+[data-theme="dark"] .product-warning {
+  background: rgba(245,158,11,0.1);
+  color: #fbbf24;
+}
+[data-theme="dark"] .product-warning b { color: #fcd34d; }
 .product-partnr { font-size: 13px; color: var(--text-primary); margin-top: 10px; font-family: var(--font-body); font-weight: 700; background: var(--surface-3); border: 1px solid var(--border-strong); display: inline-block; padding: 5px 12px; border-radius: var(--radius-sm); }
 .dot-warning { font-size: 12px; font-weight: 700; color: var(--error); margin-top: 8px; }
 .dot-ok { font-size: 12px; font-weight: 700; color: var(--success); margin-top: 8px; }
@@ -1092,7 +1113,216 @@ body.mini-brand .engine-pill:hover {
   border-color: var(--mini-black);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
+/* ============================================================
+   BMW-STYLE FAHRZEUGAUSWAHL (V2 — Cleaner, Premium)
+   ============================================================ */
+.vehicle-search-wrap {
+  max-width: 1200px;
+  margin: 0 auto 24px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.vehicle-search {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 18px;
+  font-size: 15px;
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.vehicle-search:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(28,105,212,0.15);
+}
+.vehicle-count {
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.vehicle-group {
+  max-width: 1200px;
+  margin: 0 auto 32px;
+}
+.vehicle-group-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  padding: 0 4px 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.vehicle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 4px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
 
+/* Die Karte selbst — BMW-Style */
+.vehicle-card {
+  background: var(--surface-2);
+  border: none;
+  border-radius: 0;
+  padding: 24px 24px 28px;
+  cursor: pointer;
+  transition: background 0.4s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-height: 360px;
+  overflow: hidden;
+}
+.vehicle-card:hover,
+.vehicle-card:focus-visible {
+  background: var(--surface);
+  transform: translateY(-4px);
+  outline: none;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.06);
+}
+[data-theme="dark"] .vehicle-card:hover { background: var(--surface-3); }
+
+/* Top-Badges (Kategorie + Neu) */
+.vc-badges {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.vc-badge {
+  background: rgba(0,0,0,0.06);
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  border-radius: 2px;
+  text-transform: none;
+}
+.vc-badge.new {
+  background: var(--text-primary);
+  color: white;
+}
+.vc-badge.unavailable {
+  background: var(--surface-3);
+  color: var(--text-muted);
+}
+[data-theme="dark"] .vc-badge { background: rgba(255,255,255,0.08); }
+
+/* BMW-Style Titel: grosse Zahl + kleines "er" */
+.vc-title {
+  font-size: 38px;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  letter-spacing: -0.5px;
+  font-family: var(--font-display);
+}
+.vc-title .vc-suffix {
+  font-size: 20px;
+  font-weight: 300;
+  vertical-align: 0.5em;
+  margin-left: 1px;
+  letter-spacing: 0;
+}
+.vc-title .vc-rest {
+  font-size: 16px;
+  font-weight: 400;
+  margin-left: 6px;
+  color: var(--text-secondary);
+  letter-spacing: 0;
+  vertical-align: 0.15em;
+}
+
+.vc-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+  font-weight: 400;
+}
+
+/* Bild-Bereich nimmt den Rest ein */
+.vc-image {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 8px 0;
+  min-height: 140px;
+  overflow: hidden;
+}
+.vc-image img {
+  max-width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  mix-blend-mode: darken;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.vehicle-card:hover .vc-image img { transform: scale(1.08); }
+[data-theme="dark"] .vc-image img { mix-blend-mode: normal; }
+
+/* Footer mit Antrieb & Verfügbarkeit */
+.vc-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  margin-top: 8px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  font-size: 13px;
+}
+[data-theme="dark"] .vc-footer { border-top-color: rgba(255,255,255,0.08); }
+
+.vc-fuel {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+.vc-availability {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.vc-availability.has-stock { color: var(--success); }
+.vc-availability.no-stock { color: var(--text-muted); }
+
+/* MINI-Theme */
+body.mini-brand .vc-badge.new { background: var(--mini-black); }
+body.mini-brand .vehicle-card:hover { background: var(--surface); }
+
+.vehicle-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+  font-size: 15px;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .vehicle-grid { grid-template-columns: repeat(2, 1fr); gap: 2px; }
+  .vehicle-card { padding: 16px 12px 18px; min-height: 260px; }
+  .vc-title { font-size: 26px; }
+  .vc-title .vc-suffix { font-size: 14px; }
+  .vc-title .vc-rest { font-size: 12px; display: block; margin-left: 0; margin-top: 2px; }
+  .vc-subtitle { font-size: 12px; margin-bottom: 8px; }
+  .vc-image { min-height: 90px; }
+  .vc-image img { max-height: 110px; }
+  .vc-badge { font-size: 10px; padding: 3px 7px; }
+  .vc-badges { margin-bottom: 10px; gap: 4px; }
+  .vc-footer { font-size: 11px; padding-top: 8px; }
+  .vehicle-search-wrap { flex-direction: column; align-items: stretch; }
+}
    
 </style>
 </head>
@@ -2726,6 +2956,72 @@ function selectMarke(m){ state.marke=m; state.standort=state.reihe=state.modell=
 function selectStandort(s){ state.standort=s; state.reihe=state.modell=state.motor=null; render(); }
 function selectReihe(r){ state.reihe=r; state.modell=state.motor=null; render(); }
 function selectModell(m){ state.modell=m; state.motor=null; render(); }
+
+// ---> NEU: BMW-Style Typografie für Modellnamen <---
+// Wandelt "1er", "3er Touring" etc. in HTML mit grossem Zahl + kleinem "er"
+function formatVehicleName(name) {
+  const n = clean(name);
+  if (!n) return "";
+
+  // "1er", "3er Touring" → grosse Zahl, kleines "er", Rest als Sub
+  const erMatch = n.match(/^(\d+)er(\s+.+)?$/);
+  if (erMatch) {
+    return `${e(erMatch[1])}<span class="vc-suffix">er</span>${erMatch[2] ? `<span class="vc-rest">${e(erMatch[2].trim())}</span>` : ""}`;
+  }
+
+  // "X3", "X5 Touring" → "X3" gross, Rest klein
+  const xMatch = n.match(/^(X\d+|XM)(\s+.+)?$/);
+  if (xMatch) {
+    return `${e(xMatch[1])}${xMatch[2] ? `<span class="vc-rest">${e(xMatch[2].trim())}</span>` : ""}`;
+  }
+
+  // "iX3", "iX" → komplett gross
+  const iMatch = n.match(/^(iX\d*|i\d+)(\s+.+)?$/);
+  if (iMatch) {
+    return `${e(iMatch[1])}${iMatch[2] ? `<span class="vc-rest">${e(iMatch[2].trim())}</span>` : ""}`;
+  }
+
+  // "M3", "M3 Touring" → "M3" gross
+  const mMatch = n.match(/^(M\d+)(\s+.+)?$/);
+  if (mMatch) {
+    return `${e(mMatch[1])}${mMatch[2] ? `<span class="vc-rest">${e(mMatch[2].trim())}</span>` : ""}`;
+  }
+
+  // Fallback: alles normal
+  return e(n);
+}
+   
+   // ---> NEU: Reihe und Modell gleichzeitig setzen <---
+function selectFahrzeug(reihe, modell){ 
+  state.reihe = reihe; 
+  state.modell = modell; 
+  state.motor = null; 
+  window._vehicleFilter = ""; // Filter zurücksetzen
+  render(); 
+}
+
+// ---> NEU: Live-Suchfilter für Fahrzeugkarten <---
+function filterVehicles(query){
+  window._vehicleFilter = query || "";
+  const q = (query || "").trim().toLowerCase();
+  const cards = document.querySelectorAll(".vehicle-card");
+  let visible = 0;
+  cards.forEach(c => {
+    const txt = c.getAttribute("data-search") || "";
+    const show = !q || txt.includes(q);
+    c.style.display = show ? "" : "none";
+    if(show) visible++;
+  });
+  // Leere Kategorien (alle Karten ausgeblendet) komplett verstecken
+  document.querySelectorAll(".vehicle-group").forEach(g => {
+    const hasVisible = g.querySelector(".vehicle-card:not([style*='display: none'])");
+    g.style.display = hasVisible ? "" : "none";
+  });
+  const empty = document.getElementById("vehicleEmpty");
+  if(empty) empty.style.display = visible === 0 ? "" : "none";
+  const counter = document.getElementById("vehicleCount");
+  if(counter) counter.textContent = visible + (visible === 1 ? " Modell" : " Modelle");
+}
 function selectMotor(m){ state.motor=m; render(); }
 function resetSelection(){ state.standort=state.marke=state.reihe=state.modell=state.motor=null; selectedProduct=null; closeAllModals(); render(); }
 function shareConfig(){
@@ -3420,40 +3716,158 @@ function renderWkrFlow(){
     return html;
   }
 
-  if (!state.reihe) {
-    const reihen=[...new Set(mapping.filter(x=>clean(x["Marke"])===state.marke).map(x=>clean(x["Reihe"])).filter(Boolean))];
-    html+=`<div class="section-title">${e(t("select_series"))}</div><div class="card-grid">`;
-    reihen.forEach(r=>{ html+=`<div class="sel-card" onclick="selectReihe('${js(r)}')">${e(r)}</div>`; });
-    html+=`</div>`;
-    return html;
-  }
-
-  if (!state.modell) {
-    const modelle=[...new Set(mapping.filter(x=>clean(x["Marke"])===state.marke&&clean(x["Reihe"])===state.reihe).map(x=>clean(x["Modell"])).filter(Boolean))];
-    html+=`<div class="section-title">${e(t("select_model"))}</div><div class="card-grid">`;
-    modelle.forEach(m=>{
-      const fz=fahrzeuge.find(f=>clean(f["Marke"])===state.marke&&clean(f["Reihe"])===state.reihe&&clean(f["Modell"])===m);
-      const bild=clean(fz?.Bild)||"https://via.placeholder.com/260x140?text=Fahrzeug";
-      const code=clean(fz?.Code)||m;
-      html+=`<div class="sel-card model-card" onclick="selectModell('${js(m)}')"><img src="${e(bild)}" alt="${e(code)}"><div class="model-name">${e(code)}</div></div>`;
+ // NEU: Reihe und Modell in einer visuellen Auswahl zusammengefasst (BMW-Style)
+  if (!state.reihe || !state.modell) {
+    // 1. Alle verfügbaren Kombinationen aus dem Mapping holen
+    const uniqueVehicles = [];
+    const seen = new Set();
+    mapping.filter(m => clean(m["Marke"]) === state.marke).forEach(m => {
+      const r = clean(m["Reihe"]);
+      const mo = clean(m["Modell"]);
+      if(r && mo) {
+        const key = r + "|" + mo;
+        if(!seen.has(key)){ seen.add(key); uniqueVehicles.push({ reihe: r, modell: mo }); }
+      }
     });
-    html+=`</div>`;
+
+    // 2. Daten aus der Fahrzeuge-Tabelle anreichern
+    const enriched = uniqueVehicles.map(v => {
+      const fz = fahrzeuge.find(f => clean(f["Marke"])===state.marke && clean(f["Reihe"])===v.reihe && clean(f["Modell"])===v.modell);
+      const friendlyName = clean(fz?.Code) || v.modell;
+      const bild = clean(fz?.Bild) || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 160'><rect fill='%23f0f2f5' width='300' height='160'/><text x='50%25' y='50%25' text-anchor='middle' dy='.3em' font-family='Arial' fill='%238a93a6' font-size='14'>Bild folgt</text></svg>";
+      const karosserie = clean(fz?.Karosserie) || ""; // optional, falls Spalte vorhanden
+
+      // Anzahl verfügbare Räder zählen
+      const tnList = mapping.filter(x => clean(x["Marke"])===state.marke && clean(x["Reihe"])===v.reihe && clean(x["Modell"])===v.modell).map(x => clean(x["TN"])).filter(Boolean);
+      const anzahl = produkte.filter(p =>
+        clean(p["Marke"])===state.marke &&
+        clean(p["Standort"])===state.standort &&
+        tnList.includes(clean(p["TN"])) &&
+        clean(p["Aktiv"]) !== "Nein"
+      ).length;
+
+      return { ...v, friendlyName, bild, karosserie, anzahl };
+    });
+
+   // 3. Kategorie ableiten (aus Sheet-Spalte ODER automatisch aus Name)
+    const autoKategorie = (name) => {
+      const n = (name || "").toLowerCase();
+      if (/^m\d|^xm/i.test(name) || n.startsWith("m ")) return "M-Modelle";
+      if (/^i|^ix/i.test(name)) return "Elektro";
+      if (/^x\d/i.test(name)) return "X-Modelle";
+      if (/cabrio/i.test(name)) return "Coupés & Cabrios";
+      if (/coup[eé]/i.test(name) && !/gran/i.test(name)) return "Coupés & Cabrios";
+      if (/gran coup[eé]/i.test(name)) return "Gran Coupés";
+      if (/touring|tourer/i.test(name)) return "Touring";
+      if (/^z\d/i.test(name)) return "Roadster";
+      if (/^\d/.test(name)) return "Limousinen";
+      return "Weitere Modelle";
+    };
+    enriched.forEach(v => {
+      v.kategorieFinal = clean(v.karosserie) || autoKategorie(v.friendlyName);
+    });
+
+    // 4. Reihenfolge der Kategorien (BMW-Style)
+    const kategorieReihenfolge = [
+      "Limousinen", "Touring", "Coupés & Cabrios", "Gran Coupés",
+      "X-Modelle", "Roadster", "Elektro", "M-Modelle", "Weitere Modelle"
+    ];
+    const kategorieRank = (k) => {
+      const i = kategorieReihenfolge.indexOf(k);
+      return i === -1 ? 999 : i;
+    };
+
+    // 5. Innerhalb Kategorie alphanumerisch sortieren (1er → 2er → 3er ...)
+    enriched.sort((a, b) =>
+      kategorieRank(a.kategorieFinal) - kategorieRank(b.kategorieFinal) ||
+      a.friendlyName.localeCompare(b.friendlyName, 'de', { numeric: true })
+    );
+
+    // 6. Nach Kategorie gruppieren
+    const gruppen = {};
+    enriched.forEach(v => {
+      if (!gruppen[v.kategorieFinal]) gruppen[v.kategorieFinal] = [];
+      gruppen[v.kategorieFinal].push(v);
+    });
+    const gruppenSortiert = Object.keys(gruppen).sort((a, b) => kategorieRank(a) - kategorieRank(b));
+
+    // 7. Public vs. Internal
+    const isPublic = !internalMode && !adminMode;
+
+    // 8. Suchfeld + Counter
+    html += `<div class="section-title">Wählen Sie Ihr Fahrzeug</div>`;
+    html += `<div class="vehicle-search-wrap">
+      <input type="text" class="vehicle-search" id="vehicleSearchInput"
+             placeholder="🔍 Modell suchen (z.B. X3, 3er, 320)..."
+             oninput="filterVehicles(this.value)"
+             value="${e(window._vehicleFilter || '')}">
+      <div class="vehicle-count" id="vehicleCount">${enriched.length} Modelle</div>
+    </div>`;
+
+   // 9. Pro Kategorie eine Sektion mit Header + Grid rendern (BMW-Style V2)
+    gruppenSortiert.forEach(kat => {
+      html += `<div class="vehicle-group" data-kategorie="${e(kat.toLowerCase())}">
+        <div class="vehicle-group-title">${e(kat)}</div>
+        <div class="vehicle-grid">`;
+
+      gruppen[kat].forEach(v => {
+        // Smarte Typografie: "1er Limousine" → grosses "1", kleines "er", "Limousine" subtil
+        const formattedTitle = formatVehicleName(v.friendlyName);
+
+        // Untertitel = Kategorie/Karosserie (subtil, BMW-Style)
+        const subtitle = (v.kategorieFinal && v.kategorieFinal !== "Weitere Modelle")
+          ? `${v.kategorieFinal}`
+          : "Modelle";
+
+        // "Neu" Badge: wenn der Code "ab 2024", "ab 2025", "ab 2026" enthält
+        const isNeu = /ab 202[4-9]|ab 203\d/i.test(v.friendlyName);
+
+        // Antrieb für Footer
+        const fuel = v.kategorieFinal === "Elektro" ? "Elektrisch"
+                   : v.kategorieFinal === "M-Modelle" ? "Benzin · Performance"
+                   : "Benzin · Diesel";
+
+        // Verfügbarkeit
+        const availLabel = v.anzahl > 0 ? `${v.anzahl} ${v.anzahl===1?"Rad":"Räder"}` : "Auf Anfrage";
+        const availClass = v.anzahl > 0 ? "has-stock" : "no-stock";
+
+        // Suche
+        const searchText = `${v.friendlyName} ${v.modell} ${v.reihe} ${v.kategorieFinal}`.toLowerCase();
+
+        html += `
+          <div class="vehicle-card" role="button" tabindex="0"
+               data-search="${e(searchText)}"
+               onclick="selectFahrzeug('${js(v.reihe)}', '${js(v.modell)}')"
+               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectFahrzeug('${js(v.reihe)}', '${js(v.modell)}');}">
+            <div class="vc-badges">
+              <span class="vc-badge">${e(v.kategorieFinal)}</span>
+              ${isNeu ? `<span class="vc-badge new">Neu</span>` : ``}
+              ${v.anzahl === 0 ? `<span class="vc-badge unavailable">Auf Anfrage</span>` : ``}
+            </div>
+            <div class="vc-title">${formattedTitle}</div>
+            <div class="vc-subtitle">${e(subtitle)}</div>
+            <div class="vc-image"><img src="${e(v.bild)}" alt="${e(v.friendlyName)}" loading="lazy"></div>
+            <div class="vc-footer">
+              <span class="vc-fuel">${e(fuel)}</span>
+              <span class="vc-availability ${availClass}">${e(availLabel)}</span>
+            </div>
+          </div>
+        `;
+      });
+
+      html += `</div></div>`;
+    });
+
+   html += `<div class="vehicle-empty" id="vehicleEmpty" style="display:none;">Keine Modelle gefunden. Bitte Suche anpassen.</div>`;
     return html;
   }
 
- if (!state.motor) {
-    const motors=[...new Set(mapping.filter(x=>clean(x["Marke"])===state.marke&&clean(x["Reihe"])===state.reihe&&clean(x["Modell"])===state.modell).flatMap(x=>splitMotors(x["Motor"])))];
-    html+=`<div class="section-title">${e(t("select_engine"))}</div><div class="engine-grid">`;
-    motors.forEach(m=>{ html+=`<button class="engine-pill" onclick="selectMotor('${js(m)}')">${e(m)}</button>`; });
-    html+=`</div>`;
-    return html;
-  }
 
   // Product listing
   const fz=fahrzeuge.find(f=>clean(f["Marke"])===state.marke&&clean(f["Reihe"])===state.reihe&&clean(f["Modell"])===state.modell);
   const fzBild=clean(fz?.Bild)||"https://via.placeholder.com/220x130?text=Fahrzeug";
   const fzCode=clean(fz?.Code)||state.modell;
-  const tnList=[...new Set(mapping.filter(x=>clean(x["Marke"])===state.marke&&clean(x["Reihe"])===state.reihe&&clean(x["Modell"])===state.modell&&motorMatch(x["Motor"],state.motor)).map(x=>clean(x["TN"])).filter(Boolean))];
+ const tnList=[...new Set(mapping.filter(x=>clean(x["Marke"])===state.marke&&clean(x["Reihe"])===state.reihe&&clean(x["Modell"])===state.modell).map(x=>clean(x["TN"])).filter(Boolean))];
 const results=produkte.filter(p=>
     clean(p["Standort"])===state.standort && 
     clean(p["Marke"])===state.marke && 
@@ -3479,19 +3893,16 @@ const results=produkte.filter(p=>
           <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:2px;">Standort</div>
           <div style="font-size:14px;font-weight:700;color:var(--text-primary);">${e(standortLabel(state.standort))}</div>
         </div>
+       ${(internalMode || adminMode) ? `
         <div style="padding:10px 18px;border-right:1px solid var(--border);background:var(--surface-2);">
           <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:2px;">Reihe</div>
           <div style="font-size:14px;font-weight:700;color:var(--text-primary);">${e(state.reihe)}</div>
-        </div>
+        </div>` : ``}
         <div style="padding:10px 18px;border-right:1px solid var(--border);background:var(--surface-2);">
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:2px;">Modell</div>
-          <div style="font-size:14px;font-weight:700;color:var(--text-primary);">${e(fzCode)}</div>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:2px;">Fahrzeug</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text-primary);">${e(state.marke)} ${e(fzCode)}</div>
         </div>
-        <div style="padding:10px 18px;background:var(--surface-2);">
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:2px;">Motor</div>
-          <div style="font-size:14px;font-weight:700;color:var(--text-primary);">${e(state.motor)}</div>
         </div>
-      </div>
       <img src="${e(fzBild)}" alt="${e(fzCode)}" style="height:80px;width:auto;object-fit:contain;border-radius:3px;flex-shrink:0;">
     </div>
   </div>`;
@@ -3564,11 +3975,11 @@ function renderWkrProduct(r){
   return `<div class="product-item ${isSoldOut?"sold-out":""}">
     <div class="product-image-wrap"><img src="${e(bild)}" alt="${e(bezeichnung)}" onclick="toggleZoom(this)"></div>
     <div class="product-info">
+      ${verkaufshinweis?`<div class="product-warning">⚠️ <b>Wichtiger Hinweis:</b> ${e(verkaufshinweis)}</div>`:""}
       <div class="product-name">${e(bezeichnung)}</div>
       <div class="product-sub">${e(markeReifen)}</div>
       <div class="product-sub" style="font-weight:700;">${e(dimension)}</div>
       ${hinweistext?`<div class="product-note">${e(hinweistext)}</div>`:""}
-      ${verkaufshinweis?`<div class="product-detail-row"><b>Hinweis:</b> ${e(verkaufshinweis)}</div>`:""}
       ${teilenummer?`<div class="product-partnr">Teilenr.: ${e(teilenummer)}</div>`:""}
     </div>
     <div class="product-right">
@@ -6617,8 +7028,6 @@ function printCustomerOffer(){
       <table>
         <tr><td>Marke</td><td>${e(clean(vo["Marke"]))}</td></tr>
         <tr><td>Fahrzeug</td><td>${e(clean(vo["Fahrzeug"]))}</td></tr>
-        ${clean(vo["Reihe"])?`<tr><td>Reihe</td><td>${e(clean(vo["Reihe"]))}</td></tr>`:""}
-        ${clean(vo["Modell"])?`<tr><td>Modell</td><td>${e(clean(vo["Modell"]))}</td></tr>`:""}
         ${clean(vo["Motor"])?`<tr><td>Motor</td><td>${e(clean(vo["Motor"]))}</td></tr>`:""}
       </table>
       
