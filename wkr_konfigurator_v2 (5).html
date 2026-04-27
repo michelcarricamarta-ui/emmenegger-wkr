@@ -6283,11 +6283,11 @@ async function confirmStatusSync() {
   await executeStatusUpdate(id, newStatus, user, selectedPosIds);
 }
 
-// Führt den tatsächlichen Datenbank-Speichervorgang aus
+// Führt den tatsächlichen Datenbank-Speichervorgang aus (TURBOMODUS)
 async function executeStatusUpdate(id, newStatus, user, selectedPosIds) {
   const saveBtn = document.querySelector('#vororderDetailModal .btn-primary[onclick^="saveVororderStatus"]');
   const originalText = saveBtn ? saveBtn.textContent : "";
-  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = "⏳ Wird gespeichert..."; }
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = "⏳ Speichere..."; }
 
   try {
     // 1. Haupt-Vororder aktualisieren
@@ -6297,33 +6297,35 @@ async function executeStatusUpdate(id, newStatus, user, selectedPosIds) {
     
     if (res && res.status === "OK") {
       
-      // 2. Gewählte Positionen aktualisieren
-      for (let posId of selectedPosIds) {
-         await postToScript({
+      // 2. Alle Positionen PARALLEL speichern (spart massiv Zeit!)
+      if (selectedPosIds.length > 0) {
+        const updatePromises = selectedPosIds.map(posId => postToScript({
            action: "vororderPositionUpdate",
            positionId: posId,
            updates: { Status: newStatus }
-         });
+        }));
+        await Promise.all(updatePromises);
       }
 
-      // 3. Tabellen im Hintergrund neu laden
-      await reloadVororder();
-      const posRes = await postToScript({ action: "vororderPositionenList" });
-      if (posRes && posRes.status === "OK" && Array.isArray(posRes.data)) {
-        positionenMap = {};
-        posRes.data.forEach(p => {
-          const voId = clean(p["VororderID"]);
-          if (!positionenMap[voId]) positionenMap[voId] = [];
-          positionenMap[voId].push(p);
-        });
-      }
+      // 3. Tabellen im Hintergrund PARALLEL neu laden (spart noch mehr Zeit!)
+      await Promise.all([
+        reloadVororder(),
+        postToScript({ action: "vororderPositionenList" }).then(posRes => {
+          if (posRes && posRes.status === "OK" && Array.isArray(posRes.data)) {
+            positionenMap = {};
+            posRes.data.forEach(p => {
+              const voId = clean(p["VororderID"]);
+              if (!positionenMap[voId]) positionenMap[voId] = [];
+              positionenMap[voId].push(p);
+            });
+          }
+        }),
+        fetch(URLS.produkte).then(r=>r.json()).then(p => {
+          if (Array.isArray(p)) produkte = p;
+        }).catch(e => console.log(e))
+      ]);
 
-      try {
-        const p = await fetch(URLS.produkte).then(r=>r.json());
-        if (Array.isArray(p)) produkte = p;
-      } catch(e){}
-
-      // 4. UI neu zeichnen
+      // 4. UI blitzschnell neu zeichnen
       _voDetailId = id;
       _voDetailEditMode = false;
       renderVororderDetail();
