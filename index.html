@@ -1320,10 +1320,48 @@ body.mini-brand .vehicle-card:hover { background: var(--surface); }
   .vc-image img { max-height: 110px; }
   .vc-badge { font-size: 10px; padding: 3px 7px; }
   .vc-badges { margin-bottom: 10px; gap: 4px; }
-  .vc-footer { font-size: 11px; padding-top: 8px; }
+ .vc-footer { font-size: 11px; padding-top: 8px; }
   .vehicle-search-wrap { flex-direction: column; align-items: stretch; }
+
+  /* ============================================================
+     HANDY-KARTEN-DESIGN FÜR TABELLEN & WARENKORB (Kein Wischen mehr)
+     ============================================================ */
+  .mobile-label { display: block; font-size: 10px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  
+  .responsive-table { display: block; width: 100%; border: none !important; }
+  .responsive-table thead { display: none; } /* Spaltenköpfe auf dem Handy ausblenden */
+  .responsive-table tbody { display: block; width: 100%; }
+  .responsive-table tr {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-md);
+    margin-bottom: 16px;
+    padding: 12px;
+    box-shadow: var(--shadow-sm);
+  }
+  .responsive-table td {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 8px 0 !important;
+    border-bottom: 1px solid var(--surface-2) !important;
+    text-align: left !important;
+    width: 100% !important;
+  }
+  .responsive-table td:last-child { border-bottom: none !important; padding-bottom: 0 !important; }
+  
+  /* Warenkorb Modal (Kunde) auf Handy reparieren */
+  .cart-item-row { flex-direction: column; align-items: flex-start !important; padding: 16px !important; }
+  .cart-item-row img { width: 100% !important; height: auto !important; max-height: 180px; margin-bottom: 12px; }
+  .cart-item-row > div:last-child { width: 100%; text-align: left !important; margin-top: 12px; border-top: 1px dashed var(--border); padding-top: 12px; }
 }
-   
+
+/* Versteckt die Labels auf dem Desktop */
+@media (min-width: 601px) {
+  .mobile-label { display: none !important; }
+}
 </style>
 </head>
 <body>
@@ -1907,7 +1945,20 @@ body.mini-brand .vehicle-card:hover { background: var(--surface); }
     <div id="voDetailContent"></div>
   </div>
 </div>
+<div id="statusSyncModal" class="modal-overlay" style="z-index:3200;">
+  <div class="modal-box" style="max-width: 500px;">
+    <div class="modal-title">Positionen aktualisieren?</div>
+    <div class="modal-subtitle">Wählen Sie, welche Positionen ebenfalls den neuen Status erhalten sollen. (WKR sind vorausgewählt)</div>
+    
+    <div id="statusSyncList" style="margin: 16px 0; max-height: 300px; overflow-y: auto; padding-right:8px;">
+      </div>
 
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeStatusSyncModal()">Abbrechen</button>
+      <button class="btn btn-primary" onclick="confirmStatusSync()">Auswahl speichern</button>
+    </div>
+  </div>
+</div>
 <div id="internalMailModal" class="modal-overlay" style="z-index:3000;">
   <div class="modal-box">
     <div class="modal-title">E-Mail an Kunden senden</div>
@@ -1940,8 +1991,41 @@ body.mini-brand .vehicle-card:hover { background: var(--surface); }
     <div class="modal-title">Aktive Reservierungen</div>
     <div class="modal-subtitle" id="resInfoSubtitle"></div>
     <div id="resInfoContent" style="margin: 16px 0; font-size: 14px; line-height: 1.6; max-height: 300px; overflow-y: auto;"></div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="document.getElementById('reservationInfoModal').classList.remove('open')">Schliessen</button>
+   <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="document.getElementById('reservationInfoModal').classList.remove('open')">Schliessen</button>
+    </div>
+  </div>
+</div>
+
+<div id="umbuchungModal" class="modal-overlay" style="z-index:3000;">
+  <div class="modal-box" style="max-width: 400px;">
+    <div class="modal-title">Lagerumbuchung</div>
+    <div class="modal-subtitle">WKR an anderen Standort verschieben</div>
+    
+    <div style="background:var(--surface-2); border:1px solid var(--border); padding:16px; border-radius:8px; margin-bottom:20px; font-size:14px;">
+      <div style="margin-bottom:8px;"><b>TN:</b> <span id="umbTN" style="font-family:monospace;"></span></div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase;">Von</div>
+          <div id="umbVon" style="font-weight:700; color:var(--error);"></div>
+        </div>
+        <div style="font-size:20px; color:var(--text-muted);">➡️</div>
+        <div style="text-align:right;">
+          <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase;">Nach</div>
+          <div id="umbNach" style="font-weight:700; color:var(--success);"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label>Menge (Stück) *</label>
+      <input id="umbMenge" type="number" min="1" value="4">
+      <div id="umbMaxHint" style="font-size:11px; color:var(--text-muted); margin-top:4px;"></div>
+    </div>
+
+    <div class="modal-actions" style="margin-top:24px;">
+      <button class="btn btn-secondary" onclick="closeUmbuchungModal()">Abbrechen</button>
+      <button id="submitUmbuchungBtn" class="btn btn-primary" onclick="submitUmbuchung()">🔄 Jetzt umbuchen</button>
     </div>
   </div>
 </div>
@@ -2080,7 +2164,7 @@ let cart = [];
 let produkte = [], mapping = [], fahrzeuge = [], reifen = [];
 let state = { standort:null,marke:null,reihe:null,modell:null,motor:null,internalSection:null,adminSection:null };
 let tireSearch = { direkt:"",profilbreite:"",querschnitt:"",zoll:"" };
-let adminWkrFilter    = { suche:"",marke:"",standort:"",reihe:"",modell:"",nurAnLager:false };let adminReifenFilter = { suche:"",standort:"",reifentyp:"",aktivStatus:"",nurAnLager:false };
+let adminWkrFilter    = { suche:"",marke:"",standort:"",reihe:"",modell:"",nurAnLager:false,nurReserviert:false };let adminReifenFilter = { suche:"",standort:"",reifentyp:"",aktivStatus:"",nurAnLager:false };
 let selectedProduct = null, editingTireId = "", editingWkrTN = "";
 let _saving = { newTire:false,editTire:false,deleteTire:false,newWkr:false,deleteWkr:false };
    let currentUser = null;  // { email, name, standort, rolle, aktiv }
@@ -2279,8 +2363,9 @@ function renderCartModal() {
     const priceFormatted = preis ? formatPrice(item.preis) : null;
     const bild = item.bild || "https://via.placeholder.com/120x90?text=Rad";
 
+    // Wir fügen die Klasse "cart-item-row" hinzu
     html += `
-      <div style="display:flex;gap:14px;padding:14px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;align-items:center;">
+      <div class="cart-item-row" style="display:flex;gap:14px;padding:14px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;align-items:center;">
 
         <img src="${e(bild)}" alt="${e(item.bezeichnung)}" style="width:110px;height:85px;object-fit:contain;border-radius:6px;flex-shrink:0;background:white;">
 
@@ -3064,22 +3149,24 @@ function getFilteredAdminWkr(){
     const reihen = [...new Set(mapped.map(m => clean(m["Reihe"])).filter(Boolean))];
     const modelle = [...new Set(mapped.map(m => clean(m["Modell"])).filter(Boolean))];
 
-    const s=adminWkrFilter.suche.toLowerCase();
-    const lager=parseInt(clean(p["Lager"]),10)||0;
-    
-    // Suche auf Reihe und Modell erweitern
-    const matchesSearch = !s || 
-      ["Marke","Bezeichnung","Reifen","Dimension","TN","Hinweistext"].some(f=>clean(p[f]).toLowerCase().includes(s)) ||
-      reihen.some(r => r.toLowerCase().includes(s)) ||
-      modelle.some(m => m.toLowerCase().includes(s));
+   const s=adminWkrFilter.suche.toLowerCase();
+    const lager=parseInt(clean(p["Lager"]),10)||0;
+    const reserviert=parseInt(clean(p["Reserviert"]),10)||0; // NEU: Reservierungen auslesen
+    
+    // Suche auf Reihe und Modell erweitern
+    const matchesSearch = !s || 
+      ["Marke","Bezeichnung","Reifen","Dimension","TN","Hinweistext"].some(f=>clean(p[f]).toLowerCase().includes(s)) ||
+      reihen.some(r => r.toLowerCase().includes(s)) ||
+      modelle.some(m => m.toLowerCase().includes(s));
 
-    return matchesSearch
-      &&(!adminWkrFilter.marke||clean(p["Marke"])===adminWkrFilter.marke)
-      &&(!adminWkrFilter.standort||clean(p["Standort"])===adminWkrFilter.standort)
-      &&(!adminWkrFilter.reihe||reihen.includes(adminWkrFilter.reihe))
-      &&(!adminWkrFilter.modell||modelle.includes(adminWkrFilter.modell))
-      &&(!adminWkrFilter.nurAnLager||lager>0);
-  }).sort((a,b)=>{const ma=clean(a["Marke"]),mb=clean(b["Marke"]);return ma!==mb?ma.localeCompare(mb,"de"):clean(a["Bezeichnung"]).localeCompare(clean(b["Bezeichnung"]),"de");});
+    return matchesSearch
+      &&(!adminWkrFilter.marke||clean(p["Marke"])===adminWkrFilter.marke)
+      &&(!adminWkrFilter.standort||clean(p["Standort"])===adminWkrFilter.standort)
+      &&(!adminWkrFilter.reihe||reihen.includes(adminWkrFilter.reihe))
+      &&(!adminWkrFilter.modell||modelle.includes(adminWkrFilter.modell))
+      &&(!adminWkrFilter.nurAnLager||lager>0)
+      &&(!adminWkrFilter.nurReserviert||reserviert>0); // NEU: Nach Reservierten filtern
+  }).sort((a,b)=>{const ma=clean(a["Marke"]),mb=clean(b["Marke"]);return ma!==mb?ma.localeCompare(mb,"de"):clean(a["Bezeichnung"]).localeCompare(clean(b["Bezeichnung"]),"de");});
 }
 
 function getFilteredAdminReifen(){
@@ -3102,18 +3189,19 @@ function getFilteredReifen(){
 }
 
 function applyAdminWkrFilter(){ 
-  adminWkrFilter.suche=clean(document.getElementById("adminWkrSuche")?.value);
-  adminWkrFilter.marke=clean(document.getElementById("adminWkrMarke")?.value);
-  adminWkrFilter.standort=clean(document.getElementById("adminWkrStandort")?.value);
-  adminWkrFilter.reihe=clean(document.getElementById("adminWkrReihe")?.value);
-  adminWkrFilter.modell=clean(document.getElementById("adminWkrModell")?.value);
-  adminWkrFilter.nurAnLager=!!document.getElementById("adminWkrNurLager")?.checked;
-  render(); 
+  adminWkrFilter.suche=clean(document.getElementById("adminWkrSuche")?.value);
+  adminWkrFilter.marke=clean(document.getElementById("adminWkrMarke")?.value);
+  adminWkrFilter.standort=clean(document.getElementById("adminWkrStandort")?.value);
+  adminWkrFilter.reihe=clean(document.getElementById("adminWkrReihe")?.value);
+  adminWkrFilter.modell=clean(document.getElementById("adminWkrModell")?.value);
+  adminWkrFilter.nurAnLager=!!document.getElementById("adminWkrNurLager")?.checked;
+  adminWkrFilter.nurReserviert=!!document.getElementById("adminWkrNurReserviert")?.checked;
+  render(); 
 }
 
 function resetAdminWkrFilter(){ 
-  adminWkrFilter={suche:"",marke:"",standort:"",reihe:"",modell:"",nurAnLager:false};
-  render(); 
+  adminWkrFilter={suche:"",marke:"",standort:"",reihe:"",modell:"",nurAnLager:false,nurReserviert:false};
+  render(); 
 }
 
 function applyAdminReifenFilter(){ adminReifenFilter.suche=clean(document.getElementById("adminReifenSuche")?.value);adminReifenFilter.standort=clean(document.getElementById("adminReifenStandort")?.value);adminReifenFilter.reifentyp=clean(document.getElementById("adminReifenTyp")?.value);adminReifenFilter.aktivStatus=clean(document.getElementById("adminReifenAktiv")?.value);adminReifenFilter.nurAnLager=!!document.getElementById("adminReifenNurLager")?.checked;render(); }
@@ -4130,14 +4218,19 @@ function renderAdminWkrList(){
     <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
       <button class="btn btn-primary" onclick="openAddWkrModal()">+ Neues WKR</button>
     </div>
-    <div class="filter-grid" style="grid-template-columns:2fr 1fr 1fr auto auto auto;">
-      <div class="filter-field"><label>Suche</label><input id="adminWkrSuche" type="text" placeholder="TN, Bezeichnung, Reifen, Dimension …" value="${e(adminWkrFilter.suche)}"></div>
-      <div class="filter-field"><label>Marke</label><select id="adminWkrMarke"><option value="">Alle</option>${marken.map(m=>`<option value="${e(m)}" ${adminWkrFilter.marke===m?"selected":""}>${e(m)}</option>`).join("")}</select></div>
-      <div class="filter-field"><label>Standort</label><select id="adminWkrStandort"><option value="">Alle</option>${standorte.map(s=>`<option value="${e(s)}" ${adminWkrFilter.standort===s?"selected":""}>${e(standortLabel(s))}</option>`).join("")}</select></div>
-      <div class="filter-field" style="justify-content:flex-end;"><div class="filter-checkbox"><input id="adminWkrNurLager" type="checkbox" ${adminWkrFilter.nurAnLager?"checked":""}><label for="adminWkrNurLager">Nur an Lager</label></div></div>
-      <button class="btn btn-primary" onclick="applyAdminWkrFilter()">Suchen</button>
-      <button class="btn btn-secondary" onclick="resetAdminWkrFilter()">Reset</button>
-    </div>
+  <div class="filter-grid" style="grid-template-columns:2fr 1fr 1fr auto auto auto auto;">
+      <div class="filter-field"><label>Suche</label><input id="adminWkrSuche" type="text" placeholder="TN, Bezeichnung, Reifen, Dimension …" value="${e(adminWkrFilter.suche)}"></div>
+      <div class="filter-field"><label>Marke</label><select id="adminWkrMarke"><option value="">Alle</option>${marken.map(m=>`<option value="${e(m)}" ${adminWkrFilter.marke===m?"selected":""}>${e(m)}</option>`).join("")}</select></div>
+      <div class="filter-field"><label>Standort</label><select id="adminWkrStandort"><option value="">Alle</option>${standorte.map(s=>`<option value="${e(s)}" ${adminWkrFilter.standort===s?"selected":""}>${e(standortLabel(s))}</option>`).join("")}</select></div>
+      <div class="filter-field" style="justify-content:flex-end; padding-bottom:8px;">
+        <div class="filter-checkbox"><input id="adminWkrNurLager" type="checkbox" ${adminWkrFilter.nurAnLager?"checked":""}><label for="adminWkrNurLager">Lager > 0</label></div>
+      </div>
+      <div class="filter-field" style="justify-content:flex-end; padding-bottom:8px;">
+        <div class="filter-checkbox"><input id="adminWkrNurReserviert" type="checkbox" ${adminWkrFilter.nurReserviert?"checked":""}><label for="adminWkrNurReserviert">Reserviert</label></div>
+      </div>
+      <button class="btn btn-primary" onclick="applyAdminWkrFilter()">Suchen</button>
+      <button class="btn btn-secondary" onclick="resetAdminWkrFilter()">Reset</button>
+    </div>
     <div class="products-section">
       <div class="products-header">
         <h2 class="products-title">WKR Übersicht</h2>
@@ -4247,9 +4340,10 @@ function renderAdminVororder(){
     html += `<div class="empty-state"><div class="empty-icon">⏳</div>Vororder werden geladen...</div>`;
   } else if (!results.length) {
     html += `<div class="empty-state"><div class="empty-icon">📋</div>Keine Vororders gefunden.<br><span style="font-size:12px;color:var(--text-muted);">${vororderLoaded ? "Versuche einen anderen Filter oder erfasse eine neue Vororder." : "Noch keine Daten geladen."}</span></div>`;
-  } else {
-    html += `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;margin-top:14px;box-shadow:var(--shadow-sm);">
-      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+ } else {
+    // Klasse "responsive-table" hinzugefügt!
+    html += `<div style="margin-top:14px;">
+      <table class="responsive-table" style="width:100%;border-collapse:collapse;font-size:13px;">
         <thead>
           <tr style="background:var(--surface-3);border-bottom:1px solid var(--border);">
             ${adminMode ? `<th style="padding:12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">ID</th>` : ""}
@@ -4275,19 +4369,22 @@ function renderAdminVororder(){
       else if (marke === "MINI") brandIcon = `<img src="https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/MINI_Logo.jpg?raw=true" style="height:16px; width:20px; object-fit:contain; margin-right:12px; flex-shrink:0;">`;
       else brandIcon = `<div style="width:20px; margin-right:12px; flex-shrink:0;"></div>`;
 
-const kundeName = clean(v["Kundenname"]) || "Unbekannt";
+      const kundeName = clean(v["Kundenname"]) || "Unbekannt";
 
+      // HTML mit .mobile-label für jedes td
       html += `<tr style="border-bottom:1px solid var(--border); transition: background 0.2s;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'">
-        ${adminMode ? `<td style="padding:12px;font-weight:600;color:var(--text-primary);font-family:monospace;">${e(clean(v["ID"]))}</td>` : ""}
+        ${adminMode ? `<td style="padding:12px;font-weight:600;color:var(--text-primary);font-family:monospace;"><span class="mobile-label">ID</span>${e(clean(v["ID"]))}</td>` : ""}
         
-        <td style="padding:12px;">${vororderStatusBadge(v["Status"])}</td>
+        <td style="padding:12px;"><span class="mobile-label">Status</span>${vororderStatusBadge(v["Status"])}</td>
         
         <td style="padding:12px;">
+          <span class="mobile-label">Kunde</span>
           <div style="font-weight:700;color:var(--text-primary);font-size:14px;">${e(kundeName)}</div>
           ${clean(v["Debitornr"]) ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Deb: ${e(clean(v["Debitornr"]))}</div>` : ""}
         </td>
         
         <td style="padding:12px;">
+          <span class="mobile-label">Fahrzeug</span>
           <div style="display:flex; align-items:center;">
             ${brandIcon}
             <div>
@@ -4298,21 +4395,24 @@ const kundeName = clean(v["Kundenname"]) || "Unbekannt";
         </td>
         
         ${adminMode ? `<td style="padding:12px;">
+          <span class="mobile-label">Typ / TN</span>
           <div><span style="font-size:11px;background:var(--surface-3);padding:2px 6px;border-radius:3px;font-weight:600;">${e(clean(v["Typ"]))||"—"}</span></div>
           ${clean(v["TN"]) ? `<div style="font-size:11px;color:var(--text-muted);margin-top:3px;font-family:monospace;">${e(clean(v["TN"]))}</div>` : ""}
         </td>` : ""}
         
         <td style="padding:12px;font-size:12px;font-weight:600;color:var(--text-secondary);">
+          <span class="mobile-label">Verkäufer</span>
           ${e(clean(v["Verkaeufer"]))||"—"}
         </td>
         
-        ${adminMode ? `<td style="padding:12px;text-align:center;font-weight:600;">${e(clean(v["Anzahl"]))||"—"}</td>` : ""}
+        ${adminMode ? `<td style="padding:12px;text-align:center;font-weight:600;"><span class="mobile-label">Anzahl</span>${e(clean(v["Anzahl"]))||"—"}</td>` : ""}
         
         <td style="padding:12px;font-size:13px;font-weight:700;color:var(--text-primary);">
+          <span class="mobile-label">Ablieferung</span>
           ${e(formatVororderDate(v["Ablieferung"]))||"—"}
         </td>
         
-        ${isSuperAdmin ? `<td style="padding:12px;text-align:center;">${standort ? `<span style="font-size:11px;background:var(--surface-3);padding:2px 8px;border-radius:3px;font-weight:600;">${e(standort)}</span>` : "—"}</td>` : ""}
+        ${isSuperAdmin ? `<td style="padding:12px;text-align:center;"><span class="mobile-label">Standort</span>${standort ? `<span style="font-size:11px;background:var(--surface-3);padding:2px 8px;border-radius:3px;font-weight:600;">${e(standort)}</span>` : "—"}</td>` : ""}
         
         <td style="padding:12px;text-align:right;">
          <button class="btn btn-secondary btn-sm" onclick="openVororderDetail('${js(clean(v["ID"]))}')" style="padding:6px 12px;font-size:12px;background:var(--surface);box-shadow:var(--shadow-sm);">Details</button>
@@ -5217,15 +5317,17 @@ function renderAdminWkrItem(r){
         </div>
       </div>
 
-      ${isLowStock ? `<span class="stock-warning-chip" style="margin-top:8px; display:inline-block;">⚠ Kritischer Lager</span>` : ""}
+    ${isLowStock ? `<span class="stock-warning-chip" style="margin-top:8px; display:inline-block;">⚠ Kritischer Lager</span>` : ""}
       
-      <div class="product-actions" style="margin-top:12px;">
-        <button class="btn btn-primary btn-sm" onclick="openEditWkrModal('${js(tn)}')">Bearbeiten</button>
-        <button class="btn btn-secondary btn-sm" onclick="printWkrLabel('${js(tn)}')">Etikette drucken</button>
+      <div style="margin-top:14px; display:flex; flex-direction:column; gap:6px;">
+        <button class="btn btn-primary btn-sm" style="width:100%; justify-content:center; padding:6px;" onclick="openEditWkrModal('${js(tn)}')">Bearbeiten</button>
+        <button class="btn btn-secondary btn-sm" style="width:100%; justify-content:center; padding:6px;" onclick="openUmbuchungModal('${js(tn)}', '${js(clean(r["Standort"]))}', ${verfuegbar})">🔄 Umbuchen</button>
+        <button class="btn btn-secondary btn-sm" style="width:100%; justify-content:center; padding:6px;" onclick="printWkrLabel('${js(tn)}')">Etikette drucken</button>
       </div>
     </div>
   </div>`;
 }
+
 /* ============================================================
    RESERVIERUNGEN ANZEIGEN (Schönes Modal)
    ============================================================ */
@@ -5236,42 +5338,57 @@ function showReservationDetails(tn) {
   let html = "";
   let found = false;
 
+  // Hilfsfunktion baut unsere neuen, anklickbaren Karten
+  const renderCard = (kunde, anzahl, voId, suffix, status) => {
+    return `<div style="padding: 12px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s;"
+                 onclick="document.getElementById('reservationInfoModal').classList.remove('open'); openVororderDetail('${js(voId)}');"
+                 onmouseover="this.style.borderColor='var(--accent)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--shadow-sm)';"
+                 onmouseout="this.style.borderColor='var(--border)'; this.style.transform='none'; this.style.boxShadow='none';">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <div style="font-weight: 700; color: var(--text-primary); font-size: 14px;">${e(kunde)}</div>
+                <span style="color: var(--accent); font-size: 16px;">➡️</span>
+              </div>
+              <div style="font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center;">
+                <span>Menge: <b style="color:var(--accent);">${e(anzahl)} Stück</b></span>
+                <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                  <span style="font-family: monospace; margin-bottom:3px;">${e(voId)} ${e(suffix)}</span>
+                  <span style="font-size:10px; background:var(--surface-3); padding:2px 6px; border-radius:4px; font-weight:600; color:var(--text-muted);">${e(status)}</span>
+                </div>
+              </div>
+            </div>`;
+  };
+
+  // Diese Status-Werte lösen eine echte Reservierung aus
+  const validStatuses = ["Reserviert", "Bestellt"];
+
   // 1. Suche in den Haupt-Vororders
   vororder.forEach(v => {
-    if (clean(v["TN"]).toLowerCase() === searchTn && clean(v["Status"]) !== "Erledigt" && clean(v["Status"]) !== "Kunde verzichtet") {
-      html += `<div style="padding: 10px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 8px;">
-                 <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">${e(clean(v["Kundenname"])) || "Unbekannt"}</div>
-                 <div style="font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between;">
-                   <span>Menge: <b style="color:var(--accent);">${e(clean(v["Anzahl"]))} Stück</b></span>
-                   <span>VO-ID: ${e(v["ID"])}</span>
-                 </div>
-               </div>`;
+    const status = clean(v["Status"]);
+    if (clean(v["TN"]).toLowerCase() === searchTn && validStatuses.includes(status)) {
+      html += renderCard(clean(v["Kundenname"]) || "Unbekannt", clean(v["Anzahl"]), clean(v["ID"]), "", status);
       found = true;
     }
   });
 
   // 2. Suche in den Unter-Positionen
-  const matchingPositions = Object.values(positionenMap).flat().filter(p => clean(p["TN"]).toLowerCase() === searchTn && clean(p["Status"]) !== "Erledigt" && clean(p["Status"]) !== "Kunde verzichtet");
+  const matchingPositions = Object.values(positionenMap).flat().filter(p => {
+    const status = clean(p["Status"]);
+    return clean(p["TN"]).toLowerCase() === searchTn && validStatuses.includes(status);
+  });
   
   matchingPositions.forEach(p => {
     const voId = clean(p["VororderID"]);
-    // Vermeiden von Duplikaten
-    if (!html.includes(`VO-ID: ${voId}`)) {
+    if (!html.includes(voId)) { // Vermeiden von Duplikaten
       const vo = vororder.find(v => clean(v["ID"]) === voId);
       const kunde = vo ? clean(vo["Kundenname"]) : "Unbekannt";
-      html += `<div style="padding: 10px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 8px;">
-                 <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">${e(kunde)}</div>
-                 <div style="font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between;">
-                   <span>Menge: <b style="color:var(--accent);">${e(clean(p["Anzahl"]))} Stück</b></span>
-                   <span>VO-ID: ${e(voId)} (Pos)</span>
-                 </div>
-               </div>`;
+      const status = clean(p["Status"]);
+      html += renderCard(kunde, clean(p["Anzahl"]), voId, "(Pos)", status);
       found = true;
     }
   });
 
   if (!found) {
-    html = `<div style="color: var(--warning); padding: 12px; background: var(--warning-bg); border-radius: 6px;">Keine aktiven Reservierungen für diese Teilenummer gefunden. (Evtl. Alt-Daten).</div>`;
+    html = `<div style="color: var(--warning); padding: 12px; background: var(--warning-bg); border-radius: 6px;">Keine aktiven Reservierungen für diese Teilenummer gefunden.</div>`;
   }
 
   document.getElementById("resInfoSubtitle").textContent = `Teilenummer: ${tn}`;
@@ -6097,6 +6214,11 @@ async function deleteVororder(id){
     alert("Fehler: " + err.message);
   }
 }
+/* ============================================================
+   STATUS SPEICHERN & POSITIONEN SYNCEN
+   ============================================================ */
+let _pendingStatusUpdate = null;
+
 async function saveVororderStatus(id){
   const newStatus = clean(document.getElementById("voDetailStatus")?.value);
   if (!newStatus) return;
@@ -6110,38 +6232,103 @@ async function saveVororderStatus(id){
     return;
   }
 
+  const positionen = positionenMap[id] || [];
   const user = currentUser?.name || currentUser?.email || "Unknown";
 
-  // Visuelles Feedback: Button sperren, damit kein Doppel-Klick möglich ist
-  const saveBtn = document.querySelector('#vororderDetailModal .btn-primary[onclick^="saveVororderStatus"]');
-  const originalText = saveBtn ? saveBtn.textContent : "";
-  if (saveBtn) {
-    saveBtn.disabled = true;
-    saveBtn.textContent = "⏳ Wird gespeichert...";
+  // Wenn es keine Positionen gibt, direkt speichern
+  if (positionen.length === 0) {
+     await executeStatusUpdate(id, newStatus, user, []);
+     return;
   }
 
-  try {
-    const res = await postToScript({
-      action: "vororderUpdate",
-      id: id,
-      user: user,
-      updates: { Status: newStatus }
-    });
-    if (res && res.status === "OK") {
-      // Lokale Vororder-Liste neu laden (Status, Historie, Timestamps werden aktualisiert)
-      await reloadVororder();
-      // Produkte neu laden (Reservierungen / Lager könnten sich geändert haben)
-      try {
-        const p = await fetch(URLS.produkte).then(r=>r.json());
-        if (Array.isArray(p)) produkte = p;
-      } catch(e){}
+  // Wenn Positionen existieren -> Modal aufbauen
+  _pendingStatusUpdate = { id, newStatus, user, positionen };
+  
+  let html = "";
+  positionen.forEach(p => {
+      const isWKR = clean(p["Typ"]) === "WKR";
+      const checked = isWKR ? "checked" : ""; // WKR ist automatisch angekreuzt!
+      
+      html += `<div style="display:flex; align-items:center; gap:12px; padding:12px; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; margin-bottom:8px; transition:0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        <input type="checkbox" id="sync_pos_${p["PositionID"]}" value="${p["PositionID"]}" ${checked} style="width:20px;height:20px;cursor:pointer;accent-color:var(--accent);">
+        <label for="sync_pos_${p["PositionID"]}" style="cursor:pointer; flex:1; display:flex; flex-direction:column;">
+          <div style="font-weight:700; font-size:14px; color:var(--text-primary);"><span style="color:var(--accent);">${e(p["Typ"])}</span>: ${e(p["Bezeichnung"])}</div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Bisheriger Status: ${e(p["Status"])}</div>
+        </label>
+      </div>`;
+  });
 
-      // Detail-Ansicht mit frischen Daten neu rendern, OHNE sie zu schliessen
+  document.getElementById("statusSyncList").innerHTML = html;
+  document.getElementById("statusSyncModal").classList.add("open");
+}
+
+function closeStatusSyncModal() {
+  document.getElementById("statusSyncModal").classList.remove("open");
+  _pendingStatusUpdate = null;
+}
+
+async function confirmStatusSync() {
+  if (!_pendingStatusUpdate) return;
+  const { id, newStatus, user, positionen } = _pendingStatusUpdate;
+  
+  const selectedPosIds = [];
+  positionen.forEach(p => {
+      const cb = document.getElementById("sync_pos_" + p["PositionID"]);
+      if (cb && cb.checked) {
+          selectedPosIds.push(p["PositionID"]);
+      }
+  });
+
+  document.getElementById("statusSyncModal").classList.remove("open");
+  await executeStatusUpdate(id, newStatus, user, selectedPosIds);
+}
+
+// Führt den tatsächlichen Datenbank-Speichervorgang aus (TURBOMODUS)
+async function executeStatusUpdate(id, newStatus, user, selectedPosIds) {
+  const saveBtn = document.querySelector('#vororderDetailModal .btn-primary[onclick^="saveVororderStatus"]');
+  const originalText = saveBtn ? saveBtn.textContent : "";
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = "⏳ Speichere..."; }
+
+  try {
+    // 1. Haupt-Vororder aktualisieren
+    const res = await postToScript({
+      action: "vororderUpdate", id: id, user: user, updates: { Status: newStatus }
+    });
+    
+    if (res && res.status === "OK") {
+      
+      // 2. Alle Positionen PARALLEL speichern (spart massiv Zeit!)
+      if (selectedPosIds.length > 0) {
+        const updatePromises = selectedPosIds.map(posId => postToScript({
+           action: "vororderPositionUpdate",
+           positionId: posId,
+           updates: { Status: newStatus }
+        }));
+        await Promise.all(updatePromises);
+      }
+
+      // 3. Tabellen im Hintergrund PARALLEL neu laden (spart noch mehr Zeit!)
+      await Promise.all([
+        reloadVororder(),
+        postToScript({ action: "vororderPositionenList" }).then(posRes => {
+          if (posRes && posRes.status === "OK" && Array.isArray(posRes.data)) {
+            positionenMap = {};
+            posRes.data.forEach(p => {
+              const voId = clean(p["VororderID"]);
+              if (!positionenMap[voId]) positionenMap[voId] = [];
+              positionenMap[voId].push(p);
+            });
+          }
+        }),
+        fetch(URLS.produkte).then(r=>r.json()).then(p => {
+          if (Array.isArray(p)) produkte = p;
+        }).catch(e => console.log(e))
+      ]);
+
+      // 4. UI blitzschnell neu zeichnen
       _voDetailId = id;
       _voDetailEditMode = false;
       renderVororderDetail();
-
-      // Hintergrund-Liste auch aktualisieren (für später beim Schliessen)
       render();
     } else {
       alert("Fehler: " + JSON.stringify(res));
@@ -6149,10 +6336,8 @@ async function saveVororderStatus(id){
   } catch(err) {
     alert("Fehler: " + err.message);
   } finally {
-    if (saveBtn) {
-      saveBtn.disabled = false;
-      saveBtn.textContent = originalText;
-    }
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = originalText; }
+    _pendingStatusUpdate = null;
   }
 }
 /* ============================================================
@@ -6325,7 +6510,7 @@ async function saveVoDetailChanges(){
     return `<div style="padding:12px;color:var(--text-muted);font-size:13px;text-align:center;">Keine Positionen erfasst. <button class="btn btn-primary btn-sm" onclick="openNewPositionModal('${js(voId)}')" style="margin-left:8px;">+ Erste Position</button></div>`;
   }
 
-  return `<table style="width:100%;border-collapse:collapse;font-size:13px;">
+ return `<table class="responsive-table" style="width:100%;border-collapse:collapse;font-size:13px;">
     <thead>
       <tr style="background:var(--surface-3);">
         <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">#</th>
@@ -6335,30 +6520,35 @@ async function saveVoDetailChanges(){
         <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">Konditionen</th>
         <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">Status</th>
         <th style="padding:8px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:700;">Preis</th>
-${adminMode ? `<th style="padding:8px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:700;">Aktion</th>` : ""}
-</tr>
+        ${adminMode ? `<th style="padding:8px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:700;">Aktion</th>` : ""}
+      </tr>
     </thead>
     <tbody>
       ${positionen.map((p, idx) => `<tr style="border-top:1px solid var(--border);">
-        <td style="padding:8px;color:var(--text-muted);">${idx + 1}</td>
+        <td style="padding:8px;color:var(--text-muted);"><span class="mobile-label">#</span>${idx + 1}</td>
         <td style="padding:8px;">
+          <span class="mobile-label">Typ / TN</span>
           <span style="background:var(--accent);color:white;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;">${e(clean(p["Typ"]))||"—"}</span>
-          ${clean(p["TN"])?`<div style="font-family:monospace;font-size:11px;color:var(--text-muted);margin-top:2px;">${e(clean(p["TN"]))}</div>`:""}
+          ${clean(p["TN"])?`<div style="font-family:monospace;font-size:11px;color:var(--text-muted);margin-top:4px;">${e(clean(p["TN"]))}</div>`:""}
         </td>
         <td style="padding:8px;">
+          <span class="mobile-label">Bezeichnung</span>
           <div style="font-weight:600;">${e(clean(p["Bezeichnung"]))||"—"}</div>
           ${clean(p["Dimension"])?`<div style="font-size:11px;color:var(--text-muted);">${e(clean(p["Dimension"]))}</div>`:""}
           ${clean(p["Bemerkungen"])?`<div style="font-size:11px;color:var(--warning);margin-top:4px;padding:4px 8px;background:var(--warning-bg);border-radius:4px;border-left:2px solid var(--warning);"><b>📝 Hinweis:</b> ${e(clean(p["Bemerkungen"]))}</div>`:""}
-          ${clean(p["Lagerort_Rad"])?`<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">📦 Lager: <b>${e(clean(p["Lagerort_Rad"]))}</b></div>`:""}
+          ${clean(p["Lagerort_Rad"])?`<div style="font-size:11px;color:var(--text-muted);margin-top:4px;">📦 Lager: <b>${e(clean(p["Lagerort_Rad"]))}</b></div>`:""}
         </td>
-        <td style="padding:8px;text-align:center;font-weight:700;">${e(clean(p["Anzahl"]))||"—"}</td>
-        <td style="padding:8px;font-size:11px;color:var(--text-secondary);">${e(clean(p["Konditionen"]))||"—"}</td>
-        <td style="padding:8px;">${vororderStatusBadge(p["Status"])}</td>
-        <td style="padding:8px;text-align:right;font-weight:700;color:var(--accent);">${clean(p["VK"]) ? e(formatPrice(p["VK"])) + " CHF" : "—"}</td>
+        <td style="padding:8px;text-align:center;font-weight:700;"><span class="mobile-label">Anzahl</span>${e(clean(p["Anzahl"]))||"—"}</td>
+        <td style="padding:8px;font-size:11px;color:var(--text-secondary);"><span class="mobile-label">Konditionen</span>${e(clean(p["Konditionen"]))||"—"}</td>
+        <td style="padding:8px;"><span class="mobile-label">Status</span>${vororderStatusBadge(p["Status"])}</td>
+        <td style="padding:8px;text-align:right;font-weight:700;color:var(--accent);"><span class="mobile-label">Preis</span>${clean(p["VK"]) ? e(formatPrice(p["VK"])) + " CHF" : "—"}</td>
         ${adminMode ? `<td style="padding:8px;text-align:right;white-space:nowrap;">
-          <button class="btn btn-secondary btn-sm" onclick="openEditPositionModal('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;">✏️</button>
-          ${clean(p["Typ"])==="WKR"?`<button class="btn btn-secondary btn-sm" onclick="printPositionLabel('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;" title="Etikette drucken">🏷️</button>`:""}
-          <button class="btn btn-danger btn-sm" onclick="deletePosition('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;">🗑️</button>
+          <span class="mobile-label">Aktion</span>
+          <div style="display:flex;gap:4px;">
+            <button class="btn btn-secondary btn-sm" onclick="openEditPositionModal('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;">✏️</button>
+            ${clean(p["Typ"])==="WKR"?`<button class="btn btn-secondary btn-sm" onclick="printPositionLabel('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;" title="Etikette drucken">🏷️</button>`:""}
+            <button class="btn btn-danger btn-sm" onclick="deletePosition('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;">🗑️</button>
+          </div>
         </td>` : ""}
       </tr>`).join("")}
     </tbody>
@@ -7138,8 +7328,83 @@ function printWkrLabel(tn){
 }
 
 /* ============================================================
-   KEYBOARD
+   LAGER-UMBUCHUNG (FRONTEND)
    ============================================================ */
+let _umbuchungData = null;
+
+function openUmbuchungModal(tn, currentStandort, maxVerfuegbar) {
+  if (maxVerfuegbar <= 0) {
+    alert("Es gibt keinen frei verfügbaren Bestand, den man umbuchen könnte.");
+    return;
+  }
+  
+  const targetStandort = currentStandort === "GEB" ? "HET" : "GEB";
+  _umbuchungData = { tn: tn, von: currentStandort, nach: targetStandort };
+  
+  document.getElementById("umbTN").textContent = tn;
+  document.getElementById("umbVon").textContent = standortLabel(currentStandort);
+  document.getElementById("umbNach").textContent = standortLabel(targetStandort);
+  
+  const input = document.getElementById("umbMenge");
+  input.max = maxVerfuegbar;
+  input.value = Math.min(4, maxVerfuegbar); // Standardmässig 1 Satz oder was noch da ist
+  
+  document.getElementById("umbMaxHint").textContent = `Maximal ${maxVerfuegbar} Stück frei verfügbar zum Umbuchen.`;
+  document.getElementById("umbuchungModal").classList.add("open");
+}
+
+function closeUmbuchungModal() {
+  document.getElementById("umbuchungModal").classList.remove("open");
+  _umbuchungData = null;
+}
+
+async function submitUmbuchung() {
+  if (!_umbuchungData) return;
+  const menge = parseInt(document.getElementById("umbMenge").value, 10);
+  
+  if (!menge || menge <= 0) {
+    alert("Bitte eine gültige Menge eingeben.");
+    return;
+  }
+
+  const btn = document.getElementById("submitUmbuchungBtn");
+  btn.disabled = true;
+  btn.textContent = "⏳ Buche um...";
+
+  try {
+    const res = await postToScript({
+      action: "umbuchung",
+      tn: _umbuchungData.tn,
+      vonStandort: _umbuchungData.von,
+      nachStandort: _umbuchungData.nach,
+      menge: menge
+    });
+
+    if (res && res.status === "OK") {
+      alert(`✅ Erfolgreich ${menge} Stück nach ${standortLabel(_umbuchungData.nach)} verschoben.`);
+      closeUmbuchungModal();
+      
+      // Produkte-Datenbank neu laden, damit die UI die neuen Bestände anzeigt
+      try {
+        const p = await fetch(URLS.produkte).then(r=>r.json());
+        if (Array.isArray(p)) produkte = p;
+      } catch(e) {}
+      
+      render(); // Seite neu aufbauen
+    } else {
+      alert("Fehler bei der Umbuchung: " + (res.message || JSON.stringify(res)));
+    }
+  } catch(err) {
+    alert("Fehler: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "🔄 Jetzt umbuchen";
+  }
+}
+
+/* ============================================================
+   KEYBOARD
+   ============================================================ */
 document.addEventListener("keydown",function(ev){
   if(ev.key!=="Enter")return;
   const id=document.activeElement?.id;
