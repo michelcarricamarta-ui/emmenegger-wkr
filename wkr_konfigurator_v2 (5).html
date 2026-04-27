@@ -2118,7 +2118,7 @@ let cart = [];
 let produkte = [], mapping = [], fahrzeuge = [], reifen = [];
 let state = { standort:null,marke:null,reihe:null,modell:null,motor:null,internalSection:null,adminSection:null };
 let tireSearch = { direkt:"",profilbreite:"",querschnitt:"",zoll:"" };
-let adminWkrFilter    = { suche:"",marke:"",standort:"",reihe:"",modell:"",nurAnLager:false };let adminReifenFilter = { suche:"",standort:"",reifentyp:"",aktivStatus:"",nurAnLager:false };
+let adminWkrFilter    = { suche:"",marke:"",standort:"",reihe:"",modell:"",nurAnLager:false,nurReserviert:false };let adminReifenFilter = { suche:"",standort:"",reifentyp:"",aktivStatus:"",nurAnLager:false };
 let selectedProduct = null, editingTireId = "", editingWkrTN = "";
 let _saving = { newTire:false,editTire:false,deleteTire:false,newWkr:false,deleteWkr:false };
    let currentUser = null;  // { email, name, standort, rolle, aktiv }
@@ -3103,22 +3103,24 @@ function getFilteredAdminWkr(){
     const reihen = [...new Set(mapped.map(m => clean(m["Reihe"])).filter(Boolean))];
     const modelle = [...new Set(mapped.map(m => clean(m["Modell"])).filter(Boolean))];
 
-    const s=adminWkrFilter.suche.toLowerCase();
-    const lager=parseInt(clean(p["Lager"]),10)||0;
-    
-    // Suche auf Reihe und Modell erweitern
-    const matchesSearch = !s || 
-      ["Marke","Bezeichnung","Reifen","Dimension","TN","Hinweistext"].some(f=>clean(p[f]).toLowerCase().includes(s)) ||
-      reihen.some(r => r.toLowerCase().includes(s)) ||
-      modelle.some(m => m.toLowerCase().includes(s));
+   const s=adminWkrFilter.suche.toLowerCase();
+    const lager=parseInt(clean(p["Lager"]),10)||0;
+    const reserviert=parseInt(clean(p["Reserviert"]),10)||0; // NEU: Reservierungen auslesen
+    
+    // Suche auf Reihe und Modell erweitern
+    const matchesSearch = !s || 
+      ["Marke","Bezeichnung","Reifen","Dimension","TN","Hinweistext"].some(f=>clean(p[f]).toLowerCase().includes(s)) ||
+      reihen.some(r => r.toLowerCase().includes(s)) ||
+      modelle.some(m => m.toLowerCase().includes(s));
 
-    return matchesSearch
-      &&(!adminWkrFilter.marke||clean(p["Marke"])===adminWkrFilter.marke)
-      &&(!adminWkrFilter.standort||clean(p["Standort"])===adminWkrFilter.standort)
-      &&(!adminWkrFilter.reihe||reihen.includes(adminWkrFilter.reihe))
-      &&(!adminWkrFilter.modell||modelle.includes(adminWkrFilter.modell))
-      &&(!adminWkrFilter.nurAnLager||lager>0);
-  }).sort((a,b)=>{const ma=clean(a["Marke"]),mb=clean(b["Marke"]);return ma!==mb?ma.localeCompare(mb,"de"):clean(a["Bezeichnung"]).localeCompare(clean(b["Bezeichnung"]),"de");});
+    return matchesSearch
+      &&(!adminWkrFilter.marke||clean(p["Marke"])===adminWkrFilter.marke)
+      &&(!adminWkrFilter.standort||clean(p["Standort"])===adminWkrFilter.standort)
+      &&(!adminWkrFilter.reihe||reihen.includes(adminWkrFilter.reihe))
+      &&(!adminWkrFilter.modell||modelle.includes(adminWkrFilter.modell))
+      &&(!adminWkrFilter.nurAnLager||lager>0)
+      &&(!adminWkrFilter.nurReserviert||reserviert>0); // NEU: Nach Reservierten filtern
+  }).sort((a,b)=>{const ma=clean(a["Marke"]),mb=clean(b["Marke"]);return ma!==mb?ma.localeCompare(mb,"de"):clean(a["Bezeichnung"]).localeCompare(clean(b["Bezeichnung"]),"de");});
 }
 
 function getFilteredAdminReifen(){
@@ -3141,18 +3143,19 @@ function getFilteredReifen(){
 }
 
 function applyAdminWkrFilter(){ 
-  adminWkrFilter.suche=clean(document.getElementById("adminWkrSuche")?.value);
-  adminWkrFilter.marke=clean(document.getElementById("adminWkrMarke")?.value);
-  adminWkrFilter.standort=clean(document.getElementById("adminWkrStandort")?.value);
-  adminWkrFilter.reihe=clean(document.getElementById("adminWkrReihe")?.value);
-  adminWkrFilter.modell=clean(document.getElementById("adminWkrModell")?.value);
-  adminWkrFilter.nurAnLager=!!document.getElementById("adminWkrNurLager")?.checked;
-  render(); 
+  adminWkrFilter.suche=clean(document.getElementById("adminWkrSuche")?.value);
+  adminWkrFilter.marke=clean(document.getElementById("adminWkrMarke")?.value);
+  adminWkrFilter.standort=clean(document.getElementById("adminWkrStandort")?.value);
+  adminWkrFilter.reihe=clean(document.getElementById("adminWkrReihe")?.value);
+  adminWkrFilter.modell=clean(document.getElementById("adminWkrModell")?.value);
+  adminWkrFilter.nurAnLager=!!document.getElementById("adminWkrNurLager")?.checked;
+  adminWkrFilter.nurReserviert=!!document.getElementById("adminWkrNurReserviert")?.checked;
+  render(); 
 }
 
 function resetAdminWkrFilter(){ 
-  adminWkrFilter={suche:"",marke:"",standort:"",reihe:"",modell:"",nurAnLager:false};
-  render(); 
+  adminWkrFilter={suche:"",marke:"",standort:"",reihe:"",modell:"",nurAnLager:false,nurReserviert:false};
+  render(); 
 }
 
 function applyAdminReifenFilter(){ adminReifenFilter.suche=clean(document.getElementById("adminReifenSuche")?.value);adminReifenFilter.standort=clean(document.getElementById("adminReifenStandort")?.value);adminReifenFilter.reifentyp=clean(document.getElementById("adminReifenTyp")?.value);adminReifenFilter.aktivStatus=clean(document.getElementById("adminReifenAktiv")?.value);adminReifenFilter.nurAnLager=!!document.getElementById("adminReifenNurLager")?.checked;render(); }
@@ -4169,14 +4172,17 @@ function renderAdminWkrList(){
     <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
       <button class="btn btn-primary" onclick="openAddWkrModal()">+ Neues WKR</button>
     </div>
-    <div class="filter-grid" style="grid-template-columns:2fr 1fr 1fr auto auto auto;">
-      <div class="filter-field"><label>Suche</label><input id="adminWkrSuche" type="text" placeholder="TN, Bezeichnung, Reifen, Dimension …" value="${e(adminWkrFilter.suche)}"></div>
-      <div class="filter-field"><label>Marke</label><select id="adminWkrMarke"><option value="">Alle</option>${marken.map(m=>`<option value="${e(m)}" ${adminWkrFilter.marke===m?"selected":""}>${e(m)}</option>`).join("")}</select></div>
-      <div class="filter-field"><label>Standort</label><select id="adminWkrStandort"><option value="">Alle</option>${standorte.map(s=>`<option value="${e(s)}" ${adminWkrFilter.standort===s?"selected":""}>${e(standortLabel(s))}</option>`).join("")}</select></div>
-      <div class="filter-field" style="justify-content:flex-end;"><div class="filter-checkbox"><input id="adminWkrNurLager" type="checkbox" ${adminWkrFilter.nurAnLager?"checked":""}><label for="adminWkrNurLager">Nur an Lager</label></div></div>
-      <button class="btn btn-primary" onclick="applyAdminWkrFilter()">Suchen</button>
-      <button class="btn btn-secondary" onclick="resetAdminWkrFilter()">Reset</button>
-    </div>
+   <div class="filter-grid" style="grid-template-columns:2fr 1fr 1fr auto auto auto;">
+      <div class="filter-field"><label>Suche</label><input id="adminWkrSuche" type="text" placeholder="TN, Bezeichnung, Reifen, Dimension …" value="${e(adminWkrFilter.suche)}"></div>
+      <div class="filter-field"><label>Marke</label><select id="adminWkrMarke"><option value="">Alle</option>${marken.map(m=>`<option value="${e(m)}" ${adminWkrFilter.marke===m?"selected":""}>${e(m)}</option>`).join("")}</select></div>
+      <div class="filter-field"><label>Standort</label><select id="adminWkrStandort"><option value="">Alle</option>${standorte.map(s=>`<option value="${e(s)}" ${adminWkrFilter.standort===s?"selected":""}>${e(standortLabel(s))}</option>`).join("")}</select></div>
+      <div class="filter-field" style="justify-content:flex-end; gap:8px;">
+        <div class="filter-checkbox"><input id="adminWkrNurLager" type="checkbox" ${adminWkrFilter.nurAnLager?"checked":""}><label for="adminWkrNurLager">Nur an Lager</label></div>
+        <div class="filter-checkbox"><input id="adminWkrNurReserviert" type="checkbox" ${adminWkrFilter.nurReserviert?"checked":""}><label for="adminWkrNurReserviert">Nur Reserviert</label></div>
+      </div>
+      <button class="btn btn-primary" onclick="applyAdminWkrFilter()">Suchen</button>
+      <button class="btn btn-secondary" onclick="resetAdminWkrFilter()">Reset</button>
+    </div>
     <div class="products-section">
       <div class="products-header">
         <h2 class="products-title">WKR Übersicht</h2>
