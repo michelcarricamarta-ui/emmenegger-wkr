@@ -1945,7 +1945,20 @@ body.mini-brand .vehicle-card:hover { background: var(--surface); }
     <div id="voDetailContent"></div>
   </div>
 </div>
+<div id="statusSyncModal" class="modal-overlay" style="z-index:3200;">
+  <div class="modal-box" style="max-width: 500px;">
+    <div class="modal-title">Positionen aktualisieren?</div>
+    <div class="modal-subtitle">Wählen Sie, welche Positionen ebenfalls den neuen Status erhalten sollen. (WKR sind vorausgewählt)</div>
+    
+    <div id="statusSyncList" style="margin: 16px 0; max-height: 300px; overflow-y: auto; padding-right:8px;">
+      </div>
 
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeStatusSyncModal()">Abbrechen</button>
+      <button class="btn btn-primary" onclick="confirmStatusSync()">Auswahl speichern</button>
+    </div>
+  </div>
+</div>
 <div id="internalMailModal" class="modal-overlay" style="z-index:3000;">
   <div class="modal-box">
     <div class="modal-title">E-Mail an Kunden senden</div>
@@ -6201,63 +6214,100 @@ async function deleteVororder(id){
     alert("Fehler: " + err.message);
   }
 }
+/* ============================================================
+   STATUS SPEICHERN & POSITIONEN SYNCEN
+   ============================================================ */
+let _pendingStatusUpdate = null;
+
 async function saveVororderStatus(id){
-  const newStatus = clean(document.getElementById("voDetailStatus")?.value);
-  if (!newStatus) return;
-  const vo = vororder.find(v => clean(v["ID"]) === clean(id));
-  if (!vo) return;
-  if (clean(vo["Status"]) === newStatus) { alert("Status ist bereits " + newStatus); return; }
+  const newStatus = clean(document.getElementById("voDetailStatus")?.value);
+  if (!newStatus) return;
+  const vo = vororder.find(v => clean(v["ID"]) === clean(id));
+  if (!vo) return;
+  if (clean(vo["Status"]) === newStatus) { alert("Status ist bereits " + newStatus); return; }
 
-  // Auftragsnummer-Pflicht bei "Erledigt"
-  if (newStatus === "Erledigt" && !clean(vo["Auftrag"])) {
-    alert("⚠ Für Status 'Erledigt' muss eine Auftragsnummer eingetragen sein.\nBitte zuerst die Vororder bearbeiten und Auftragsnummer eintragen.");
-    return;
-  }
-
-  // NEU: Vor dem Speichern prüfen, ob es Positionen gibt, und nachfragen
-  const positionen = positionenMap[id] || [];
-  let updatePositions = false;
-  if (positionen.length > 0) {
-    updatePositions = confirm(`Möchten Sie den neuen Status "${newStatus}" auch auf alle ${positionen.length} zugehörigen Positionen übertragen?`);
+  // Auftragsnummer-Pflicht bei "Erledigt"
+  if (newStatus === "Erledigt" && !clean(vo["Auftrag"])) {
+    alert("⚠ Für Status 'Erledigt' muss eine Auftragsnummer eingetragen sein.\nBitte zuerst die Vororder bearbeiten und Auftragsnummer eintragen.");
+    return;
   }
 
-  const user = currentUser?.name || currentUser?.email || "Unknown";
+  const positionen = positionenMap[id] || [];
+  const user = currentUser?.name || currentUser?.email || "Unknown";
 
-  // Visuelles Feedback: Button sperren, damit kein Doppel-Klick möglich ist
-  const saveBtn = document.querySelector('#vororderDetailModal .btn-primary[onclick^="saveVororderStatus"]');
-  const originalText = saveBtn ? saveBtn.textContent : "";
-  if (saveBtn) {
-    saveBtn.disabled = true;
-    saveBtn.textContent = "⏳ Wird gespeichert...";
-  }
+  // Wenn es keine Positionen gibt, direkt speichern
+  if (positionen.length === 0) {
+     await executeStatusUpdate(id, newStatus, user, []);
+     return;
+  }
 
-  try {
-    // 1. Haupt-Vororder aktualisieren
-    const res = await postToScript({
-      action: "vororderUpdate",
-      id: id,
-      user: user,
-      updates: { Status: newStatus }
-    });
-    
-    if (res && res.status === "OK") {
+  // Wenn Positionen existieren -> Modal aufbauen
+  _pendingStatusUpdate = { id, newStatus, user, positionen };
+  
+  let html = "";
+  positionen.forEach(p => {
+      const isWKR = clean(p["Typ"]) === "WKR";
+      const checked = isWKR ? "checked" : ""; // WKR ist automatisch angekreuzt!
       
-      // 2. Positionen einzeln aktualisieren (falls der User auf OK geklickt hat)
-      if (updatePositions) {
-        for (let p of positionen) {
-          if (clean(p["Status"]) !== newStatus) {
-            await postToScript({
-              action: "vororderPositionUpdate",
-              positionId: clean(p["PositionID"]),
-              updates: { Status: newStatus }
-            });
-          }
-        }
+      html += `<div style="display:flex; align-items:center; gap:12px; padding:12px; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; margin-bottom:8px; transition:0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        <input type="checkbox" id="sync_pos_${p["PositionID"]}" value="${p["PositionID"]}" ${checked} style="width:20px;height:20px;cursor:pointer;accent-color:var(--accent);">
+        <label for="sync_pos_${p["PositionID"]}" style="cursor:pointer; flex:1; display:flex; flex-direction:column;">
+          <div style="font-weight:700; font-size:14px; color:var(--text-primary);"><span style="color:var(--accent);">${e(p["Typ"])}</span>: ${e(p["Bezeichnung"])}</div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Bisheriger Status: ${e(p["Status"])}</div>
+        </label>
+      </div>`;
+  });
+
+  document.getElementById("statusSyncList").innerHTML = html;
+  document.getElementById("statusSyncModal").classList.add("open");
+}
+
+function closeStatusSyncModal() {
+  document.getElementById("statusSyncModal").classList.remove("open");
+  _pendingStatusUpdate = null;
+}
+
+async function confirmStatusSync() {
+  if (!_pendingStatusUpdate) return;
+  const { id, newStatus, user, positionen } = _pendingStatusUpdate;
+  
+  const selectedPosIds = [];
+  positionen.forEach(p => {
+      const cb = document.getElementById("sync_pos_" + p["PositionID"]);
+      if (cb && cb.checked) {
+          selectedPosIds.push(p["PositionID"]);
+      }
+  });
+
+  document.getElementById("statusSyncModal").classList.remove("open");
+  await executeStatusUpdate(id, newStatus, user, selectedPosIds);
+}
+
+// Führt den tatsächlichen Datenbank-Speichervorgang aus
+async function executeStatusUpdate(id, newStatus, user, selectedPosIds) {
+  const saveBtn = document.querySelector('#vororderDetailModal .btn-primary[onclick^="saveVororderStatus"]');
+  const originalText = saveBtn ? saveBtn.textContent : "";
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = "⏳ Wird gespeichert..."; }
+
+  try {
+    // 1. Haupt-Vororder aktualisieren
+    const res = await postToScript({
+      action: "vororderUpdate", id: id, user: user, updates: { Status: newStatus }
+    });
+    
+    if (res && res.status === "OK") {
+      
+      // 2. Gewählte Positionen aktualisieren
+      for (let posId of selectedPosIds) {
+         await postToScript({
+           action: "vororderPositionUpdate",
+           positionId: posId,
+           updates: { Status: newStatus }
+         });
       }
 
-      // Lokale Vororder-Liste neu laden (Status, Historie, Timestamps werden aktualisiert)
-      await reloadVororder();
-      // Positionen-Liste ebenfalls neu laden (damit auch Gummifussmatten etc. den neuen Status zeigen)
+      // 3. Tabellen im Hintergrund neu laden
+      await reloadVororder();
       const posRes = await postToScript({ action: "vororderPositionenList" });
       if (posRes && posRes.status === "OK" && Array.isArray(posRes.data)) {
         positionenMap = {};
@@ -6268,30 +6318,25 @@ async function saveVororderStatus(id){
         });
       }
 
-      // Produkte neu laden (Reservierungen / Lager könnten sich geändert haben)
-      try {
-        const p = await fetch(URLS.produkte).then(r=>r.json());
-        if (Array.isArray(p)) produkte = p;
-      } catch(e){}
+      try {
+        const p = await fetch(URLS.produkte).then(r=>r.json());
+        if (Array.isArray(p)) produkte = p;
+      } catch(e){}
 
-      // Detail-Ansicht mit frischen Daten neu rendern, OHNE sie zu schliessen
-      _voDetailId = id;
-      _voDetailEditMode = false;
-      renderVororderDetail();
-
-      // Hintergrund-Liste auch aktualisieren (für später beim Schliessen)
-      render();
-    } else {
-      alert("Fehler: " + JSON.stringify(res));
-    }
-  } catch(err) {
-    alert("Fehler: " + err.message);
-  } finally {
-    if (saveBtn) {
-      saveBtn.disabled = false;
-      saveBtn.textContent = originalText;
-    }
-  }
+      // 4. UI neu zeichnen
+      _voDetailId = id;
+      _voDetailEditMode = false;
+      renderVororderDetail();
+      render();
+    } else {
+      alert("Fehler: " + JSON.stringify(res));
+    }
+  } catch(err) {
+    alert("Fehler: " + err.message);
+  } finally {
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = originalText; }
+    _pendingStatusUpdate = null;
+  }
 }
 /* ============================================================
    INTERNAL MAILER (VARIANTE 2)
