@@ -1095,6 +1095,40 @@ body.mini-brand .engine-pill:hover {
 /* ============================================================
    BMW-STYLE FAHRZEUGAUSWAHL (Reihe & Modell kombiniert)
    ============================================================ */
+.vehicle-search-wrap {
+  max-width: 1200px;
+  margin: 0 auto 24px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.vehicle-search {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 18px;
+  font-size: 15px;
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.vehicle-search:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(28,105,212,0.15);
+}
+body.mini-brand .vehicle-search:focus {
+  border-color: var(--mini-black);
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.12);
+}
+.vehicle-count {
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
 .vehicle-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -1111,12 +1145,18 @@ body.mini-brand .engine-pill:hover {
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease, border-color 0.4s ease;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
-.vehicle-card:hover {
+.vehicle-card:hover,
+.vehicle-card:focus-visible {
   transform: translateY(-8px);
   box-shadow: 0 16px 40px rgba(0,0,0,0.08);
   border-color: var(--accent);
+  outline: none;
 }
+body.mini-brand .vehicle-card:hover,
+body.mini-brand .vehicle-card:focus-visible { border-color: var(--mini-black); }
+
 .vc-image {
   background: var(--surface-2);
   padding: 30px 20px;
@@ -1130,13 +1170,28 @@ body.mini-brand .engine-pill:hover {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
-  mix-blend-mode: darken; /* Entfernt weisse Bild-Ränder */
+  mix-blend-mode: darken;
   transition: transform 0.5s ease;
 }
-.vehicle-card:hover .vc-image img {
-  transform: scale(1.08); /* Sanfter Zoom beim Hovern */
-}
+.vehicle-card:hover .vc-image img { transform: scale(1.08); }
 [data-theme="dark"] .vc-image img { mix-blend-mode: normal; }
+
+.vc-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: var(--accent);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.3px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+body.mini-brand .vc-badge { background: var(--mini-black); }
+.vc-badge.empty { background: var(--text-muted); }
+
 .vc-info {
   padding: 20px;
   text-align: center;
@@ -1148,10 +1203,29 @@ body.mini-brand .engine-pill:hover {
   margin-bottom: 4px;
 }
 .vc-sub {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+  min-height: 16px;
+}
+
+.vehicle-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+  font-size: 15px;
+}
+
+/* Mobile: kompakte 2-Spalten-Ansicht */
+@media (max-width: 480px) {
+  .vehicle-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .vc-image { height: 110px; padding: 12px 8px; }
+  .vc-info { padding: 12px 8px; }
+  .vc-title { font-size: 15px; }
+  .vc-sub { font-size: 10px; }
+  .vc-badge { font-size: 9px; padding: 3px 7px; top: 6px; right: 6px; }
+  .vehicle-search-wrap { flex-direction: column; align-items: stretch; }
 }
    
 </style>
@@ -2786,13 +2860,34 @@ function selectMarke(m){ state.marke=m; state.standort=state.reihe=state.modell=
 function selectStandort(s){ state.standort=s; state.reihe=state.modell=state.motor=null; render(); }
 function selectReihe(r){ state.reihe=r; state.modell=state.motor=null; render(); }
 function selectModell(m){ state.modell=m; state.motor=null; render(); }
-   // ---> NEU: Reihe und Modell gleichzeitig setzen <---
+// ---> NEU: Reihe und Modell gleichzeitig setzen <---
 function selectFahrzeug(reihe, modell){ 
   state.reihe = reihe; 
   state.modell = modell; 
   state.motor = null; 
+  window._vehicleFilter = ""; // Filter zurücksetzen
   render(); 
-}   
+}
+
+// ---> NEU: Live-Suchfilter für Fahrzeugkarten <---
+function filterVehicles(query){
+  window._vehicleFilter = query || "";
+  const q = (query || "").trim().toLowerCase();
+  const grid = document.getElementById("vehicleGrid");
+  if(!grid) return;
+  const cards = grid.querySelectorAll(".vehicle-card");
+  let visible = 0;
+  cards.forEach(c => {
+    const txt = c.getAttribute("data-search") || "";
+    const show = !q || txt.includes(q);
+    c.style.display = show ? "" : "none";
+    if(show) visible++;
+  });
+  const empty = document.getElementById("vehicleEmpty");
+  if(empty) empty.style.display = visible === 0 ? "" : "none";
+  const counter = document.getElementById("vehicleCount");
+  if(counter) counter.textContent = visible + (visible === 1 ? " Modell" : " Modelle");
+}
 function selectMotor(m){ state.motor=m; render(); }
 function resetSelection(){ state.standort=state.marke=state.reihe=state.modell=state.motor=null; selectedProduct=null; closeAllModals(); render(); }
 function shareConfig(){
@@ -3487,45 +3582,94 @@ function renderWkrFlow(){
     return html;
   }
 
-  // NEU: Reihe und Modell in einer visuellen Auswahl zusammengefasst
+ // NEU: Reihe und Modell in einer visuellen Auswahl zusammengefasst (BMW-Style)
   if (!state.reihe || !state.modell) {
-    // 1. Alle verfügbaren Kombinationen aus dem Mapping holen (damit nichts fehlt)
+    // 1. Alle verfügbaren Kombinationen aus dem Mapping holen
     const uniqueVehicles = [];
     const seen = new Set();
-    
     mapping.filter(m => clean(m["Marke"]) === state.marke).forEach(m => {
       const r = clean(m["Reihe"]);
       const mo = clean(m["Modell"]);
       if(r && mo) {
         const key = r + "|" + mo;
-        if(!seen.has(key)){
-          seen.add(key);
-          uniqueVehicles.push({ reihe: r, modell: mo });
-        }
+        if(!seen.has(key)){ seen.add(key); uniqueVehicles.push({ reihe: r, modell: mo }); }
       }
     });
 
-    html += `<div class="section-title">Wählen Sie Ihr Fahrzeug</div><div class="vehicle-grid">`;
-    
-    // 2. Die schönen Karten mit den Daten aus der Fahrzeuge-Tabelle anreichern
-    uniqueVehicles.forEach(v => {
-      const fz = fahrzeuge.find(f => clean(f["Marke"]) === state.marke && clean(f["Reihe"]) === v.reihe && clean(f["Modell"]) === v.modell);
-      
-      const bild = clean(fz?.Bild) || "https://via.placeholder.com/300x160?text=Fahrzeug";
-      const friendlyName = clean(fz?.Code) || v.modell; // Das ist der schöne Name, z.B. "X3" oder "1er"
-      
-      // Hier rufen wir unsere neue Funktion auf, die beide Werte gleichzeitig speichert!
+    // 2. Daten aus der Fahrzeuge-Tabelle anreichern
+    const enriched = uniqueVehicles.map(v => {
+      const fz = fahrzeuge.find(f => clean(f["Marke"])===state.marke && clean(f["Reihe"])===v.reihe && clean(f["Modell"])===v.modell);
+      const friendlyName = clean(fz?.Code) || v.modell;
+      const bild = clean(fz?.Bild) || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 160'><rect fill='%23f0f2f5' width='300' height='160'/><text x='50%25' y='50%25' text-anchor='middle' dy='.3em' font-family='Arial' fill='%238a93a6' font-size='14'>Bild folgt</text></svg>";
+      const karosserie = clean(fz?.Karosserie) || ""; // optional, falls Spalte vorhanden
+
+      // Anzahl verfügbare Räder zählen
+      const tnList = mapping.filter(x => clean(x["Marke"])===state.marke && clean(x["Reihe"])===v.reihe && clean(x["Modell"])===v.modell).map(x => clean(x["TN"])).filter(Boolean);
+      const anzahl = produkte.filter(p =>
+        clean(p["Marke"])===state.marke &&
+        clean(p["Standort"])===state.standort &&
+        tnList.includes(clean(p["TN"])) &&
+        clean(p["Aktiv"]) !== "Nein"
+      ).length;
+
+      return { ...v, friendlyName, bild, karosserie, anzahl };
+    });
+
+    // 3. BMW-Style Sortierung: 1er→9er, dann X1→X7, dann i, dann M, dann Z
+    const rank = (s) => {
+      if (/^\d/.test(s)) return 1;
+      if (/^X/i.test(s)) return 2;
+      if (/^i/i.test(s)) return 3;
+      if (/^M/i.test(s)) return 4;
+      if (/^Z/i.test(s)) return 5;
+      return 6;
+    };
+    enriched.sort((a,b) =>
+      rank(a.friendlyName) - rank(b.friendlyName) ||
+      a.friendlyName.localeCompare(b.friendlyName, 'de', {numeric:true})
+    );
+
+    // 4. Public vs. Internal: Internen Code (Reihe) NUR intern zeigen
+    const isPublic = !internalMode && !adminMode;
+
+    // 5. Suchfeld + Counter
+    html += `<div class="section-title">Wählen Sie Ihr Fahrzeug</div>`;
+    html += `<div class="vehicle-search-wrap">
+      <input type="text" class="vehicle-search" id="vehicleSearchInput"
+             placeholder="🔍 Modell suchen (z.B. X3, 3er, 320)..."
+             oninput="filterVehicles(this.value)"
+             value="${e(window._vehicleFilter || '')}">
+      <div class="vehicle-count" id="vehicleCount">${enriched.length} Modelle</div>
+    </div>`;
+    html += `<div class="vehicle-grid" id="vehicleGrid">`;
+
+    enriched.forEach(v => {
+      const subText = isPublic
+        ? (v.karosserie || (v.anzahl > 0 ? `${v.anzahl} Räder verfügbar` : "&nbsp;"))
+        : `Interne Bez: ${e(v.reihe)}`;
+      const badge = v.anzahl === 0
+        ? `<div class="vc-badge empty">Auf Anfrage</div>`
+        : (isPublic && v.anzahl > 0 ? `` : ``); // optional: weiteres Badge intern
+
+      // Suchbarer Text als data-Attribut für Filter
+      const searchText = `${v.friendlyName} ${v.modell} ${v.reihe} ${v.karosserie}`.toLowerCase();
+
       html += `
-        <div class="vehicle-card" onclick="selectFahrzeug('${js(v.reihe)}', '${js(v.modell)}')">
-          <div class="vc-image"><img src="${e(bild)}" alt="${e(friendlyName)}"></div>
+        <div class="vehicle-card" role="button" tabindex="0"
+             data-search="${e(searchText)}"
+             onclick="selectFahrzeug('${js(v.reihe)}', '${js(v.modell)}')"
+             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectFahrzeug('${js(v.reihe)}', '${js(v.modell)}');}">
+          ${badge}
+          <div class="vc-image"><img src="${e(v.bild)}" alt="${e(v.friendlyName)}" loading="lazy"></div>
           <div class="vc-info">
-            <div class="vc-title">${e(friendlyName)}</div>
-            <div class="vc-sub">Interne Bez: ${e(v.reihe)}</div>
+            <div class="vc-title">${e(v.friendlyName)}</div>
+            <div class="vc-sub">${subText}</div>
           </div>
         </div>
       `;
     });
-    
+
+    html += `<div class="vehicle-empty" id="vehicleEmpty" style="display:none;">Keine Modelle gefunden. Bitte Suche anpassen.</div>`;
     html += `</div>`;
     return html;
   }
@@ -3568,13 +3712,14 @@ const results=produkte.filter(p=>
           <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:2px;">Standort</div>
           <div style="font-size:14px;font-weight:700;color:var(--text-primary);">${e(standortLabel(state.standort))}</div>
         </div>
+       ${(internalMode || adminMode) ? `
         <div style="padding:10px 18px;border-right:1px solid var(--border);background:var(--surface-2);">
           <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:2px;">Reihe</div>
           <div style="font-size:14px;font-weight:700;color:var(--text-primary);">${e(state.reihe)}</div>
-        </div>
+        </div>` : ``}
         <div style="padding:10px 18px;border-right:1px solid var(--border);background:var(--surface-2);">
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:2px;">Modell</div>
-          <div style="font-size:14px;font-weight:700;color:var(--text-primary);">${e(fzCode)}</div>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:2px;">Fahrzeug</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text-primary);">${e(state.marke)} ${e(fzCode)}</div>
         </div>
         <div style="padding:10px 18px;background:var(--surface-2);">
           <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:2px;">Motor</div>
@@ -6706,8 +6851,6 @@ function printCustomerOffer(){
       <table>
         <tr><td>Marke</td><td>${e(clean(vo["Marke"]))}</td></tr>
         <tr><td>Fahrzeug</td><td>${e(clean(vo["Fahrzeug"]))}</td></tr>
-        ${clean(vo["Reihe"])?`<tr><td>Reihe</td><td>${e(clean(vo["Reihe"]))}</td></tr>`:""}
-        ${clean(vo["Modell"])?`<tr><td>Modell</td><td>${e(clean(vo["Modell"]))}</td></tr>`:""}
         ${clean(vo["Motor"])?`<tr><td>Motor</td><td>${e(clean(vo["Motor"]))}</td></tr>`:""}
       </table>
       
