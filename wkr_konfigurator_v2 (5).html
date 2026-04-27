@@ -4172,13 +4172,15 @@ function renderAdminWkrList(){
     <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
       <button class="btn btn-primary" onclick="openAddWkrModal()">+ Neues WKR</button>
     </div>
-   <div class="filter-grid" style="grid-template-columns:2fr 1fr 1fr auto auto auto;">
+  <div class="filter-grid" style="grid-template-columns:2fr 1fr 1fr auto auto auto auto;">
       <div class="filter-field"><label>Suche</label><input id="adminWkrSuche" type="text" placeholder="TN, Bezeichnung, Reifen, Dimension …" value="${e(adminWkrFilter.suche)}"></div>
       <div class="filter-field"><label>Marke</label><select id="adminWkrMarke"><option value="">Alle</option>${marken.map(m=>`<option value="${e(m)}" ${adminWkrFilter.marke===m?"selected":""}>${e(m)}</option>`).join("")}</select></div>
       <div class="filter-field"><label>Standort</label><select id="adminWkrStandort"><option value="">Alle</option>${standorte.map(s=>`<option value="${e(s)}" ${adminWkrFilter.standort===s?"selected":""}>${e(standortLabel(s))}</option>`).join("")}</select></div>
-      <div class="filter-field" style="justify-content:flex-end; gap:8px;">
-        <div class="filter-checkbox"><input id="adminWkrNurLager" type="checkbox" ${adminWkrFilter.nurAnLager?"checked":""}><label for="adminWkrNurLager">Nur an Lager</label></div>
-        <div class="filter-checkbox"><input id="adminWkrNurReserviert" type="checkbox" ${adminWkrFilter.nurReserviert?"checked":""}><label for="adminWkrNurReserviert">Nur Reserviert</label></div>
+      <div class="filter-field" style="justify-content:flex-end; padding-bottom:8px;">
+        <div class="filter-checkbox"><input id="adminWkrNurLager" type="checkbox" ${adminWkrFilter.nurAnLager?"checked":""}><label for="adminWkrNurLager">Lager > 0</label></div>
+      </div>
+      <div class="filter-field" style="justify-content:flex-end; padding-bottom:8px;">
+        <div class="filter-checkbox"><input id="adminWkrNurReserviert" type="checkbox" ${adminWkrFilter.nurReserviert?"checked":""}><label for="adminWkrNurReserviert">Reserviert</label></div>
       </div>
       <button class="btn btn-primary" onclick="applyAdminWkrFilter()">Suchen</button>
       <button class="btn btn-secondary" onclick="resetAdminWkrFilter()">Reset</button>
@@ -5281,6 +5283,9 @@ function renderAdminWkrItem(r){
 /* ============================================================
    RESERVIERUNGEN ANZEIGEN (Schönes Modal)
    ============================================================ */
+/* ============================================================
+   RESERVIERUNGEN ANZEIGEN (Schönes Modal)
+   ============================================================ */
 function showReservationDetails(tn) {
   if (!tn) return;
   const searchTn = clean(tn).toLowerCase();
@@ -5288,16 +5293,27 @@ function showReservationDetails(tn) {
   let html = "";
   let found = false;
 
+  // Hilfsfunktion baut unsere neuen, anklickbaren Karten
+  const renderCard = (kunde, anzahl, voId, suffix) => {
+    return `<div style="padding: 12px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s;"
+                 onclick="document.getElementById('reservationInfoModal').classList.remove('open'); openVororderDetail('${js(voId)}');"
+                 onmouseover="this.style.borderColor='var(--accent)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--shadow-sm)';"
+                 onmouseout="this.style.borderColor='var(--border)'; this.style.transform='none'; this.style.boxShadow='none';">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <div style="font-weight: 700; color: var(--text-primary); font-size: 14px;">${e(kunde)}</div>
+                <span style="color: var(--accent); font-size: 16px;">➡️</span>
+              </div>
+              <div style="font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between;">
+                <span>Menge: <b style="color:var(--accent);">${e(anzahl)} Stück</b></span>
+                <span style="font-family: monospace;">${e(voId)} ${e(suffix)}</span>
+              </div>
+            </div>`;
+  };
+
   // 1. Suche in den Haupt-Vororders
   vororder.forEach(v => {
     if (clean(v["TN"]).toLowerCase() === searchTn && clean(v["Status"]) !== "Erledigt" && clean(v["Status"]) !== "Kunde verzichtet") {
-      html += `<div style="padding: 10px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 8px;">
-                 <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">${e(clean(v["Kundenname"])) || "Unbekannt"}</div>
-                 <div style="font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between;">
-                   <span>Menge: <b style="color:var(--accent);">${e(clean(v["Anzahl"]))} Stück</b></span>
-                   <span>VO-ID: ${e(v["ID"])}</span>
-                 </div>
-               </div>`;
+      html += renderCard(clean(v["Kundenname"]) || "Unbekannt", clean(v["Anzahl"]), clean(v["ID"]), "");
       found = true;
     }
   });
@@ -5307,23 +5323,16 @@ function showReservationDetails(tn) {
   
   matchingPositions.forEach(p => {
     const voId = clean(p["VororderID"]);
-    // Vermeiden von Duplikaten
-    if (!html.includes(`VO-ID: ${voId}`)) {
+    if (!html.includes(voId)) { // Vermeiden von Duplikaten
       const vo = vororder.find(v => clean(v["ID"]) === voId);
       const kunde = vo ? clean(vo["Kundenname"]) : "Unbekannt";
-      html += `<div style="padding: 10px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 8px;">
-                 <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">${e(kunde)}</div>
-                 <div style="font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between;">
-                   <span>Menge: <b style="color:var(--accent);">${e(clean(p["Anzahl"]))} Stück</b></span>
-                   <span>VO-ID: ${e(voId)} (Pos)</span>
-                 </div>
-               </div>`;
+      html += renderCard(kunde, clean(p["Anzahl"]), voId, "(Pos)");
       found = true;
     }
   });
 
   if (!found) {
-    html = `<div style="color: var(--warning); padding: 12px; background: var(--warning-bg); border-radius: 6px;">Keine aktiven Reservierungen für diese Teilenummer gefunden. (Evtl. Alt-Daten).</div>`;
+    html = `<div style="color: var(--warning); padding: 12px; background: var(--warning-bg); border-radius: 6px;">Keine aktiven Reservierungen für diese Teilenummer gefunden.</div>`;
   }
 
   document.getElementById("resInfoSubtitle").textContent = `Teilenummer: ${tn}`;
