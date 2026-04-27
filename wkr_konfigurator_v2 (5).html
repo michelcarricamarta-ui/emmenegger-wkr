@@ -1128,7 +1128,23 @@ body.mini-brand .vehicle-search:focus {
   color: var(--text-muted);
   white-space: nowrap;
 }
-
+.vehicle-group {
+  max-width: 1200px;
+  margin: 0 auto 20px;
+}
+.vehicle-group-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  padding: 0 4px 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.vehicle-group:has(.vehicle-card[style*="display: none"]:not(:not([style*="display: none"]))) {
+  display: none; /* Verstecke leere Kategorien beim Filtern */
+}
 .vehicle-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -2873,15 +2889,18 @@ function selectFahrzeug(reihe, modell){
 function filterVehicles(query){
   window._vehicleFilter = query || "";
   const q = (query || "").trim().toLowerCase();
-  const grid = document.getElementById("vehicleGrid");
-  if(!grid) return;
-  const cards = grid.querySelectorAll(".vehicle-card");
+  const cards = document.querySelectorAll(".vehicle-card");
   let visible = 0;
   cards.forEach(c => {
     const txt = c.getAttribute("data-search") || "";
     const show = !q || txt.includes(q);
     c.style.display = show ? "" : "none";
     if(show) visible++;
+  });
+  // Leere Kategorien (alle Karten ausgeblendet) komplett verstecken
+  document.querySelectorAll(".vehicle-group").forEach(g => {
+    const hasVisible = g.querySelector(".vehicle-card:not([style*='display: none'])");
+    g.style.display = hasVisible ? "" : "none";
   });
   const empty = document.getElementById("vehicleEmpty");
   if(empty) empty.style.display = visible === 0 ? "" : "none";
@@ -3615,24 +3634,52 @@ function renderWkrFlow(){
       return { ...v, friendlyName, bild, karosserie, anzahl };
     });
 
-    // 3. BMW-Style Sortierung: 1er→9er, dann X1→X7, dann i, dann M, dann Z
-    const rank = (s) => {
-      if (/^\d/.test(s)) return 1;
-      if (/^X/i.test(s)) return 2;
-      if (/^i/i.test(s)) return 3;
-      if (/^M/i.test(s)) return 4;
-      if (/^Z/i.test(s)) return 5;
-      return 6;
+   // 3. Kategorie ableiten (aus Sheet-Spalte ODER automatisch aus Name)
+    const autoKategorie = (name) => {
+      const n = (name || "").toLowerCase();
+      if (/^m\d|^xm/i.test(name) || n.startsWith("m ")) return "M-Modelle";
+      if (/^i|^ix/i.test(name)) return "Elektro";
+      if (/^x\d/i.test(name)) return "X-Modelle";
+      if (/cabrio/i.test(name)) return "Coupés & Cabrios";
+      if (/coup[eé]/i.test(name) && !/gran/i.test(name)) return "Coupés & Cabrios";
+      if (/gran coup[eé]/i.test(name)) return "Gran Coupés";
+      if (/touring|tourer/i.test(name)) return "Touring";
+      if (/^z\d/i.test(name)) return "Roadster";
+      if (/^\d/.test(name)) return "Limousinen";
+      return "Weitere Modelle";
     };
-    enriched.sort((a,b) =>
-      rank(a.friendlyName) - rank(b.friendlyName) ||
-      a.friendlyName.localeCompare(b.friendlyName, 'de', {numeric:true})
+    enriched.forEach(v => {
+      v.kategorieFinal = clean(v.karosserie) || autoKategorie(v.friendlyName);
+    });
+
+    // 4. Reihenfolge der Kategorien (BMW-Style)
+    const kategorieReihenfolge = [
+      "Limousinen", "Touring", "Coupés & Cabrios", "Gran Coupés",
+      "X-Modelle", "Roadster", "Elektro", "M-Modelle", "Weitere Modelle"
+    ];
+    const kategorieRank = (k) => {
+      const i = kategorieReihenfolge.indexOf(k);
+      return i === -1 ? 999 : i;
+    };
+
+    // 5. Innerhalb Kategorie alphanumerisch sortieren (1er → 2er → 3er ...)
+    enriched.sort((a, b) =>
+      kategorieRank(a.kategorieFinal) - kategorieRank(b.kategorieFinal) ||
+      a.friendlyName.localeCompare(b.friendlyName, 'de', { numeric: true })
     );
 
-    // 4. Public vs. Internal: Internen Code (Reihe) NUR intern zeigen
+    // 6. Nach Kategorie gruppieren
+    const gruppen = {};
+    enriched.forEach(v => {
+      if (!gruppen[v.kategorieFinal]) gruppen[v.kategorieFinal] = [];
+      gruppen[v.kategorieFinal].push(v);
+    });
+    const gruppenSortiert = Object.keys(gruppen).sort((a, b) => kategorieRank(a) - kategorieRank(b));
+
+    // 7. Public vs. Internal
     const isPublic = !internalMode && !adminMode;
 
-    // 5. Suchfeld + Counter
+    // 8. Suchfeld + Counter
     html += `<div class="section-title">Wählen Sie Ihr Fahrzeug</div>`;
     html += `<div class="vehicle-search-wrap">
       <input type="text" class="vehicle-search" id="vehicleSearchInput"
@@ -3641,39 +3688,42 @@ function renderWkrFlow(){
              value="${e(window._vehicleFilter || '')}">
       <div class="vehicle-count" id="vehicleCount">${enriched.length} Modelle</div>
     </div>`;
-    html += `<div class="vehicle-grid" id="vehicleGrid">`;
 
-    enriched.forEach(v => {
-      const subText = isPublic
-        ? (v.karosserie || (v.anzahl > 0 ? `${v.anzahl} Räder verfügbar` : "&nbsp;"))
-        : `Interne Bez: ${e(v.reihe)}`;
-      const badge = v.anzahl === 0
-        ? `<div class="vc-badge empty">Auf Anfrage</div>`
-        : (isPublic && v.anzahl > 0 ? `` : ``); // optional: weiteres Badge intern
+    // 9. Pro Kategorie eine Sektion mit Header + Grid rendern
+    gruppenSortiert.forEach(kat => {
+      html += `<div class="vehicle-group" data-kategorie="${e(kat.toLowerCase())}">
+        <div class="vehicle-group-title">${e(kat)}</div>
+        <div class="vehicle-grid">`;
 
-      // Suchbarer Text als data-Attribut für Filter
-      const searchText = `${v.friendlyName} ${v.modell} ${v.reihe} ${v.karosserie}`.toLowerCase();
+      gruppen[kat].forEach(v => {
+        const subText = isPublic
+          ? (v.anzahl > 0 ? `${v.anzahl} Räder verfügbar` : "Auf Anfrage")
+          : `Interne Bez: ${e(v.reihe)}`;
+        const badge = v.anzahl === 0
+          ? `<div class="vc-badge empty">Auf Anfrage</div>`
+          : ``;
+        const searchText = `${v.friendlyName} ${v.modell} ${v.reihe} ${v.kategorieFinal}`.toLowerCase();
 
-      html += `
-        <div class="vehicle-card" role="button" tabindex="0"
-             data-search="${e(searchText)}"
-             onclick="selectFahrzeug('${js(v.reihe)}', '${js(v.modell)}')"
-             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectFahrzeug('${js(v.reihe)}', '${js(v.modell)}');}">
-          ${badge}
-          <div class="vc-image"><img src="${e(v.bild)}" alt="${e(v.friendlyName)}" loading="lazy"></div>
-          <div class="vc-info">
-            <div class="vc-title">${e(v.friendlyName)}</div>
-            <div class="vc-sub">${subText}</div>
+        html += `
+          <div class="vehicle-card" role="button" tabindex="0"
+               data-search="${e(searchText)}"
+               onclick="selectFahrzeug('${js(v.reihe)}', '${js(v.modell)}')"
+               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectFahrzeug('${js(v.reihe)}', '${js(v.modell)}');}">
+            ${badge}
+            <div class="vc-image"><img src="${e(v.bild)}" alt="${e(v.friendlyName)}" loading="lazy"></div>
+            <div class="vc-info">
+              <div class="vc-title">${e(v.friendlyName)}</div>
+              <div class="vc-sub">${subText}</div>
+            </div>
           </div>
-        </div>
-      `;
+        `;
+      });
+
+      html += `</div></div>`;
     });
 
     html += `<div class="vehicle-empty" id="vehicleEmpty" style="display:none;">Keine Modelle gefunden. Bitte Suche anpassen.</div>`;
-    html += `</div>`;
     return html;
-  }
-
  if (!state.motor) {
     const motors=[...new Set(mapping.filter(x=>clean(x["Marke"])===state.marke&&clean(x["Reihe"])===state.reihe&&clean(x["Modell"])===state.modell).flatMap(x=>splitMotors(x["Motor"])))];
     html+=`<div class="section-title">${e(t("select_engine"))}</div><div class="engine-grid">`;
