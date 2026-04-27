@@ -3722,9 +3722,11 @@ function renderWkrFlow(){
       html += `</div></div>`;
     });
 
-    html += `<div class="vehicle-empty" id="vehicleEmpty" style="display:none;">Keine Modelle gefunden. Bitte Suche anpassen.</div>`;
+   html += `<div class="vehicle-empty" id="vehicleEmpty" style="display:none;">Keine Modelle gefunden. Bitte Suche anpassen.</div>`;
     return html;
- if (!state.motor) {
+  }
+
+  if (!state.motor) {
     const motors=[...new Set(mapping.filter(x=>clean(x["Marke"])===state.marke&&clean(x["Reihe"])===state.reihe&&clean(x["Modell"])===state.modell).flatMap(x=>splitMotors(x["Motor"])))];
     html+=`<div class="section-title">${e(t("select_engine"))}</div><div class="engine-grid">`;
     motors.forEach(m=>{ html+=`<button class="engine-pill" onclick="selectMotor('${js(m)}')">${e(m)}</button>`; });
