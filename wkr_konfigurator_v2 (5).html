@@ -5304,12 +5304,12 @@ function renderAdminWkrItem(r){
         </div>
       </div>
 
-     ${isLowStock ? `<span class="stock-warning-chip" style="margin-top:8px; display:inline-block;">⚠ Kritischer Lager</span>` : ""}
+    ${isLowStock ? `<span class="stock-warning-chip" style="margin-top:8px; display:inline-block;">⚠ Kritischer Lager</span>` : ""}
       
-      <div class="product-actions" style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
-        <button class="btn btn-primary btn-sm" onclick="openEditWkrModal('${js(tn)}')">Bearbeiten</button>
-        <button class="btn btn-secondary btn-sm" onclick="openUmbuchungModal('${js(tn)}', '${js(clean(r["Standort"]))}', ${verfuegbar})">🔄 Umbuchen</button>
-        <button class="btn btn-secondary btn-sm" onclick="printWkrLabel('${js(tn)}')">Etikette drucken</button>
+      <div style="margin-top:14px; display:flex; flex-direction:column; gap:6px;">
+        <button class="btn btn-primary btn-sm" style="width:100%; justify-content:center; padding:8px;" onclick="openEditWkrModal('${js(tn)}')">Bearbeiten</button>
+        <button class="btn btn-secondary btn-sm" style="width:100%; justify-content:center; padding:8px;" onclick="openUmbuchungModal('${js(tn)}', '${js(clean(r["Standort"]))}', ${verfuegbar})">🔄 Umbuchen</button>
+        <button class="btn btn-secondary btn-sm" style="width:100%; justify-content:center; padding:8px;" onclick="printWkrLabel('${js(tn)}')">Etikette drucken</button>
       </div>
     </div>
   </div>`;
