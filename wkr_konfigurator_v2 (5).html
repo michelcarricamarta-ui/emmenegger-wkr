@@ -1092,7 +1092,67 @@ body.mini-brand .engine-pill:hover {
   border-color: var(--mini-black);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
-
+/* ============================================================
+   BMW-STYLE FAHRZEUGAUSWAHL (Reihe & Modell kombiniert)
+   ============================================================ */
+.vehicle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto 40px;
+}
+.vehicle-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease, border-color 0.4s ease;
+  display: flex;
+  flex-direction: column;
+}
+.vehicle-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.08);
+  border-color: var(--accent);
+}
+.vc-image {
+  background: var(--surface-2);
+  padding: 30px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 180px;
+  position: relative;
+}
+.vc-image img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  mix-blend-mode: darken; /* Entfernt weisse Bild-Ränder */
+  transition: transform 0.5s ease;
+}
+.vehicle-card:hover .vc-image img {
+  transform: scale(1.08); /* Sanfter Zoom beim Hovern */
+}
+[data-theme="dark"] .vc-image img { mix-blend-mode: normal; }
+.vc-info {
+  padding: 20px;
+  text-align: center;
+}
+.vc-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.vc-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
    
 </style>
 </head>
@@ -2726,6 +2786,13 @@ function selectMarke(m){ state.marke=m; state.standort=state.reihe=state.modell=
 function selectStandort(s){ state.standort=s; state.reihe=state.modell=state.motor=null; render(); }
 function selectReihe(r){ state.reihe=r; state.modell=state.motor=null; render(); }
 function selectModell(m){ state.modell=m; state.motor=null; render(); }
+   // ---> NEU: Reihe und Modell gleichzeitig setzen <---
+function selectFahrzeug(reihe, modell){ 
+  state.reihe = reihe; 
+  state.modell = modell; 
+  state.motor = null; 
+  render(); 
+}   
 function selectMotor(m){ state.motor=m; render(); }
 function resetSelection(){ state.standort=state.marke=state.reihe=state.modell=state.motor=null; selectedProduct=null; closeAllModals(); render(); }
 function shareConfig(){
@@ -3420,24 +3487,46 @@ function renderWkrFlow(){
     return html;
   }
 
-  if (!state.reihe) {
-    const reihen=[...new Set(mapping.filter(x=>clean(x["Marke"])===state.marke).map(x=>clean(x["Reihe"])).filter(Boolean))];
-    html+=`<div class="section-title">${e(t("select_series"))}</div><div class="card-grid">`;
-    reihen.forEach(r=>{ html+=`<div class="sel-card" onclick="selectReihe('${js(r)}')">${e(r)}</div>`; });
-    html+=`</div>`;
-    return html;
-  }
-
-  if (!state.modell) {
-    const modelle=[...new Set(mapping.filter(x=>clean(x["Marke"])===state.marke&&clean(x["Reihe"])===state.reihe).map(x=>clean(x["Modell"])).filter(Boolean))];
-    html+=`<div class="section-title">${e(t("select_model"))}</div><div class="card-grid">`;
-    modelle.forEach(m=>{
-      const fz=fahrzeuge.find(f=>clean(f["Marke"])===state.marke&&clean(f["Reihe"])===state.reihe&&clean(f["Modell"])===m);
-      const bild=clean(fz?.Bild)||"https://via.placeholder.com/260x140?text=Fahrzeug";
-      const code=clean(fz?.Code)||m;
-      html+=`<div class="sel-card model-card" onclick="selectModell('${js(m)}')"><img src="${e(bild)}" alt="${e(code)}"><div class="model-name">${e(code)}</div></div>`;
+  // NEU: Reihe und Modell in einer visuellen Auswahl zusammengefasst
+  if (!state.reihe || !state.modell) {
+    // 1. Alle verfügbaren Kombinationen aus dem Mapping holen (damit nichts fehlt)
+    const uniqueVehicles = [];
+    const seen = new Set();
+    
+    mapping.filter(m => clean(m["Marke"]) === state.marke).forEach(m => {
+      const r = clean(m["Reihe"]);
+      const mo = clean(m["Modell"]);
+      if(r && mo) {
+        const key = r + "|" + mo;
+        if(!seen.has(key)){
+          seen.add(key);
+          uniqueVehicles.push({ reihe: r, modell: mo });
+        }
+      }
     });
-    html+=`</div>`;
+
+    html += `<div class="section-title">Wählen Sie Ihr Fahrzeug</div><div class="vehicle-grid">`;
+    
+    // 2. Die schönen Karten mit den Daten aus der Fahrzeuge-Tabelle anreichern
+    uniqueVehicles.forEach(v => {
+      const fz = fahrzeuge.find(f => clean(f["Marke"]) === state.marke && clean(f["Reihe"]) === v.reihe && clean(f["Modell"]) === v.modell);
+      
+      const bild = clean(fz?.Bild) || "https://via.placeholder.com/300x160?text=Fahrzeug";
+      const friendlyName = clean(fz?.Code) || v.modell; // Das ist der schöne Name, z.B. "X3" oder "1er"
+      
+      // Hier rufen wir unsere neue Funktion auf, die beide Werte gleichzeitig speichert!
+      html += `
+        <div class="vehicle-card" onclick="selectFahrzeug('${js(v.reihe)}', '${js(v.modell)}')">
+          <div class="vc-image"><img src="${e(bild)}" alt="${e(friendlyName)}"></div>
+          <div class="vc-info">
+            <div class="vc-title">${e(friendlyName)}</div>
+            <div class="vc-sub">Interne Bez: ${e(v.reihe)}</div>
+          </div>
+        </div>
+      `;
+    });
+    
+    html += `</div>`;
     return html;
   }
 
