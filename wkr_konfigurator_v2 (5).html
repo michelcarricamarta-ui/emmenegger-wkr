@@ -6202,62 +6202,96 @@ async function deleteVororder(id){
   }
 }
 async function saveVororderStatus(id){
-  const newStatus = clean(document.getElementById("voDetailStatus")?.value);
-  if (!newStatus) return;
-  const vo = vororder.find(v => clean(v["ID"]) === clean(id));
-  if (!vo) return;
-  if (clean(vo["Status"]) === newStatus) { alert("Status ist bereits " + newStatus); return; }
+  const newStatus = clean(document.getElementById("voDetailStatus")?.value);
+  if (!newStatus) return;
+  const vo = vororder.find(v => clean(v["ID"]) === clean(id));
+  if (!vo) return;
+  if (clean(vo["Status"]) === newStatus) { alert("Status ist bereits " + newStatus); return; }
 
-  // Auftragsnummer-Pflicht bei "Erledigt"
-  if (newStatus === "Erledigt" && !clean(vo["Auftrag"])) {
-    alert("⚠ Für Status 'Erledigt' muss eine Auftragsnummer eingetragen sein.\nBitte zuerst die Vororder bearbeiten und Auftragsnummer eintragen.");
-    return;
+  // Auftragsnummer-Pflicht bei "Erledigt"
+  if (newStatus === "Erledigt" && !clean(vo["Auftrag"])) {
+    alert("⚠ Für Status 'Erledigt' muss eine Auftragsnummer eingetragen sein.\nBitte zuerst die Vororder bearbeiten und Auftragsnummer eintragen.");
+    return;
+  }
+
+  // NEU: Vor dem Speichern prüfen, ob es Positionen gibt, und nachfragen
+  const positionen = positionenMap[id] || [];
+  let updatePositions = false;
+  if (positionen.length > 0) {
+    updatePositions = confirm(`Möchten Sie den neuen Status "${newStatus}" auch auf alle ${positionen.length} zugehörigen Positionen übertragen?`);
   }
 
-  const user = currentUser?.name || currentUser?.email || "Unknown";
+  const user = currentUser?.name || currentUser?.email || "Unknown";
 
-  // Visuelles Feedback: Button sperren, damit kein Doppel-Klick möglich ist
-  const saveBtn = document.querySelector('#vororderDetailModal .btn-primary[onclick^="saveVororderStatus"]');
-  const originalText = saveBtn ? saveBtn.textContent : "";
-  if (saveBtn) {
-    saveBtn.disabled = true;
-    saveBtn.textContent = "⏳ Wird gespeichert...";
-  }
+  // Visuelles Feedback: Button sperren, damit kein Doppel-Klick möglich ist
+  const saveBtn = document.querySelector('#vororderDetailModal .btn-primary[onclick^="saveVororderStatus"]');
+  const originalText = saveBtn ? saveBtn.textContent : "";
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = "⏳ Wird gespeichert...";
+  }
 
-  try {
-    const res = await postToScript({
-      action: "vororderUpdate",
-      id: id,
-      user: user,
-      updates: { Status: newStatus }
-    });
-    if (res && res.status === "OK") {
-      // Lokale Vororder-Liste neu laden (Status, Historie, Timestamps werden aktualisiert)
-      await reloadVororder();
-      // Produkte neu laden (Reservierungen / Lager könnten sich geändert haben)
-      try {
-        const p = await fetch(URLS.produkte).then(r=>r.json());
-        if (Array.isArray(p)) produkte = p;
-      } catch(e){}
+  try {
+    // 1. Haupt-Vororder aktualisieren
+    const res = await postToScript({
+      action: "vororderUpdate",
+      id: id,
+      user: user,
+      updates: { Status: newStatus }
+    });
+    
+    if (res && res.status === "OK") {
+      
+      // 2. Positionen einzeln aktualisieren (falls der User auf OK geklickt hat)
+      if (updatePositions) {
+        for (let p of positionen) {
+          if (clean(p["Status"]) !== newStatus) {
+            await postToScript({
+              action: "vororderPositionUpdate",
+              positionId: clean(p["PositionID"]),
+              updates: { Status: newStatus }
+            });
+          }
+        }
+      }
 
-      // Detail-Ansicht mit frischen Daten neu rendern, OHNE sie zu schliessen
-      _voDetailId = id;
-      _voDetailEditMode = false;
-      renderVororderDetail();
+      // Lokale Vororder-Liste neu laden (Status, Historie, Timestamps werden aktualisiert)
+      await reloadVororder();
+      // Positionen-Liste ebenfalls neu laden (damit auch Gummifussmatten etc. den neuen Status zeigen)
+      const posRes = await postToScript({ action: "vororderPositionenList" });
+      if (posRes && posRes.status === "OK" && Array.isArray(posRes.data)) {
+        positionenMap = {};
+        posRes.data.forEach(p => {
+          const voId = clean(p["VororderID"]);
+          if (!positionenMap[voId]) positionenMap[voId] = [];
+          positionenMap[voId].push(p);
+        });
+      }
 
-      // Hintergrund-Liste auch aktualisieren (für später beim Schliessen)
-      render();
-    } else {
-      alert("Fehler: " + JSON.stringify(res));
-    }
-  } catch(err) {
-    alert("Fehler: " + err.message);
-  } finally {
-    if (saveBtn) {
-      saveBtn.disabled = false;
-      saveBtn.textContent = originalText;
-    }
-  }
+      // Produkte neu laden (Reservierungen / Lager könnten sich geändert haben)
+      try {
+        const p = await fetch(URLS.produkte).then(r=>r.json());
+        if (Array.isArray(p)) produkte = p;
+      } catch(e){}
+
+      // Detail-Ansicht mit frischen Daten neu rendern, OHNE sie zu schliessen
+      _voDetailId = id;
+      _voDetailEditMode = false;
+      renderVororderDetail();
+
+      // Hintergrund-Liste auch aktualisieren (für später beim Schliessen)
+      render();
+    } else {
+      alert("Fehler: " + JSON.stringify(res));
+    }
+  } catch(err) {
+    alert("Fehler: " + err.message);
+  } finally {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = originalText;
+    }
+  }
 }
 /* ============================================================
    INTERNAL MAILER (VARIANTE 2)
