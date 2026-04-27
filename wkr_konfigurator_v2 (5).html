@@ -1320,10 +1320,48 @@ body.mini-brand .vehicle-card:hover { background: var(--surface); }
   .vc-image img { max-height: 110px; }
   .vc-badge { font-size: 10px; padding: 3px 7px; }
   .vc-badges { margin-bottom: 10px; gap: 4px; }
-  .vc-footer { font-size: 11px; padding-top: 8px; }
+ .vc-footer { font-size: 11px; padding-top: 8px; }
   .vehicle-search-wrap { flex-direction: column; align-items: stretch; }
+
+  /* ============================================================
+     HANDY-KARTEN-DESIGN FÜR TABELLEN & WARENKORB (Kein Wischen mehr)
+     ============================================================ */
+  .mobile-label { display: block; font-size: 10px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  
+  .responsive-table { display: block; width: 100%; border: none !important; }
+  .responsive-table thead { display: none; } /* Spaltenköpfe auf dem Handy ausblenden */
+  .responsive-table tbody { display: block; width: 100%; }
+  .responsive-table tr {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-md);
+    margin-bottom: 16px;
+    padding: 12px;
+    box-shadow: var(--shadow-sm);
+  }
+  .responsive-table td {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 8px 0 !important;
+    border-bottom: 1px solid var(--surface-2) !important;
+    text-align: left !important;
+    width: 100% !important;
+  }
+  .responsive-table td:last-child { border-bottom: none !important; padding-bottom: 0 !important; }
+  
+  /* Warenkorb Modal (Kunde) auf Handy reparieren */
+  .cart-item-row { flex-direction: column; align-items: flex-start !important; padding: 16px !important; }
+  .cart-item-row img { width: 100% !important; height: auto !important; max-height: 180px; margin-bottom: 12px; }
+  .cart-item-row > div:last-child { width: 100%; text-align: left !important; margin-top: 12px; border-top: 1px dashed var(--border); padding-top: 12px; }
 }
-   
+
+/* Versteckt die Labels auf dem Desktop */
+@media (min-width: 601px) {
+  .mobile-label { display: none !important; }
+}
 </style>
 </head>
 <body>
@@ -2279,8 +2317,9 @@ function renderCartModal() {
     const priceFormatted = preis ? formatPrice(item.preis) : null;
     const bild = item.bild || "https://via.placeholder.com/120x90?text=Rad";
 
+    // Wir fügen die Klasse "cart-item-row" hinzu
     html += `
-      <div style="display:flex;gap:14px;padding:14px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;align-items:center;">
+      <div class="cart-item-row" style="display:flex;gap:14px;padding:14px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;align-items:center;">
 
         <img src="${e(bild)}" alt="${e(item.bezeichnung)}" style="width:110px;height:85px;object-fit:contain;border-radius:6px;flex-shrink:0;background:white;">
 
@@ -4247,9 +4286,10 @@ function renderAdminVororder(){
     html += `<div class="empty-state"><div class="empty-icon">⏳</div>Vororder werden geladen...</div>`;
   } else if (!results.length) {
     html += `<div class="empty-state"><div class="empty-icon">📋</div>Keine Vororders gefunden.<br><span style="font-size:12px;color:var(--text-muted);">${vororderLoaded ? "Versuche einen anderen Filter oder erfasse eine neue Vororder." : "Noch keine Daten geladen."}</span></div>`;
-  } else {
-    html += `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;margin-top:14px;box-shadow:var(--shadow-sm);">
-      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+ } else {
+    // Klasse "responsive-table" hinzugefügt!
+    html += `<div style="margin-top:14px;">
+      <table class="responsive-table" style="width:100%;border-collapse:collapse;font-size:13px;">
         <thead>
           <tr style="background:var(--surface-3);border-bottom:1px solid var(--border);">
             ${adminMode ? `<th style="padding:12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">ID</th>` : ""}
@@ -4275,19 +4315,22 @@ function renderAdminVororder(){
       else if (marke === "MINI") brandIcon = `<img src="https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/MINI_Logo.jpg?raw=true" style="height:16px; width:20px; object-fit:contain; margin-right:12px; flex-shrink:0;">`;
       else brandIcon = `<div style="width:20px; margin-right:12px; flex-shrink:0;"></div>`;
 
-const kundeName = clean(v["Kundenname"]) || "Unbekannt";
+      const kundeName = clean(v["Kundenname"]) || "Unbekannt";
 
+      // HTML mit .mobile-label für jedes td
       html += `<tr style="border-bottom:1px solid var(--border); transition: background 0.2s;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'">
-        ${adminMode ? `<td style="padding:12px;font-weight:600;color:var(--text-primary);font-family:monospace;">${e(clean(v["ID"]))}</td>` : ""}
+        ${adminMode ? `<td style="padding:12px;font-weight:600;color:var(--text-primary);font-family:monospace;"><span class="mobile-label">ID</span>${e(clean(v["ID"]))}</td>` : ""}
         
-        <td style="padding:12px;">${vororderStatusBadge(v["Status"])}</td>
+        <td style="padding:12px;"><span class="mobile-label">Status</span>${vororderStatusBadge(v["Status"])}</td>
         
         <td style="padding:12px;">
+          <span class="mobile-label">Kunde</span>
           <div style="font-weight:700;color:var(--text-primary);font-size:14px;">${e(kundeName)}</div>
           ${clean(v["Debitornr"]) ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Deb: ${e(clean(v["Debitornr"]))}</div>` : ""}
         </td>
         
         <td style="padding:12px;">
+          <span class="mobile-label">Fahrzeug</span>
           <div style="display:flex; align-items:center;">
             ${brandIcon}
             <div>
@@ -4298,21 +4341,24 @@ const kundeName = clean(v["Kundenname"]) || "Unbekannt";
         </td>
         
         ${adminMode ? `<td style="padding:12px;">
+          <span class="mobile-label">Typ / TN</span>
           <div><span style="font-size:11px;background:var(--surface-3);padding:2px 6px;border-radius:3px;font-weight:600;">${e(clean(v["Typ"]))||"—"}</span></div>
           ${clean(v["TN"]) ? `<div style="font-size:11px;color:var(--text-muted);margin-top:3px;font-family:monospace;">${e(clean(v["TN"]))}</div>` : ""}
         </td>` : ""}
         
         <td style="padding:12px;font-size:12px;font-weight:600;color:var(--text-secondary);">
+          <span class="mobile-label">Verkäufer</span>
           ${e(clean(v["Verkaeufer"]))||"—"}
         </td>
         
-        ${adminMode ? `<td style="padding:12px;text-align:center;font-weight:600;">${e(clean(v["Anzahl"]))||"—"}</td>` : ""}
+        ${adminMode ? `<td style="padding:12px;text-align:center;font-weight:600;"><span class="mobile-label">Anzahl</span>${e(clean(v["Anzahl"]))||"—"}</td>` : ""}
         
         <td style="padding:12px;font-size:13px;font-weight:700;color:var(--text-primary);">
+          <span class="mobile-label">Ablieferung</span>
           ${e(formatVororderDate(v["Ablieferung"]))||"—"}
         </td>
         
-        ${isSuperAdmin ? `<td style="padding:12px;text-align:center;">${standort ? `<span style="font-size:11px;background:var(--surface-3);padding:2px 8px;border-radius:3px;font-weight:600;">${e(standort)}</span>` : "—"}</td>` : ""}
+        ${isSuperAdmin ? `<td style="padding:12px;text-align:center;"><span class="mobile-label">Standort</span>${standort ? `<span style="font-size:11px;background:var(--surface-3);padding:2px 8px;border-radius:3px;font-weight:600;">${e(standort)}</span>` : "—"}</td>` : ""}
         
         <td style="padding:12px;text-align:right;">
          <button class="btn btn-secondary btn-sm" onclick="openVororderDetail('${js(clean(v["ID"]))}')" style="padding:6px 12px;font-size:12px;background:var(--surface);box-shadow:var(--shadow-sm);">Details</button>
@@ -6325,7 +6371,7 @@ async function saveVoDetailChanges(){
     return `<div style="padding:12px;color:var(--text-muted);font-size:13px;text-align:center;">Keine Positionen erfasst. <button class="btn btn-primary btn-sm" onclick="openNewPositionModal('${js(voId)}')" style="margin-left:8px;">+ Erste Position</button></div>`;
   }
 
-  return `<table style="width:100%;border-collapse:collapse;font-size:13px;">
+ return `<table class="responsive-table" style="width:100%;border-collapse:collapse;font-size:13px;">
     <thead>
       <tr style="background:var(--surface-3);">
         <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">#</th>
@@ -6335,30 +6381,35 @@ async function saveVoDetailChanges(){
         <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">Konditionen</th>
         <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">Status</th>
         <th style="padding:8px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:700;">Preis</th>
-${adminMode ? `<th style="padding:8px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:700;">Aktion</th>` : ""}
-</tr>
+        ${adminMode ? `<th style="padding:8px;text-align:right;font-size:11px;color:var(--text-muted);font-weight:700;">Aktion</th>` : ""}
+      </tr>
     </thead>
     <tbody>
       ${positionen.map((p, idx) => `<tr style="border-top:1px solid var(--border);">
-        <td style="padding:8px;color:var(--text-muted);">${idx + 1}</td>
+        <td style="padding:8px;color:var(--text-muted);"><span class="mobile-label">#</span>${idx + 1}</td>
         <td style="padding:8px;">
+          <span class="mobile-label">Typ / TN</span>
           <span style="background:var(--accent);color:white;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;">${e(clean(p["Typ"]))||"—"}</span>
-          ${clean(p["TN"])?`<div style="font-family:monospace;font-size:11px;color:var(--text-muted);margin-top:2px;">${e(clean(p["TN"]))}</div>`:""}
+          ${clean(p["TN"])?`<div style="font-family:monospace;font-size:11px;color:var(--text-muted);margin-top:4px;">${e(clean(p["TN"]))}</div>`:""}
         </td>
         <td style="padding:8px;">
+          <span class="mobile-label">Bezeichnung</span>
           <div style="font-weight:600;">${e(clean(p["Bezeichnung"]))||"—"}</div>
           ${clean(p["Dimension"])?`<div style="font-size:11px;color:var(--text-muted);">${e(clean(p["Dimension"]))}</div>`:""}
           ${clean(p["Bemerkungen"])?`<div style="font-size:11px;color:var(--warning);margin-top:4px;padding:4px 8px;background:var(--warning-bg);border-radius:4px;border-left:2px solid var(--warning);"><b>📝 Hinweis:</b> ${e(clean(p["Bemerkungen"]))}</div>`:""}
-          ${clean(p["Lagerort_Rad"])?`<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">📦 Lager: <b>${e(clean(p["Lagerort_Rad"]))}</b></div>`:""}
+          ${clean(p["Lagerort_Rad"])?`<div style="font-size:11px;color:var(--text-muted);margin-top:4px;">📦 Lager: <b>${e(clean(p["Lagerort_Rad"]))}</b></div>`:""}
         </td>
-        <td style="padding:8px;text-align:center;font-weight:700;">${e(clean(p["Anzahl"]))||"—"}</td>
-        <td style="padding:8px;font-size:11px;color:var(--text-secondary);">${e(clean(p["Konditionen"]))||"—"}</td>
-        <td style="padding:8px;">${vororderStatusBadge(p["Status"])}</td>
-        <td style="padding:8px;text-align:right;font-weight:700;color:var(--accent);">${clean(p["VK"]) ? e(formatPrice(p["VK"])) + " CHF" : "—"}</td>
+        <td style="padding:8px;text-align:center;font-weight:700;"><span class="mobile-label">Anzahl</span>${e(clean(p["Anzahl"]))||"—"}</td>
+        <td style="padding:8px;font-size:11px;color:var(--text-secondary);"><span class="mobile-label">Konditionen</span>${e(clean(p["Konditionen"]))||"—"}</td>
+        <td style="padding:8px;"><span class="mobile-label">Status</span>${vororderStatusBadge(p["Status"])}</td>
+        <td style="padding:8px;text-align:right;font-weight:700;color:var(--accent);"><span class="mobile-label">Preis</span>${clean(p["VK"]) ? e(formatPrice(p["VK"])) + " CHF" : "—"}</td>
         ${adminMode ? `<td style="padding:8px;text-align:right;white-space:nowrap;">
-          <button class="btn btn-secondary btn-sm" onclick="openEditPositionModal('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;">✏️</button>
-          ${clean(p["Typ"])==="WKR"?`<button class="btn btn-secondary btn-sm" onclick="printPositionLabel('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;" title="Etikette drucken">🏷️</button>`:""}
-          <button class="btn btn-danger btn-sm" onclick="deletePosition('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;">🗑️</button>
+          <span class="mobile-label">Aktion</span>
+          <div style="display:flex;gap:4px;">
+            <button class="btn btn-secondary btn-sm" onclick="openEditPositionModal('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;">✏️</button>
+            ${clean(p["Typ"])==="WKR"?`<button class="btn btn-secondary btn-sm" onclick="printPositionLabel('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;" title="Etikette drucken">🏷️</button>`:""}
+            <button class="btn btn-danger btn-sm" onclick="deletePosition('${js(clean(p["PositionID"]))}')" style="padding:4px 8px;font-size:11px;">🗑️</button>
+          </div>
         </td>` : ""}
       </tr>`).join("")}
     </tbody>
