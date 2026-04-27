@@ -1978,8 +1978,41 @@ body.mini-brand .vehicle-card:hover { background: var(--surface); }
     <div class="modal-title">Aktive Reservierungen</div>
     <div class="modal-subtitle" id="resInfoSubtitle"></div>
     <div id="resInfoContent" style="margin: 16px 0; font-size: 14px; line-height: 1.6; max-height: 300px; overflow-y: auto;"></div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="document.getElementById('reservationInfoModal').classList.remove('open')">Schliessen</button>
+   <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="document.getElementById('reservationInfoModal').classList.remove('open')">Schliessen</button>
+    </div>
+  </div>
+</div>
+
+<div id="umbuchungModal" class="modal-overlay" style="z-index:3000;">
+  <div class="modal-box" style="max-width: 400px;">
+    <div class="modal-title">Lagerumbuchung</div>
+    <div class="modal-subtitle">WKR an anderen Standort verschieben</div>
+    
+    <div style="background:var(--surface-2); border:1px solid var(--border); padding:16px; border-radius:8px; margin-bottom:20px; font-size:14px;">
+      <div style="margin-bottom:8px;"><b>TN:</b> <span id="umbTN" style="font-family:monospace;"></span></div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase;">Von</div>
+          <div id="umbVon" style="font-weight:700; color:var(--error);"></div>
+        </div>
+        <div style="font-size:20px; color:var(--text-muted);">➡️</div>
+        <div style="text-align:right;">
+          <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase;">Nach</div>
+          <div id="umbNach" style="font-weight:700; color:var(--success);"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label>Menge (Stück) *</label>
+      <input id="umbMenge" type="number" min="1" value="4">
+      <div id="umbMaxHint" style="font-size:11px; color:var(--text-muted); margin-top:4px;"></div>
+    </div>
+
+    <div class="modal-actions" style="margin-top:24px;">
+      <button class="btn btn-secondary" onclick="closeUmbuchungModal()">Abbrechen</button>
+      <button id="submitUmbuchungBtn" class="btn btn-primary" onclick="submitUmbuchung()">🔄 Jetzt umbuchen</button>
     </div>
   </div>
 </div>
@@ -5271,21 +5304,17 @@ function renderAdminWkrItem(r){
         </div>
       </div>
 
-      ${isLowStock ? `<span class="stock-warning-chip" style="margin-top:8px; display:inline-block;">⚠ Kritischer Lager</span>` : ""}
-      
-      <div class="product-actions" style="margin-top:12px;">
-        <button class="btn btn-primary btn-sm" onclick="openEditWkrModal('${js(tn)}')">Bearbeiten</button>
-        <button class="btn btn-secondary btn-sm" onclick="printWkrLabel('${js(tn)}')">Etikette drucken</button>
-      </div>
-    </div>
-  </div>`;
+     ${isLowStock ? `<span class="stock-warning-chip" style="margin-top:8px; display:inline-block;">⚠ Kritischer Lager</span>` : ""}
+      
+      <div class="product-actions" style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-primary btn-sm" onclick="openEditWkrModal('${js(tn)}')">Bearbeiten</button>
+        <button class="btn btn-secondary btn-sm" onclick="openUmbuchungModal('${js(tn)}', '${js(clean(r["Standort"]))}', ${verfuegbar})">🔄 Umbuchen</button>
+        <button class="btn btn-secondary btn-sm" onclick="printWkrLabel('${js(tn)}')">Etikette drucken</button>
+      </div>
+    </div>
+  </div>`;
 }
-/* ============================================================
-   RESERVIERUNGEN ANZEIGEN (Schönes Modal)
-   ============================================================ */
-/* ============================================================
-   RESERVIERUNGEN ANZEIGEN (Schönes Modal)
-   ============================================================ */
+
 /* ============================================================
    RESERVIERUNGEN ANZEIGEN (Schönes Modal)
    ============================================================ */
@@ -7218,8 +7247,83 @@ function printWkrLabel(tn){
 }
 
 /* ============================================================
-   KEYBOARD
+   LAGER-UMBUCHUNG (FRONTEND)
    ============================================================ */
+let _umbuchungData = null;
+
+function openUmbuchungModal(tn, currentStandort, maxVerfuegbar) {
+  if (maxVerfuegbar <= 0) {
+    alert("Es gibt keinen frei verfügbaren Bestand, den man umbuchen könnte.");
+    return;
+  }
+  
+  const targetStandort = currentStandort === "GEB" ? "HET" : "GEB";
+  _umbuchungData = { tn: tn, von: currentStandort, nach: targetStandort };
+  
+  document.getElementById("umbTN").textContent = tn;
+  document.getElementById("umbVon").textContent = standortLabel(currentStandort);
+  document.getElementById("umbNach").textContent = standortLabel(targetStandort);
+  
+  const input = document.getElementById("umbMenge");
+  input.max = maxVerfuegbar;
+  input.value = Math.min(4, maxVerfuegbar); // Standardmässig 1 Satz oder was noch da ist
+  
+  document.getElementById("umbMaxHint").textContent = `Maximal ${maxVerfuegbar} Stück frei verfügbar zum Umbuchen.`;
+  document.getElementById("umbuchungModal").classList.add("open");
+}
+
+function closeUmbuchungModal() {
+  document.getElementById("umbuchungModal").classList.remove("open");
+  _umbuchungData = null;
+}
+
+async function submitUmbuchung() {
+  if (!_umbuchungData) return;
+  const menge = parseInt(document.getElementById("umbMenge").value, 10);
+  
+  if (!menge || menge <= 0) {
+    alert("Bitte eine gültige Menge eingeben.");
+    return;
+  }
+
+  const btn = document.getElementById("submitUmbuchungBtn");
+  btn.disabled = true;
+  btn.textContent = "⏳ Buche um...";
+
+  try {
+    const res = await postToScript({
+      action: "umbuchung",
+      tn: _umbuchungData.tn,
+      vonStandort: _umbuchungData.von,
+      nachStandort: _umbuchungData.nach,
+      menge: menge
+    });
+
+    if (res && res.status === "OK") {
+      alert(`✅ Erfolgreich ${menge} Stück nach ${standortLabel(_umbuchungData.nach)} verschoben.`);
+      closeUmbuchungModal();
+      
+      // Produkte-Datenbank neu laden, damit die UI die neuen Bestände anzeigt
+      try {
+        const p = await fetch(URLS.produkte).then(r=>r.json());
+        if (Array.isArray(p)) produkte = p;
+      } catch(e) {}
+      
+      render(); // Seite neu aufbauen
+    } else {
+      alert("Fehler bei der Umbuchung: " + (res.message || JSON.stringify(res)));
+    }
+  } catch(err) {
+    alert("Fehler: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "🔄 Jetzt umbuchen";
+  }
+}
+
+/* ============================================================
+   KEYBOARD
+   ============================================================ */
 document.addEventListener("keydown",function(ev){
   if(ev.key!=="Enter")return;
   const id=document.activeElement?.id;
