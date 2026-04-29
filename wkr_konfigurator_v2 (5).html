@@ -7591,13 +7591,13 @@ function printVororderSammelEtikette(voId){
   w.document.close();
 }
 </script>
-  <script type="module">
-  // 1. Firebase App & Auth importieren (wie bisher)
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+ <script type="module">
+  // 1. Firebase App & Auth importieren (STABILE VERSION 10.12.2)
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   
-  // 2. NEU: Firestore importieren
-  import { getFirestore, collection, doc, setDoc, addDoc, writeBatch } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+  // 2. NEU: Firestore importieren (STABILE VERSION 10.12.2)
+  import { getFirestore, collection, doc, setDoc, addDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   // Deine bestehende Config
   const firebaseConfig = {
@@ -7614,7 +7614,7 @@ function printVororderSammelEtikette(voId){
   const firebaseApp = initializeApp(firebaseConfig);
   const firebaseAuth = getAuth(firebaseApp);
   
-  // 3. NEU: Firestore initialisieren
+  // 3. Firestore initialisieren
   const db = getFirestore(firebaseApp);
 
   // Auth-Funktionen global machen (wie bisher)
@@ -7625,7 +7625,7 @@ function printVororderSammelEtikette(voId){
   window.firebaseSetPersistence = setPersistence;
   window.firebaseBrowserLocalPersistence = browserLocalPersistence;
 
-  // 4. NEU: Firestore & wichtige Funktionen global machen, 
+  // 4. Firestore & wichtige Funktionen global machen, 
   // damit unsere anderen Skripte darauf zugreifen können
   window.db = db;
   window.collection = collection;
@@ -7644,7 +7644,7 @@ function printVororderSammelEtikette(voId){
       window.applyFirebaseAdminState();
     }
   });
-     /* ============================================================
+    /* ============================================================
    TEMPORÄRES MIGRATIONS-SKRIPT (Sheets -> Firestore)
    Nach der Migration kann dieser Code wieder gelöscht werden.
    ============================================================ */
@@ -7748,5 +7748,3 @@ async function startDatabaseMigration() {
 }
 window.startDatabaseMigration = startDatabaseMigration;
 </script>
-</body>
-</html>
