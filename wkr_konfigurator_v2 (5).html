@@ -7644,6 +7644,109 @@ function printVororderSammelEtikette(voId){
       window.applyFirebaseAdminState();
     }
   });
+   /* ============================================================
+   TEMPORÄRES MIGRATIONS-SKRIPT (Sheets -> Firestore)
+   Nach der Migration kann dieser Code wieder gelöscht werden.
+   ============================================================ */
+async function startDatabaseMigration() {
+  if (!confirm("Achtung: Möchtest du jetzt die Daten aus Google Sheets nach Firestore kopieren?")) return;
+
+  const btn = document.getElementById("migrationBtn");
+  if(btn) btn.textContent = "⏳ Migriere WKR...";
+
+  try {
+    // --- 1. WKR (PRODUKTE) MIGRIEREN ---
+    const prodRes = await fetch(URLS.produkte);
+    const produkteData = await prodRes.json();
+    
+    // Einen "Batch" vorbereiten
+    let batch = window.writeBatch(window.db);
+    let count = 0;
+
+    produkteData.forEach(p => {
+      // Teilenummer säubern, um sie als eindeutige ID zu nutzen
+      let tn = (p["TN"] || "").toString().trim().replace(/\s+/g, "").toUpperCase();
+      if (!tn) tn = "UNKNOWN_" + Math.floor(Math.random() * 100000);
+      
+      // Referenz auf das Dokument in der Collection "produkte" mit der ID "tn"
+      const docRef = window.doc(window.db, "produkte", tn);
+      batch.set(docRef, p);
+      count++;
+    });
+
+    await batch.commit(); // Speichert alles auf einmal!
+    console.log(`✅ ${count} Produkte migriert.`);
+
+    // --- 2. REIFEN MIGRIEREN ---
+    if(btn) btn.textContent = "⏳ Migriere Reifen...";
+    const reifenRes = await fetch(URLS.reifen);
+    const reifenData = await reifenRes.json();
+    
+    batch = window.writeBatch(window.db); // Neuen Batch starten
+    count = 0;
+
+    reifenData.forEach(r => {
+      // Bei Reifen lassen wir Firestore die ID generieren (doc ohne ID-Angabe)
+      const docRef = window.doc(window.collection(window.db, "reifen"));
+      
+      // Falls das Google Sheet eine eigene ID mitliefert, speichern wir sie mit
+      if(r["ID"]) {
+        batch.set(window.doc(window.db, "reifen", r["ID"].toString()), r);
+      } else {
+        batch.set(docRef, r);
+      }
+      count++;
+    });
+
+    await batch.commit();
+    console.log(`✅ ${count} Reifen migriert.`);
+
+    // --- 3. FAHRZEUGE MIGRIEREN ---
+    if(btn) btn.textContent = "⏳ Migriere Fahrzeuge...";
+    const fzRes = await fetch(URLS.fahrzeuge);
+    const fzData = await fzRes.json();
+    
+    batch = window.writeBatch(window.db);
+    count = 0;
+
+    fzData.forEach(fz => {
+      const docRef = window.doc(window.collection(window.db, "fahrzeuge"));
+      batch.set(docRef, fz);
+      count++;
+    });
+
+    await batch.commit();
+    console.log(`✅ ${count} Fahrzeuge migriert.`);
+
+    // --- 4. ZUORDNUNG MIGRIEREN ---
+    if(btn) btn.textContent = "⏳ Migriere Zuordnung...";
+    const mapRes = await fetch(URLS.mapping);
+    const mapData = await mapRes.json();
+    
+    // Achtung: Ein Batch erlaubt max. 500 Operationen. 
+    // Falls du mehr Zuordnungen hast, müssten wir splitten. Wir gehen hier von < 500 aus.
+    batch = window.writeBatch(window.db);
+    count = 0;
+
+    mapData.forEach(m => {
+      const docRef = window.doc(window.collection(window.db, "zuordnung"));
+      batch.set(docRef, m);
+      count++;
+    });
+
+    await batch.commit();
+    console.log(`✅ ${count} Zuordnungen migriert.`);
+
+    if(btn) btn.textContent = "✅ Migration abgeschlossen!";
+    alert("Super! Die Basisdaten (WKR, Reifen, Fahrzeuge, Zuordnung) wurden erfolgreich nach Firestore kopiert.\nSchau in deine Firebase Console, um das Ergebnis zu sehen.");
+
+  } catch (error) {
+    console.error("Migration fehlgeschlagen:", error);
+    alert("Fehler bei der Migration: " + error.message);
+    if(btn) btn.textContent = "❌ Fehler";
+  }
+}
+window.startDatabaseMigration = startDatabaseMigration;
 </script>
 </body>
 </html>
