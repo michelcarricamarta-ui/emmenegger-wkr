@@ -7644,7 +7644,7 @@ function printVororderSammelEtikette(voId){
       window.applyFirebaseAdminState();
     }
   });
-  /* ============================================================
+ /* ============================================================
    VOLLSTÄNDIGES MIGRATIONS-SKRIPT (Sheets -> Firestore)
    Kopiert Katalogdaten UND Aufträge in die Datenbank
    ============================================================ */
@@ -7662,9 +7662,15 @@ async function startDatabaseMigration() {
     let count = 0;
 
     produkteData.forEach(p => {
+      // Teilenummer formatieren
       let tn = (p["TN"] || "").toString().trim().replace(/\s+/g, "").toUpperCase();
       if (!tn) tn = "UNKNOWN_" + Math.floor(Math.random() * 100000);
-      batch.set(window.doc(window.db, "produkte", tn), p);
+      
+      // NEU: Standort auslesen und an die ID anhängen, um Überschreiben zu verhindern!
+      let standort = (p["Standort"] || "UNKNOWN").toString().trim().toUpperCase();
+      let docId = `${tn}_${standort}`; // Ergibt z.B. "5B4E918_GEB"
+      
+      batch.set(window.doc(window.db, "produkte", docId), p);
       count++;
     });
     await batch.commit();
@@ -7715,7 +7721,6 @@ async function startDatabaseMigration() {
 
     // --- 5. VORORDER MIGRIEREN ---
     if(btn) btn.textContent = "⏳ Lade Vororder...";
-    // Wir nutzen hier dein Apps Script, da Vororders nicht über die offene URL abrufbar sind
     const voRes = await postToScript({ action: "vororderList" });
     if(voRes && voRes.status === "OK" && voRes.data) {
       batch = window.writeBatch(window.db);
@@ -7735,9 +7740,6 @@ async function startDatabaseMigration() {
     if(posRes && posRes.status === "OK" && posRes.data) {
       batch = window.writeBatch(window.db);
       count = 0;
-      // Info: Ein Firebase-Batch kann maximal 500 Dokumente auf einmal speichern. 
-      // Wenn du später sehr viele Positionen hast, müssten wir das aufteilen, 
-      // aber für den Start reicht das locker.
       posRes.data.forEach(p => {
         const docRef = window.doc(window.db, "vororder_positionen", String(p["PositionID"]));
         batch.set(docRef, p);
@@ -7748,7 +7750,7 @@ async function startDatabaseMigration() {
     }
 
     if(btn) btn.textContent = "✅ Migration abgeschlossen!";
-    alert("Super! ALLE Daten inkl. Vororders wurden erfolgreich aus dem Excel nach Firestore kopiert!");
+    alert("Super! ALLE Daten (inklusive Vororder und korrekten Standorten) wurden erfolgreich nach Firestore kopiert!");
 
   } catch (error) {
     console.error("Migration fehlgeschlagen:", error);
