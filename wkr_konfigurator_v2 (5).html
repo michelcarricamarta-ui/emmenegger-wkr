@@ -1391,6 +1391,9 @@ body.mini-brand .vehicle-card:hover { background: var(--surface); }
     </div>
   <div id="desktopActions" style="display:flex;align-items:center;gap:8px;">
     <button id="internalLoginBtn" class="login-btn" onclick="activateInternalMode()">Interner Login</button>
+     <button id="migrationBtn" class="btn btn-danger" onclick="startDatabaseMigration()" style="margin-left: 20px;">
+  🚀 Starte Daten-Migration
+</button>
     <button id="adminLoginBtn" class="login-btn" onclick="activateAdminMode()">Admin Login</button>
     <button id="publicViewBtn" class="login-btn" onclick="deactivateAllModes()" style="display:none;">Öffentlich</button>
     <div id="userBadge" style="display:none; align-items:center; gap:6px; padding:6px 12px; background:var(--surface-3); border:1px solid var(--border); border-radius:var(--radius-sm); font-size:12px; font-weight:600; color:var(--text-secondary); white-space:nowrap;"></div>
@@ -7588,10 +7591,15 @@ function printVororderSammelEtikette(voId){
   w.document.close();
 }
 </script>
-   <script type="module">
+  <script type="module">
+  // 1. Firebase App & Auth importieren (wie bisher)
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+  
+  // 2. NEU: Firestore importieren
+  import { getFirestore, collection, doc, setDoc, addDoc, writeBatch } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
 
+  // Deine bestehende Config
   const firebaseConfig = {
     apiKey: "AIzaSyADRZKpIOpebCWLG7lDFgxKb-LiIkzGeYk",
     authDomain: "wkr-hompage-login.firebaseapp.com",
@@ -7602,27 +7610,143 @@ function printVororderSammelEtikette(voId){
     measurementId: "G-E4G5HQVSX4"
   };
 
+  // Firebase initialisieren
   const firebaseApp = initializeApp(firebaseConfig);
   const firebaseAuth = getAuth(firebaseApp);
+  
+  // 3. NEU: Firestore initialisieren
+  const db = getFirestore(firebaseApp);
 
+  // Auth-Funktionen global machen (wie bisher)
   window.firebaseAuth = firebaseAuth;
-window.firebaseSignInWithEmailAndPassword = signInWithEmailAndPassword;
-window.firebaseOnAuthStateChanged = onAuthStateChanged;
-window.firebaseSignOut = signOut;
-window.firebaseSetPersistence = setPersistence;
-window.firebaseBrowserLocalPersistence = browserLocalPersistence;
+  window.firebaseSignInWithEmailAndPassword = signInWithEmailAndPassword;
+  window.firebaseOnAuthStateChanged = onAuthStateChanged;
+  window.firebaseSignOut = signOut;
+  window.firebaseSetPersistence = setPersistence;
+  window.firebaseBrowserLocalPersistence = browserLocalPersistence;
 
-window.firebaseOnAuthStateChanged(firebaseAuth, (user) => {
-  if (user) {
-    window.isFirebaseAdminLoggedIn = true;
-  } else {
-    window.isFirebaseAdminLoggedIn = false;
-  }
+  // 4. NEU: Firestore & wichtige Funktionen global machen, 
+  // damit unsere anderen Skripte darauf zugreifen können
+  window.db = db;
+  window.collection = collection;
+  window.doc = doc;
+  window.setDoc = setDoc;
+  window.addDoc = addDoc;
+  window.writeBatch = writeBatch;
 
-  if (typeof window.applyFirebaseAdminState === "function") {
-    window.applyFirebaseAdminState();
+  window.firebaseOnAuthStateChanged(firebaseAuth, (user) => {
+    if (user) {
+      window.isFirebaseAdminLoggedIn = true;
+    } else {
+      window.isFirebaseAdminLoggedIn = false;
+    }
+    if (typeof window.applyFirebaseAdminState === "function") {
+      window.applyFirebaseAdminState();
+    }
+  });
+     /* ============================================================
+   TEMPORÄRES MIGRATIONS-SKRIPT (Sheets -> Firestore)
+   Nach der Migration kann dieser Code wieder gelöscht werden.
+   ============================================================ */
+async function startDatabaseMigration() {
+  if (!confirm("Achtung: Möchtest du jetzt die Daten aus Google Sheets nach Firestore kopieren?")) return;
+
+  const btn = document.getElementById("migrationBtn");
+  if(btn) btn.textContent = "⏳ Migriere WKR...";
+
+  try {
+    // --- 1. WKR (PRODUKTE) MIGRIEREN ---
+    const prodRes = await fetch(URLS.produkte);
+    const produkteData = await prodRes.json();
+    
+    // Einen "Batch" vorbereiten
+    let batch = window.writeBatch(window.db);
+    let count = 0;
+
+    produkteData.forEach(p => {
+      // Teilenummer säubern, um sie als eindeutige ID zu nutzen
+      let tn = (p["TN"] || "").toString().trim().replace(/\s+/g, "").toUpperCase();
+      if (!tn) tn = "UNKNOWN_" + Math.floor(Math.random() * 100000);
+      
+      // Referenz auf das Dokument in der Collection "produkte" mit der ID "tn"
+      const docRef = window.doc(window.db, "produkte", tn);
+      batch.set(docRef, p);
+      count++;
+    });
+
+    await batch.commit(); // Speichert alles auf einmal!
+    console.log(`✅ ${count} Produkte migriert.`);
+
+    // --- 2. REIFEN MIGRIEREN ---
+    if(btn) btn.textContent = "⏳ Migriere Reifen...";
+    const reifenRes = await fetch(URLS.reifen);
+    const reifenData = await reifenRes.json();
+    
+    batch = window.writeBatch(window.db); // Neuen Batch starten
+    count = 0;
+
+    reifenData.forEach(r => {
+      // Bei Reifen lassen wir Firestore die ID generieren (doc ohne ID-Angabe)
+      const docRef = window.doc(window.collection(window.db, "reifen"));
+      
+      // Falls das Google Sheet eine eigene ID mitliefert, speichern wir sie mit
+      if(r["ID"]) {
+        batch.set(window.doc(window.db, "reifen", r["ID"].toString()), r);
+      } else {
+        batch.set(docRef, r);
+      }
+      count++;
+    });
+
+    await batch.commit();
+    console.log(`✅ ${count} Reifen migriert.`);
+
+    // --- 3. FAHRZEUGE MIGRIEREN ---
+    if(btn) btn.textContent = "⏳ Migriere Fahrzeuge...";
+    const fzRes = await fetch(URLS.fahrzeuge);
+    const fzData = await fzRes.json();
+    
+    batch = window.writeBatch(window.db);
+    count = 0;
+
+    fzData.forEach(fz => {
+      const docRef = window.doc(window.collection(window.db, "fahrzeuge"));
+      batch.set(docRef, fz);
+      count++;
+    });
+
+    await batch.commit();
+    console.log(`✅ ${count} Fahrzeuge migriert.`);
+
+    // --- 4. ZUORDNUNG MIGRIEREN ---
+    if(btn) btn.textContent = "⏳ Migriere Zuordnung...";
+    const mapRes = await fetch(URLS.mapping);
+    const mapData = await mapRes.json();
+    
+    // Achtung: Ein Batch erlaubt max. 500 Operationen. 
+    // Falls du mehr Zuordnungen hast, müssten wir splitten. Wir gehen hier von < 500 aus.
+    batch = window.writeBatch(window.db);
+    count = 0;
+
+    mapData.forEach(m => {
+      const docRef = window.doc(window.collection(window.db, "zuordnung"));
+      batch.set(docRef, m);
+      count++;
+    });
+
+    await batch.commit();
+    console.log(`✅ ${count} Zuordnungen migriert.`);
+
+    if(btn) btn.textContent = "✅ Migration abgeschlossen!";
+    alert("Super! Die Basisdaten (WKR, Reifen, Fahrzeuge, Zuordnung) wurden erfolgreich nach Firestore kopiert.\nSchau in deine Firebase Console, um das Ergebnis zu sehen.");
+
+  } catch (error) {
+    console.error("Migration fehlgeschlagen:", error);
+    alert("Fehler bei der Migration: " + error.message);
+    if(btn) btn.textContent = "❌ Fehler";
   }
-});
+}
+window.startDatabaseMigration = startDatabaseMigration;
 </script>
 </body>
 </html>
