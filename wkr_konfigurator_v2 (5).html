@@ -3458,216 +3458,253 @@ function renderAdminSidebar(){
 function renderAdminDashboard(){
   const s = getDashboardStats();
 
-  // ─── Business-Metriken ───
-  let offeneVororders = 0, umsatzPotenzial = 0, reservierteWKR = 0, sammelbestellung = 0;
-  let offeneAnfragen = 0, bestellt = 0;
+  let offeneVororders = 0, reservierteWKR = 0, sammelbestellung = 0;
+  let offeneAnfragen = 0, bestellt = 0, excelVororder = 0;
+  let bestelltAusstehend = [];
   let dringendeVororders = [];
-  
+
   if (vororderLoaded && vororder) {
+    excelVororder = vororder.filter(v => clean(v["Status"]) === "Excel-Vororder").length;
     offeneVororders = vororder.filter(v => ["Kundenauswahl","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt"].includes(clean(v["Status"]))).length;
-    umsatzPotenzial = vororder.filter(v => ["Offeriert", "Sammelbestellung (Vororder26)", "Bestellt"].includes(clean(v["Status"]))).reduce((sum, v) => sum + (parsePrice(v["VK"]) || 0), 0);
     reservierteWKR = vororder.filter(v => clean(v["Status"]) === "Reserviert").length;
     sammelbestellung = vororder.filter(v => clean(v["Status"]) === "Sammelbestellung (Vororder26)").length;
-    offeneAnfragen = vororder.filter(v => ["Kundenauswahl", "Offerte ausstehend"].includes(clean(v["Status"]))).length;
+    offeneAnfragen = vororder.filter(v => ["Kundenauswahl","Offerte ausstehend"].includes(clean(v["Status"]))).length;
     bestellt = vororder.filter(v => clean(v["Status"]) === "Bestellt").length;
 
-   // NEU: Fokus auf offene Anfragen und neue Bestellungen
+    bestelltAusstehend = vororder.filter(v => clean(v["Status"]) === "Bestellt")
+      .sort((a,b) => new Date(clean(a["Ablieferung"])) - new Date(clean(b["Ablieferung"])))
+      .slice(0, 8);
+
     dringendeVororders = vororder.filter(v => {
       const status = clean(v["Status"]);
-      return status === "Kunde hat bestellt" || status === "Kundenauswahl";
+      return status === "Kunde hat bestellt" || status === "Kundenauswahl" || status === "Excel-Vororder";
     }).sort((a,b) => {
-      // Priorität 1: Bestellungen ganz nach oben
       const statusA = clean(a["Status"]);
       const statusB = clean(b["Status"]);
       if (statusA === "Kunde hat bestellt" && statusB !== "Kunde hat bestellt") return -1;
       if (statusB === "Kunde hat bestellt" && statusA !== "Kunde hat bestellt") return 1;
-      
-      // Priorität 2: Älteste Anfragen zuerst (damit nichts liegen bleibt)
-      return new Date(clean(a["ErfasstAm"])) - new Date(clean(b["ErfasstAm"]));
+      return new Date(clean(b["ErfasstAm"])) - new Date(clean(a["ErfasstAm"]));
     }).slice(0, 6);
   }
 
-  // ─── Styles als Konstanten ───
-  const spotlightStyle = `
-    background:var(--surface);
-    border:1px solid var(--border);
-    border-radius:14px;
-    padding:24px;
-    cursor:pointer;
-    transition:all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    position:relative;
-    overflow:hidden;
-  `;
-  const spotlightHover = "this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 32px rgba(28,105,212,0.15)';this.style.borderColor='var(--accent)';";
-  const spotlightOut = "this.style.transform='none';this.style.boxShadow='none';this.style.borderColor='var(--border)';";
+  const wkrTG = produkte.filter(p => {
+    const lo = clean(p["Lagerort"]).toUpperCase();
+    return lo.includes("TG") && (parseInt(clean(p["Lager"]),10)||0) > 0;
+  });
+  const wkrVilligen = produkte.filter(p => {
+    const lo = clean(p["Lagerort"]).toUpperCase();
+    return lo.includes("VILLIGEN") && (parseInt(clean(p["Lager"]),10)||0) > 0;
+  });
+  const wkrKeinLager = produkte.filter(p => (parseInt(clean(p["Lager"]),10)||0) === 0);
 
-  const groupStyle = "background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:18px;";
-  const actionCardStyle = `
-    background:var(--surface-2);
-    border:1px solid var(--border);
-    border-radius:8px;
-    padding:14px;
-    cursor:pointer;
-    transition:all 0.2s;
-    display:flex;
-    gap:10px;
-    align-items:center;
-  `;
-  const actionCardHover = "this.style.borderColor='var(--accent)';this.style.background='var(--surface)';";
-  const actionCardOut = "this.style.borderColor='var(--border)';this.style.background='var(--surface-2)';";
-
-  const actionCard = (icon, title, sub, onclick) => `
-    <div style="${actionCardStyle}" onclick="${onclick}" onmouseover="${actionCardHover}" onmouseout="${actionCardOut}">
-      <div style="font-size:18px;flex-shrink:0;">${icon}</div>
-      <div style="min-width:0;">
-        <div style="font-size:13px;font-weight:700;color:var(--text-primary);line-height:1.2;margin-bottom:2px;">${title}</div>
-        <div style="font-size:11px;color:var(--text-muted);line-height:1.3;">${sub}</div>
-      </div>
-    </div>`;
+  const cardStyle = `background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:20px;`;
+  const spotlightStyle = `background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;cursor:pointer;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);position:relative;overflow:hidden;`;
+  const spotlightHover = "this.style.transform=\'translateY(-3px)\';this.style.boxShadow=\'0 12px 32px rgba(28,105,212,0.15)\';this.style.borderColor=\'var(--accent)\';";
+  const spotlightOut = "this.style.transform=\'none\';this.style.boxShadow=\'none\';this.style.borderColor=\'var(--border)\';";
 
   return `<div class="admin-content">
-    <!-- HEADER -->
-    <div class="admin-content-header" style="margin-bottom:24px;">
-      <div class="admin-content-title" style="font-size:26px;">Dashboard</div>
-      <div class="admin-content-sub">Willkommen ${e(currentUser?.name || "Admin")} · ${e(standortLabel(currentUser?.standort))}</div>
-    </div>
 
-    <!-- ═══════════════ SPOTLIGHT KPIs (5 Kacheln) ═══════════════ -->
-   <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:14px;margin-bottom:24px;">
-  
-  <div style="${spotlightStyle} border-top:4px solid #ca8a04;" onclick="vororderFilter.status='Excel-Vororder';selectAdminSection('vororder')" onmouseover="${spotlightHover}" onmouseout="${spotlightOut}">
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;">📋 Excel-Vororder</div>
-    <div style="font-size:48px;font-weight:800;color:#ca8a04;line-height:1;margin-bottom:8px;">${vororderLoaded ? vororder.filter(v => clean(v["Status"]) === "Excel-Vororder").length : "—"}</div>
-    <div style="font-size:12px;color:var(--text-secondary);">Vom Verkauf via Excel</div>
-  </div>
-
-  <div style="${spotlightStyle} border-top:4px solid #0ea5e9;" onclick="vororderFilter.status='Kundenauswahl';selectAdminSection('vororder')" onmouseover="${spotlightHover}" onmouseout="${spotlightOut}">
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;">🖥️ Kundenauswahl</div>
-    <div style="font-size:48px;font-weight:800;color:#0ea5e9;line-height:1;margin-bottom:8px;">${vororderLoaded ? vororder.filter(v => clean(v["Status"]) === "Kundenauswahl").length : "—"}</div>
-    <div style="font-size:12px;color:var(--text-secondary);">Anfragen via Online-Katalog</div>
-  </div>
-
-  <div style="${spotlightStyle} border-top:4px solid #ef4444;" onclick="vororderFilter.status='Kunde hat bestellt';selectAdminSection('vororder')" onmouseover="${spotlightHover}" onmouseout="${spotlightOut}">
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;">🚨 Kunde hat bestellt</div>
-    <div style="font-size:48px;font-weight:800;color:#ef4444;line-height:1;margin-bottom:8px;">${vororderLoaded ? vororder.filter(v => clean(v["Status"]) === "Kunde hat bestellt").length : "—"}</div>
-    <div style="font-size:12px;color:var(--text-secondary);">Dringend: Bei BMW bestellen!</div>
-  </div>
-
-  <div style="${spotlightStyle} border-top:4px solid #10b981;" onclick="vororderFilter.status='Reserviert';selectAdminSection('vororder')" onmouseover="${spotlightHover}" onmouseout="${spotlightOut}">
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;">✅ Reserviert</div>
-    <div style="font-size:48px;font-weight:800;color:#10b981;line-height:1;margin-bottom:8px;">${vororderLoaded ? reservierteWKR : "—"}</div>
-    <div style="font-size:12px;color:var(--text-secondary);">Ware eingetroffen, bereit</div>
-  </div>
-
-  <div style="${spotlightStyle} border-top:4px solid #0ea5e9;" onclick="selectAdminSection('wkr_list')" onmouseover="${spotlightHover}" onmouseout="${spotlightOut}">
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;">🛞 WKR Lager</div>
-    <div style="font-size:48px;font-weight:800;color:#0ea5e9;line-height:1;margin-bottom:8px;">${s.wkrInStock}<span style="font-size:18px;color:var(--text-muted);font-weight:400;"> / ${s.totalWkr}</span></div>
-    <div style="font-size:12px;color:var(--text-secondary);">
-      ${s.lowStockWkr > 0 ? `<span style="color:var(--warning);font-weight:700;">⚠ ${s.lowStockWkr} kritisch</span>` : "Alle Modelle verfügbar"}
-    </div>
-  </div>
-  
-</div>
-
-    <!-- ═══════════════ DRINGEND: Bestellungen - Anfragen ═══════════════ -->
-    ${dringendeVororders.length > 0 ? `
-    <div style="background:linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);border:1px solid #fbbf24;border-radius:12px;padding:22px;margin-bottom:24px;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
-        <div>
-          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#92400e;margin-bottom:4px;">⚡ Neu eingetroffen</div>
-          <div style="font-size:18px;font-weight:700;color:#78350f;">Offene Anfragen & Bestellungen</div>
-          <div style="font-size:12px;color:#92400e;margin-top:2px;">${dringendeVororders.length} Vorgänge warten auf Bearbeitung</div>
-        </div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
+      <div>
+        <div class="admin-content-title" style="font-size:26px;">Dashboard</div>
+        <div class="admin-content-sub">Willkommen ${e(currentUser?.name || "Admin")} · ${e(standortLabel(currentUser?.standort))}</div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:10px;">
+      <div style="text-align:right;">
+        <div id="liveClock" style="font-size:28px;font-weight:700;color:var(--accent);font-family:monospace;line-height:1;"></div>
+        <div id="liveDate" style="font-size:12px;color:var(--text-muted);margin-top:4px;"></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:14px;margin-bottom:28px;">
+
+      <div style="${spotlightStyle} border-top:4px solid #ca8a04;" onclick="vororderFilter.status=\'Excel-Vororder\';selectAdminSection(\'vororder\')" onmouseover="${spotlightHover}" onmouseout="${spotlightOut}">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;">📋 Excel-Vororder</div>
+        <div style="font-size:48px;font-weight:800;color:#ca8a04;line-height:1;margin-bottom:8px;">${vororderLoaded ? excelVororder : "—"}</div>
+        <div style="font-size:12px;color:var(--text-secondary);">Vom Verkauf via Excel</div>
+      </div>
+
+      <div style="${spotlightStyle} border-top:4px solid #0ea5e9;" onclick="vororderFilter.status=\'Kundenauswahl\';selectAdminSection(\'vororder\')" onmouseover="${spotlightHover}" onmouseout="${spotlightOut}">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;">🖥️ Kundenauswahl</div>
+        <div style="font-size:48px;font-weight:800;color:#0ea5e9;line-height:1;margin-bottom:8px;">${vororderLoaded ? vororder.filter(v => clean(v["Status"]) === "Kundenauswahl").length : "—"}</div>
+        <div style="font-size:12px;color:var(--text-secondary);">Anfragen via Online-Katalog</div>
+      </div>
+
+      <div style="${spotlightStyle} border-top:4px solid #ef4444;" onclick="vororderFilter.status=\'Kunde hat bestellt\';selectAdminSection(\'vororder\')" onmouseover="${spotlightHover}" onmouseout="${spotlightOut}">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;">🚨 Kunde hat bestellt</div>
+        <div style="font-size:48px;font-weight:800;color:#ef4444;line-height:1;margin-bottom:8px;">${vororderLoaded ? vororder.filter(v => clean(v["Status"]) === "Kunde hat bestellt").length : "—"}</div>
+        <div style="font-size:12px;color:var(--text-secondary);">Dringend: Bei BMW bestellen!</div>
+      </div>
+
+      <div style="${spotlightStyle} border-top:4px solid #10b981;" onclick="vororderFilter.status=\'Reserviert\';selectAdminSection(\'vororder\')" onmouseover="${spotlightHover}" onmouseout="${spotlightOut}">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;">✅ Reserviert</div>
+        <div style="font-size:48px;font-weight:800;color:#10b981;line-height:1;margin-bottom:8px;">${vororderLoaded ? reservierteWKR : "—"}</div>
+        <div style="font-size:12px;color:var(--text-secondary);">Ware eingetroffen, bereit</div>
+      </div>
+
+      <div style="${spotlightStyle} border-top:4px solid #0ea5e9;" onclick="selectAdminSection(\'wkr_list\')" onmouseover="${spotlightHover}" onmouseout="${spotlightOut}">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;">🛞 WKR Lager</div>
+        <div style="font-size:48px;font-weight:800;color:#0ea5e9;line-height:1;margin-bottom:8px;">${s.wkrInStock}<span style="font-size:18px;color:var(--text-muted);font-weight:400;"> / ${s.totalWkr}</span></div>
+        <div style="font-size:12px;color:var(--text-secondary);">${s.lowStockWkr > 0 ? `<span style="color:var(--warning);font-weight:700;">⚠ ${s.lowStockWkr} kritisch</span>` : "Alle Modelle verfügbar"}</div>
+      </div>
+
+    </div>
+
+    ${dringendeVororders.length > 0 ? `
+    <div style="${cardStyle} border-left:4px solid #f59e0b;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div>
+          <div style="font-size:16px;font-weight:700;color:var(--text-primary);">⚡ Heute zu erledigen</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${dringendeVororders.length} Vorgänge warten auf Bearbeitung</div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="selectAdminSection(\'vororder\')">Alle anzeigen →</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:10px;">
         ${dringendeVororders.map(v => {
           const status = clean(v["Status"]);
           const isBestellung = status === "Kunde hat bestellt";
-          const badgeBg = isBestellung ? "#ef4444" : "#0ea5e9";
-          const badgeText = isBestellung ? "BESTELLUNG" : "ANFRAGE";
+          const isExcel = status === "Excel-Vororder";
+          const badgeBg = isBestellung ? "#ef4444" : isExcel ? "#ca8a04" : "#0ea5e9";
+          const badgeText = isBestellung ? "BESTELLUNG" : isExcel ? "EXCEL" : "ANFRAGE";
           return `
-          <div style="background:white;border:1px solid ${isBestellung ? '#fca5a5' : '#fbbf24'};border-radius:8px;padding:12px;cursor:pointer;transition:all 0.2s;" 
-               onclick="openVororderDetail('${js(clean(v["ID"]))}')"
-               onmouseover="this.style.borderColor='${isBestellung ? '#ef4444' : '#d97706'}';this.style.transform='translateY(-1px)';"
-               onmouseout="this.style.borderColor='${isBestellung ? '#fca5a5' : '#fbbf24'}';this.style.transform='none';">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-              <span style="font-family:monospace;font-size:11px;color:#92400e;font-weight:700;">${e(clean(v["ID"]))}</span>
+          <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:all 0.2s;"
+               onclick="openVororderDetail(\'${js(clean(v["ID"]))}\')"
+               onmouseover="this.style.borderColor=\'var(--accent)\';this.style.transform=\'translateY(-2px)\';"
+               onmouseout="this.style.borderColor=\'var(--border)\';this.style.transform=\'none\';">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <span style="font-family:monospace;font-size:11px;color:var(--text-muted);font-weight:700;">${e(clean(v["ID"]))}</span>
               <span style="background:${badgeBg};color:white;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;">${badgeText}</span>
             </div>
-            <div style="font-weight:700;color:#1a1a1a;margin-bottom:2px;font-size:14px;">${e(clean(v["Kundenname"]))||"—"}</div>
-            <div style="font-size:12px;color:#555;">${e(clean(v["Fahrzeug"]))||"—"}</div>
-            <div style="font-size:11px;color:#92400e;margin-top:6px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-weight:700;color:var(--text-primary);font-size:14px;margin-bottom:4px;">${e(clean(v["Kundenname"]))||"—"}</div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;">${e(clean(v["Fahrzeug"]))||"—"}</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
               ${vororderStatusBadge(status)}
-              <span style="color:var(--text-muted);">Erfasst: ${e(formatVororderDate(v["ErfasstAm"]))}</span>
+              <span style="font-size:11px;color:var(--text-muted);">${e(formatVororderDate(v["ErfasstAm"]))}</span>
             </div>
           </div>`;
         }).join("")}
       </div>
-    </div>` : ""}
-    <!-- ═══════════════ WKR ═══════════════ -->
-    <div style="${groupStyle}">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+    </div>` : `
+    <div style="${cardStyle} border-left:4px solid #10b981;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="font-size:32px;">✅</div>
         <div>
-          <div style="font-size:15px;font-weight:700;color:var(--text-primary);">🛞 Winterkompletträder</div>
-          <div style="font-size:11px;color:var(--text-muted);">${s.totalWkr} Einträge · ${s.wkrInStock} an Lager${s.lowStockWkr > 0 ? ` · <span style="color:var(--warning);font-weight:700;">${s.lowStockWkr} kritisch</span>` : ""}</div>
+          <div style="font-size:16px;font-weight:700;color:#10b981;">Alles erledigt!</div>
+          <div style="font-size:13px;color:var(--text-muted);">Keine offenen Vorgänge.</div>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:10px;">
-        ${actionCard("🔍", "Konfigurator-Ansicht", "Nach Fahrzeug filtern", "selectAdminSection('wkr_model')")}
-        ${actionCard("🛞", "Gesamtübersicht", "Alle WKR verwalten", "selectAdminSection('wkr_list')")}
-        ${actionCard("➕", "Neues WKR", "WKR erfassen", "selectAdminSection('wkr_list');setTimeout(()=>document.getElementById('addWkrModal')?.classList.add('open'),100)")}
-        ${actionCard("⬇️", "Excel Export", "Inventur als .xlsx", "selectAdminSection('inventur');setTimeout(()=>exportWkrXLSX(),200)")}
-        ${actionCard("🖨️", "Inventur drucken", "Druckliste WKR", "selectAdminSection('inventur');setTimeout(()=>printWkrInventur(),200)")}
+    </div>`}
+
+    <div style="${cardStyle}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div>
+          <div style="font-size:16px;font-weight:700;color:var(--text-primary);">📦 Bestellt — Ausstehend</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Bei BMW bestellt, noch nicht eingetroffen</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="background:#cffafe;color:#0e7490;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;">${bestellt} offen</span>
+          <button class="btn btn-secondary btn-sm" onclick="vororderFilter.status=\'Bestellt\';selectAdminSection(\'vororder\')">Alle →</button>
+        </div>
       </div>
+      ${bestelltAusstehend.length > 0 ? `
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr style="background:var(--surface-3);">
+            <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">ID</th>
+            <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">Kunde</th>
+            <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">Fahrzeug</th>
+            <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">Ablieferung</th>
+            <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:700;">Standort</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${bestelltAusstehend.map(v => {
+            const abl = clean(v["Ablieferung"]);
+            const ablDate = abl ? new Date(abl) : null;
+            const now = new Date();
+            const diffDays = ablDate ? Math.ceil((ablDate - now) / (1000*60*60*24)) : null;
+            const urgentColor = diffDays !== null && diffDays <= 14 ? "#ef4444" : diffDays !== null && diffDays <= 30 ? "#d97706" : "var(--text-primary)";
+            return `<tr style="border-top:1px solid var(--border);cursor:pointer;transition:0.2s;"
+                        onclick="openVororderDetail(\'${js(clean(v["ID"]))}\')"
+                        onmouseover="this.style.background=\'var(--surface-2)\'"
+                        onmouseout="this.style.background=\'transparent\'">
+              <td style="padding:10px 8px;font-family:monospace;font-size:11px;color:var(--text-muted);">${e(clean(v["ID"]))}</td>
+              <td style="padding:10px 8px;font-weight:600;">${e(clean(v["Kundenname"]))||"—"}</td>
+              <td style="padding:10px 8px;color:var(--text-secondary);">${e(clean(v["Fahrzeug"]))||"—"}</td>
+              <td style="padding:10px 8px;font-weight:700;color:${urgentColor};">
+                ${e(formatVororderDate(v["Ablieferung"]))||"—"}
+                ${diffDays !== null && diffDays <= 14 ? `<span style="font-size:10px;background:#fee2e2;color:#ef4444;padding:2px 6px;border-radius:4px;margin-left:4px;">⚠ ${diffDays}d</span>` : ""}
+              </td>
+              <td style="padding:10px 8px;"><span style="font-size:11px;background:var(--surface-3);padding:2px 8px;border-radius:3px;font-weight:600;">${e(clean(v["Standort_Bearbeitung"]))}</span></td>
+            </tr>`;
+          }).join("")}
+        </tbody>
+      </table>` : `
+      <div style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px;">Keine ausstehenden Bestellungen.</div>`}
     </div>
 
-    <!-- ═══════════════ VORORDER ═══════════════ -->
-    <div style="${groupStyle}">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+    <div style="${cardStyle}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
         <div>
-          <div style="font-size:15px;font-weight:700;color:var(--text-primary);">📋 Vororder</div>
-          <div style="font-size:11px;color:var(--text-muted);">${vororderLoaded ? vororder.length + " Gesamt · " + offeneVororders + " offen · " + reservierteWKR + " reserviert" : "Noch nicht geladen"}</div>
+          <div style="font-size:16px;font-weight:700;color:var(--text-primary);">📍 WKR Lagerorte</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Übersicht nach Standort</div>
         </div>
+        <button class="btn btn-secondary btn-sm" onclick="selectAdminSection(\'wkr_list\')">Alle WKR →</button>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:10px;">
-        ${actionCard("📋", "Vororder-Übersicht", vororderLoaded ? vororder.length + " Einträge" : "Alle verwalten", "selectAdminSection('vororder')")}
-        ${actionCard("➕", "Neue Vororder", "Kunden-Bestellung erfassen", "selectAdminSection('vororder');setTimeout(()=>openNewVororderModal(),200)")}
-        ${actionCard("📦", "BMW-Sammelbestellung", sammelbestellung > 0 ? sammelbestellung + " Vororders sammeln" : "Aggregierte Liste drucken", "selectAdminSection('inventur');setTimeout(()=>{document.getElementById('exportVoStatus').value='Sammelbestellung (Vororder26)';printSammelbestellung();},300)")}
-        ${actionCard("⬇️", "Excel Export", "Vororder als .xlsx", "selectAdminSection('inventur');setTimeout(()=>exportVororderXLSX(),200)")}
-        ${actionCard("🖨️", "Druckliste", "Vororders drucken", "selectAdminSection('inventur');setTimeout(()=>printVororderList(),200)")}
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;">
+
+        <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+          <div style="background:#0ea5e9;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;">
+            <div style="color:white;font-weight:700;font-size:14px;">🚗 Tiefgarage (TG)</div>
+            <span style="background:rgba(255,255,255,0.25);color:white;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:700;">${wkrTG.length} WKR</span>
+          </div>
+          <div style="max-height:200px;overflow-y:auto;padding:8px 0;">
+            ${wkrTG.length > 0 ? wkrTG.map(p => `
+              <div style="padding:8px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:12px;">
+                <div>
+                  <div style="font-weight:600;color:var(--text-primary);">${e(clean(p["Bezeichnung"]))}</div>
+                  <div style="color:var(--text-muted);font-family:monospace;font-size:11px;">${e(clean(p["TN"]))}</div>
+                </div>
+                <span style="background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:4px;font-weight:700;font-size:11px;">${clean(p["Lager"])} Stk</span>
+              </div>`).join("") : `<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:12px;">Keine WKR</div>`}
+          </div>
+        </div>
+
+        <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+          <div style="background:#8b5cf6;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;">
+            <div style="color:white;font-weight:700;font-size:14px;">🏢 Villigen</div>
+            <span style="background:rgba(255,255,255,0.25);color:white;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:700;">${wkrVilligen.length} WKR</span>
+          </div>
+          <div style="max-height:200px;overflow-y:auto;padding:8px 0;">
+            ${wkrVilligen.length > 0 ? wkrVilligen.map(p => `
+              <div style="padding:8px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:12px;">
+                <div>
+                  <div style="font-weight:600;color:var(--text-primary);">${e(clean(p["Bezeichnung"]))}</div>
+                  <div style="color:var(--text-muted);font-family:monospace;font-size:11px;">${e(clean(p["TN"]))}</div>
+                </div>
+                <span style="background:#ede9fe;color:#6d28d9;padding:2px 8px;border-radius:4px;font-weight:700;font-size:11px;">${clean(p["Lager"])} Stk</span>
+              </div>`).join("") : `<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:12px;">Keine WKR</div>`}
+          </div>
+        </div>
+
+        <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+          <div style="background:#6b7280;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;">
+            <div style="color:white;font-weight:700;font-size:14px;">❌ Kein Lager</div>
+            <span style="background:rgba(255,255,255,0.25);color:white;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:700;">${wkrKeinLager.length} WKR</span>
+          </div>
+          <div style="max-height:200px;overflow-y:auto;padding:8px 0;">
+            ${wkrKeinLager.length > 0 ? wkrKeinLager.slice(0,15).map(p => `
+              <div style="padding:8px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:12px;">
+                <div>
+                  <div style="font-weight:600;color:var(--text-primary);">${e(clean(p["Bezeichnung"]))}</div>
+                  <div style="color:var(--text-muted);font-family:monospace;font-size:11px;">${e(clean(p["TN"]))}</div>
+                </div>
+                <span style="background:#f3f4f6;color:#6b7280;padding:2px 8px;border-radius:4px;font-weight:700;font-size:11px;">0 Stk</span>
+              </div>`).join("") : `<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:12px;">Alle WKR an Lager ✅</div>`}
+          </div>
+        </div>
+
       </div>
     </div>
-
-    <!-- ═══════════════ REIFEN ═══════════════ -->
-    <div style="${groupStyle}">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);">
-        <div>
-          <div style="font-size:15px;font-weight:700;color:var(--text-primary);">⚫ Reifen</div>
-          <div style="font-size:11px;color:var(--text-muted);">${s.activeTires} aktiv${s.inactiveTires > 0 ? ` · <span style="color:var(--error);font-weight:700;">${s.inactiveTires} inaktiv</span>` : ""}${s.dotWarnings > 0 ? ` · <span style="color:var(--warning);font-weight:700;">${s.dotWarnings} DOT-Warnung${s.dotWarnings>1?"en":""}</span>` : ""}</div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:10px;">
-        ${actionCard("⚫", "Gesamtübersicht", "Alle Reifen verwalten", "selectAdminSection('reifen_list')")}
-        ${actionCard("➕", "Neuer Reifen", "Reifen erfassen", "selectAdminSection('reifen_list');setTimeout(()=>document.getElementById('addTireModal')?.classList.add('open'),100)")}
-        ${actionCard("⬇️", "Excel Export", "Inventur als .xlsx", "selectAdminSection('inventur');setTimeout(()=>exportReifenXLSX(),200)")}
-        ${actionCard("🖨️", "Inventur drucken", "Druckliste Reifen", "selectAdminSection('inventur');setTimeout(()=>printReifenInventur(),200)")}
-      </div>
-    </div>
-
-    ${(s.dotWarnings > 0 || s.lowStockWkr > 0) ? `
-    <!-- ═══════════════ WARNUNGEN ═══════════════ -->
-    <div style="${groupStyle} border-left:4px solid var(--warning);">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);">
-        <div>
-          <div style="font-size:15px;font-weight:700;color:var(--warning);">⚠️ Warnungen</div>
-          <div style="font-size:11px;color:var(--text-muted);">Benötigt Aufmerksamkeit</div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:10px;">
-        ${s.dotWarnings > 0 ? actionCard("⚠️", `${s.dotWarnings} DOT-Warnung${s.dotWarnings>1?"en":""}`, "Reifen älter als 3 Jahre", "adminReifenFilter.suche='';selectAdminSection('reifen_list')") : ""}
-        ${s.lowStockWkr > 0 ? actionCard("📦", `${s.lowStockWkr} WKR kritisch`, "Lagerbestand ≤ 2 Stück", "adminWkrFilter.nurAnLager=true;selectAdminSection('wkr_list')") : ""}
-      </div>
-    </div>` : ""}
 
   </div>`;
 }
@@ -3860,7 +3897,20 @@ function render(){
     document.getElementById("app").innerHTML = html;
    updateHero();
     updateBrandTheme();
-    applyTranslations();
+  // Live Uhr
+  if(adminMode && !window._clockInterval){
+    window._clockInterval = setInterval(() => {
+      const now = new Date();
+      const clockEl = document.getElementById("liveClock");
+      const dateEl = document.getElementById("liveDate");
+      if(clockEl) clockEl.textContent = now.toLocaleTimeString("de-CH");
+      if(dateEl) dateEl.textContent = now.toLocaleDateString("de-CH", {weekday:"long", day:"2-digit", month:"long", year:"numeric"});
+    }, 1000);
+  } else if(!adminMode && window._clockInterval){
+    clearInterval(window._clockInterval);
+    window._clockInterval = null;
+  }
+      applyTranslations();
     updateTopbarContext();
     return;
   }
