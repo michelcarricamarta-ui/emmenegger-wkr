@@ -1995,7 +1995,16 @@ body.mini-brand .vehicle-card:hover { background: var(--surface); }
       <div class="form-field"><label>Bezeichnung</label><input id="posBezeichnung" type="text"></div>
       <div class="form-field"><label>Dimension</label><input id="posDimension" type="text"></div>
     <div class="form-field"><label>Verkaufspreis (CHF)</label><input id="posVK" type="text" placeholder="z.B. 2336"></div>
-       <div class="form-field"><label>Lagerort</label><input id="posLagerort" type="text" placeholder="z.B. Regal A3 / Platz 12"></div>
+       <div class="form-field">
+  <label>Lagerort</label>
+  <select id="posLagerortSelect" onchange="handleLagerortSelect(this.value)">
+    <option value="">Bitte wählen</option>
+    <option value="TG">TG (Tiefgarage)</option>
+    <option value="Villigen">Villigen</option>
+    <option value="andere">Anderer Lagerort...</option>
+  </select>
+  <input id="posLagerort" type="text" placeholder="Lagerort eingeben" style="margin-top:6px;display:none;">
+</div>
       <div class="form-field"><label>Konditionen</label><input id="posKonditionen" type="text"></div>
       <div class="form-field full">
         <label>Status</label>
@@ -6687,9 +6696,13 @@ function openNewPositionModal(voId){
   document.getElementById("positionModalTitle").textContent = "Neue Position";
   document.getElementById("positionModalSubtitle").textContent = `Für Vororder ${voId}`;
   // Felder leeren
- ["posTyp","posTN","posBezeichnung","posDimension","posVK","posKonditionen","posBemerkungen","posLagerort","posRechnungAn"].forEach(id => {
+["posTyp","posTN","posBezeichnung","posDimension","posVK","posKonditionen","posBemerkungen","posLagerort","posRechnungAn"].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = "";
   });
+  const lagerortSel = document.getElementById("posLagerortSelect");
+  if(lagerortSel) lagerortSel.value = "";
+  const lagerortInp = document.getElementById("posLagerort");
+  if(lagerortInp) lagerortInp.style.display = "none";
   document.getElementById("posAnzahl").value = "";
   document.getElementById("posStatus").value = "Offerte ausstehend";
   fillPosTnOptions();
@@ -6715,12 +6728,36 @@ document.getElementById("posVK").value = clean(pos["VK"]);
   document.getElementById("posStatus").value = clean(pos["Status"]) || "Offerte ausstehend";
  document.getElementById("posBemerkungen").value = clean(pos["Bemerkungen"]);
 document.getElementById("posRechnungAn").value = clean(pos["RechnungAn"]);
-   document.getElementById("posLagerort").value = clean(pos["Lagerort_Rad"]);
+   const lagerortVal = clean(pos["Lagerort_Rad"]);
+const knownLagerorte = ["TG","Villigen"];
+if(knownLagerorte.includes(lagerortVal)){
+  document.getElementById("posLagerortSelect").value = lagerortVal;
+  document.getElementById("posLagerort").style.display = "none";
+  document.getElementById("posLagerort").value = lagerortVal;
+} else if(lagerortVal) {
+  document.getElementById("posLagerortSelect").value = "andere";
+  document.getElementById("posLagerort").style.display = "block";
+  document.getElementById("posLagerort").value = lagerortVal;
+} else {
+  document.getElementById("posLagerortSelect").value = "";
+  document.getElementById("posLagerort").style.display = "none";
+  document.getElementById("posLagerort").value = "";
+}
 
   fillPosTnOptions();
   document.getElementById("positionModal").classList.add("open");
 }
-
+function handleLagerortSelect(val){
+  const input = document.getElementById("posLagerort");
+  if(val === "andere" || val === ""){
+    input.style.display = "block";
+    input.value = "";
+    input.focus();
+  } else {
+    input.style.display = "none";
+    input.value = val;
+  }
+}
 function closePositionModal(){
   document.getElementById("positionModal").classList.remove("open");
   _posEditMode = { posId: null, voId: null };
