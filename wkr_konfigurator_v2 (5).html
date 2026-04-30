@@ -1931,7 +1931,16 @@ body.mini-brand .vehicle-card:hover { background: var(--surface); }
           <option value="Kunde verzichtet">Kunde verzichtet</option>
         </select>
       </div>
-      <div class="form-field full"><label>Bemerkungen</label><textarea id="posBemerkungen"></textarea></div>
+      <div class="form-field full">
+  <label>Rechnung an</label>
+  <select id="posRechnungAn">
+    <option value="">Bitte wählen</option>
+    <option value="An Kunde">An Kunde</option>
+    <option value="Im Leasing (Intern)">Im Leasing (Intern)</option>
+    <option value="Spezialpreis">Spezialpreis</option>
+  </select>
+</div>
+<div class="form-field full"><label>Bemerkungen</label><textarea id="posBemerkungen"></textarea></div>
     </div>
 
     <p class="required-note">* Pflichtfelder</p>
