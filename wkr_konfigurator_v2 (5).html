@@ -1389,16 +1389,96 @@ body.mini-brand .vehicle-card:hover { background: var(--surface); }
         <span id="adminBellBadge" class="admin-bell-badge" style="display:none;">0</span>
       </button>
     </div>
-  <div id="desktopActions" style="display:flex;align-items:center;gap:8px;">
-    <button id="internalLoginBtn" class="login-btn" onclick="activateInternalMode()">Interner Login</button>
-     <button id="migrationBtn" class="btn btn-danger" onclick="startDatabaseMigration()" style="margin-left: 20px;">
-  🚀 Starte Daten-Migration
-</button>
-    <button id="adminLoginBtn" class="login-btn" onclick="activateAdminMode()">Admin Login</button>
-    <button id="publicViewBtn" class="login-btn" onclick="deactivateAllModes()" style="display:none;">Öffentlich</button>
-    <div id="userBadge" style="display:none; align-items:center; gap:6px; padding:6px 12px; background:var(--surface-3); border:1px solid var(--border); border-radius:var(--radius-sm); font-size:12px; font-weight:600; color:var(--text-secondary); white-space:nowrap;"></div>
-  <button id="adminLogoutBtn" class="login-btn" onclick="logoutAdmin()" style="display:none;">Logout</button>
+ <div style="position:relative;">
+  <button id="hamburgerBtn" onclick="toggleHamburgerMenu()" style="
+    width:40px;height:40px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:var(--radius-sm);
+    cursor:pointer;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:5px;
+    transition:var(--transition);
+  ">
+    <span style="width:18px;height:2px;background:var(--text-secondary);border-radius:2px;display:block;"></span>
+    <span style="width:18px;height:2px;background:var(--text-secondary);border-radius:2px;display:block;"></span>
+    <span style="width:18px;height:2px;background:var(--text-secondary);border-radius:2px;display:block;"></span>
+  </button>
+
+  <div id="hamburgerMenu" style="
+    display:none;
+    position:absolute;
+    top:48px;right:0;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+    box-shadow:var(--shadow-lg);
+    min-width:220px;
+    z-index:200;
+    overflow:hidden;
+  ">
+    <div style="padding:8px 0;">
+      <div id="desktopActions" style="display:flex;flex-direction:column;">
+        <button id="internalLoginBtn" onclick="activateInternalMode();closeHamburgerMenu();" style="
+          padding:12px 18px;font-size:13px;font-weight:600;
+          background:none;border:none;cursor:pointer;
+          text-align:left;color:var(--text-primary);
+          transition:var(--transition);
+          display:flex;align-items:center;gap:10px;
+        " onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">
+          🔑 Interner Login
+        </button>
+        <button id="adminLoginBtn" onclick="activateAdminMode();closeHamburgerMenu();" style="
+          padding:12px 18px;font-size:13px;font-weight:600;
+          background:none;border:none;cursor:pointer;
+          text-align:left;color:var(--text-primary);
+          transition:var(--transition);
+          display:flex;align-items:center;gap:10px;
+        " onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">
+          ⚙️ Admin Login
+        </button>
+        <button id="publicViewBtn" onclick="deactivateAllModes();closeHamburgerMenu();" style="
+          padding:12px 18px;font-size:13px;font-weight:600;
+          background:none;border:none;cursor:pointer;
+          text-align:left;color:var(--text-primary);
+          transition:var(--transition);
+          display:none;
+          align-items:center;gap:10px;
+        " onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">
+          🌐 Öffentlich
+        </button>
+        <div id="userBadge" style="display:none;padding:10px 18px;font-size:12px;font-weight:600;color:var(--text-secondary);border-top:1px solid var(--border);"></div>
+        <button id="adminLogoutBtn" onclick="logoutAdmin();closeHamburgerMenu();" style="
+          padding:12px 18px;font-size:13px;font-weight:600;
+          background:none;border:none;cursor:pointer;
+          text-align:left;color:var(--error);
+          transition:var(--transition);
+          display:none;
+          align-items:center;gap:10px;
+        " onmouseover="this.style.background='var(--error-bg)'" onmouseout="this.style.background='none'">
+          🚪 Logout
+        </button>
+      </div>
+
+      <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
+
+      <a href="https://emmeneggerag.ch/kontakt/" target="_blank" style="
+        padding:10px 18px;font-size:12px;color:var(--text-muted);
+        display:flex;align-items:center;gap:8px;text-decoration:none;
+        transition:var(--transition);
+      " onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">
+        📞 Kontakt
+      </a>
+      <a href="https://emmeneggerag.ch/datenschutz/" target="_blank" style="
+        padding:10px 18px;font-size:12px;color:var(--text-muted);
+        display:flex;align-items:center;gap:8px;text-decoration:none;
+        transition:var(--transition);
+      " onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">
+        🔒 Datenschutz
+      </a>
+    </div>
   </div>
+</div>
 </div>
   </div>
 </header>
@@ -3030,6 +3110,29 @@ window.applyFirebaseAdminState = applyFirebaseAdminState;
 async function logoutAdmin(){
   if(!confirm("Wirklich ausloggen?")) return;
   await deactivateAllModes();
+}
+   function toggleHamburgerMenu(){
+  const menu = document.getElementById("hamburgerMenu");
+  if(!menu) return;
+  const isOpen = menu.style.display === "block";
+  menu.style.display = isOpen ? "none" : "block";
+  if(!isOpen){
+    document.addEventListener("click", closeOnOutsideHamburger);
+  }
+}
+
+function closeHamburgerMenu(){
+  const menu = document.getElementById("hamburgerMenu");
+  if(menu) menu.style.display = "none";
+  document.removeEventListener("click", closeOnOutsideHamburger);
+}
+
+function closeOnOutsideHamburger(e){
+  const menu = document.getElementById("hamburgerMenu");
+  const btn = document.getElementById("hamburgerBtn");
+  if(menu && btn && !menu.contains(e.target) && !btn.contains(e.target)){
+    closeHamburgerMenu();
+  }
 }
    function toggleMobileMenu(){
   const m = document.getElementById("mobileMenu");
