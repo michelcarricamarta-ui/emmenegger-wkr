@@ -3005,6 +3005,9 @@ async function applyFirebaseAdminState(){
     if (!state.adminSection) {
       state.adminSection = "dashboard";
     }
+    if (!vororderLoaded && !vororderLoading) {
+      loadVororder().then(() => render());
+    }
 
     const publicBtn = document.getElementById("publicViewBtn");
     if (publicBtn) publicBtn.style.display = "inline-block";
@@ -5823,8 +5826,8 @@ function getFilteredVororder(){
     if (vororderFilter.status && clean(v["Status"]) !== vororderFilter.status) return false;
     if (vororderFilter.typ && clean(v["Typ"]) !== vororderFilter.typ) return false;
     if (s) {
-      const hit = ["Kundenname","Fahrzeug","ID","Auftrag","Fahrgestellnr","TN","Debitornr"]
-        .some(f => clean(v[f]).toLowerCase().includes(s));
+      const hit = ["Kundenname","Fahrzeug","ID","Auftrag","Fahrgestellnr","TN","Debitornr","Verkaeufer","Ordernr","Bezeichnung","Dimension","Modell","Reihe"]
+  .some(f => clean(v[f]).toLowerCase().includes(s));
       if (!hit) return false;
     }
     return true;
@@ -7512,6 +7515,7 @@ Promise.all([
 
   if (window.isFirebaseAdminLoggedIn) {
     applyFirebaseAdminState();
+    loadVororder();
   } else {
     render();
   }
