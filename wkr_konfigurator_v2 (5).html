@@ -6069,7 +6069,7 @@ function renderVororderDetail(){
   const content = document.getElementById("voDetailContent");
   if (!content) return;
 
-  const allStatuses = ["Kundenauswahl","Kunde hat bestellt","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt","Reserviert","Erledigt","Kunde verzichtet"];
+  const allStatuses = ["Excel-Vororder","Kundenauswahl","Kunde hat bestellt","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt","Reserviert","Erledigt","Kunde verzichtet"];
   const currentStatus = clean(vo["Status"]);
   const historie = clean(vo["HistorieLog"]);
   const edit = _voDetailEditMode;
