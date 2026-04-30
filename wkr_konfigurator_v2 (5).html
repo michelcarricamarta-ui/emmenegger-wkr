@@ -4286,24 +4286,26 @@ function renderAdminVororder(){
     </div>
   </div>`;
 
-  if (adminMode) {
+ if (adminMode) {
     html += `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px;">
-      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px;">
-       <div style="background:#fef9c3;border:1px solid #fde047;border-radius:8px;padding:14px;">
-  <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#713f12;margin-bottom:4px;">Excel-Vororder</div>
-  <div style="font-size:22px;font-weight:700;color:#ca8a04;">${results.filter(v => clean(v["Status"]) === "Excel-Vororder").length}</div>
-</div>
+      <div onclick="vororderFilter.status='Excel-Vororder';applyVororderFilter();render();" style="background:#fef9c3;border:1px solid #fde047;border-radius:8px;padding:14px;cursor:pointer;transition:0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#713f12;margin-bottom:4px;">Excel-Vororder</div>
+        <div style="font-size:22px;font-weight:700;color:#ca8a04;">${results.filter(v => clean(v["Status"]) === "Excel-Vororder").length}</div>
       </div>
-      <div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:14px;">
+      <div onclick="vororderFilter.status='Kundenauswahl';applyVororderFilter();render();" style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px;cursor:pointer;transition:0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#92400e;margin-bottom:4px;">Anfragen/Offerten</div>
+        <div style="font-size:22px;font-weight:700;color:#92400e;">${stats.offen}</div>
+      </div>
+      <div onclick="vororderFilter.status='Kunde hat bestellt';applyVororderFilter();render();" style="background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:14px;cursor:pointer;transition:0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#991b1b;margin-bottom:4px;">Kunde hat bestellt</div>
         <div style="font-size:22px;font-weight:700;color:#991b1b;">${stats.bestellt}</div>
       </div>
-      <div style="background:#ecfccb;border:1px solid #bef264;border-radius:8px;padding:14px;">
+      <div onclick="vororderFilter.status='Reserviert';applyVororderFilter();render();" style="background:#ecfccb;border:1px solid #bef264;border-radius:8px;padding:14px;cursor:pointer;transition:0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#3f6212;margin-bottom:4px;">Reserviert</div>
         <div style="font-size:22px;font-weight:700;color:#3f6212;">${stats.eingetroffen}</div>
       </div>
-      <div style="background:#f3f4f6;border:1px solid #d1d5db;border-radius:8px;padding:14px;">
-       <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#374151;margin-bottom:4px;">Erledigt</div>
+      <div onclick="vororderFilter.status='Erledigt';applyVororderFilter();render();" style="background:#f3f4f6;border:1px solid #d1d5db;border-radius:8px;padding:14px;cursor:pointer;transition:0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#374151;margin-bottom:4px;">Erledigt</div>
         <div style="font-size:22px;font-weight:700;color:#374151;">${stats.abgeschlossen}</div>
       </div>
     </div>`;
@@ -4358,16 +4360,16 @@ function renderAdminVororder(){
       <table class="responsive-table" style="width:100%;border-collapse:collapse;font-size:13px;">
         <thead>
           <tr style="background:var(--surface-3);border-bottom:1px solid var(--border);">
-            ${adminMode ? `<th style="padding:12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">ID</th>` : ""}
-            <th style="padding:12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Status</th>
-            <th style="padding:12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Kunde</th>
-            <th style="padding:12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Fahrzeug</th>
-            ${adminMode ? `<th style="padding:12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Typ / TN</th>` : ""}
-            <th style="padding:12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Verkäufer</th>
-            ${adminMode ? `<th style="padding:12px;text-align:center;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Anzahl</th>` : ""}
-            <th style="padding:12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Ablieferung</th>
-            ${isSuperAdmin ? `<th style="padding:12px;text-align:center;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Standort</th>` : ""}
-            <th style="padding:12px;text-align:right;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Aktion</th>
+            ${adminMode ? `<th style="padding:8px;"><input type="text" placeholder="🔍 ID" oninput="vororderFilter.suche=this.value;render();" style="width:100%;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:var(--surface-2);"></th>` : ""}
+<th style="padding:8px;"></th>
+<th style="padding:8px;"><input type="text" placeholder="🔍 Kunde" oninput="vororderFilter.suche=this.value;render();" style="width:100%;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:var(--surface-2);"></th>
+<th style="padding:8px;"><input type="text" placeholder="🔍 Fahrzeug" oninput="vororderFilter.suche=this.value;render();" style="width:100%;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:var(--surface-2);"></th>
+${adminMode ? `<th style="padding:8px;"><input type="text" placeholder="🔍 TN" oninput="vororderFilter.suche=this.value;render();" style="width:100%;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:var(--surface-2);"></th>` : ""}
+<th style="padding:8px;"><input type="text" placeholder="🔍 Verkäufer" oninput="vororderFilter.suche=this.value;render();" style="width:100%;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:var(--surface-2);"></th>
+${adminMode ? `<th style="padding:8px;"></th>` : ""}
+<th style="padding:8px;"></th>
+${isSuperAdmin ? `<th style="padding:8px;"></th>` : ""}
+<th style="padding:8px;text-align:right;"><button class="btn btn-secondary btn-sm" onclick="resetVororderFilter();render();" style="font-size:10px;padding:3px 8px;">Reset</button></th>
           </tr>
         </thead>
         <tbody>`;
@@ -5828,7 +5830,7 @@ function getFilteredVororder(){
     return true;
   }).sort((a,b) => {
     // Sortierung: Offene zuerst, dann nach Datum absteigend
-const openStatuses = ["Kunde hat bestellt","Kundenauswahl","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt","Reserviert"];    const aOpen = openStatuses.indexOf(clean(a["Status"])) !== -1 ? 0 : 1;
+const openStatuses = ["Excel-Vororder","Kunde hat bestellt","Kundenauswahl","Offerte ausstehend","Offeriert","Sammelbestellung (Vororder26)","Bestellt","Reserviert"];    const aOpen = openStatuses.indexOf(clean(a["Status"])) !== -1 ? 0 : 1;
     const bOpen = openStatuses.indexOf(clean(b["Status"])) !== -1 ? 0 : 1;
     if (aOpen !== bOpen) return aOpen - bOpen;
     return clean(b["ErfasstAm"]).localeCompare(clean(a["ErfasstAm"]));
