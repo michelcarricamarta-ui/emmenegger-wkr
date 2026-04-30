@@ -6546,7 +6546,8 @@ async function saveVoDetailChanges(){
           <span class="mobile-label">Bezeichnung</span>
           <div style="font-weight:600;">${e(clean(p["Bezeichnung"]))||"—"}</div>
           ${clean(p["Dimension"])?`<div style="font-size:11px;color:var(--text-muted);">${e(clean(p["Dimension"]))}</div>`:""}
-          ${clean(p["Bemerkungen"])?`<div style="font-size:11px;color:var(--warning);margin-top:4px;padding:4px 8px;background:var(--warning-bg);border-radius:4px;border-left:2px solid var(--warning);"><b>📝 Hinweis:</b> ${e(clean(p["Bemerkungen"]))}</div>`:""}
+         ${clean(p["RechnungAn"])?`<div style="font-size:11px;margin-top:4px;padding:4px 8px;background:#eff6ff;border-radius:4px;border-left:2px solid var(--accent);"><b>💰 Rechnung an:</b> ${e(clean(p["RechnungAn"]))}</div>`:""}
+${clean(p["Bemerkungen"])?`<div style="font-size:11px;color:var(--warning);margin-top:4px;padding:4px 8px;background:var(--warning-bg);border-radius:4px;border-left:2px solid var(--warning);"><b>📝 Hinweis:</b> ${e(clean(p["Bemerkungen"]))}</div>`:""}
           ${clean(p["Lagerort_Rad"])?`<div style="font-size:11px;color:var(--text-muted);margin-top:4px;">📦 Lager: <b>${e(clean(p["Lagerort_Rad"]))}</b></div>`:""}
         </td>
         <td style="padding:8px;text-align:center;font-weight:700;"><span class="mobile-label">Anzahl</span>${e(clean(p["Anzahl"]))||"—"}</td>
@@ -6577,7 +6578,7 @@ function openNewPositionModal(voId){
   document.getElementById("positionModalTitle").textContent = "Neue Position";
   document.getElementById("positionModalSubtitle").textContent = `Für Vororder ${voId}`;
   // Felder leeren
- ["posTyp","posTN","posBezeichnung","posDimension","posVK","posKonditionen","posBemerkungen","posLagerort"].forEach(id => {
+ ["posTyp","posTN","posBezeichnung","posDimension","posVK","posKonditionen","posBemerkungen","posLagerort","posRechnungAn"].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = "";
   });
   document.getElementById("posAnzahl").value = "";
@@ -6603,7 +6604,8 @@ function openEditPositionModal(posId){
 document.getElementById("posVK").value = clean(pos["VK"]);
    document.getElementById("posKonditionen").value = clean(pos["Konditionen"]);
   document.getElementById("posStatus").value = clean(pos["Status"]) || "Offerte ausstehend";
-  document.getElementById("posBemerkungen").value = clean(pos["Bemerkungen"]);
+ document.getElementById("posBemerkungen").value = clean(pos["Bemerkungen"]);
+document.getElementById("posRechnungAn").value = clean(pos["RechnungAn"]);
    document.getElementById("posLagerort").value = clean(pos["Lagerort_Rad"]);
 
   fillPosTnOptions();
@@ -6678,6 +6680,7 @@ async function savePosition(){
     "Konditionen": clean(document.getElementById("posKonditionen").value),
     "Status": clean(document.getElementById("posStatus").value),
  "Bemerkungen": clean(document.getElementById("posBemerkungen").value),
+"RechnungAn": clean(document.getElementById("posRechnungAn").value),
     "Lagerort_Rad": clean(document.getElementById("posLagerort").value)
      
   };
