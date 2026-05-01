@@ -1428,6 +1428,16 @@ body.mini-brand .vehicle-card:hover { background: var(--surface); }
         " onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">
           🔑 Interner Login
         </button>
+         <button id="migrationBtn" onclick="startDatabaseMigration();closeHamburgerMenu();" style="
+  padding:12px 18px;font-size:13px;font-weight:600;
+  background:none;border:none;cursor:pointer;
+  text-align:left;color:#dc2626;
+  transition:var(--transition);
+  display:none;
+  align-items:center;gap:10px;
+" onmouseover="this.style.background='var(--error-bg)'" onmouseout="this.style.background='none'">
+  🚀 Daten-Migration
+</button>
         <button id="adminLoginBtn" onclick="activateAdminMode();closeHamburgerMenu();" style="
           padding:12px 18px;font-size:13px;font-weight:600;
           background:none;border:none;cursor:pointer;
@@ -3049,6 +3059,8 @@ async function deactivateAllModes(){
 
   const publicBtn = document.getElementById("publicViewBtn");
   if (publicBtn) publicBtn.style.display = "none";
+  const migBtn2 = document.getElementById("migrationBtn");
+if (migBtn2) migBtn2.style.display = "none";
 
   const banner = document.getElementById("modeBanner");
   if (banner) {
