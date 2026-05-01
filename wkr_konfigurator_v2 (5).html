@@ -3015,7 +3015,9 @@ async function submitAdminLogin(){
     state.adminSection = "dashboard";
 
     document.getElementById("publicViewBtn").style.display = "inline-block";
-    showModeBanner("admin");
+const migBtnLogin = document.getElementById("migrationBtn");
+if (migBtnLogin) migBtnLogin.style.display = "flex";
+showModeBanner("admin");
     document.getElementById("internalFields").style.display = "none";
 
     closeAdminLoginModal();
@@ -3110,10 +3112,13 @@ async function applyFirebaseAdminState(){
       loadVororder().then(() => render());
     }
 
-    const publicBtn = document.getElementById("publicViewBtn");
-    if (publicBtn) publicBtn.style.display = "inline-block";
+   const publicBtn = document.getElementById("publicViewBtn");
+if (publicBtn) publicBtn.style.display = "inline-block";
 
-    const internalFields = document.getElementById("internalFields");
+const migBtn = document.getElementById("migrationBtn");
+if (migBtn) migBtn.style.display = "flex";
+
+const internalFields = document.getElementById("internalFields");
     if (internalFields) internalFields.style.display = "none";
 
     showModeBanner("admin");
