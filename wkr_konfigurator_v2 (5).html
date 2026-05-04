@@ -4299,26 +4299,50 @@ function renderWkrProduct(r){
       ${hinweistext?`<div class="product-note">${e(hinweistext)}</div>`:""}
       ${teilenummer?`<div class="product-partnr">Teilenr.: ${e(teilenummer)}</div>`:""}
 ${(()=>{
+${(()=>{
   const effizienz = clean(r["Rollwiderstand/Kraftstoff-Effizienz"]);
   const nasse     = clean(r["Nässe-Haftung"]);
   const lautKl    = clean(r["Klasse externe Rollgeräusche"]);
   const lautDb    = clean(r["Messwert externe Rollgeräusche (Dezibel)"]);
   const eprelLink = clean(r["Link EU Label"]);
   if(!effizienz && !nasse && !eprelLink) return "";
-  const labelColor = {"A":"#00a651","B":"#52ae32","C":"#c8d400","D":"#ffcc00","E":"#f5a800","F":"#eb6208","G":"#e2001a"};
-  const textColor  = {"A":"#fff","B":"#fff","C":"#222","D":"#222","E":"#222","F":"#fff","G":"#fff"};
-  const noiseColor = {"A":"#00a651","B":"#52ae32","C":"#f5a800"};
-  const badge = (val, bg, txt) => `<span style="display:inline-flex;align-items:center;gap:3px;background:#111;color:white;font-size:11px;font-weight:600;padding:3px 7px;border-radius:3px;">
-    <span style="background:${bg};color:${txt};padding:1px 5px;border-radius:2px;font-weight:700;">${e(val)}</span>
-  </span>`;
-  return `<div style="margin-top:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-    ${effizienz ? badge(effizienz, labelColor[effizienz]||"#888", textColor[effizienz]||"#fff") : ""}
-    ${nasse     ? badge(nasse,     labelColor[nasse]    ||"#888", textColor[nasse]    ||"#fff") : ""}
-    ${lautKl&&lautDb ? `<span style="display:inline-flex;align-items:center;gap:3px;background:#111;color:white;font-size:11px;font-weight:600;padding:3px 7px;border-radius:3px;">
-      ${e(lautDb)} dB <span style="background:${noiseColor[lautKl]||"#888"};color:white;padding:1px 5px;border-radius:2px;font-weight:700;">${e(lautKl)}</span>
-    </span>` : ""}
-    ${eprelLink ? `<a href="${e(eprelLink)}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--accent);border:1px solid var(--border);border-radius:3px;padding:3px 8px;text-decoration:none;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'">↗ EU-Reifenlabel</a>` : ""}
-  </div>`;
+  const lc = {"A":"#00a651","B":"#52ae32","C":"#c8d400","D":"#ffcc00","E":"#f5a800","F":"#eb6208","G":"#e2001a"};
+  const tc = {"A":"#fff","B":"#fff","C":"#111","D":"#111","E":"#111","F":"#fff","G":"#fff"};
+  const nc = {"A":"#00a651","B":"#52ae32","C":"#f5a800"};
+  const iconFuel  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11A2.5 2.5 0 0114.5 9a2.5 2.5 0 01-2.5-2.5c0-.78.36-1.47.92-1.94L11 3v14H5V5a2 2 0 012-2h6c1.1 0 2 .9 2 2v.17l2.29 2.29c.18.18.29.43.29.69V18a1 1 0 01-2 0v-1H5v2a2 2 0 002 2h12a2 2 0 002-2V9.5c0-.55-.22-1.05-.23-1.05z"/></svg>`;
+  const iconWet   = `<svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>`;
+  const iconNoise = `<svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>`;
+  const badge = (icon, label, val) => `
+    <div style="display:inline-flex;align-items:center;background:#1a1a1a;border-radius:4px;overflow:hidden;font-size:11px;font-weight:700;">
+      <div style="display:flex;align-items:center;gap:3px;padding:4px 6px;color:white;">
+        ${icon}
+        <span style="color:#aaa;font-weight:500;font-size:10px;">${label}</span>
+      </div>
+      <div style="background:${lc[val]||"#888"};color:${tc[val]||"#fff"};padding:4px 7px;">${e(val)}</div>
+    </div>`;
+  const noiseB = (db, kl) => `
+    <div style="display:inline-flex;align-items:center;background:#1a1a1a;border-radius:4px;overflow:hidden;font-size:11px;font-weight:700;">
+      <div style="display:flex;align-items:center;gap:3px;padding:4px 6px;color:white;">
+        ${iconNoise}
+        <span style="color:#aaa;font-weight:500;font-size:10px;">Lärm</span>
+      </div>
+      <div style="padding:4px 6px;color:white;">${e(db)} dB</div>
+      <div style="background:${nc[kl]||"#888"};color:white;padding:4px 7px;">${e(kl)}</div>
+    </div>`;
+  return `
+    <div style="margin-top:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+      ${effizienz ? badge(iconFuel,  "Kraftstoff", effizienz) : ""}
+      ${nasse     ? badge(iconWet,   "Nasshaftung", nasse)    : ""}
+      ${lautKl&&lautDb ? noiseB(lautDb, lautKl) : ""}
+      ${eprelLink ? `<a href="${e(eprelLink)}" target="_blank"
+        style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--accent);
+               border:1px solid var(--border);border-radius:4px;padding:4px 9px;text-decoration:none;"
+        onmouseover="this.style.background='var(--surface-2)'"
+        onmouseout="this.style.background='transparent'">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+        EU-Reifenlabel
+      </a>` : ""}
+    </div>`;
 })()}
     </div>
     <div class="product-right">
