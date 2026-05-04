@@ -992,16 +992,6 @@ body.mini-brand .btn-cart:hover { background: #111; color: white; }
   0%   { transform: translateY(0) rotate(0deg); opacity: 0.8; }
   100% { transform: translateY(440px) rotate(360deg); opacity: 0; }
 }
-   /* BRAND CARD ENTRANCE */
-@keyframes cardEntrance {
-  from { opacity: 0; transform: translateY(24px) scale(0.96); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-.brand-card {
-  animation: cardEntrance 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-}
-.brand-card:nth-child(1) { animation-delay: 0.05s; }
-.brand-card:nth-child(2) { animation-delay: 0.15s; }
 @media print {
   .topbar, .back-btn, .mode-banner, .info-section, .admin-sidebar, .search-section { display: none !important; }
 }
