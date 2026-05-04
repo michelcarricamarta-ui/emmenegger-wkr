@@ -4370,16 +4370,13 @@ results.forEach(r => {
       <div class="product-name">${e(bezeichnung)}</div>
       <div class="product-sub">${e(markeReifen)}</div>
       <div style="margin-top:6px;display:flex;flex-direction:column;gap:3px;">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:11px;font-weight:700;background:#f0f9ff;color:#0369a1;padding:2px 6px;border-radius:3px;min-width:24px;text-align:center;">VA</span>
-          <span style="font-size:13px;font-weight:700;">${e(dimVA)}</span>
-          <span style="font-size:11px;color:var(--text-muted);font-family:monospace;">TN: ${e(tnVA)}</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:11px;font-weight:700;background:#f0fdf4;color:#166534;padding:2px 6px;border-radius:3px;min-width:24px;text-align:center;">HA</span>
-          <span style="font-size:13px;font-weight:700;">${e(dimHA)}</span>
-          <span style="font-size:11px;color:var(--text-muted);font-family:monospace;">TN: ${e(tnHA)}</span>
-        </div>
+        <div class="product-sub" style="font-weight:700;margin-bottom:2px;">
+  <span style="font-size:11px;font-weight:700;color:var(--text-muted);margin-right:4px;">VA</span>${e(dimVA)}
+</div>
+<div class="product-sub" style="font-weight:700;margin-bottom:10px;">
+  <span style="font-size:11px;font-weight:700;color:var(--text-muted);margin-right:4px;">HA</span>${e(dimHA)}
+</div>
+<div class="product-partnr">VA: ${e(tnVA)} &nbsp;·&nbsp; HA: ${e(tnHA)}</div>
       </div>
      ${hinweistext?`<div class="product-note" style="margin-top:8px;">${e(hinweistext)}</div>`:""}
 ${(()=>{
