@@ -4208,7 +4208,16 @@ function renderWkrFlow(){
   const fz=fahrzeuge.find(f=>clean(f["Marke"])===state.marke&&clean(f["Reihe"])===state.reihe&&clean(f["Modell"])===state.modell);
   const fzBild=clean(fz?.Bild)||"https://via.placeholder.com/220x130?text=Fahrzeug";
   const fzCode=clean(fz?.Code)||state.modell;
- const tnList=[...new Set(mapping.filter(x=>clean(x["Marke"])===state.marke&&clean(x["Reihe"])===state.reihe&&clean(x["Modell"])===state.modell).map(x=>clean(x["TN"])).filter(Boolean))];
+ const tnListRaw=[...new Set(mapping.filter(x=>
+  clean(x["Marke"])===state.marke&&
+  clean(x["Reihe"])===state.reihe&&
+  clean(x["Modell"])===state.modell
+).map(x=>clean(x["TN"])).filter(Boolean))];
+
+// Kombinierte TNs (z.B. "2462648_2462649") auch als Einzelteile auflösen
+const tnList = [...new Set(tnListRaw.flatMap(tn => 
+  tn.includes("_") ? tn.split("_") : [tn]
+))];
    // Mischsets gruppieren
 const mischsets = {};
 produkte.forEach(p => {
