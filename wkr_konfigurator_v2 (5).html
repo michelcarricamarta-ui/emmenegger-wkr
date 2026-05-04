@@ -976,7 +976,22 @@ body.mini-brand .btn-cart:hover { background: #111; color: white; }
   #mobileMenu { top: 52px; }
   #mobileMenu .login-btn { width: 100%; text-align: left; padding: 10px 12px; font-size: 13px; }
 }
-
+/* SCHNEEFLOCKEN */
+.snowflake {
+  position: absolute;
+  top: -10px;
+  color: white;
+  font-size: 1em;
+  opacity: 0;
+  animation: snowfall linear infinite;
+  pointer-events: none;
+  z-index: 3;
+  user-select: none;
+}
+@keyframes snowfall {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 0.8; }
+  100% { transform: translateY(440px) rotate(360deg); opacity: 0; }
+}
 @media print {
   .topbar, .back-btn, .mode-banner, .info-section, .admin-sidebar, .search-section { display: none !important; }
 }
