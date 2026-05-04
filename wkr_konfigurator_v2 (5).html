@@ -1797,8 +1797,42 @@ body.mini-brand .vehicle-card:hover { background: var(--surface); }
       
       <div style="grid-column: 1 / -1; height: 10px;"></div>
       <div class="form-field"><label>Reifenmarke</label><input id="newWkrReifen" type="text" placeholder="z. B. Pirelli"></div>
-      <div class="form-field"><label>Dimension</label><input id="newWkrDimension" type="text" placeholder="225/45 R18"></div>
-      <div class="form-field"><label>Teilenummer (TN) *</label><input id="newWkrTN" type="text" placeholder="TN"></div>
+
+      <!-- Mischbereifung Toggle -->
+      <div class="form-field full">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+          <input type="checkbox" id="newWkrIsMisch" onchange="toggleMischFelder('new')" style="width:18px;height:18px;accent-color:var(--accent);">
+          <span style="font-weight:700;">Mischbereifung (VA/HA unterschiedlich)</span>
+        </label>
+      </div>
+
+      <!-- Normale Felder (nur sichtbar wenn KEIN Mischbereifung) -->
+      <div id="newWkrNormalFelder" style="display:contents;">
+        <div class="form-field"><label>Dimension</label><input id="newWkrDimension" type="text" placeholder="225/45 R18"></div>
+        <div class="form-field"><label>Teilenummer (TN) *</label><input id="newWkrTN" type="text" placeholder="TN"></div>
+      </div>
+
+      <!-- Mischbereifung Felder (nur sichtbar wenn Mischbereifung aktiv) -->
+      <div id="newWkrMischFelder" style="display:none;grid-column:1/-1;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:14px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#0369a1;margin-bottom:12px;">🔀 VA &amp; HA werden automatisch als 2 separate Einträge gespeichert</div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Mischset_ID *</label>
+            <input id="newWkrMischsetId" type="text" placeholder="z.B. 796M_G20">
+            <div style="margin-top:6px;"><button type="button" onclick="generateMischsetId('new')" style="background:none;border:none;color:var(--accent);font-size:11px;font-weight:700;cursor:pointer;padding:0;">↺ Automatisch generieren</button></div>
+          </div>
+          <div style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div class="form-field"><label>TN Vorderachse (VA) *</label><input id="newWkrTN_VA" type="text" placeholder="z.B. 2462648"></div>
+            <div class="form-field"><label>Dimension VA *</label><input id="newWkrDimension_VA" type="text" placeholder="225/45 R18 95 V, 7,5Jx18"></div>
+            <div class="form-field"><label>TN Hinterachse (HA) *</label><input id="newWkrTN_HA" type="text" placeholder="z.B. 2462649"></div>
+            <div class="form-field"><label>Dimension HA *</label><input id="newWkrDimension_HA" type="text" placeholder="255/40 R18 99 V, 8,5Jx18"></div>
+          </div>
+          <div style="grid-column:1/-1;font-size:12px;color:var(--text-muted);background:var(--surface-3);padding:8px 12px;border-radius:6px;">
+            💡 Preis, Bild, Reifen und alle anderen Felder gelten für beide Achsen.
+          </div>
+        </div>
+      </div>
+
       <div class="form-field"><label>Lagerbestand</label><input id="newWkrLager" type="number" min="0" value="0"></div>
       <div class="form-field"><label>Lagerort</label><input id="newWkrLagerort" type="text" placeholder="Regal A3"></div>
       <div class="form-field full"><label>Bild URL</label><input id="newWkrBild" type="text" placeholder="https://..."></div>
@@ -5860,67 +5894,114 @@ async function deleteTire(){
 // Hilfsfunktion für die Suche
 function normalizeTN(v) { return clean(v).replace(/\s+/g, "").toUpperCase(); }
 
+function toggleMischFelder(prefix){
+  const cb = document.getElementById(`${prefix}WkrIsMisch`);
+  const mischFelder = document.getElementById(`${prefix}WkrMischFelder`);
+  const normalFelder = document.getElementById(`${prefix}WkrNormalFelder`);
+  if(!cb) return;
+  const checked = cb.checked;
+  if(mischFelder) mischFelder.style.display = checked ? "block" : "none";
+  if(normalFelder) normalFelder.style.display = checked ? "none" : "contents";
+}
+
+function generateMischsetId(prefix){
+  const bez = clean(document.getElementById(`${prefix}WkrBezeichnung`)?.value || "");
+  const reihe = clean(document.getElementById(`${prefix}WkrReihe`)?.value || "");
+  const base = (bez + "_" + reihe).replace(/[^a-zA-Z0-9]/g,"_").substring(0,20);
+  const id = base + "_" + Date.now().toString(36).toUpperCase();
+  const el = document.getElementById(`${prefix}WkrMischsetId`);
+  if(el) el.value = id;
+}
+
 // Felder leeren beim Öffnen des Modals
 function clearWkrForm(prefix){
   ["Marke","Standort","Bezeichnung","Reifen","Dimension","TN","Lagerort","Bild","VP","Angebotspreis","Nettopreis","EmpfaengerMail","Hinweistext","Verkaufshinweis","Reihe","Modell","Motor"].forEach(f=>{const el=document.getElementById(`${prefix}Wkr${f}`);if(el)el.value="";});
   const lager=document.getElementById(`${prefix}WkrLager`);if(lager)lager.value="0";
-  const aktiv=document.getElementById(`${prefix}WkrAktiv`);if(aktiv)aktiv.value="Ja"; // NEU
+  const aktiv=document.getElementById(`${prefix}WkrAktiv`);if(aktiv)aktiv.value="Ja";
+  const isMisch=document.getElementById(`${prefix}WkrIsMisch`);if(isMisch)isMisch.checked=false;
+  const mischFelder=document.getElementById(`${prefix}WkrMischFelder`);if(mischFelder)mischFelder.style.display="none";
+  const normalFelder=document.getElementById(`${prefix}WkrNormalFelder`);if(normalFelder)normalFelder.style.display="contents";
+  ["MischsetId","TN_VA","TN_HA","Dimension_VA","Dimension_HA"].forEach(f=>{const el=document.getElementById(`${prefix}Wkr${f}`);if(el)el.value="";});
 }
 
 async function saveNewWkr(){
   if(_saving.newWkr) return;
-  
+
   const marke = clean(document.getElementById("newWkrMarke").value);
   const reihe = clean(document.getElementById("newWkrReihe").value);
   const modell = clean(document.getElementById("newWkrModell").value);
   const motor = clean(document.getElementById("newWkrMotor").value);
-  const tn = clean(document.getElementById("newWkrTN").value);
   const bezeichnung = clean(document.getElementById("newWkrBezeichnung").value);
   const standort = clean(document.getElementById("newWkrStandort").value);
+  const isMisch = document.getElementById("newWkrIsMisch")?.checked;
 
-  if(!marke || !reihe || !modell || !motor || !tn || !bezeichnung) {
-    alert("Bitte alle mit * markierten Felder ausfüllen (inkl. Fahrzeug-Zuordnung).");
-    return;
+  if(!marke || !reihe || !modell || !motor || !bezeichnung){
+    alert("Bitte alle mit * markierten Felder ausfüllen (inkl. Fahrzeug-Zuordnung)."); return;
   }
 
-  if(produkte.some(p=>clean(p["TN"])===tn)){alert("TN existiert bereits.");return;}
-
-  _saving.newWkr = true;
-  
-  // 1. Daten für Tabelle "Produkte"
-  const prodRow = {
-    "Marke": marke, "Standort": standort, "Bezeichnung": bezeichnung, 
+  const gemeinsam = {
+    "Marke": marke, "Standort": standort, "Bezeichnung": bezeichnung,
     "Reifen": clean(document.getElementById("newWkrReifen").value),
-    "Dimension": clean(document.getElementById("newWkrDimension").value),
-    "TN": tn, "Lager": clean(document.getElementById("newWkrLager").value),
+    "Lager": clean(document.getElementById("newWkrLager").value),
     "Lagerort": clean(document.getElementById("newWkrLagerort").value),
     "Bild": clean(document.getElementById("newWkrBild").value),
     "VP": clean(document.getElementById("newWkrVP").value),
     "Angebotspreis": clean(document.getElementById("newWkrAngebotspreis").value),
     "Nettopreis": clean(document.getElementById("newWkrNettopreis").value),
     "EmpfaengerMail": clean(document.getElementById("newWkrEmpfaengerMail").value),
-      "Hinweistext": clean(document.getElementById("newWkrHinweistext").value),
+    "Hinweistext": clean(document.getElementById("newWkrHinweistext").value),
     "Verkaufshinweis": clean(document.getElementById("newWkrVerkaufshinweis").value),
     "Aktiv": clean(document.getElementById("newWkrAktiv").value)
   };
 
-  // 2. Daten für Tabelle "Zuordnung"
-  const mapRow = { "Marke": marke, "Reihe": reihe, "Modell": modell, "Motor": motor, "TN": tn };
+  _saving.newWkr = true;
 
   try {
-    // Beides nacheinander speichern (Produkte UND Zuordnung)
-    await postToScript({ action: "appendRow", sheet: "Produkte", row: prodRow });
-    await postToScript({ action: "appendRow", sheet: "Zuordnung", row: mapRow });
+    if(isMisch){
+      const mischId = clean(document.getElementById("newWkrMischsetId").value);
+      const tnVA = clean(document.getElementById("newWkrTN_VA").value);
+      const tnHA = clean(document.getElementById("newWkrTN_HA").value);
+      const dimVA = clean(document.getElementById("newWkrDimension_VA").value);
+      const dimHA = clean(document.getElementById("newWkrDimension_HA").value);
 
-    alert("Erfolgreich gespeichert! Das Rad ist nun auch im Konfigurator sichtbar.");
-    
-    // Daten lokal aktualisieren
-    produkte.push(prodRow);
-    mapping.push(mapRow);
-    
+      if(!mischId || !tnVA || !tnHA || !dimVA || !dimHA){
+        alert("Mischbereifung: Bitte Mischset_ID, beide Teilenummern und beide Dimensionen ausfüllen."); return;
+      }
+      if(produkte.some(p=>clean(p["TN"])===tnVA)){alert("TN "+tnVA+" existiert bereits.");return;}
+      if(produkte.some(p=>clean(p["TN"])===tnHA)){alert("TN "+tnHA+" existiert bereits.");return;}
+
+      const rowVA = {...gemeinsam,"TN":tnVA,"Achse":"VA","Mischset_ID":mischId,"Dimension":dimVA,"Dimension_VA":dimVA,"Dimension_HA":dimHA};
+      const rowHA = {...gemeinsam,"TN":tnHA,"Achse":"HA","Mischset_ID":mischId,"Dimension":dimHA,"Dimension_VA":dimVA,"Dimension_HA":dimHA};
+      const mapVA = {"Marke":marke,"Reihe":reihe,"Modell":modell,"Motor":motor,"TN":tnVA};
+      const mapHA = {"Marke":marke,"Reihe":reihe,"Modell":modell,"Motor":motor,"TN":tnHA};
+
+      await postToScript({action:"appendRow",sheet:"Produkte",row:rowVA});
+      await postToScript({action:"appendRow",sheet:"Produkte",row:rowHA});
+      await postToScript({action:"appendRow",sheet:"Zuordnung",row:mapVA});
+      await postToScript({action:"appendRow",sheet:"Zuordnung",row:mapHA});
+
+      produkte.push(rowVA); produkte.push(rowHA);
+      mapping.push(mapVA); mapping.push(mapHA);
+      alert("Mischbereifung gespeichert! VA ("+tnVA+") und HA ("+tnHA+") wurden automatisch angelegt.");
+
+    } else {
+      const tn = clean(document.getElementById("newWkrTN").value);
+      if(!tn){alert("Teilenummer ausfüllen.");return;}
+      if(produkte.some(p=>clean(p["TN"])===tn)){alert("TN existiert bereits.");return;}
+
+      const prodRow = {...gemeinsam,"TN":tn,"Achse":"","Mischset_ID":"","Dimension":clean(document.getElementById("newWkrDimension").value)};
+      const mapRow = {"Marke":marke,"Reihe":reihe,"Modell":modell,"Motor":motor,"TN":tn};
+
+      await postToScript({action:"appendRow",sheet:"Produkte",row:prodRow});
+      await postToScript({action:"appendRow",sheet:"Zuordnung",row:mapRow});
+
+      produkte.push(prodRow); mapping.push(mapRow);
+      alert("WKR gespeichert! Das Rad ist nun im Konfigurator sichtbar.");
+    }
+
     closeAddWkrModal();
     render();
-  } catch(err) {
+  } catch(err){
     alert("Fehler beim Speichern: " + err.message);
   } finally {
     _saving.newWkr = false;
