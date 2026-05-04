@@ -4383,11 +4383,11 @@ results.forEach(r => {
       </div>
      ${hinweistext?`<div class="product-note" style="margin-top:8px;">${e(hinweistext)}</div>`:""}
 ${(()=>{
-  const effizienz = clean(va["Effizienz"]);
-  const nasse     = clean(va["Nasshaftung"]);
-  const lautKl    = clean(va["GeraeuschKlasse"]);
-  const lautDb    = clean(va["GeraeuschDB"]);
-  const eprelLink = clean(va["EPREL_Link"]);
+  const effizienz = clean(va["Rollwiderstand/Kraftstoff-Effizienz"]);
+const nasse     = clean(va["Nässe-Haftung"]);
+const lautKl    = clean(va["Klasse externe Rollgeräusche"]);
+const lautDb    = clean(va["Messwert externe Rollgeräusche (Dezibel)"]);
+const eprelLink = clean(va["Link EU Label"]);
   if(!effizienz && !nasse && !eprelLink) return "";
   const lc = {"A":"#00a651","B":"#52ae32","C":"#c8d400","D":"#ffcc00","E":"#f5a800","F":"#eb6208","G":"#e2001a"};
   const tc = {"A":"#fff","B":"#fff","C":"#111","D":"#111","E":"#111","F":"#fff","G":"#fff"};
