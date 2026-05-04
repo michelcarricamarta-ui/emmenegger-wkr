@@ -4298,6 +4298,28 @@ function renderWkrProduct(r){
       <div class="product-sub" style="font-weight:700;">${e(dimension)}</div>
       ${hinweistext?`<div class="product-note">${e(hinweistext)}</div>`:""}
       ${teilenummer?`<div class="product-partnr">Teilenr.: ${e(teilenummer)}</div>`:""}
+${(()=>{
+  const effizienz = clean(r["Rollwiderstand/Kraftstoff-Effizienz"]);
+  const nasse     = clean(r["Nässe-Haftung"]);
+  const lautKl    = clean(r["Klasse externe Rollgeräusche"]);
+  const lautDb    = clean(r["Messwert externe Rollgeräusche (Dezibel)"]);
+  const eprelLink = clean(r["Link EU Label"]);
+  if(!effizienz && !nasse && !eprelLink) return "";
+  const labelColor = {"A":"#00a651","B":"#52ae32","C":"#c8d400","D":"#ffcc00","E":"#f5a800","F":"#eb6208","G":"#e2001a"};
+  const textColor  = {"A":"#fff","B":"#fff","C":"#222","D":"#222","E":"#222","F":"#fff","G":"#fff"};
+  const noiseColor = {"A":"#00a651","B":"#52ae32","C":"#f5a800"};
+  const badge = (val, bg, txt) => `<span style="display:inline-flex;align-items:center;gap:3px;background:#111;color:white;font-size:11px;font-weight:600;padding:3px 7px;border-radius:3px;">
+    <span style="background:${bg};color:${txt};padding:1px 5px;border-radius:2px;font-weight:700;">${e(val)}</span>
+  </span>`;
+  return `<div style="margin-top:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+    ${effizienz ? badge(effizienz, labelColor[effizienz]||"#888", textColor[effizienz]||"#fff") : ""}
+    ${nasse     ? badge(nasse,     labelColor[nasse]    ||"#888", textColor[nasse]    ||"#fff") : ""}
+    ${lautKl&&lautDb ? `<span style="display:inline-flex;align-items:center;gap:3px;background:#111;color:white;font-size:11px;font-weight:600;padding:3px 7px;border-radius:3px;">
+      ${e(lautDb)} dB <span style="background:${noiseColor[lautKl]||"#888"};color:white;padding:1px 5px;border-radius:2px;font-weight:700;">${e(lautKl)}</span>
+    </span>` : ""}
+    ${eprelLink ? `<a href="${e(eprelLink)}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--accent);border:1px solid var(--border);border-radius:3px;padding:3px 8px;text-decoration:none;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'">↗ EU-Reifenlabel</a>` : ""}
+  </div>`;
+})()}
     </div>
     <div class="product-right">
       <div class="price-label">${e(t("price_set"))}</div>
