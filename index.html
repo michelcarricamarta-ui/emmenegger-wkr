@@ -976,7 +976,22 @@ body.mini-brand .btn-cart:hover { background: #111; color: white; }
   #mobileMenu { top: 52px; }
   #mobileMenu .login-btn { width: 100%; text-align: left; padding: 10px 12px; font-size: 13px; }
 }
-
+/* SCHNEEFLOCKEN */
+.snowflake {
+  position: absolute;
+  top: -10px;
+  color: white;
+  font-size: 1em;
+  opacity: 0;
+  animation: snowfall linear infinite;
+  pointer-events: none;
+  z-index: 3;
+  user-select: none;
+}
+@keyframes snowfall {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 0.8; }
+  100% { transform: translateY(440px) rotate(360deg); opacity: 0; }
+}
 @media print {
   .topbar, .back-btn, .mode-banner, .info-section, .admin-sidebar, .search-section { display: none !important; }
 }
@@ -1516,7 +1531,8 @@ body.mini-brand .vehicle-card:hover { background: var(--surface); }
 <!-- MAIN -->
 <div class="app-shell">
   <div id="modeBanner" class="mode-banner"></div>
-  <div class="hero" id="heroBanner">
+  <div class="hero" id="heroBanner" style="overflow:hidden;">
+    <div id="snowContainer" style="position:absolute;inset:0;pointer-events:none;z-index:3;overflow:hidden;"></div>
     <div class="hero-content">
       <h1 data-i18n="hero_title">Original Winterkompletträder</h1>
       <p data-i18n="hero_sub">Perfekt auf Ihr Fahrzeug abgestimmt.</p>
@@ -3269,7 +3285,23 @@ function shareConfig(){
 }
 /* ============================================================
    HERO & BRAND THEME
-   ============================================================ */
+ ============================================================ */
+   function startSnow(){
+  const container = document.getElementById("snowContainer");
+  if (!container) return;
+  container.innerHTML = "";
+  const flakes = ["❄","❅","❆","✦","·"];
+  for (let i = 0; i < 18; i++) {
+    const el = document.createElement("span");
+    el.className = "snowflake";
+    el.textContent = flakes[Math.floor(Math.random() * flakes.length)];
+    el.style.left = Math.random() * 100 + "%";
+    el.style.fontSize = (0.6 + Math.random() * 1.2) + "em";
+    el.style.animationDuration = (4 + Math.random() * 8) + "s";
+    el.style.animationDelay = (Math.random() * 6) + "s";
+    container.appendChild(el);
+  }
+}
 function updateHero(){
   const hero=document.getElementById("heroBanner");
   const info=document.getElementById("infoSection");
@@ -3278,7 +3310,8 @@ function updateHero(){
   hero.style.display=showHero?"block":"none";
   if(info) info.style.display=(adminMode||customerMode)?"none":"block";
   const img=state.marke==="BMW"?HERO_IMAGES.BMW:state.marke==="MINI"?HERO_IMAGES.MINI:HERO_IMAGES.start;
-  hero.style.backgroundImage=`url('${img}')`;
+ hero.style.backgroundImage=`url('${img}')`;
+  if (!adminMode && !internalMode) startSnow();
 }
 function updateBrandTheme(){ document.body.classList.toggle("mini-brand",state.marke==="MINI"); }
 
