@@ -992,6 +992,16 @@ body.mini-brand .btn-cart:hover { background: #111; color: white; }
   0%   { transform: translateY(0) rotate(0deg); opacity: 0.8; }
   100% { transform: translateY(440px) rotate(360deg); opacity: 0; }
 }
+   /* BRAND CARD ENTRANCE */
+@keyframes cardEntrance {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.brand-card {
+  animation: cardEntrance 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.brand-card:nth-child(1) { animation-delay: 0.05s; }
+.brand-card:nth-child(2) { animation-delay: 0.15s; }
 @media print {
   .topbar, .back-btn, .mode-banner, .info-section, .admin-sidebar, .search-section { display: none !important; }
 }
@@ -1384,9 +1394,13 @@ body.mini-brand .vehicle-card:hover { background: var(--surface); }
 <!-- TOPBAR -->
 <header class="topbar">
   <div class="topbar-inner">
-    <div class="topbar-logo">
-      <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" alt="Emmenegger Logo">
-    </div>
+    <div class="topbar-logo" style="display:flex;align-items:center;gap:12px;">
+  <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" alt="Emmenegger Logo" style="height:36px;">
+  <div style="width:1px;height:28px;background:var(--border);"></div>
+  <div style="font-size:11px;color:var(--text-muted);line-height:1.3;font-weight:500;">
+    WKR<br><span style="font-weight:700;color:var(--accent);letter-spacing:0.5px;">Konfigurator</span>
+  </div>
+</div>
     <div class="topbar-actions">
   <button id="backHomeBtn" class="back-btn" onclick="goToHome()">← <span data-i18n="back_home">Startseite</span></button>
   <button id="darkToggle" class="icon-btn" onclick="toggleDark()" title="Dunkelmodus">🌙</button>
@@ -3308,7 +3322,7 @@ function updateHero(){
   if(!hero)return;
   const showHero=(!adminMode&&!internalMode&&!customerMode)||state.internalSection==="wkr"||state.adminSection==="wkr_model";
   hero.style.display=showHero?"block":"none";
-  if(info) info.style.display=(adminMode||customerMode)?"none":"block";
+  if(info) info.style.display=(adminMode||customerMode||state.marke)?"none":"block";
   const img=state.marke==="BMW"?HERO_IMAGES.BMW:state.marke==="MINI"?HERO_IMAGES.MINI:HERO_IMAGES.start;
  hero.style.backgroundImage=`url('${img}')`;
   if (!adminMode && !internalMode) startSnow();
