@@ -2384,6 +2384,30 @@ function getCartTotal(){
 }
 
 // Kunden-Aktion: Rad per TN aus produkte[] in den Warenkorb legen
+   function handleAddToCartMisch(tnVA, tnHA){
+  const va = produkte.find(p => clean(p["TN"]) === clean(tnVA));
+  const ha = produkte.find(p => clean(p["TN"]) === clean(tnHA));
+  if(!va || !ha){ alert("Produkt nicht gefunden."); return; }
+  const mischTN = `${tnVA}_${tnHA}`;
+  const result = addToCart({
+    tn: mischTN,
+    bezeichnung: clean(va["Bezeichnung"]) + " (Mischbereifung)",
+    marke: clean(va["Reifen"]),
+    dimension: `VA: ${clean(va["Dimension"])} / HA: ${clean(ha["Dimension"])}`,
+    bild: clean(va["Bild"]),
+    preis: clean(va["Angebotspreis"]) || clean(va["VP"]),
+    nettopreis: clean(va["Nettopreis"]),
+    empfaengerMail: clean(va["EmpfängerMail"]||va["EmpfaengerMail"]),
+    hinweistext: clean(va["Hinweistext"]),
+    verkaufshinweis: clean(va["Verkaufshinweis"]),
+    anzahl: 4,
+    isMisch: true,
+    tnVA: tnVA,
+    tnHA: tnHA
+  });
+  if(result.alreadyIn){ alert("Dieses Produkt ist bereits in Ihrer Auswahl."); return; }
+  render();
+}
 function handleAddToCart(tn){
   const p = produkte.find(x => clean(x["TN"]) === clean(tn));
   if (!p) { alert("Produkt nicht gefunden."); return; }
@@ -4185,6 +4209,15 @@ function renderWkrFlow(){
   const fzBild=clean(fz?.Bild)||"https://via.placeholder.com/220x130?text=Fahrzeug";
   const fzCode=clean(fz?.Code)||state.modell;
  const tnList=[...new Set(mapping.filter(x=>clean(x["Marke"])===state.marke&&clean(x["Reihe"])===state.reihe&&clean(x["Modell"])===state.modell).map(x=>clean(x["TN"])).filter(Boolean))];
+   // Mischsets gruppieren
+const mischsets = {};
+produkte.forEach(p => {
+  const mid = clean(p["Mischset_ID"]);
+  if (!mid) return;
+  if (!mischsets[mid]) mischsets[mid] = { VA: null, HA: null };
+  if (clean(p["Achse"]) === "VA") mischsets[mid].VA = p;
+  if (clean(p["Achse"]) === "HA") mischsets[mid].HA = p;
+});
 const results=produkte.filter(p=>
     clean(p["Standort"])===state.standort && 
     clean(p["Marke"])===state.marke && 
@@ -4230,7 +4263,21 @@ const results=produkte.filter(p=>
       <div class="products-meta"><span>Standort: ${e(standortLabel(state.standort))}</span><span>Sortierung: Preis</span></div>
     </div>`;
   if(!results.length) html+=`<div class="empty-state"><div class="empty-icon">🔍</div>${e(t("no_results"))}</div>`;
-  results.forEach(r=>{ html+=renderWkrProduct(r); });
+  const renderedMischsets = new Set();
+results.forEach(r => {
+  const mid = clean(r["Mischset_ID"]);
+  const achse = clean(r["Achse"]);
+  if (mid) {
+    if (renderedMischsets.has(mid)) return; // schon gerendert
+    renderedMischsets.add(mid);
+    const set = mischsets[mid];
+    if (set && set.VA && set.HA) {
+      html += renderMischProduct(set.VA, set.HA);
+    }
+  } else {
+    html += renderWkrProduct(r);
+  }
+});
   html+=`</div>`;
   return html;
 }
@@ -4238,6 +4285,105 @@ const results=produkte.filter(p=>
 /* ============================================================
    RENDER: WKR PRODUCT
    ============================================================ */
+
+   function renderMischProduct(va, ha){
+  const lagerVA = parseInt(clean(va["Lager"]),10)||0;
+  const lagerHA = parseInt(clean(ha["Lager"]),10)||0;
+  const lagerSaetze = Math.min(Math.floor(lagerVA/2), Math.floor(lagerHA/2));
+  
+  const bild = clean(va["Bild"]) || clean(ha["Bild"]);
+  const bezeichnung = clean(va["Bezeichnung"]);
+  const markeReifen = clean(va["Reifen"]);
+  const dimVA = clean(va["Dimension_VA"]) || clean(va["Dimension"]);
+  const dimHA = clean(ha["Dimension_HA"]) || clean(ha["Dimension"]);
+  const angebot = clean(va["Angebotspreis"]) || clean(ha["Angebotspreis"]);
+  const vp = clean(va["VP"]) || clean(ha["VP"]);
+  const tnVA = clean(va["TN"]);
+  const tnHA = clean(ha["TN"]);
+  const nettopreis = clean(va["Nettopreis"]);
+  const empfaengerMail = clean(va["EmpfängerMail"]||va["EmpfaengerMail"]);
+  const hinweistext = clean(va["Hinweistext"]);
+  const verkaufshinweis = clean(va["Verkaufshinweis"]);
+  
+  const vpNum = parsePrice(vp);
+  const angebotNum = parsePrice(angebot);
+  const hasDiscount = angebotNum>0 && vpNum>0 && angebotNum<vpNum;
+  const isLowStock = lagerSaetze > 0 && lagerSaetze <= 2;
+  const isSoldOut = lagerSaetze <= 0 && !angebotNum && !vpNum;
+
+  let priceHtml = "";
+  if(hasDiscount) priceHtml=`<div class="price-main sale">${e(formatPrice(angebot))} CHF</div><div class="price-old">UPE: ${e(formatPrice(vp))} CHF</div>`;
+  else if(angebotNum>0) priceHtml=`<div class="price-main">${e(formatPrice(angebot))} CHF</div>`;
+  else if(vpNum>0) priceHtml=`<div class="price-main">${e(formatPrice(vp))} CHF</div>`;
+  else priceHtml=`<div class="price-main">Preis offen</div>`;
+
+  let statusHtml = "";
+  if(internalMode||adminMode){
+    statusHtml=`<div class="stock-count">Sätze an Lager: ${lagerSaetze} (VA:${lagerVA} / HA:${lagerHA})</div>`;
+    if(isLowStock) statusHtml+=`<span class="stock-warning-chip">⚠ Kritischer Lager</span>`;
+  } else if(isSoldOut){
+    statusHtml=`<div class="status-badge unavailable">${e(t("sold_out"))}</div>`;
+  } else if(lagerSaetze<=0){
+    statusHtml=`<div class="status-badge order">${e(t("on_order"))}</div><div class="delivery-note-text">${e(t("delivery_days"))}</div>`;
+  } else {
+    statusHtml=`<div class="status-badge in-stock">${e(t("in_stock"))}</div><div class="delivery-note-text">${e(t("delivery_immediate"))}</div>`;
+    if(isLowStock) statusHtml+=`<span class="stock-warning-chip">⚠ ${lagerSaetze} Sätze</span>`;
+  }
+
+  const mischTN = `${tnVA}_${tnHA}`;
+  let actionHtml = "";
+  if(adminMode){
+    actionHtml=`<div class="product-actions">
+      <button class="btn btn-primary btn-sm" onclick="openEditWkrModal('${js(tnVA)}')">VA bearbeiten</button>
+      <button class="btn btn-secondary btn-sm" onclick="openEditWkrModal('${js(tnHA)}')">HA bearbeiten</button>
+    </div>`;
+  } else if(internalMode){
+    actionHtml=isSoldOut
+      ?`<button class="btn btn-disabled">${e(t("sold_out"))}</button>`
+      :`<button class="btn btn-primary" onclick="openInquiryModal('${js(bezeichnung+" (Mischbereifung)")}','${js(markeReifen)}','VA: ${js(dimVA)} / HA: ${js(dimHA)}','${js(angebot||vp)}','${js(empfaengerMail)}','${js(bild)}','${js(mischTN)}','${js(hinweistext)}','${js(verkaufshinweis)}','${js(nettopreis)}')">${e(t("select_action"))}</button>`;
+  } else {
+    if(isSoldOut){
+      actionHtml=`<button class="btn btn-disabled">${e(t("sold_out"))}</button>`;
+    } else if(cartContains(mischTN)){
+      actionHtml=`<button class="btn btn-cart in-cart" onclick="removeFromCart('${js(mischTN)}')">✓ In Auswahl</button>`;
+    } else {
+      actionHtml=`<button class="btn btn-cart" onclick="handleAddToCartMisch('${js(tnVA)}','${js(tnHA)}')">+ In Auswahl aufnehmen</button>`;
+    }
+  }
+
+  return `<div class="product-item ${isSoldOut?"sold-out":""}">
+    <div class="product-image-wrap"><img src="${e(bild)}" alt="${e(bezeichnung)}" onclick="toggleZoom(this)"></div>
+    <div class="product-info">
+      <div style="display:inline-flex;align-items:center;gap:6px;margin-bottom:8px;">
+        <span style="background:#e0f2fe;color:#0369a1;font-size:11px;font-weight:700;padding:2px 10px;border-radius:3px;">MISCHBEREIFUNG</span>
+      </div>
+      ${verkaufshinweis?`<div class="product-warning">⚠️ <b>Wichtiger Hinweis:</b> ${e(verkaufshinweis)}</div>`:""}
+      <div class="product-name">${e(bezeichnung)}</div>
+      <div class="product-sub">${e(markeReifen)}</div>
+      <div style="margin-top:6px;display:flex;flex-direction:column;gap:3px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;font-weight:700;background:#f0f9ff;color:#0369a1;padding:2px 6px;border-radius:3px;min-width:24px;text-align:center;">VA</span>
+          <span style="font-size:13px;font-weight:700;">${e(dimVA)}</span>
+          <span style="font-size:11px;color:var(--text-muted);font-family:monospace;">TN: ${e(tnVA)}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;font-weight:700;background:#f0fdf4;color:#166534;padding:2px 6px;border-radius:3px;min-width:24px;text-align:center;">HA</span>
+          <span style="font-size:13px;font-weight:700;">${e(dimHA)}</span>
+          <span style="font-size:11px;color:var(--text-muted);font-family:monospace;">TN: ${e(tnHA)}</span>
+        </div>
+      </div>
+      ${hinweistext?`<div class="product-note" style="margin-top:8px;">${e(hinweistext)}</div>`:""}
+    </div>
+    <div class="product-right">
+      <div class="price-label">${e(t("price_set"))}</div>
+      ${priceHtml}
+      <div class="price-vat">${e(t("price_incl_vat"))}</div>
+      ${(internalMode||adminMode)&&nettopreis?`<div class="product-detail-row" style="text-align:right;font-size:12px;"><b>Netto:</b> ${e(formatPrice(nettopreis))} CHF</div>`:""}
+      ${statusHtml}
+      <div class="product-actions">${actionHtml}</div>
+    </div>
+  </div>`;
+}
 function renderWkrProduct(r){
   const lager=parseInt(clean(r["Lager"]),10)||0;
   const bild=clean(r["Bild"])||"https://via.placeholder.com/220x140?text=Rad";
