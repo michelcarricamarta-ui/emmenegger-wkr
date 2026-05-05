@@ -1568,7 +1568,6 @@ body.mini-brand .vehicle-card:hover { background: var(--surface); }
 }
 .map-popup-btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
 .leaflet-container { font-family: var(--font-body); }
-</style>
 /* ============================================================
    NEUE PREMIUM BUTTONS (Hero & Standort)
    ============================================================ */
@@ -3691,9 +3690,17 @@ function closeOnOutsideHamburger(e){
    NAVIGATION
    ============================================================ */
 function goToHome(){
-  state={standort:null,marke:null,reihe:null,modell:null,motor:null,internalSection:null,adminSection:adminMode?"dashboard":null, konfiguratorStarted: false};
-  tireSearch={direkt:"",profilbreite:"",querschnitt:"",zoll:""};
-  selectedProduct=null; closeAllModals(); render();
+  state={standort:null,marke:null,reihe:null,modell:null,motor:null,internalSection:null,adminSection:adminMode?"dashboard":null, konfiguratorStarted: false};
+  tireSearch={direkt:"",profilbreite:"",querschnitt:"",zoll:""};
+  selectedProduct=null; closeAllModals(); render();
+}
+
+function startKonfigurator() {
+  state.konfiguratorStarted = true;
+  render();
+  setTimeout(() => {
+    document.getElementById('app').scrollIntoView({behavior: 'smooth', block: 'start'});
+  }, 100);
 }
    /* ============================================================
    NAVIGATION
@@ -4536,21 +4543,14 @@ function render(){
    WKR FLOW (shared between public, internal, admin)
    ============================================================ */
 function renderWkrFlow(){
-  let html = "";
-  const isWkrFlow = true;
-   /* ============================================================
-   WKR FLOW (shared between public, internal, admin)
-   ============================================================ */
-function renderWkrFlow(){
-  let html = "";
-  const isWkrFlow = true;
+  let html = "";
+  const isWkrFlow = true;
 
-  // NEU: Im öffentlichen Modus nichts anzeigen, solange der Button nicht geklickt wurde
-  if (!state.konfiguratorStarted && !internalMode && !adminMode) {
-      return html;
-  }
+  if (!state.konfiguratorStarted && !internalMode && !adminMode && !customerMode) {
+      return html;
+  }
 
-  if (!state.marke) {
+  if (!state.marke) {
     html += `
       <div class="section-title">Wählen Sie Ihre Marke</div>
 
