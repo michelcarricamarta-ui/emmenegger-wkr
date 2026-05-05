@@ -142,6 +142,64 @@ body {
   cursor: pointer; transition: var(--transition);
 }
 .login-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--surface-3); }
+   /* ============================================================
+   TOPBAR LOGIN / LOGOUT BUTTONS
+   ============================================================ */
+.topbar-login-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 18px;
+  background: linear-gradient(135deg, #1c69d4 0%, #4d8ef0 100%);
+  color: #fff;
+  border: none; border-radius: 50px;
+  font-family: var(--font-body); font-size: 13px; font-weight: 700;
+  cursor: pointer; letter-spacing: 0.5px;
+  box-shadow: 0 4px 14px rgba(28,105,212,0.4);
+  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  position: relative; overflow: hidden;
+}
+.topbar-login-btn::before {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+  border-radius: inherit;
+}
+.topbar-login-btn:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 8px 22px rgba(28,105,212,0.5);
+}
+.topbar-login-btn:active { transform: scale(0.97); }
+.topbar-login-btn svg { flex-shrink: 0; }
+
+.topbar-user-chip {
+  display: flex; align-items: center; gap: 8px;
+}
+.topbar-user-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent) 0%, #6ea8f7 100%);
+  color: #fff; font-size: 12px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(28,105,212,0.4);
+}
+.topbar-user-name {
+  font-size: 13px; font-weight: 600; color: var(--text-primary);
+  max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.topbar-logout-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px;
+  background: var(--error-bg); border: 1.5px solid var(--error);
+  border-radius: 50%; color: var(--error);
+  cursor: pointer; transition: var(--transition);
+  flex-shrink: 0;
+}
+.topbar-logout-btn:hover {
+  background: var(--error); color: #fff;
+  transform: scale(1.1);
+}
+body.mini-brand .topbar-login-btn {
+  background: linear-gradient(135deg, #333 0%, #555 100%);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+}
 .mode-badge {
   display: inline-flex; align-items: center; gap: 6px;
   font-size: 11px; font-weight: 700; padding: 4px 10px;
@@ -1469,111 +1527,95 @@ draw();
     </div>
     <div class="topbar-actions">
   <button id="backHomeBtn" class="back-btn" onclick="goToHome()">← <span data-i18n="back_home">Startseite</span></button>
-<label class="theme-toggle" title="Tag/Nacht">
-  <input type="checkbox" id="darkToggleCheck" onchange="toggleDark()">
-  <span class="theme-toggle-track">
-    <span class="theme-toggle-thumb">
-      <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-      <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-    </span>
-  </span>
-</label>  <button class="icon-btn" onclick="toggleMobileMenu()" id="menuToggle" style="font-size:20px;width:40px;height:40px;">☰</button>
+
+  <!-- Admin Search + Bell (nur im Admin-Modus) -->
   <div id="adminTopbarAddon" class="admin-topbar-addon" style="display:none;">
-      <div class="admin-search-wrap">
-        <input id="globalSearch" type="text" class="admin-search-input" placeholder="Suche: Kunde, TN, FIN, Auftrag..."
-               oninput="handleGlobalSearch(this.value)"
-               onblur="setTimeout(()=>{const r=document.getElementById('globalSearchResults');if(r)r.style.display='none';}, 200)"
-               onfocus="if(this.value)document.getElementById('globalSearchResults').style.display='block'">
-        <div id="globalSearchResults" class="admin-search-results"></div>
-      </div>
-      <button id="adminBellBtn" class="admin-bell-btn" onclick="showUrgentModal()" title="Dringende Aufgaben">
-        🔔
-        <span id="adminBellBadge" class="admin-bell-badge" style="display:none;">0</span>
-      </button>
+    <div class="admin-search-wrap">
+      <input id="globalSearch" type="text" class="admin-search-input" placeholder="Suche: Kunde, TN, FIN, Auftrag..."
+             oninput="handleGlobalSearch(this.value)"
+             onblur="setTimeout(()=>{const r=document.getElementById('globalSearchResults');if(r)r.style.display='none';}, 200)"
+             onfocus="if(this.value)document.getElementById('globalSearchResults').style.display='block'">
+      <div id="globalSearchResults" class="admin-search-results"></div>
     </div>
- <div style="position:relative;">
-  <button id="hamburgerBtn" onclick="toggleHamburgerMenu()" style="
-    width:40px;height:40px;
-    background:var(--surface-2);
-    border:1px solid var(--border);
-    border-radius:var(--radius-sm);
-    cursor:pointer;
-    display:flex;flex-direction:column;
-    align-items:center;justify-content:center;gap:5px;
-    transition:var(--transition);
-  ">
-    <span style="width:18px;height:2px;background:var(--text-secondary);border-radius:2px;display:block;"></span>
-    <span style="width:18px;height:2px;background:var(--text-secondary);border-radius:2px;display:block;"></span>
-    <span style="width:18px;height:2px;background:var(--text-secondary);border-radius:2px;display:block;"></span>
+    <button id="adminBellBtn" class="admin-bell-btn" onclick="showUrgentModal()" title="Dringende Aufgaben">
+      🔔
+      <span id="adminBellBadge" class="admin-bell-badge" style="display:none;">0</span>
+    </button>
+  </div>
+
+  <!-- Dark Mode Toggle -->
+  <button id="darkToggle" class="icon-btn" onclick="toggleDark()" title="Dunkelmodus">🌙</button>
+
+  <!-- LOGIN BUTTON (sichtbar wenn nicht eingeloggt) -->
+  <button id="topbarLoginBtn" class="topbar-login-btn" onclick="openLoginModal()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+      <polyline points="10 17 15 12 10 7"/>
+      <line x1="15" y1="12" x2="3" y2="12"/>
+    </svg>
+    Anmelden
   </button>
 
-  <div id="hamburgerMenu" style="
-    display:none;
-    position:absolute;
-    top:48px;right:0;
-    background:var(--surface);
-    border:1px solid var(--border);
-    border-radius:var(--radius-md);
-    box-shadow:var(--shadow-lg);
-    min-width:220px;
-    z-index:200;
-    overflow:hidden;
-  ">
-    <div style="padding:8px 0;">
-      <div id="desktopActions" style="display:flex;flex-direction:column;">
-       <button id="loginBtn" onclick="openLoginModal();closeHamburgerMenu();" style="
-          padding:12px 18px;font-size:13px;font-weight:600;
-          background:none;border:none;cursor:pointer;
-          text-align:left;color:var(--text-primary);
-          transition:var(--transition);
-          display:flex;align-items:center;gap:10px;
-        " onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">
-          🔐 Login
-        </button>
+  <!-- USER CHIP + LOGOUT (sichtbar wenn eingeloggt) -->
+  <div id="topbarUserChip" class="topbar-user-chip" style="display:none;">
+    <div id="topbarUserAvatar" class="topbar-user-avatar">?</div>
+    <span id="topbarUserName" class="topbar-user-name">–</span>
+    <button class="topbar-logout-btn" onclick="logoutAdmin()" title="Abmelden">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Hamburger (Kontakt / Datenschutz) -->
+  <div style="position:relative;">
+    <button id="hamburgerBtn" onclick="toggleHamburgerMenu()" style="
+      width:40px;height:40px;
+      background:var(--surface-2);border:1px solid var(--border);
+      border-radius:var(--radius-sm);cursor:pointer;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+      transition:var(--transition);">
+      <span style="width:18px;height:2px;background:var(--text-secondary);border-radius:2px;display:block;"></span>
+      <span style="width:18px;height:2px;background:var(--text-secondary);border-radius:2px;display:block;"></span>
+      <span style="width:18px;height:2px;background:var(--text-secondary);border-radius:2px;display:block;"></span>
+    </button>
+    <div id="hamburgerMenu" style="
+      display:none;position:absolute;top:48px;right:0;
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--radius-md);box-shadow:var(--shadow-lg);
+      min-width:200px;z-index:200;overflow:hidden;">
+      <div style="padding:8px 0;">
+        <!-- Öffentlich-Modus (nur wenn eingeloggt) -->
         <button id="publicViewBtn" onclick="deactivateAllModes();closeHamburgerMenu();" style="
           padding:12px 18px;font-size:13px;font-weight:600;
           background:none;border:none;cursor:pointer;
           text-align:left;color:var(--text-primary);
-          transition:var(--transition);
-          display:none;
-          align-items:center;gap:10px;
-        " onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">
-          🌐 Öffentlich
+          transition:var(--transition);display:none;align-items:center;gap:10px;"
+          onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">
+          🌐 Öffentliche Ansicht
         </button>
-        <div id="userBadge" style="display:none;padding:10px 18px;font-size:12px;font-weight:600;color:var(--text-secondary);border-top:1px solid var(--border);"></div>
-        <button id="adminLogoutBtn" onclick="logoutAdmin();closeHamburgerMenu();" style="
-          padding:12px 18px;font-size:13px;font-weight:600;
-          background:none;border:none;cursor:pointer;
-          text-align:left;color:var(--error);
-          transition:var(--transition);
-          display:none;
-          align-items:center;gap:10px;
-        " onmouseover="this.style.background='var(--error-bg)'" onmouseout="this.style.background='none'">
-          🚪 Logout
-        </button>
+        <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
+        <a href="https://emmeneggerag.ch/kontakt/" target="_blank" style="
+          padding:10px 18px;font-size:12px;color:var(--text-muted);
+          display:flex;align-items:center;gap:8px;text-decoration:none;transition:var(--transition);"
+          onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">
+          📞 Kontakt
+        </a>
+        <a href="https://emmeneggerag.ch/datenschutz/" target="_blank" style="
+          padding:10px 18px;font-size:12px;color:var(--text-muted);
+          display:flex;align-items:center;gap:8px;text-decoration:none;transition:var(--transition);"
+          onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">
+          🔒 Datenschutz
+        </a>
       </div>
-
-      <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
-
-      <a href="https://emmeneggerag.ch/kontakt/" target="_blank" style="
-        padding:10px 18px;font-size:12px;color:var(--text-muted);
-        display:flex;align-items:center;gap:8px;text-decoration:none;
-        transition:var(--transition);
-      " onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">
-        📞 Kontakt
-      </a>
-      <a href="https://emmeneggerag.ch/datenschutz/" target="_blank" style="
-        padding:10px 18px;font-size:12px;color:var(--text-muted);
-        display:flex;align-items:center;gap:8px;text-decoration:none;
-        transition:var(--transition);
-      " onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">
-        🔒 Datenschutz
-      </a>
     </div>
   </div>
+
+  <!-- Mobile Menu Toggle -->
+  <button class="icon-btn" onclick="toggleMobileMenu()" id="menuToggle" style="font-size:20px;width:40px;height:40px;display:none;">☰</button>
 </div>
-</div>
-  </div>
 </header>
 
 <!-- Mobile Menu -->
@@ -4014,34 +4056,52 @@ function renderAdminDashboard(){
 function updateTopbarContext(){
   const addon = document.getElementById("adminTopbarAddon");
   const badge = document.getElementById("adminBellBadge");
-  if (!addon) return;
-// Im Kunden-Modus IMMER ausblenden (Security first)
-  if (customerMode) {
-    addon.style.display = "none";
-    return;
+  const loginBtn   = document.getElementById("topbarLoginBtn");
+  const userChip   = document.getElementById("topbarUserChip");
+  const avatar     = document.getElementById("topbarUserAvatar");
+  const nameEl     = document.getElementById("topbarUserName");
+  const mobileLogin  = document.getElementById("mobileLoginBtn");
+  const mobileLogout = document.getElementById("mobileLogoutBtn");
+
+  const isLoggedIn = adminMode || internalMode;
+
+  // Login / User-Chip
+  if (loginBtn)   loginBtn.style.display   = (isLoggedIn || customerMode) ? "none" : "flex";
+  if (userChip)   userChip.style.display   = isLoggedIn ? "flex" : "none";
+  if (mobileLogin)  mobileLogin.style.display  = (isLoggedIn || customerMode) ? "none" : "";
+  if (mobileLogout) mobileLogout.style.display = isLoggedIn ? "" : "none";
+
+  // User-Name & Avatar befüllen
+  if (isLoggedIn && currentUser) {
+    const name = currentUser.name || currentUser.email || "–";
+    const initial = name.charAt(0).toUpperCase();
+    if (avatar) avatar.textContent = initial;
+    if (nameEl) {
+      const rolle = currentUser.rolle || "";
+      nameEl.textContent = name + (rolle ? ` · ${rolle}` : "");
+    }
   }
-  // Im Kunden-Modus IMMER ausblenden (Security first)
+
+  // Kunden-Modus: alles ausblenden
   if (customerMode) {
-    addon.style.display = "none";
+    if (addon) addon.style.display = "none";
     return;
   }
 
-  if (adminMode) {
-    addon.style.display = "flex";
-    const urgentCount = getUrgentCount();
-    if (badge) {
-      if (urgentCount > 0) {
+  // Admin-Addon (Suche + Bell)
+  if (addon) {
+    if (adminMode) {
+      addon.style.display = "flex";
+      const urgentCount = getUrgentCount();
+      if (badge) {
         badge.textContent = urgentCount;
-        badge.style.display = "inline-block";
-      } else {
-        badge.style.display = "none";
+        badge.style.display = urgentCount > 0 ? "inline-block" : "none";
       }
+    } else {
+      addon.style.display = "none";
     }
-  } else {
-    addon.style.display = "none";
   }
 }
-
 /* ============================================================
    TOPBAR: Dringende Aufgaben zählen
    ============================================================ */
@@ -4159,7 +4219,7 @@ function render(){
 
   // Login-Buttons im Kunden-Modus ausblenden (Security)
   if (customerMode) {
-    const ids = ["adminLoginBtn","internalLoginBtn","backHomeBtn","menuToggle"];
+    const ids = ["topbarLoginBtn","topbarUserChip","backHomeBtn","menuToggle","hamburgerBtn"];
     ids.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "none"; });
     const dt = document.getElementById("desktopActions");
     if (dt) dt.style.display = "none";
