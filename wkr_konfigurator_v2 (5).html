@@ -5961,7 +5961,13 @@ function openEditWkrModal(tn){
   document.getElementById("editWkrReihe").value = mapEntry ? clean(mapEntry["Reihe"]) : "";
   document.getElementById("editWkrModell").value = mapEntry ? clean(mapEntry["Modell"]) : "";
   document.getElementById("editWkrMotor").value = mapEntry ? clean(mapEntry["Motor"]) : "";
-
+const isMisch = !!clean(row["Achse"]);
+document.getElementById("editWkrIsMisch").checked = isMisch;
+document.getElementById("editWkrMischFelder").style.display = isMisch ? "block" : "none";
+document.getElementById("editWkrAchse").value = clean(row["Achse"]) || "VA";
+document.getElementById("editWkrMischsetId").value = clean(row["Mischset_ID"]);
+document.getElementById("editWkrDimension_VA").value = clean(row["Dimension_VA"]);
+document.getElementById("editWkrDimension_HA").value = clean(row["Dimension_HA"]);
   document.getElementById("editWkrModal").classList.add("open");
 }
 
