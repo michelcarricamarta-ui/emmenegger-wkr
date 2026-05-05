@@ -1557,17 +1557,127 @@ body.mini-brand .vehicle-card:hover { background: var(--surface); }
 .brand-card-v2-title { font-size: 20px; font-weight: 700; letter-spacing: 2px; color: var(--text-primary); }
 
 /* ============================================================
-   KARTEN POPUP STYLING (Leaflet)
+   STANDORT-KARTE PREMIUM STYLING
    ============================================================ */
-.leaflet-popup-content-wrapper { border-radius: 12px !important; box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important; background: var(--surface) !important; }
-.leaflet-popup-content { margin: 16px !important; text-align: center; font-family: var(--font-body); }
-.map-popup-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; color: var(--accent); }
-.map-popup-btn {
-  background: var(--accent); color: white; border: none; padding: 10px 16px; border-radius: 6px; 
-  font-weight: bold; cursor: pointer; margin-top: 12px; width: 100%; transition: 0.2s; font-family: var(--font-body);
+
+.standort-map-frame {
+  position: relative;
+  height: 450px;
+  width: 100%;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #ffffff;
+  border: 12px solid #ffffff;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.14);
 }
-.map-popup-btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
-.leaflet-container { font-family: var(--font-body); }
+
+#standortMap {
+  height: 100%;
+  width: 100%;
+  border-radius: 12px;
+  z-index: 1;
+}
+
+/* Deckt unten rechts die Leaflet/OpenStreetMap-Beschriftung optisch ab */
+.map-credit-cover {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 190px;
+  height: 36px;
+  background: #ffffff;
+  z-index: 999;
+  pointer-events: none;
+  border-top-left-radius: 14px;
+}
+
+/* Leaflet Popup */
+.leaflet-popup-content-wrapper {
+  border-radius: 16px !important;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.18) !important;
+  background: #ffffff !important;
+}
+
+.leaflet-popup-content {
+  margin: 18px !important;
+  text-align: center;
+  font-family: var(--font-body);
+}
+
+.map-popup-title {
+  font-size: 17px;
+  font-weight: 800;
+  margin-bottom: 6px;
+  color: var(--accent);
+}
+
+.map-popup-address {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.map-popup-btn {
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+  color: white;
+  border: none;
+  padding: 11px 18px;
+  border-radius: 999px;
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: 12px;
+  width: 100%;
+  transition: 0.2s;
+  font-family: var(--font-body);
+  box-shadow: 0 8px 20px rgba(28,105,212,0.25);
+}
+
+.map-popup-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(28,105,212,0.32);
+}
+
+.leaflet-container {
+  font-family: var(--font-body);
+}
+
+/* Edle fixe Standort-Beschriftung auf der Karte */
+.standort-label {
+  background: rgba(255,255,255,0.97) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18) !important;
+  color: #0f172a !important;
+  font-weight: 800 !important;
+  font-size: 14px !important;
+  padding: 7px 14px !important;
+  letter-spacing: 0.2px;
+}
+
+.standort-label::before {
+  display: none !important;
+}
+
+/* Kleiner blauer Standort-Punkt */
+.custom-location-marker {
+  width: 22px;
+  height: 22px;
+  background: var(--accent);
+  border: 4px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 8px 22px rgba(28,105,212,0.45);
+  position: relative;
+}
+
+.custom-location-marker::after {
+  content: '';
+  position: absolute;
+  inset: -9px;
+  border-radius: 50%;
+  background: rgba(28,105,212,0.18);
+  z-index: -1;
+}
 /* ============================================================
    NEUE PREMIUM BUTTONS (Hero & Standort)
    ============================================================ */
@@ -4567,17 +4677,19 @@ if (!state.marke) {
   return html;
 }
 
-  if (!state.standort) {
-    html += `
-      <div class="section-title">Wählen Sie Ihren Standort</div>
-      <div style="max-width: 1000px; margin: 0 auto 50px;">
-        <div id="standortMap" style="height: 450px; width: 100%; border-radius: 16px; box-shadow: var(--shadow-md); z-index: 1;"></div>
+ if (!state.standort) {
+  html += `
+    <div class="section-title">Wählen Sie Ihren Standort</div>
+    <div style="max-width: 1000px; margin: 0 auto 50px;">
+      <div class="standort-map-frame">
+        <div id="standortMap"></div>
+        <div class="map-credit-cover"></div>
       </div>
-    `;
-    // Die Karte muss initialisiert werden, NACHDEM das HTML in den DOM gerendert wurde
-    setTimeout(initStandortMap, 50);
-    return html;
-  }
+    </div>
+  `;
+  setTimeout(initStandortMap, 50);
+  return html;
+}
 
  // NEU: Reihe und Modell in einer visuellen Auswahl zusammengefasst (BMW-Style)
   if (!state.reihe || !state.modell) {
@@ -8669,11 +8781,21 @@ document.querySelectorAll(".modal-overlay").forEach(overlay=>{
 function initStandortMap() {
     const mapContainer = document.getElementById("standortMap");
     if (!mapContainer) return;
-    
-    // Karte zentriert zwischen Gebenstorf und Hettenschwil
-    const map = L.map('standortMap').setView([47.525, 8.206], 12);
-    
-   // Moderner, heller Karten-Style (CartoDB) OHNE Beschriftung
+
+    // Falls die Karte bereits existiert, zuerst sauber entfernen
+    if (window._standortMap) {
+        window._standortMap.remove();
+        window._standortMap = null;
+    }
+
+    // Karte sauber zwischen Gebenstorf und Hettenschwil zentrieren
+    const map = L.map('standortMap', {
+        zoomControl: true,
+        attributionControl: true,
+        scrollWheelZoom: false
+    }).setView([47.532, 8.222], 12);
+
+    // Helle Karte ohne normale Ortsbeschriftungen
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; OpenStreetMap',
         subdomains: 'abcd',
@@ -8681,27 +8803,62 @@ function initStandortMap() {
     }).addTo(map);
 
     const standorte = [
-        { id: "GEB", name: "Gebenstorf", lat: 47.4828, lng: 8.2443, addr: "Landstrasse 35, 5412 Gebenstorf" },
-        { id: "HET", name: "Hettenschwil", lat: 47.5685, lng: 8.1694, addr: "Hauptstrasse 12, 5316 Hettenschwil" }
+        {
+            id: "GEB",
+            name: "Gebenstorf",
+            fullName: "Emmenegger Gebenstorf",
+            lat: 47.4898233,
+            lng: 8.2417718,
+            addr: "Grubenstrasse 1, 5412 Gebenstorf"
+        },
+        {
+            id: "HET",
+            name: "Hettenschwil",
+            fullName: "Felix Emmenegger AG Hettenschwil",
+            lat: 47.5743881,
+            lng: 8.2026518,
+            addr: "5316 Hettenschwil"
+        }
     ];
 
+    const premiumIcon = L.divIcon({
+        className: '',
+        html: '<div class="custom-location-marker"></div>',
+        iconSize: [22, 22],
+        iconAnchor: [11, 11],
+        popupAnchor: [0, -12]
+    });
+
     standorte.forEach(st => {
-        // Blauer Standard-Marker
-        const marker = L.marker([st.lat, st.lng]).addTo(map);
-        
+        const marker = L.marker([st.lat, st.lng], {
+            icon: premiumIcon
+        }).addTo(map);
+
+        // Feste Beschriftung auf der Karte
+        marker.bindTooltip(st.name, {
+            permanent: true,
+            direction: 'top',
+            offset: [0, -18],
+            className: 'standort-label'
+        }).openTooltip();
+
         const popupHtml = `
-            <div class="map-popup-title">📍 Emmenegger ${st.name}</div>
-            <div style="font-size:12px; color:var(--text-secondary); margin-bottom: 8px;">${st.addr}</div>
-            <button class="map-popup-btn" onclick="triggerStandortZoom(${st.lat}, ${st.lng}, '${st.id}')">Diesen Standort wählen</button>
+            <div class="map-popup-title">📍 ${st.fullName}</div>
+            <div class="map-popup-address">${st.addr}</div>
+            <button class="map-popup-btn" onclick="triggerStandortZoom(${st.lat}, ${st.lng}, '${st.id}')">
+                Diesen Standort wählen
+            </button>
         `;
+
         marker.bindPopup(popupHtml);
     });
 
-    // Speichere map Instanz global für den Flug-Zoom
     window._standortMap = map;
-}
 
-window.triggerStandortZoom = function(lat, lng, id) {
+    setTimeout(() => {
+        map.invalidateSize();
+    }, 150);
+}
     if (window._standortMap) {
         // Fliegt animiert zum Marker und zoomt auf Strassenebene hinein
         window._standortMap.flyTo([lat, lng], 17, {
