@@ -1834,9 +1834,8 @@ draw();
       <h1 data-i18n="hero_title">Original Winterkompletträder</h1>
       <p data-i18n="hero_sub">Perfekt auf Ihr Fahrzeug abgestimmt.</p>
       
-      <!-- NEUER CTA BUTTON -->
-      <button class="cta-arrow-btn" onclick="document.getElementById('app').scrollIntoView({behavior: 'smooth'})">
-        <span class="text">Konfigurator starten</span>
+<!-- NEUER CTA BUTTON -->
+      <button class="cta-arrow-btn" onclick="startKonfigurator()">        <span class="text">Konfigurator starten</span>
         <span class="icon">
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"></path>
@@ -4539,6 +4538,21 @@ function render(){
 function renderWkrFlow(){
   let html = "";
   const isWkrFlow = true;
+   /* ============================================================
+   WKR FLOW (shared between public, internal, admin)
+   ============================================================ */
+function renderWkrFlow(){
+  let html = "";
+  const isWkrFlow = true;
+
+  // NEU: Im öffentlichen Modus nichts anzeigen, solange der Button nicht geklickt wurde
+  if (!state.konfiguratorStarted && !internalMode && !adminMode) {
+      return html;
+  }
+
+  if (!state.marke) {
+    html += `
+      <div class="section-title">Wählen Sie Ihre Marke</div>
 
  if (!state.marke) {
     html += `
