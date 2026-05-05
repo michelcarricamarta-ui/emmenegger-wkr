@@ -1892,20 +1892,53 @@ body.mini-brand .vehicle-card:hover { background: var(--surface); }
     <span style="font-weight:700;">Mischbereifung (VA/HA unterschiedlich)</span>
   </label>
 </div>
-<div id="editWkrMischFelder" style="display:none;grid-column:1/-1;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:14px;">
-  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#0369a1;margin-bottom:12px;">🔀 Mischbereifung-Einstellungen</div>
-  <div class="form-grid">
-    <div class="form-field"><label>Achse *</label><select id="editWkrAchse"><option value="VA">VA (Vorderachse)</option><option value="HA">HA (Hinterachse)</option></select></div>
-    <div class="form-field"><label>Mischset_ID *</label><input id="editWkrMischsetId" type="text" placeholder="z.B. 796M_G20"></div>
-    <div class="form-field"><label>Dimension VA</label><input id="editWkrDimension_VA" type="text" placeholder="225/45 R18"></div>
-    <div class="form-field"><label>Dimension HA</label><input id="editWkrDimension_HA" type="text" placeholder="255/40 R18"></div>
+<!-- Edit Mischbereifung Felder -->
+<div id="editWkrMischFelder" style="display:none;grid-column:1/-1;">
+  <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px;">
+    <div style="background:color-mix(in srgb,var(--accent) 10%,transparent);padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--accent);">🔀 Mischbereifung — diese Achse bearbeiten</span>
+      <span id="editWkrAchseBadge" style="font-size:12px;font-weight:700;padding:2px 10px;border-radius:4px;background:#0369a1;color:white;">VA</span>
+    </div>
+    <div style="padding:14px;">
+      <!-- Mischset_ID -->
+      <div style="margin-bottom:12px;display:flex;align-items:center;gap:10px;background:var(--surface-3);border-radius:6px;padding:8px 12px;">
+        <span style="font-size:12px;font-weight:700;color:var(--text-muted);white-space:nowrap;">Mischset_ID:</span>
+        <input id="editWkrMischsetId" type="text" style="flex:1;background:transparent;border:none;font-size:13px;font-weight:700;color:var(--accent);font-family:monospace;outline:none;" placeholder="z.B. 796M_GEB">
+      </div>
+      <!-- Hidden Achse (intern) -->
+      <input type="hidden" id="editWkrAchse" value="VA">
+      <!-- VA + HA: Dimension, Lager, Lagerort -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+        <div style="padding:12px;border-right:1px solid var(--border);">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#0369a1;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+            <span style="background:#0369a1;color:white;padding:1px 7px;border-radius:3px;font-size:10px;">VA</span> Vorderachse
+          </div>
+          <div class="form-field" style="margin-bottom:8px;"><label>Teilenummer VA *</label><input id="editWkrTN_VA" type="text" placeholder="z.B. 2462648"></div>
+          <div class="form-field" style="margin-bottom:8px;"><label>Dimension VA</label><input id="editWkrDimension_VA" type="text" placeholder="225/45 R18 95V, 7,5Jx18"></div>
+          <div class="form-field" style="margin-bottom:8px;"><label>Lager VA</label><input id="editWkrLager_VA" type="number" min="0" value="0"></div>
+          <div class="form-field"><label>Lagerort VA</label><input id="editWkrLagerort_VA" type="text" placeholder="Regal A3..."></div>
+        </div>
+        <div style="padding:12px;">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#7c3aed;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+            <span style="background:#7c3aed;color:white;padding:1px 7px;border-radius:3px;font-size:10px;">HA</span> Hinterachse
+          </div>
+          <div class="form-field" style="margin-bottom:8px;"><label>Teilenummer HA *</label><input id="editWkrTN_HA" type="text" placeholder="z.B. 2462649"></div>
+          <div class="form-field" style="margin-bottom:8px;"><label>Dimension HA</label><input id="editWkrDimension_HA" type="text" placeholder="255/40 R18 99V, 8,5Jx18"></div>
+          <div class="form-field" style="margin-bottom:8px;"><label>Lager HA</label><input id="editWkrLager_HA" type="number" min="0" value="0"></div>
+          <div class="form-field"><label>Lagerort HA</label><input id="editWkrLagerort_HA" type="text" placeholder="Regal B4..."></div>
+        </div>
+      </div>
+      <div style="margin-top:10px;font-size:12px;color:var(--text-muted);">💡 Preis, Bild und Reifenmarke gelten für beide Achsen und werden zusammen gespeichert.</div>
+    </div>
   </div>
 </div>
+
+<!-- Normal-Felder -->
       <div class="form-field"><label>Reifenmarke</label><input id="editWkrReifen" type="text" placeholder="z. B. Pirelli"></div>
-      <div class="form-field"><label>Dimension</label><input id="editWkrDimension" type="text" placeholder="Dimension"></div>
-      <div class="form-field"><label>Teilenummer (TN) *</label><input id="editWkrTN" type="text" placeholder="TN"></div>
-      <div class="form-field"><label>Lagerbestand</label><input id="editWkrLager" type="number" min="0"></div>
-      <div class="form-field"><label>Lagerort</label><input id="editWkrLagerort" type="text" placeholder="Regal A3 / Platz 12"></div>
+      <div id="editWkrDimensionWrap" class="form-field"><label>Dimension</label><input id="editWkrDimension" type="text" placeholder="Dimension"></div>
+      <div id="editWkrTNWrap" class="form-field"><label>Teilenummer (TN) *</label><input id="editWkrTN" type="text" placeholder="TN"></div>
+      <div id="editWkrLagerWrap" class="form-field"><label>Lagerbestand</label><input id="editWkrLager" type="number" min="0"></div>
+      <div id="editWkrLagerortWrap" class="form-field"><label>Lagerort</label><input id="editWkrLagerort" type="text" placeholder="Regal A3 / Platz 12"></div>
       <div class="form-field full"><label>Bild URL</label><input id="editWkrBild" type="text" placeholder="https://..."></div>
       <div class="form-field"><label>VP (Brutto)</label><input id="editWkrVP" type="text" placeholder="2490"></div>
       <div class="form-field">
@@ -6007,6 +6040,76 @@ function openEditWkrModal(tn){
   document.getElementById("editWkrModell").value = mapEntry ? clean(mapEntry["Modell"]) : "";
   document.getElementById("editWkrMotor").value = mapEntry ? clean(mapEntry["Motor"]) : "";
 
+  // ── Mischbereifung erkennen und anzeigen ──
+  const achse = clean(row["Achse"]);
+  const mischsetId = clean(row["Mischset_ID"]);
+  const isMisch = !!(achse || mischsetId);
+  
+  const cbMisch = document.getElementById("editWkrIsMisch");
+  const mischFelder = document.getElementById("editWkrMischFelder");
+  const dimWrap = document.getElementById("editWkrDimensionWrap");
+  const lagerWrap = document.getElementById("editWkrLagerWrap");
+  const lagerortWrap = document.getElementById("editWkrLagerortWrap");
+  const achseBadge = document.getElementById("editWkrAchseBadge");
+  const achseHidden = document.getElementById("editWkrAchse");
+  
+  if(cbMisch) cbMisch.checked = isMisch;
+  if(mischFelder) mischFelder.style.display = isMisch ? "block" : "none";
+  if(dimWrap) dimWrap.style.display = isMisch ? "none" : "";
+  if(lagerWrap) lagerWrap.style.display = isMisch ? "none" : "";
+  if(lagerortWrap) lagerortWrap.style.display = isMisch ? "none" : "";
+  
+  if(isMisch){
+    const achseVal = achse || "VA";
+    if(achseHidden) achseHidden.value = achseVal;
+    if(achseBadge){
+      achseBadge.textContent = achseVal;
+      achseBadge.style.background = achseVal === "VA" ? "#0369a1" : "#7c3aed";
+    }
+    document.getElementById("editWkrMischsetId").value = mischsetId;
+    document.getElementById("editWkrDimension_VA").value = clean(row["Dimension_VA"]);
+    document.getElementById("editWkrDimension_HA").value = clean(row["Dimension_HA"]);
+    document.getElementById("editWkrDimension").value = "";
+    
+    // Partner-Achse finden (HA wenn wir VA bearbeiten, und umgekehrt)
+    const partnerAchse = achseVal === "VA" ? "HA" : "VA";
+    const partner = produkte.find(p =>
+      clean(p["Mischset_ID"]) === mischsetId &&
+      clean(p["Achse"]) === partnerAchse &&
+      clean(p["Standort"]) === clean(row["Standort"])
+    );
+    
+    // TN, Lager + Lagerort für VA und HA befüllen
+    if(achseVal === "VA"){
+      document.getElementById("editWkrTN_VA").value = clean(row["TN"]);
+      document.getElementById("editWkrTN_HA").value = partner ? clean(partner["TN"]) : "";
+      document.getElementById("editWkrLager_VA").value = clean(row["Lager"]) || "0";
+      document.getElementById("editWkrLagerort_VA").value = clean(row["Lagerort"]);
+      document.getElementById("editWkrLager_HA").value = partner ? (clean(partner["Lager"]) || "0") : "0";
+      document.getElementById("editWkrLagerort_HA").value = partner ? clean(partner["Lagerort"]) : "";
+    } else {
+      document.getElementById("editWkrTN_HA").value = clean(row["TN"]);
+      document.getElementById("editWkrTN_VA").value = partner ? clean(partner["TN"]) : "";
+      document.getElementById("editWkrLager_HA").value = clean(row["Lager"]) || "0";
+      document.getElementById("editWkrLagerort_HA").value = clean(row["Lagerort"]);
+      document.getElementById("editWkrLager_VA").value = partner ? (clean(partner["Lager"]) || "0") : "0";
+      document.getElementById("editWkrLagerort_VA").value = partner ? clean(partner["Lagerort"]) : "";
+    }
+
+    // Allgemeines TN-Feld + Lager ausblenden (im Mischbereifung-Modus nicht nötig)
+    const tnWrap = document.getElementById("editWkrTNWrap");
+    if(tnWrap) tnWrap.style.display = "none";
+    
+    // Partner-TN merken fürs Speichern
+    window._editWkrPartnerTN = partner ? clean(partner["TN"]) : null;
+    window._editWkrCurrentAchse = achseVal;
+  } else {
+    window._editWkrPartnerTN = null;
+    window._editWkrCurrentAchse = null;
+    const tnWrap = document.getElementById("editWkrTNWrap");
+    if(tnWrap) tnWrap.style.display = "";
+  }
+
   document.getElementById("editWkrModal").classList.add("open");
 }
 
@@ -6021,12 +6124,13 @@ async function saveEditedWkr(){
 
   if(!marke || !tn) { alert("Marke und TN sind Pflichtfelder."); return; }
 
+  const editIsMisch = document.getElementById("editWkrIsMisch")?.checked;
   const updates = {
     "Marke": marke,
     "Standort": clean(document.getElementById("editWkrStandort").value),
     "Bezeichnung": clean(document.getElementById("editWkrBezeichnung").value),
     "Reifen": clean(document.getElementById("editWkrReifen").value),
-    "Dimension": clean(document.getElementById("editWkrDimension").value),
+    "Dimension": editIsMisch ? "" : clean(document.getElementById("editWkrDimension").value),
     "TN": tn,
     "Lager": clean(document.getElementById("editWkrLager").value),
     "Lagerort": clean(document.getElementById("editWkrLagerort").value),
@@ -6039,6 +6143,57 @@ async function saveEditedWkr(){
     "Verkaufshinweis": clean(document.getElementById("editWkrVerkaufshinweis").value),
     "Aktiv": clean(document.getElementById("editWkrAktiv").value)
   };
+  // Mischbereifung-Felder ergänzen
+  if(editIsMisch){
+    const editAchse = clean(document.getElementById("editWkrAchse")?.value || "VA");
+    const editMischId = clean(document.getElementById("editWkrMischsetId")?.value);
+    const editDimVA = clean(document.getElementById("editWkrDimension_VA")?.value);
+    const editDimHA = clean(document.getElementById("editWkrDimension_HA")?.value);
+    const editLagerVA = clean(document.getElementById("editWkrLager_VA")?.value || "0");
+    const editLagerHA = clean(document.getElementById("editWkrLager_HA")?.value || "0");
+    const editLagerortVA = clean(document.getElementById("editWkrLagerort_VA")?.value);
+    const editLagerortHA = clean(document.getElementById("editWkrLagerort_HA")?.value);
+    
+    const editTN_VA = clean(document.getElementById("editWkrTN_VA")?.value);
+    const editTN_HA = clean(document.getElementById("editWkrTN_HA")?.value);
+    const myNewTN = editAchse === "VA" ? editTN_VA : editTN_HA;
+    const partnerNewTN = editAchse === "VA" ? editTN_HA : editTN_VA;
+    
+    // TN dieser Achse aktualisieren
+    if(myNewTN) updates["TN"] = myNewTN;
+    updates["Achse"] = editAchse;
+    updates["Mischset_ID"] = editMischId;
+    updates["Dimension_VA"] = editDimVA;
+    updates["Dimension_HA"] = editDimHA;
+    updates["Lager"] = editAchse === "VA" ? editLagerVA : editLagerHA;
+    updates["Lagerort"] = editAchse === "VA" ? editLagerortVA : editLagerortHA;
+    
+    // Partner-Zeile auch speichern
+    const partnerOldTN = window._editWkrPartnerTN;
+    const partnerAchse = editAchse === "VA" ? "HA" : "VA";
+    const partnerUpdates = {
+      "TN": partnerNewTN || partnerOldTN,
+      "Achse": partnerAchse,
+      "Mischset_ID": editMischId,
+      "Dimension_VA": editDimVA,
+      "Dimension_HA": editDimHA,
+      "Lager": partnerAchse === "VA" ? editLagerVA : editLagerHA,
+      "Lagerort": partnerAchse === "VA" ? editLagerortVA : editLagerortHA,
+      "Bezeichnung": updates["Bezeichnung"],
+      "Reifen": updates["Reifen"],
+      "Bild": updates["Bild"],
+      "VP": updates["VP"],
+      "Angebotspreis": updates["Angebotspreis"],
+      "Nettopreis": updates["Nettopreis"],
+      "EmpfaengerMail": updates["EmpfaengerMail"],
+      "Aktiv": updates["Aktiv"]
+    };
+    if(partnerOldTN){
+      postToScript({ sheet:"Produkte", keyField:"TN", keyValue:partnerOldTN, updates: partnerUpdates });
+      const pidx = produkte.findIndex(p => normalizeTN(clean(p["TN"])) === normalizeTN(partnerOldTN));
+      if(pidx !== -1) produkte[pidx] = Object.assign(produkte[pidx], partnerUpdates);
+    }
+  }
 
   try {
     // 1. Produkt-Daten aktualisieren
@@ -6141,11 +6296,23 @@ function toggleMischFelder(prefix){
   const mischFelder = document.getElementById(`${prefix}WkrMischFelder`);
   const normalFelder = document.getElementById(`${prefix}WkrNormalFelder`);
   const lagerWrap = document.getElementById(`${prefix}WkrLagerWrap`);
+  const lagerortWrap = document.getElementById(`${prefix}WkrLagerortWrap`);
+  const dimWrap = document.getElementById(`${prefix}WkrDimensionWrap`);
   if(!cb) return;
   const checked = cb.checked;
   if(mischFelder) mischFelder.style.display = checked ? "block" : "none";
   if(normalFelder) normalFelder.style.display = checked ? "none" : "contents";
   if(lagerWrap) lagerWrap.style.display = checked ? "none" : "";
+  if(lagerortWrap) lagerortWrap.style.display = checked ? "none" : "";
+  if(dimWrap) dimWrap.style.display = checked ? "none" : "";
+  const tnWrap = document.getElementById(`${prefix}WkrTNWrap`);
+  if(tnWrap) tnWrap.style.display = checked ? "none" : "";
+  if(prefix === "edit" && checked){
+    const badge = document.getElementById("editWkrAchseBadge");
+    if(badge){ badge.textContent = "VA"; badge.style.background = "#0369a1"; }
+    const hidden = document.getElementById("editWkrAchse");
+    if(hidden) hidden.value = "VA";
+  }
 }
 
 function autoMischsetId(prefix){
