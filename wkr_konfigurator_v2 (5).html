@@ -4681,10 +4681,7 @@ if (!state.marke) {
   html += `
     <div class="section-title">Wählen Sie Ihren Standort</div>
     <div style="max-width: 1000px; margin: 0 auto 50px;">
-      <div class="standort-map-frame">
-        <div id="standortMap"></div>
-        <div class="map-credit-cover"></div>
-      </div>
+     <div id="standortMap" style="height: 450px; width: 100%; border-radius: 16px; box-shadow: var(--shadow-md); z-index: 1;"></div>
     </div>
   `;
   setTimeout(initStandortMap, 50);
@@ -8859,13 +8856,16 @@ function initStandortMap() {
         map.invalidateSize();
     }, 150);
 }
+}
+
+window.triggerStandortZoom = function(lat, lng, id) {
     if (window._standortMap) {
         // Fliegt animiert zum Marker und zoomt auf Strassenebene hinein
         window._standortMap.flyTo([lat, lng], 17, {
             animate: true,
-            duration: 1.5 // 1.5 Sekunden Film-Animation
+            duration: 1.5
         });
-        
+
         // Nach der Animation wird die Auswahl tatsächlich gesetzt und das nächste Menü geladen
         setTimeout(() => {
             selectStandort(id);
