@@ -7,6 +7,11 @@
 
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<!-- NEU: Leaflet CSS & JS für die interaktive Standort-Karte -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
 <style>
 /* ============================================================
    CSS VARIABLES & THEME
@@ -142,6 +147,75 @@ body {
   cursor: pointer; transition: var(--transition);
 }
 .login-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--surface-3); }
+   /* ============================================================
+   TOPBAR LOGIN / LOGOUT BUTTONS
+   ============================================================ */
+.topbar-login-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 18px;
+  background: linear-gradient(135deg, #1c69d4 0%, #4d8ef0 100%);
+  color: #fff;
+  border: none; border-radius: 50px;
+  font-family: var(--font-body); font-size: 13px; font-weight: 700;
+  cursor: pointer; letter-spacing: 0.5px;
+  box-shadow: 0 4px 14px rgba(28,105,212,0.4);
+  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  position: relative; overflow: hidden;
+}
+.topbar-login-btn::before {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+  border-radius: inherit;
+}
+.topbar-login-btn:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 8px 22px rgba(28,105,212,0.5);
+}
+.topbar-login-btn:active { transform: scale(0.97); }
+.topbar-login-btn svg { flex-shrink: 0; }
+
+.topbar-user-chip {
+  display: flex; align-items: center; gap: 8px;
+}
+.topbar-user-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent) 0%, #6ea8f7 100%);
+  color: #fff; font-size: 12px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(28,105,212,0.4);
+}
+.topbar-user-name {
+  font-size: 13px; font-weight: 600; color: var(--text-primary);
+  max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.topbar-logout-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px;
+  background: var(--error-bg); border: 1.5px solid var(--error);
+  border-radius: 50%; color: var(--error);
+  cursor: pointer; transition: var(--transition);
+  flex-shrink: 0;
+}
+.topbar-logout-btn:hover {
+  background: var(--error); color: #fff;
+  transform: scale(1.1);
+}
+body.mini-brand .topbar-login-btn {
+  background: linear-gradient(135deg, #333 0%, #555 100%);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+}
+   /* ── UIVERSE PILL BUTTONS (Login / Logout) ── */
+.uiv-btn{display:flex;align-items:center;justify-content:flex-start;width:45px;height:45px;border:none;border-radius:50%;cursor:pointer;position:relative;overflow:hidden;transition:width .3s ease,border-radius .3s ease,transform .1s ease;box-shadow:2px 2px 10px rgba(0,0,0,0.2);flex-shrink:0;}
+.uiv-btn-login{background:linear-gradient(135deg,#1c69d4,#4d8ef0);}
+.uiv-btn-logout{background:#ff4141;}
+.uiv-btn .uiv-sign{width:100%;transition:width .3s ease,padding .3s ease;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.uiv-btn .uiv-sign svg{width:17px;height:17px;fill:white;flex-shrink:0;}
+.uiv-btn .uiv-text{position:absolute;right:0;width:0;opacity:0;color:white;font-size:13px;font-weight:700;white-space:nowrap;transition:width .3s ease,opacity .3s ease,padding .3s ease;font-family:var(--font-body);}
+.uiv-btn:hover{width:130px;border-radius:40px;}
+.uiv-btn:hover .uiv-sign{width:30%;padding-left:16px;}
+.uiv-btn:hover .uiv-text{opacity:1;width:70%;padding-right:12px;}
+.uiv-btn:active{transform:translate(2px,2px);}
 .mode-badge {
   display: inline-flex; align-items: center; gap: 6px;
   font-size: 11px; font-weight: 700; padding: 4px 10px;
@@ -894,7 +968,37 @@ body.mini-brand .btn-cart:hover { background: #111; color: white; }
   .topbar-logo img { height: 24px; }
   .back-btn { padding: 6px 8px; font-size: 12px; }
   .back-btn span { display: none; }
-  #darkToggle { width: 32px; height: 32px; font-size: 14px; }
+ #darkToggle { display: none; }
+
+  /* THEME TOGGLE */
+  .theme-toggle { display:flex; align-items:center; cursor:pointer; flex-shrink:0; }
+  .theme-toggle input { display:none; }
+  .theme-toggle-track {
+    width:52px; height:28px;
+    background:#dde1e7;
+    border-radius:50px;
+    position:relative;
+    transition:background 0.35s ease;
+    box-shadow:inset 0 2px 4px rgba(0,0,0,0.15);
+  }
+  [data-theme="dark"] .theme-toggle-track { background:#1c69d4; }
+  .theme-toggle-thumb {
+    position:absolute; top:3px; left:3px;
+    width:22px; height:22px;
+    background:white; border-radius:50%;
+    transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 2px 6px rgba(0,0,0,0.2);
+  }
+  [data-theme="dark"] .theme-toggle-thumb { transform:translateX(24px); }
+  .icon-sun, .icon-moon {
+    width:13px; height:13px; position:absolute;
+    transition:opacity 0.2s ease, transform 0.3s ease;
+  }
+  .icon-sun { color:#f59e0b; opacity:1; transform:rotate(0deg); }
+  .icon-moon { color:#818cf8; opacity:0; transform:rotate(-90deg); }
+  [data-theme="dark"] .icon-sun { opacity:0; transform:rotate(90deg); }
+  [data-theme="dark"] .icon-moon { opacity:1; transform:rotate(0deg); }
   #menuToggle { display: flex !important; width: 32px; height: 32px; }
   #desktopActions { display: none !important; }
 
@@ -980,7 +1084,64 @@ body.mini-brand .btn-cart:hover { background: #111; color: white; }
 @media print {
   .topbar, .back-btn, .mode-banner, .info-section, .admin-sidebar, .search-section { display: none !important; }
 }
-
+/* BRAND SPLIT */
+.brand-split-wrap{display:flex;height:250px;border-radius:var(--radius-xl);overflow:hidden;margin:0 0 40px;box-shadow:var(--shadow-lg);position:relative;cursor:pointer;}
+.brand-split-panel{flex:1;position:relative;overflow:hidden;transition:flex 0.5s cubic-bezier(0.4,0,0.2,1);}
+.brand-split-panel:hover{flex:1.4;}
+.brand-split-bmw{background:linear-gradient(160deg,#0f1f3d 0%,#1c3a6e 50%,#0a0f1e 100%);}
+.brand-split-mini{background:linear-gradient(160deg,#1a1a1a 0%,#2d2d2d 50%,#0d0d0d 100%);border-left:1px solid rgba(255,255,255,0.06);}
+.brand-split-overlay{position:absolute;inset:0;transition:opacity 0.4s ease;}
+.brand-split-bmw .brand-split-overlay{background:linear-gradient(160deg,rgba(28,105,212,0.15),rgba(0,0,0,0.4));}
+.brand-split-mini .brand-split-overlay{background:linear-gradient(160deg,rgba(255,255,255,0.04),rgba(0,0,0,0.5));}
+.brand-split-content{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;padding:32px;text-align:center;z-index:2;}
+.brand-split-logo{height:56px;width:auto;object-fit:contain;margin-bottom:20px;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);}.brand-split-panel:hover .brand-split-logo{transform:scale(1.12);}
+.brand-split-name{font-size:32px;font-weight:700;letter-spacing:4px;text-transform:uppercase;margin-bottom:8px;}
+.brand-split-sub{font-size:13px;letter-spacing:1px;opacity:0;transform:translateY(8px);transition:all 0.3s ease 0.1s;color:rgba(255,255,255,0.8);}
+.brand-split-panel:hover .brand-split-sub{opacity:1;transform:translateY(0);}
+.brand-split-arrow{margin-top:20px;font-size:24px;opacity:0;transform:translateX(-8px);transition:all 0.3s ease 0.15s;}
+.brand-split-panel:hover .brand-split-arrow{opacity:1;transform:translateX(0);}
+@media(max-width:600px){.brand-split-wrap{flex-direction:column;height:260px;}.brand-split-panel{flex:1 !important;}.brand-split-sub,.brand-split-arrow{opacity:1;transform:none;}}/* INFO FEATURE CARDS */
+.info-feature-card{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px 24px;text-align:left;transition:transform 0.3s ease,box-shadow 0.3s ease;border-top:3px solid var(--accent);}
+.info-feature-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);}
+.info-feature-icon{font-size:28px;margin-bottom:14px;display:block;}
+.info-feature-title{font-size:17px;font-weight:700;color:var(--text-primary);margin-bottom:8px;}
+.info-feature-text{font-size:13px;color:var(--text-secondary);line-height:1.6;}
+/* SCROLL ANIMATION */
+.fade-in-up{opacity:0;transform:translateY(30px);transition:opacity 0.6s ease,transform 0.6s ease;}
+.fade-in-up.visible{opacity:1;transform:translateY(0);}
+   /* THEME TOGGLE */
+.theme-toggle { display:flex; align-items:center; cursor:pointer; }
+.theme-toggle input { display:none; }
+.theme-toggle-track {
+  width:52px; height:28px;
+  background:#dde1e7;
+  border-radius:50px;
+  position:relative;
+  transition:background 0.35s ease;
+  box-shadow:inset 0 2px 4px rgba(0,0,0,0.15);
+}
+[data-theme="dark"] .theme-toggle-track { background:#1c69d4; }
+.theme-toggle-thumb {
+  position:absolute;
+  top:3px; left:3px;
+  width:22px; height:22px;
+  background:white;
+  border-radius:50%;
+  transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 6px rgba(0,0,0,0.2);
+}
+[data-theme="dark"] .theme-toggle-thumb { transform:translateX(24px); }
+.icon-sun, .icon-moon {
+  width:13px; height:13px;
+  position:absolute;
+  transition:opacity 0.2s ease, transform 0.3s ease;
+  stroke-width:2.5;
+}
+.icon-sun { color:#f59e0b; opacity:1; transform:rotate(0deg); }
+.icon-moon { color:#6366f1; opacity:0; transform:rotate(-90deg); }
+[data-theme="dark"] .icon-sun { opacity:0; transform:rotate(90deg); }
+[data-theme="dark"] .icon-moon { opacity:1; transform:rotate(0deg); }
 /* ============================================================
    STARTSEITE REDESIGN (PREMIUM LOOK)
    ============================================================ */
@@ -1362,6 +1523,254 @@ body.mini-brand .vehicle-card:hover { background: var(--surface); }
 @media (min-width: 601px) {
   .mobile-label { display: none !important; }
 }
+
+/* ============================================================
+   NEUE MARKENAUSWAHL (Elegant Cards)
+   ============================================================ */
+.brand-grid { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-bottom: 40px; }
+.brand-card-v2 {
+  width: 280px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+.brand-card-v2::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(28,105,212,0.05), transparent);
+  opacity: 0; transition: opacity 0.3s;
+}
+.brand-card-v2:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  border-color: var(--accent);
+}
+.brand-card-v2:hover::before { opacity: 1; }
+.brand-card-v2 img { height: 60px; object-fit: contain; margin-bottom: 20px; transition: transform 0.3s; display: block; margin-left: auto; margin-right: auto; }
+.brand-card-v2:hover img { transform: scale(1.1); }
+.brand-card-v2-title { font-size: 20px; font-weight: 700; letter-spacing: 2px; color: var(--text-primary); }
+
+/* ============================================================
+   STANDORT-KARTE PREMIUM STYLING
+   ============================================================ */
+
+.standort-map-frame {
+  position: relative;
+  height: 450px;
+  width: 100%;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #ffffff;
+  border: 12px solid #ffffff;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.14);
+}
+
+#standortMap {
+  height: 100%;
+  width: 100%;
+  border-radius: 12px;
+  z-index: 1;
+}
+
+/* Deckt unten rechts die Leaflet/OpenStreetMap-Beschriftung optisch ab */
+.map-credit-cover {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 190px;
+  height: 36px;
+  background: #ffffff;
+  z-index: 999;
+  pointer-events: none;
+  border-top-left-radius: 14px;
+}
+
+/* Leaflet Popup */
+.leaflet-popup-content-wrapper {
+  border-radius: 16px !important;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.18) !important;
+  background: #ffffff !important;
+}
+
+.leaflet-popup-content {
+  margin: 18px !important;
+  text-align: center;
+  font-family: var(--font-body);
+}
+
+.map-popup-title {
+  font-size: 17px;
+  font-weight: 800;
+  margin-bottom: 6px;
+  color: var(--accent);
+}
+
+.map-popup-address {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.map-popup-btn {
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+  color: white;
+  border: none;
+  padding: 11px 18px;
+  border-radius: 999px;
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: 12px;
+  width: 100%;
+  transition: 0.2s;
+  font-family: var(--font-body);
+  box-shadow: 0 8px 20px rgba(28,105,212,0.25);
+}
+
+.map-popup-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(28,105,212,0.32);
+}
+
+.leaflet-container {
+  font-family: var(--font-body);
+}
+
+/* Edle fixe Standort-Beschriftung auf der Karte */
+.standort-label {
+  background: rgba(255,255,255,0.97) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18) !important;
+  color: #0f172a !important;
+  font-weight: 800 !important;
+  font-size: 14px !important;
+  padding: 7px 14px !important;
+  letter-spacing: 0.2px;
+}
+
+.standort-label::before {
+  display: none !important;
+}
+
+/* Kleiner blauer Standort-Punkt */
+.custom-location-marker {
+  width: 22px;
+  height: 22px;
+  background: var(--accent);
+  border: 4px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 8px 22px rgba(28,105,212,0.45);
+  position: relative;
+}
+
+.custom-location-marker::after {
+  content: '';
+  position: absolute;
+  inset: -9px;
+  border-radius: 50%;
+  background: rgba(28,105,212,0.18);
+  z-index: -1;
+}
+/* ============================================================
+   NEUE PREMIUM BUTTONS (Hero & Standort)
+   ============================================================ */
+.cta-arrow-btn {
+  display: inline-flex;
+  align-items: center;
+  background: var(--bmw-blue);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 24px 12px 30px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(28, 105, 212, 0.3);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  margin-top: 24px;
+  text-decoration: none;
+}
+body.mini-brand .cta-arrow-btn {
+  background: var(--mini-black);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+.cta-arrow-btn .text {
+  transform: translateX(10px);
+  transition: transform 0.3s ease;
+}
+.cta-arrow-btn .icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: white;
+  color: var(--bmw-blue);
+  margin-left: 15px;
+  transform: translateX(40px);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+body.mini-brand .cta-arrow-btn .icon { color: var(--mini-black); }
+.cta-arrow-btn .icon svg { width: 16px; height: 16px; }
+.cta-arrow-btn:hover {
+  background: var(--bmw-blue-dark);
+  box-shadow: 0 10px 25px rgba(28, 105, 212, 0.5);
+  padding: 12px 18px 12px 30px;
+}
+body.mini-brand .cta-arrow-btn:hover { background: #333; }
+.cta-arrow-btn:hover .text { transform: translateX(0); }
+.cta-arrow-btn:hover .icon { transform: translateX(0); opacity: 1; }
+
+.location-btn {
+  position: relative;
+  padding: 18px 36px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 700;
+  border: 2px solid var(--border-strong);
+  border-radius: 12px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  z-index: 1;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.location-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--bmw-blue), #4d8ef0);
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  z-index: -1;
+}
+body.mini-brand .location-btn::before { background: var(--mini-black); }
+.location-btn:hover {
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 10px 20px rgba(28, 105, 212, 0.2);
+  transform: translateY(-4px);
+}
+body.mini-brand .location-btn:hover { box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); }
+.location-btn:hover::before { width: 100%; }
 </style>
 </head>
 <body>
@@ -1387,7 +1796,18 @@ body.mini-brand .vehicle-card:hover { background: var(--surface); }
     });
     requestAnimationFrame(draw);
   }
-  draw();
+draw();
+})();
+</script>
+<script>
+(function(){
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add("visible");obs.unobserve(e.target);}});
+  }, {threshold:0.15});
+  function init(){document.querySelectorAll(".fade-in-up").forEach(el=>obs.observe(el));}
+  document.addEventListener("DOMContentLoaded",init);
+  const orig=window.render;
+  window.render=function(){if(orig)orig.apply(this,arguments);setTimeout(init,100);};
 })();
 </script>
 
@@ -1401,119 +1821,104 @@ body.mini-brand .vehicle-card:hover { background: var(--surface); }
     </div>
     <div class="topbar-actions">
   <button id="backHomeBtn" class="back-btn" onclick="goToHome()">← <span data-i18n="back_home">Startseite</span></button>
-  <button id="darkToggle" class="icon-btn" onclick="toggleDark()" title="Dunkelmodus">🌙</button>
-  <button class="icon-btn" onclick="toggleMobileMenu()" id="menuToggle" style="font-size:20px;width:40px;height:40px;">☰</button>
+
+  <!-- Admin Search + Bell (nur im Admin-Modus) -->
   <div id="adminTopbarAddon" class="admin-topbar-addon" style="display:none;">
-      <div class="admin-search-wrap">
-        <input id="globalSearch" type="text" class="admin-search-input" placeholder="Suche: Kunde, TN, FIN, Auftrag..."
-               oninput="handleGlobalSearch(this.value)"
-               onblur="setTimeout(()=>{const r=document.getElementById('globalSearchResults');if(r)r.style.display='none';}, 200)"
-               onfocus="if(this.value)document.getElementById('globalSearchResults').style.display='block'">
-        <div id="globalSearchResults" class="admin-search-results"></div>
-      </div>
-      <button id="adminBellBtn" class="admin-bell-btn" onclick="showUrgentModal()" title="Dringende Aufgaben">
-        🔔
-        <span id="adminBellBadge" class="admin-bell-badge" style="display:none;">0</span>
-      </button>
+    <div class="admin-search-wrap">
+      <input id="globalSearch" type="text" class="admin-search-input" placeholder="Suche: Kunde, TN, FIN, Auftrag..."
+             oninput="handleGlobalSearch(this.value)"
+             onblur="setTimeout(()=>{const r=document.getElementById('globalSearchResults');if(r)r.style.display='none';}, 200)"
+             onfocus="if(this.value)document.getElementById('globalSearchResults').style.display='block'">
+      <div id="globalSearchResults" class="admin-search-results"></div>
     </div>
- <div style="position:relative;">
-  <button id="hamburgerBtn" onclick="toggleHamburgerMenu()" style="
-    width:40px;height:40px;
-    background:var(--surface-2);
-    border:1px solid var(--border);
-    border-radius:var(--radius-sm);
-    cursor:pointer;
-    display:flex;flex-direction:column;
-    align-items:center;justify-content:center;gap:5px;
-    transition:var(--transition);
-  ">
-    <span style="width:18px;height:2px;background:var(--text-secondary);border-radius:2px;display:block;"></span>
-    <span style="width:18px;height:2px;background:var(--text-secondary);border-radius:2px;display:block;"></span>
-    <span style="width:18px;height:2px;background:var(--text-secondary);border-radius:2px;display:block;"></span>
+    <button id="adminBellBtn" class="admin-bell-btn" onclick="showUrgentModal()" title="Dringende Aufgaben">
+      🔔
+      <span id="adminBellBadge" class="admin-bell-badge" style="display:none;">0</span>
+    </button>
+  </div>
+
+  <!-- Dark Mode Toggle -->
+<label class="theme-toggle" title="Tag/Nacht">
+    <input type="checkbox" id="darkToggleCheck" onchange="toggleDark()">
+    <span class="theme-toggle-track">
+      <span class="theme-toggle-thumb">
+        <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </span>
+    </span>
+  </label>
+ <!-- LOGIN BUTTON (Uiverse Pill) -->
+  <button id="topbarLoginBtn" class="uiv-btn uiv-btn-login" onclick="openLoginModal()" title="Anmelden">
+    <span class="uiv-sign">
+      <svg viewBox="0 0 512 512"><path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"/></svg>
+    </span>
+    <span class="uiv-text">Anmelden</span>
   </button>
 
-  <div id="hamburgerMenu" style="
-    display:none;
-    position:absolute;
-    top:48px;right:0;
-    background:var(--surface);
-    border:1px solid var(--border);
-    border-radius:var(--radius-md);
-    box-shadow:var(--shadow-lg);
-    min-width:220px;
-    z-index:200;
-    overflow:hidden;
-  ">
-    <div style="padding:8px 0;">
-      <div id="desktopActions" style="display:flex;flex-direction:column;">
-        <button id="internalLoginBtn" onclick="activateInternalMode();closeHamburgerMenu();" style="
-          padding:12px 18px;font-size:13px;font-weight:600;
-          background:none;border:none;cursor:pointer;
-          text-align:left;color:var(--text-primary);
-          transition:var(--transition);
-          display:flex;align-items:center;gap:10px;
-        " onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">
-          🔑 Interner Login
-        </button>
-        <button id="adminLoginBtn" onclick="activateAdminMode();closeHamburgerMenu();" style="
-          padding:12px 18px;font-size:13px;font-weight:600;
-          background:none;border:none;cursor:pointer;
-          text-align:left;color:var(--text-primary);
-          transition:var(--transition);
-          display:flex;align-items:center;gap:10px;
-        " onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">
-          ⚙️ Admin Login
-        </button>
+ <!-- USER CHIP + LOGOUT (Uiverse Pill) -->
+  <div id="topbarUserChip" style="display:none;align-items:center;gap:8px;flex-shrink:0;">
+    <div id="topbarUserAvatar" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#6ea8f7);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(28,105,212,0.4);flex-shrink:0;">?</div>
+    <span id="topbarUserName" style="font-size:13px;font-weight:600;color:var(--text-primary);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+    <button class="uiv-btn uiv-btn-logout" onclick="logoutAdmin()" title="Abmelden">
+      <span class="uiv-sign">
+        <svg viewBox="0 0 512 512"><path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"/></svg>
+      </span>
+      <span class="uiv-text">Abmelden</span>
+    </button>
+  </div>
+
+  <!-- Hamburger (Kontakt / Datenschutz) -->
+  <div style="position:relative;">
+    <button id="hamburgerBtn" onclick="toggleHamburgerMenu()" style="
+      width:40px;height:40px;
+      background:var(--surface-2);border:1px solid var(--border);
+      border-radius:var(--radius-sm);cursor:pointer;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+      transition:var(--transition);">
+      <span style="width:18px;height:2px;background:var(--text-secondary);border-radius:2px;display:block;"></span>
+      <span style="width:18px;height:2px;background:var(--text-secondary);border-radius:2px;display:block;"></span>
+      <span style="width:18px;height:2px;background:var(--text-secondary);border-radius:2px;display:block;"></span>
+    </button>
+    <div id="hamburgerMenu" style="
+      display:none;position:absolute;top:48px;right:0;
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--radius-md);box-shadow:var(--shadow-lg);
+      min-width:200px;z-index:200;overflow:hidden;">
+      <div style="padding:8px 0;">
+        <!-- Öffentlich-Modus (nur wenn eingeloggt) -->
         <button id="publicViewBtn" onclick="deactivateAllModes();closeHamburgerMenu();" style="
           padding:12px 18px;font-size:13px;font-weight:600;
           background:none;border:none;cursor:pointer;
           text-align:left;color:var(--text-primary);
-          transition:var(--transition);
-          display:none;
-          align-items:center;gap:10px;
-        " onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">
-          🌐 Öffentlich
+          transition:var(--transition);display:none;align-items:center;gap:10px;"
+          onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">
+          🌐 Öffentliche Ansicht
         </button>
-        <div id="userBadge" style="display:none;padding:10px 18px;font-size:12px;font-weight:600;color:var(--text-secondary);border-top:1px solid var(--border);"></div>
-        <button id="adminLogoutBtn" onclick="logoutAdmin();closeHamburgerMenu();" style="
-          padding:12px 18px;font-size:13px;font-weight:600;
-          background:none;border:none;cursor:pointer;
-          text-align:left;color:var(--error);
-          transition:var(--transition);
-          display:none;
-          align-items:center;gap:10px;
-        " onmouseover="this.style.background='var(--error-bg)'" onmouseout="this.style.background='none'">
-          🚪 Logout
-        </button>
+        <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
+        <a href="https://emmeneggerag.ch/kontakt/" target="_blank" style="
+          padding:10px 18px;font-size:12px;color:var(--text-muted);
+          display:flex;align-items:center;gap:8px;text-decoration:none;transition:var(--transition);"
+          onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">
+          📞 Kontakt
+        </a>
+        <a href="https://emmeneggerag.ch/datenschutz/" target="_blank" style="
+          padding:10px 18px;font-size:12px;color:var(--text-muted);
+          display:flex;align-items:center;gap:8px;text-decoration:none;transition:var(--transition);"
+          onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">
+          🔒 Datenschutz
+        </a>
       </div>
-
-      <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
-
-      <a href="https://emmeneggerag.ch/kontakt/" target="_blank" style="
-        padding:10px 18px;font-size:12px;color:var(--text-muted);
-        display:flex;align-items:center;gap:8px;text-decoration:none;
-        transition:var(--transition);
-      " onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">
-        📞 Kontakt
-      </a>
-      <a href="https://emmeneggerag.ch/datenschutz/" target="_blank" style="
-        padding:10px 18px;font-size:12px;color:var(--text-muted);
-        display:flex;align-items:center;gap:8px;text-decoration:none;
-        transition:var(--transition);
-      " onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">
-        🔒 Datenschutz
-      </a>
     </div>
   </div>
+
+  <!-- Mobile Menu Toggle -->
+  <button class="icon-btn" onclick="toggleMobileMenu()" id="menuToggle" style="font-size:20px;width:40px;height:40px;display:none;">☰</button>
 </div>
-</div>
-  </div>
 </header>
 
 <!-- Mobile Menu -->
 <div id="mobileMenu" style="display:none;position:fixed;top:56px;width:100%;left:0;right:0;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px;z-index:99;box-shadow:var(--shadow-md);flex-direction:column;gap:8px;">
-  <button class="login-btn" onclick="activateInternalMode();toggleMobileMenu()">Interner Login</button>
-  <button class="login-btn" onclick="activateAdminMode();toggleMobileMenu()">Admin Login</button>
+ <button class="login-btn" onclick="openLoginModal();toggleMobileMenu()">🔐 Login</button>
   <button id="publicViewBtnMobile" class="login-btn" onclick="deactivateAllModes();toggleMobileMenu()" style="display:none;">Öffentlich</button>
 </div>
 
@@ -1537,16 +1942,40 @@ body.mini-brand .vehicle-card:hover { background: var(--surface); }
     <div class="hero-content">
       <h1 data-i18n="hero_title">Original Winterkompletträder</h1>
       <p data-i18n="hero_sub">Perfekt auf Ihr Fahrzeug abgestimmt.</p>
+      
+<!-- NEUER CTA BUTTON -->
+      <button class="cta-arrow-btn" onclick="startKonfigurator()">        <span class="text">Konfigurator starten</span>
+        <span class="icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" fill="currentColor"></path>
+          </svg>
+        </span>
+      </button>
     </div>
   </div>
   <div id="app"></div>
-  <div class="info-section" id="infoSection">
-    <div class="info-icon">❄️</div>
-    <h2 data-i18n="info_title">Eiskalte Fahrfreude mit maximalem Grip</h2>
-    <p data-i18n="info_p1" style="max-width: 650px; margin: 0 auto 16px;">Ob im Alltag, auf dem Weg in die Berge oder unterwegs zur Skipiste: Mit Original Winterkompletträdern bleiben Sie auch bei Schnee, Regen und tiefen Temperaturen sicher unterwegs.</p>
-    <p data-i18n="info_p2" style="max-width: 650px; margin: 0 auto;">Entdecken Sie jetzt über unseren Konfigurator die verfügbaren Angebote von Emmenegger und finden Sie die passenden Winterkompletträder für Ihr Fahrzeug.</p>
+ <div class="info-section" id="infoSection">
+    <h2 style="font-size:26px;font-weight:700;margin-bottom:6px;">Eiskalte Fahrfreude mit maximalem Grip</h2>
+    <p style="max-width:600px;margin:0 auto 36px;color:var(--text-secondary);font-size:15px;">Original Winterkompletträder — perfekt auf Ihr Fahrzeug abgestimmt, sofort montierbereit.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;max-width:900px;margin:0 auto 32px;">
+      <div class="info-feature-card fade-in-up">
+        <div class="info-feature-icon">🛞</div>
+        <div class="info-feature-title">Passgenau</div>
+        <div class="info-feature-text">Original BMW & MINI Teile — exakt auf Ihr Fahrzeug abgestimmt.</div>
+      </div>
+      <div class="info-feature-card fade-in-up" style="animation-delay:0.15s;">
+        <div class="info-feature-icon">❄️</div>
+        <div class="info-feature-title">Winterbereit</div>
+        <div class="info-feature-text">Maximaler Grip bei Schnee, Regen und tiefen Temperaturen.</div>
+      </div>
+      <div class="info-feature-card fade-in-up" style="animation-delay:0.3s;">
+        <div class="info-feature-icon">📍</div>
+        <div class="info-feature-title">Vor Ort</div>
+        <div class="info-feature-text">Zwei Standorte — Gebenstorf und Hettenschwil — mit professioneller Montage.</div>
+      </div>
+    </div>
   </div>
-</div>
+
 
 <!-- ============================================================
      MODALS (unverändert)
@@ -1620,32 +2049,73 @@ body.mini-brand .vehicle-card:hover { background: var(--surface); }
 </div>
 
 <div id="adminLoginModal" class="modal-overlay">
-  <div class="modal-box" style="max-width:460px;">
-    <div class="modal-title">Admin Login</div>
-    <div class="modal-subtitle">Bitte mit Ihrer E-Mail-Adresse und Ihrem Passwort anmelden.</div>
+  <div class="modal-box" style="max-width:420px;">
+    
+    <!-- Logo + Titel -->
+    <div style="text-align:center;margin-bottom:28px;">
+      <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" style="height:32px;width:auto;margin-bottom:20px;display:block;margin-left:auto;margin-right:auto;">
+      <div style="font-size:20px;font-weight:700;color:var(--text-primary);margin-bottom:4px;">Willkommen</div>
+      <div style="font-size:13px;color:var(--text-muted);">Bitte mit Ihrem Konto anmelden</div>
+    </div>
 
-    <div class="form-grid" style="grid-template-columns:1fr;">
-      <div class="form-field">
-        <label for="adminEmail">E-Mail</label>
-        <input id="adminEmail" type="email" placeholder="name@firma.ch">
+    <!-- E-Mail Feld -->
+    <div style="position:relative;margin-bottom:16px;">
+      <div style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
       </div>
+      <input id="adminEmail" type="email" placeholder="E-Mail Adresse" style="
+        width:100%;padding:13px 14px 13px 42px;
+        background:var(--surface-2);border:1.5px solid var(--border);
+        border-radius:var(--radius-md);font-family:var(--font-body);
+        font-size:14px;color:var(--text-primary);transition:var(--transition);box-sizing:border-box;">
+    </div>
 
-      <div class="form-field">
-        <label for="adminPassword">Passwort</label>
-        <input id="adminPassword" type="password" placeholder="Passwort eingeben">
+    <!-- Passwort Feld -->
+    <div style="position:relative;margin-bottom:8px;">
+      <div style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><circle cx="12" cy="16" r="1"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
       </div>
+      <input id="adminPassword" type="password" placeholder="Passwort" style="
+        width:100%;padding:13px 14px 13px 42px;
+        background:var(--surface-2);border:1.5px solid var(--border);
+        border-radius:var(--radius-md);font-family:var(--font-body);
+        font-size:14px;color:var(--text-primary);transition:var(--transition);box-sizing:border-box;"
+        onkeydown="if(event.key==='Enter')submitAdminLogin()">
     </div>
 
-    <div id="adminLoginError" style="display:none; margin-top:12px; color:#dc2626; font-size:13px;"></div>
-    <div id="adminLoginSuccess" style="display:none; margin-top:12px; color:#16a34a; font-size:13px;"></div>
-    <div style="margin-top:8px; text-align:right;">
-      <button type="button" onclick="resetAdminPassword()" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;text-decoration:underline;padding:0;">Passwort vergessen?</button>
+    <!-- Passwort vergessen -->
+    <div style="text-align:right;margin-bottom:20px;">
+      <button type="button" onclick="resetAdminPassword()" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:0;text-decoration:none;font-weight:600;">
+        Passwort vergessen?
+      </button>
     </div>
 
-    <div class="modal-actions">
-      <button class="btn btn-secondary" type="button" onclick="closeAdminLoginModal()">Schliessen</button>
-      <button class="btn btn-primary" type="button" onclick="submitAdminLogin()">Anmelden</button>
-    </div>
+    <!-- Fehler / Erfolg -->
+    <div id="adminLoginError" style="display:none;margin-bottom:14px;padding:10px 14px;background:var(--error-bg);border-left:3px solid var(--error);border-radius:var(--radius-sm);font-size:13px;color:var(--error);"></div>
+    <div id="adminLoginSuccess" style="display:none;margin-bottom:14px;padding:10px 14px;background:var(--success-bg);border-left:3px solid var(--success);border-radius:var(--radius-sm);font-size:13px;color:var(--success);"></div>
+
+    <!-- Login Button -->
+    <button type="button" onclick="submitAdminLogin()" id="loginSubmitBtn" style="
+      width:100%;padding:14px;
+      background:var(--accent);color:white;
+      border:none;border-radius:var(--radius-md);
+      font-family:var(--font-body);font-size:15px;font-weight:700;
+      cursor:pointer;transition:var(--transition);margin-bottom:14px;
+      display:flex;align-items:center;justify-content:center;gap:8px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+      Anmelden
+    </button>
+
+    <!-- Abbrechen -->
+    <button type="button" onclick="closeAdminLoginModal()" style="
+      width:100%;padding:11px;
+      background:transparent;color:var(--text-muted);
+      border:1.5px solid var(--border);border-radius:var(--radius-md);
+      font-family:var(--font-body);font-size:14px;font-weight:600;
+      cursor:pointer;transition:var(--transition);">
+      Abbrechen
+    </button>
+
   </div>
 </div>
 <!-- Cart Modal (Warenkorb-Übersicht für Kunden) -->
@@ -2388,7 +2858,7 @@ let customerVororder = null;   // Die Vororder die zum Token gehört
    Persistiert in localStorage, damit Reload nicht die Auswahl verliert. */
 let cart = [];
 let produkte = [], mapping = [], fahrzeuge = [], reifen = [];
-let state = { standort:null,marke:null,reihe:null,modell:null,motor:null,internalSection:null,adminSection:null };
+let state = { standort:null,marke:null,reihe:null,modell:null,motor:null,internalSection:null,adminSection:null, konfiguratorStarted: false };
 let tireSearch = { direkt:"",profilbreite:"",querschnitt:"",zoll:"" };
 let adminWkrFilter    = { suche:"",marke:"",standort:"",reihe:"",modell:"",nurAnLager:false,nurReserviert:false };let adminReifenFilter = { suche:"",standort:"",reifentyp:"",aktivStatus:"",nurAnLager:false };
 let selectedProduct = null, editingTireId = "", editingWkrTN = "";
@@ -3022,11 +3492,20 @@ function applyTranslations(){ document.querySelectorAll("[data-i18n]").forEach(e
 function toggleDark(){
   darkMode=!darkMode;
   document.documentElement.setAttribute("data-theme",darkMode?"dark":"light");
-  const btn=document.getElementById("darkToggle");
-  if(btn){btn.textContent=darkMode?"☀️":"🌙";btn.classList.toggle("active",darkMode);}
+  const cb=document.getElementById("darkToggleCheck");
+  if(cb) cb.checked=darkMode;
   try{localStorage.setItem("wkr_dark",darkMode?"1":"0");}catch(e){}
 }
-function initTheme(){ try{if(localStorage.getItem("wkr_dark")==="1")toggleDark();}catch(e){} }
+function initTheme(){
+  try{
+    if(localStorage.getItem("wkr_dark")==="1"){
+      darkMode=true;
+      document.documentElement.setAttribute("data-theme","dark");
+      const cb=document.getElementById("darkToggleCheck");
+      if(cb) cb.checked=true;
+    }
+  }catch(e){}
+}
 
 /* ============================================================
    AUTH
@@ -3065,6 +3544,9 @@ function activateAdminMode(){
   setTimeout(() => {
     if (emailInput) emailInput.focus();
   }, 50);
+}
+   function openLoginModal(){
+  activateAdminMode();
 }
    function closeAdminLoginModal(){
   const modal = document.getElementById("adminLoginModal");
@@ -3147,14 +3629,28 @@ async function submitAdminLogin(){
       return;
     }
 
-    adminMode = true;
-    internalMode = false;
-    state.internalSection = null;
-    state.adminSection = "dashboard";
-
-    document.getElementById("publicViewBtn").style.display = "inline-block";
-    showModeBanner("admin");
-    document.getElementById("internalFields").style.display = "none";
+    // Rolle bestimmt den Modus
+    const rolle = currentUser?.rolle || "";
+    
+    if(rolle === "Intern"){
+      // Interner Verkaufsmodus
+      internalMode = true;
+      adminMode = false;
+      state.internalSection = null;
+      state.adminSection = null;
+      document.getElementById("publicViewBtn").style.display = "inline-block";
+      showModeBanner("internal");
+      document.getElementById("internalFields").style.display = "block";
+    } else {
+      // Admin / SuperAdmin
+      adminMode = true;
+      internalMode = false;
+      state.internalSection = null;
+      state.adminSection = "dashboard";
+      document.getElementById("publicViewBtn").style.display = "inline-block";
+      showModeBanner("admin");
+      document.getElementById("internalFields").style.display = "none";
+    }
 
     closeAdminLoginModal();
     render();
@@ -3235,12 +3731,17 @@ async function applyFirebaseAdminState(){
       }
     }
 
-    adminMode = true;
-    internalMode = false;
-    state.internalSection = null;
-
-    if (!state.adminSection) {
-      state.adminSection = "dashboard";
+  const rolle = currentUser?.rolle || "";
+    if(rolle === "Intern"){
+      internalMode = true;
+      adminMode = false;
+      state.internalSection = null;
+      state.adminSection = null;
+    } else {
+      adminMode = true;
+      internalMode = false;
+      state.internalSection = null;
+      if (!state.adminSection) state.adminSection = "dashboard";
     }
     if (!vororderLoaded && !vororderLoading) {
       loadVororder().then(() => render());
@@ -3299,9 +3800,41 @@ function closeOnOutsideHamburger(e){
    NAVIGATION
    ============================================================ */
 function goToHome(){
-  state={standort:null,marke:null,reihe:null,modell:null,motor:null,internalSection:null,adminSection:adminMode?"dashboard":null};
+  state={standort:null,marke:null,reihe:null,modell:null,motor:null,internalSection:null,adminSection:adminMode?"dashboard":null, konfiguratorStarted: false};
+  tireSearch={direkt:"",profilbreite:"",querschnitt:"",zoll:""};
+  selectedProduct=null; closeAllModals(); render();
+}
+
+function startKonfigurator() {
+  state.konfiguratorStarted = true;
+  render();
+  setTimeout(() => {
+    document.getElementById('app').scrollIntoView({behavior: 'smooth', block: 'start'});
+  }, 100);
+}
+   /* ============================================================
+   NAVIGATION
+   ============================================================ */
+function goToHome(){
+  state={standort:null,marke:null,reihe:null,modell:null,motor:null,internalSection:null,adminSection:adminMode?"dashboard":null, konfiguratorStarted: false};
   tireSearch={direkt:"",profilbreite:"",querschnitt:"",zoll:""};
   selectedProduct=null; closeAllModals(); render();
+}
+
+// HIER IST DIE NEUE FUNKTION:
+function startKonfigurator() {
+  state.konfiguratorStarted = true;
+  render();
+  setTimeout(() => {
+    document.getElementById('app').scrollIntoView({behavior: 'smooth', block: 'start'});
+  }, 100);
+}
+
+function closeAllModals(){
+  ["adminLoginModal","inquiryModal","addTireModal","editTireModal","addWkrModal","editWkrModal"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.remove("open");
+  });
 }
 function closeAllModals(){
   ["adminLoginModal","inquiryModal","addTireModal","editTireModal","addWkrModal","editWkrModal"].forEach(id=>{
@@ -3862,34 +4395,52 @@ function renderAdminDashboard(){
 function updateTopbarContext(){
   const addon = document.getElementById("adminTopbarAddon");
   const badge = document.getElementById("adminBellBadge");
-  if (!addon) return;
-// Im Kunden-Modus IMMER ausblenden (Security first)
-  if (customerMode) {
-    addon.style.display = "none";
-    return;
+  const loginBtn   = document.getElementById("topbarLoginBtn");
+  const userChip   = document.getElementById("topbarUserChip");
+  const avatar     = document.getElementById("topbarUserAvatar");
+  const nameEl     = document.getElementById("topbarUserName");
+  const mobileLogin  = document.getElementById("mobileLoginBtn");
+  const mobileLogout = document.getElementById("mobileLogoutBtn");
+
+  const isLoggedIn = adminMode || internalMode;
+
+  // Login / User-Chip
+  if (loginBtn)   loginBtn.style.display   = (isLoggedIn || customerMode) ? "none" : "flex";
+  if (userChip)   userChip.style.display   = isLoggedIn ? "flex" : "none";
+  if (mobileLogin)  mobileLogin.style.display  = (isLoggedIn || customerMode) ? "none" : "";
+  if (mobileLogout) mobileLogout.style.display = isLoggedIn ? "" : "none";
+
+  // User-Name & Avatar befüllen
+  if (isLoggedIn && currentUser) {
+    const name = currentUser.name || currentUser.email || "–";
+    const initial = name.charAt(0).toUpperCase();
+    if (avatar) avatar.textContent = initial;
+    if (nameEl) {
+      const rolle = currentUser.rolle || "";
+      nameEl.textContent = name + (rolle ? ` · ${rolle}` : "");
+    }
   }
-  // Im Kunden-Modus IMMER ausblenden (Security first)
+
+  // Kunden-Modus: alles ausblenden
   if (customerMode) {
-    addon.style.display = "none";
+    if (addon) addon.style.display = "none";
     return;
   }
 
-  if (adminMode) {
-    addon.style.display = "flex";
-    const urgentCount = getUrgentCount();
-    if (badge) {
-      if (urgentCount > 0) {
+  // Admin-Addon (Suche + Bell)
+  if (addon) {
+    if (adminMode) {
+      addon.style.display = "flex";
+      const urgentCount = getUrgentCount();
+      if (badge) {
         badge.textContent = urgentCount;
-        badge.style.display = "inline-block";
-      } else {
-        badge.style.display = "none";
+        badge.style.display = urgentCount > 0 ? "inline-block" : "none";
       }
+    } else {
+      addon.style.display = "none";
     }
-  } else {
-    addon.style.display = "none";
   }
 }
-
 /* ============================================================
    TOPBAR: Dringende Aufgaben zählen
    ============================================================ */
@@ -4007,7 +4558,7 @@ function render(){
 
   // Login-Buttons im Kunden-Modus ausblenden (Security)
   if (customerMode) {
-    const ids = ["adminLoginBtn","internalLoginBtn","backHomeBtn","menuToggle"];
+    const ids = ["topbarLoginBtn","topbarUserChip","backHomeBtn","menuToggle","hamburgerBtn"];
     ids.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = "none"; });
     const dt = document.getElementById("desktopActions");
     if (dt) dt.style.display = "none";
@@ -4102,30 +4653,42 @@ function render(){
    WKR FLOW (shared between public, internal, admin)
    ============================================================ */
 function renderWkrFlow(){
-  let html = "";
-  const isWkrFlow = true;
+  let html = "";
+  const isWkrFlow = true;
 
- if (!state.marke) {
-    html += `<div class="card-grid start-card-grid">
-      <div class="sel-card brand-card" onclick="selectMarke('BMW')">
-        <img src="https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/BMW_Logo.jpg?raw=true" alt="BMW Logo" style="height:65px;width:auto;object-fit:contain;margin-bottom:12px;">
-        <div class="brand-name">BMW</div>
-      </div>
-      <div class="sel-card brand-card mini-theme" onclick="selectMarke('MINI')">
-        <img src="https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/MINI_Logo.jpg?raw=true" alt="MINI Logo" style="height:55px;width:auto;object-fit:contain;margin-bottom:12px;">
-        <div class="brand-name">MINI</div>
-      </div>
-    </div>`;
-    return html;
-  }
+  if (!state.konfiguratorStarted && !internalMode && !adminMode && !customerMode) {
+      return html;
+  }
 
-  if (!state.standort) {
-    const locs=[...new Set(produkte.filter(x=>clean(x["Marke"])===state.marke).map(x=>clean(x["Standort"])).filter(Boolean))];
-    html+=`<div class="section-title">${e(t("select_location"))}</div><div class="card-grid">`;
-    locs.forEach(s=>{ html+=`<div class="sel-card" onclick="selectStandort('${js(s)}')">${e(standortLabel(s))}</div>`; });
-    html+=`</div>`;
-    return html;
-  }
+if (!state.marke) {
+  html += `
+    <div class="section-title">Wählen Sie Ihre Marke</div>
+    <div class="brand-grid">
+      <div class="brand-card-v2" onclick="selectMarke('BMW')">
+        <img src="https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/BMW_Logo.jpg?raw=true" alt="BMW">
+        <div class="brand-card-v2-title">BMW</div>
+      </div>
+      <div class="brand-card-v2" onclick="selectMarke('MINI')">
+        <img src="https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/MINI_Logo.jpg?raw=true" alt="MINI">
+        <div class="brand-card-v2-title">MINI</div>
+      </div>
+    </div>
+  `;
+  return html;
+}
+
+ if (!state.standort) {
+  html += `
+    <div class="section-title">Wählen Sie Ihren Standort</div>
+    <div style="max-width: 1000px; margin: 0 auto 50px;">
+<div class="standort-map-frame">
+  <div id="standortMap"></div>
+  <div class="map-credit-cover"></div>
+</div>    </div>
+  `;
+  setTimeout(initStandortMap, 50);
+  return html;
+}
 
  // NEU: Reihe und Modell in einer visuellen Auswahl zusammengefasst (BMW-Style)
   if (!state.reihe || !state.modell) {
@@ -8211,7 +8774,106 @@ document.querySelectorAll(".modal-overlay").forEach(overlay=>{
     if(ev.target===this){this.classList.remove("open");if(this.id==="editTireModal"){editingTireId="";}if(this.id==="editWkrModal"){editingWkrTN="";}}
   });
 });
+/* ============================================================
+   INTERAKTIVE KARTEN-ANIMATION (Standortauswahl)
+   ============================================================ */
+function initStandortMap() {
+    const mapContainer = document.getElementById("standortMap");
+    if (!mapContainer) return;
 
+    // Falls die Karte bereits existiert, zuerst sauber entfernen
+    if (window._standortMap) {
+        window._standortMap.remove();
+        window._standortMap = null;
+    }
+
+    // Karte sauber zwischen Gebenstorf und Hettenschwil zentrieren
+    const map = L.map('standortMap', {
+        zoomControl: true,
+        attributionControl: true,
+        scrollWheelZoom: false
+    }).setView([47.532, 8.222], 11);
+
+    // Helle Karte ohne normale Ortsbeschriftungen
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap',
+        subdomains: 'abcd',
+        maxZoom: 19
+    }).addTo(map);
+
+    const standorte = [
+        {
+            id: "GEB",
+            name: "Gebenstorf",
+            fullName: "Emmenegger Gebenstorf",
+            lat: 47.4898233,
+            lng: 8.2417718,
+            addr: "Grubenstrasse 1, 5412 Gebenstorf"
+        },
+        {
+            id: "HET",
+            name: "Hettenschwil",
+            fullName: "Felix Emmenegger AG Hettenschwil",
+            lat: 47.5743881,
+            lng: 8.2026518,
+            addr: "5316 Hettenschwil"
+        }
+    ];
+
+    const premiumIcon = L.divIcon({
+        className: '',
+        html: '<div class="custom-location-marker"></div>',
+        iconSize: [22, 22],
+        iconAnchor: [11, 11],
+        popupAnchor: [0, -12]
+    });
+
+    standorte.forEach(st => {
+        const marker = L.marker([st.lat, st.lng], {
+            icon: premiumIcon
+        }).addTo(map);
+
+        // Feste Beschriftung auf der Karte
+        marker.bindTooltip(st.name, {
+            permanent: true,
+            direction: 'top',
+            offset: [0, -18],
+            className: 'standort-label'
+        }).openTooltip();
+
+        const popupHtml = `
+            <div class="map-popup-title">📍 ${st.fullName}</div>
+            <div class="map-popup-address">${st.addr}</div>
+            <button class="map-popup-btn" onclick="triggerStandortZoom(${st.lat}, ${st.lng}, '${st.id}')">
+                Diesen Standort wählen
+            </button>
+        `;
+
+        marker.bindPopup(popupHtml);
+    });
+
+    window._standortMap = map;
+
+    setTimeout(() => {
+        map.invalidateSize();
+    }, 150);
+}
+
+
+window.triggerStandortZoom = function(lat, lng, id) {
+    if (window._standortMap) {
+        // Fliegt animiert zum Marker und zoomt auf Strassenebene hinein
+        window._standortMap.flyTo([lat, lng], 17, {
+            animate: true,
+            duration: 1.5
+        });
+
+        // Nach der Animation wird die Auswahl tatsächlich gesetzt und das nächste Menü geladen
+        setTimeout(() => {
+            selectStandort(id);
+        }, 1600);
+    }
+};
 /* ============================================================
    INIT
 ============================================================ */
