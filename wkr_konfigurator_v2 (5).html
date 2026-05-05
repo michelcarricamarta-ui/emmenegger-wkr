@@ -1366,6 +1366,33 @@ body.mini-brand .vehicle-card:hover { background: var(--surface); }
 </head>
 <body>
 
+<canvas id="snowCanvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;opacity:0.5;"></canvas>
+<script>
+(function(){
+  const c=document.getElementById("snowCanvas");
+  const ctx=c.getContext("2d");
+  let W=c.width=window.innerWidth,H=c.height=window.innerHeight;
+  window.addEventListener("resize",()=>{W=c.width=window.innerWidth;H=c.height=window.innerHeight;});
+  const flakes=Array.from({length:60},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*3+1,d:Math.random()*1+0.3,o:Math.random()*0.6+0.2}));
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    flakes.forEach(f=>{
+      ctx.beginPath();
+      ctx.arc(f.x,f.y,f.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,255,255,${f.o})`;
+      ctx.fill();
+      f.y+=f.d;
+      f.x+=Math.sin(f.y/30)*0.5;
+      if(f.y>H){f.y=-5;f.x=Math.random()*W;}
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+
+<!-- TOPBAR -->
+
 <!-- TOPBAR -->
 <header class="topbar">
   <div class="topbar-inner">
@@ -4347,8 +4374,8 @@ const results=produkte.filter(p=>
   const tnHA=clean(ha["TN"]);
   const nettopreis=clean(va["Nettopreis"]);
   const empfaengerMail=clean(va["EmpfängerMail"]||va["EmpfaengerMail"]);
-  const hinweistext=clean(va["Hinweistext"]);
-  const verkaufshinweis=clean(va["Verkaufshinweis"]);
+  const hinweistext=clean(va["Hinweistext"])||clean(ha["Hinweistext"]);
+const verkaufshinweis=clean(va["Verkaufshinweis"])||clean(ha["Verkaufshinweis"]);
   const vpNum=parsePrice(vp),angebotNum=parsePrice(angebot);
   const hasDiscount=angebotNum>0&&vpNum>0&&angebotNum<vpNum;
   const isSoldOut=lagerSaetze<=0&&!angebotNum&&!vpNum;
