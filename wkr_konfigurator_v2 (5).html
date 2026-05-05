@@ -1664,8 +1664,6 @@ body.mini-brand .location-btn:hover { box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2)
 .location-btn:hover::before { width: 100%; }
 </style>
 </head>
-</style>
-</head>
 <body>
 
 <canvas id="snowCanvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;opacity:0.5;"></canvas>
@@ -1694,9 +1692,9 @@ draw();
 </script>
 <script>
 (function(){
-  const obs=new IntersectionObserver
+  const obs = new IntersectionObserver((entries) => {
     entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add("visible");obs.unobserve(e.target);}});
-  },{threshold:0.15});
+  }, {threshold:0.15});
   function init(){document.querySelectorAll(".fade-in-up").forEach(el=>obs.observe(el));}
   document.addEventListener("DOMContentLoaded",init);
   const orig=window.render;
@@ -2752,7 +2750,7 @@ let customerVororder = null;   // Die Vororder die zum Token gehört
    Persistiert in localStorage, damit Reload nicht die Auswahl verliert. */
 let cart = [];
 let produkte = [], mapping = [], fahrzeuge = [], reifen = [];
-let state = { standort:null,marke:null,reihe:null,modell:null,motor:null,internalSection:null,adminSection:null };
+let state = { standort:null,marke:null,reihe:null,modell:null,motor:null,internalSection:null,adminSection:null, konfiguratorStarted: false };
 let tireSearch = { direkt:"",profilbreite:"",querschnitt:"",zoll:"" };
 let adminWkrFilter    = { suche:"",marke:"",standort:"",reihe:"",modell:"",nurAnLager:false,nurReserviert:false };let adminReifenFilter = { suche:"",standort:"",reifentyp:"",aktivStatus:"",nurAnLager:false };
 let selectedProduct = null, editingTireId = "", editingWkrTN = "";
@@ -3694,9 +3692,33 @@ function closeOnOutsideHamburger(e){
    NAVIGATION
    ============================================================ */
 function goToHome(){
-  state={standort:null,marke:null,reihe:null,modell:null,motor:null,internalSection:null,adminSection:adminMode?"dashboard":null};
+  state={standort:null,marke:null,reihe:null,modell:null,motor:null,internalSection:null,adminSection:adminMode?"dashboard":null, konfiguratorStarted: false};
   tireSearch={direkt:"",profilbreite:"",querschnitt:"",zoll:""};
   selectedProduct=null; closeAllModals(); render();
+}
+   /* ============================================================
+   NAVIGATION
+   ============================================================ */
+function goToHome(){
+  state={standort:null,marke:null,reihe:null,modell:null,motor:null,internalSection:null,adminSection:adminMode?"dashboard":null, konfiguratorStarted: false};
+  tireSearch={direkt:"",profilbreite:"",querschnitt:"",zoll:""};
+  selectedProduct=null; closeAllModals(); render();
+}
+
+// HIER IST DIE NEUE FUNKTION:
+function startKonfigurator() {
+  state.konfiguratorStarted = true;
+  render();
+  setTimeout(() => {
+    document.getElementById('app').scrollIntoView({behavior: 'smooth', block: 'start'});
+  }, 100);
+}
+
+function closeAllModals(){
+  ["adminLoginModal","inquiryModal","addTireModal","editTireModal","addWkrModal","editWkrModal"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.remove("open");
+  });
 }
 function closeAllModals(){
   ["adminLoginModal","inquiryModal","addTireModal","editTireModal","addWkrModal","editWkrModal"].forEach(id=>{
@@ -8641,8 +8663,8 @@ function initStandortMap() {
     // Karte zentriert zwischen Gebenstorf und Hettenschwil
     const map = L.map('standortMap').setView([47.525, 8.206], 12);
     
-    // Moderner, heller Karten-Style (CartoDB)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+   // Moderner, heller Karten-Style (CartoDB) OHNE Beschriftung
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; OpenStreetMap',
         subdomains: 'abcd',
         maxZoom: 19
