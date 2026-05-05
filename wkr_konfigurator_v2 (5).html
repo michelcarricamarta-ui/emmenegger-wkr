@@ -981,7 +981,7 @@ body.mini-brand .btn-cart:hover { background: #111; color: white; }
   .topbar, .back-btn, .mode-banner, .info-section, .admin-sidebar, .search-section { display: none !important; }
 }
 /* BRAND SPLIT */
-.brand-split-wrap{display:flex;height:420px;border-radius:var(--radius-xl);overflow:hidden;margin:0 0 40px;box-shadow:var(--shadow-lg);position:relative;cursor:pointer;}
+.brand-split-wrap{display:flex;height:250px;border-radius:var(--radius-xl);overflow:hidden;margin:0 0 40px;box-shadow:var(--shadow-lg);position:relative;cursor:pointer;}
 .brand-split-panel{flex:1;position:relative;overflow:hidden;transition:flex 0.5s cubic-bezier(0.4,0,0.2,1);}
 .brand-split-panel:hover{flex:1.4;}
 .brand-split-bmw{background:linear-gradient(160deg,#0f1f3d 0%,#1c3a6e 50%,#0a0f1e 100%);}
@@ -990,15 +990,13 @@ body.mini-brand .btn-cart:hover { background: #111; color: white; }
 .brand-split-bmw .brand-split-overlay{background:linear-gradient(160deg,rgba(28,105,212,0.15),rgba(0,0,0,0.4));}
 .brand-split-mini .brand-split-overlay{background:linear-gradient(160deg,rgba(255,255,255,0.04),rgba(0,0,0,0.5));}
 .brand-split-content{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;padding:32px;text-align:center;z-index:2;}
-.brand-split-logo{height:64px;width:auto;object-fit:contain;margin-bottom:20px;filter:brightness(0) invert(1);transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);}
-.brand-split-panel:hover .brand-split-logo{transform:scale(1.12);}
+.brand-split-logo{height:56px;width:auto;object-fit:contain;margin-bottom:20px;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);}.brand-split-panel:hover .brand-split-logo{transform:scale(1.12);}
 .brand-split-name{font-size:32px;font-weight:700;letter-spacing:4px;text-transform:uppercase;margin-bottom:8px;}
 .brand-split-sub{font-size:13px;letter-spacing:1px;opacity:0;transform:translateY(8px);transition:all 0.3s ease 0.1s;color:rgba(255,255,255,0.8);}
 .brand-split-panel:hover .brand-split-sub{opacity:1;transform:translateY(0);}
 .brand-split-arrow{margin-top:20px;font-size:24px;opacity:0;transform:translateX(-8px);transition:all 0.3s ease 0.15s;}
 .brand-split-panel:hover .brand-split-arrow{opacity:1;transform:translateX(0);}
-@media(max-width:600px){.brand-split-wrap{flex-direction:column;height:320px;}.brand-split-panel{flex:1 !important;}.brand-split-sub,.brand-split-arrow{opacity:1;transform:none;}}
-/* INFO FEATURE CARDS */
+@media(max-width:600px){.brand-split-wrap{flex-direction:column;height:260px;}.brand-split-panel{flex:1 !important;}.brand-split-sub,.brand-split-arrow{opacity:1;transform:none;}}/* INFO FEATURE CARDS */
 .info-feature-card{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px 24px;text-align:left;transition:transform 0.3s ease,box-shadow 0.3s ease;border-top:3px solid var(--accent);}
 .info-feature-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);}
 .info-feature-icon{font-size:28px;margin-bottom:14px;display:block;}
@@ -4183,21 +4181,16 @@ function renderWkrFlow(){
 
   if (!state.standort) {
     const locs=[...new Set(produkte.filter(x=>clean(x["Marke"])===state.marke).map(x=>clean(x["Standort"])).filter(Boolean))];
-    html+=`<div class="brand-split-wrap" style="height:280px;">
-      ${locs.map(s => {
-        const isBMW = state.marke === "BMW";
-        const icon = s === "GEB" ? "📍" : "🏢";
-        const desc = s === "GEB" ? "Gebenstorf" : "Hettenschwil";
-        return `<div class="brand-split-panel ${isBMW?"brand-split-bmw":"brand-split-mini"}" onclick="selectStandort('${js(s)}')">
+   html+=`<div class="brand-split-wrap" style="height:220px;">
+      ${locs.map((s, i) => `
+        <div class="brand-split-panel brand-split-bmw" style="background:linear-gradient(160deg,${i===0?"#0f1f3d 0%,#1c3a6e":"#1a2a1a 0%,#2a4a2a"} 100%);" onclick="selectStandort('${js(s)}')">
           <div class="brand-split-overlay"></div>
           <div class="brand-split-content">
-            <div style="font-size:40px;margin-bottom:14px;">${icon}</div>
-            <div class="brand-split-name" style="font-size:22px;letter-spacing:2px;">${e(desc)}</div>
-            <div class="brand-split-sub">Standort wählen</div>
+            <div class="brand-split-name" style="font-size:20px;letter-spacing:3px;">${e(standortLabel(s))}</div>
+            <div class="brand-split-sub">${s === "GEB" ? "Aargau · Gebenstorf" : "Aargau · Hettenschwil"}</div>
             <div class="brand-split-arrow">→</div>
           </div>
-        </div>`;
-      }).join("")}
+        </div>`).join("")}
     </div>`;
     return html;
   }
