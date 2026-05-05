@@ -1806,35 +1806,51 @@ body.mini-brand .vehicle-card:hover { background: var(--surface); }
         </label>
       </div>
 
-      <!-- Normale Felder (nur sichtbar wenn KEIN Mischbereifung) -->
+      <!-- Normale Felder -->
       <div id="newWkrNormalFelder" style="display:contents;">
         <div class="form-field"><label>Dimension</label><input id="newWkrDimension" type="text" placeholder="225/45 R18"></div>
         <div class="form-field"><label>Teilenummer (TN) *</label><input id="newWkrTN" type="text" placeholder="TN"></div>
       </div>
 
-      <!-- Mischbereifung Felder (nur sichtbar wenn Mischbereifung aktiv) -->
-      <div id="newWkrMischFelder" style="display:none;grid-column:1/-1;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:14px;">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#0369a1;margin-bottom:12px;">🔀 VA &amp; HA werden automatisch als 2 separate Einträge gespeichert</div>
-        <div class="form-grid">
-          <div class="form-field">
-            <label>Mischset_ID *</label>
-            <input id="newWkrMischsetId" type="text" placeholder="z.B. 796M_G20">
-            <div style="margin-top:6px;"><button type="button" onclick="generateMischsetId('new')" style="background:none;border:none;color:var(--accent);font-size:11px;font-weight:700;cursor:pointer;padding:0;">↺ Automatisch generieren</button></div>
-          </div>
-          <div style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-            <div class="form-field"><label>TN Vorderachse (VA) *</label><input id="newWkrTN_VA" type="text" placeholder="z.B. 2462648"></div>
-            <div class="form-field"><label>Dimension VA *</label><input id="newWkrDimension_VA" type="text" placeholder="225/45 R18 95 V, 7,5Jx18"></div>
-            <div class="form-field"><label>TN Hinterachse (HA) *</label><input id="newWkrTN_HA" type="text" placeholder="z.B. 2462649"></div>
-            <div class="form-field"><label>Dimension HA *</label><input id="newWkrDimension_HA" type="text" placeholder="255/40 R18 99 V, 8,5Jx18"></div>
-          </div>
-          <div style="grid-column:1/-1;font-size:12px;color:var(--text-muted);background:var(--surface-3);padding:8px 12px;border-radius:6px;">
-            💡 Preis, Bild, Reifen und alle anderen Felder gelten für beide Achsen.
+      <!-- Mischbereifung Felder -->
+      <div id="newWkrMischFelder" style="display:none;grid-column:1/-1;">
+        <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+          <div style="background:color-mix(in srgb,var(--accent) 10%,transparent);padding:10px 16px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--accent);">🔀 Mischbereifung — VA und HA werden separat gespeichert</div>
+          <div style="padding:16px;">
+            <!-- Mischset_ID AUTO -->
+            <div style="margin-bottom:14px;display:flex;align-items:center;gap:10px;background:var(--surface-3);border-radius:6px;padding:8px 12px;">
+              <span style="font-size:12px;font-weight:700;color:var(--text-muted);white-space:nowrap;">Mischset_ID:</span>
+              <input id="newWkrMischsetId" type="text" readonly style="flex:1;background:transparent;border:none;font-size:13px;font-weight:700;color:var(--accent);font-family:monospace;outline:none;" placeholder="wird automatisch generiert">
+              <button type="button" onclick="document.getElementById('newWkrMischsetId').readOnly=false;document.getElementById('newWkrMischsetId').focus();" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-size:10px;padding:2px 6px;border-radius:3px;cursor:pointer;">✎</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+              <!-- VA -->
+              <div style="padding:14px;border-right:1px solid var(--border);">
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#0369a1;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+                  <span style="background:#0369a1;color:white;padding:1px 7px;border-radius:3px;font-size:10px;">VA</span> Vorderachse
+                </div>
+                <div class="form-field" style="margin-bottom:8px;"><label>Teilenummer *</label><input id="newWkrTN_VA" type="text" placeholder="z.B. 5A92CA9" oninput="autoMischsetId('new')"></div>
+                <div class="form-field" style="margin-bottom:8px;"><label>Dimension VA *</label><input id="newWkrDimension_VA" type="text" placeholder="225/40 R19 93H, 8Jx19"></div>
+                <div class="form-field"><label>Lager VA</label><input id="newWkrLager_VA" type="number" min="0" value="0"></div>
+              </div>
+              <!-- HA -->
+              <div style="padding:14px;">
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#7c3aed;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+                  <span style="background:#7c3aed;color:white;padding:1px 7px;border-radius:3px;font-size:10px;">HA</span> Hinterachse
+                </div>
+                <div class="form-field" style="margin-bottom:8px;"><label>Teilenummer *</label><input id="newWkrTN_HA" type="text" placeholder="z.B. 5A92CD4"></div>
+                <div class="form-field" style="margin-bottom:8px;"><label>Dimension HA *</label><input id="newWkrDimension_HA" type="text" placeholder="255/35 R19 96H, 8,5Jx19"></div>
+                <div class="form-field"><label>Lager HA</label><input id="newWkrLager_HA" type="number" min="0" value="0"></div>
+              </div>
+            </div>
+            <div style="margin-top:10px;font-size:12px;color:var(--text-muted);">💡 Preis, Bild und Reifenmarke gelten für beide Achsen.</div>
           </div>
         </div>
       </div>
 
-      <div class="form-field"><label>Lagerbestand</label><input id="newWkrLager" type="number" min="0" value="0"></div>
-      <div class="form-field"><label>Lagerort</label><input id="newWkrLagerort" type="text" placeholder="Regal A3"></div>
+      <!-- Lager (nur Normal-Produkte) -->
+      <div id="newWkrLagerWrap" class="form-field"><label>Lagerbestand</label><input id="newWkrLager" type="number" min="0" value="0"></div>
+      <div class="form-field"><label>Lagerort</label><input id="newWkrLagerort" type="text" placeholder="Regal A3, TG, Villigen..."></div>
       <div class="form-field full"><label>Bild URL</label><input id="newWkrBild" type="text" placeholder="https://..."></div>
       <div class="form-field"><label>VP (Brutto)</label><input id="newWkrVP" type="text" placeholder="2490"></div>
       <div class="form-field">
@@ -4077,7 +4093,7 @@ function renderWkrFlow(){
       const anzahl = produkte.filter(p =>
         clean(p["Marke"])===state.marke &&
         clean(p["Standort"])===state.standort &&
-        tnList.includes(clean(p["TN"])) &&
+        tnList.includes(normalizeTN(p["TN"])) &&
         clean(p["Aktiv"]) !== "Nein"
       ).length;
 
@@ -4207,10 +4223,10 @@ const tnListRaw=[...new Set(mapping.filter(x=>
   clean(x["Reihe"])===state.reihe&&
   clean(x["Modell"])===state.modell
 ).map(x=>clean(x["TN"])).filter(Boolean))];
-const tnList=[...new Set(tnListRaw.flatMap(tn=>tn.includes("_")?tn.split("_"):[tn]))];
+const tnList=[...new Set(tnListRaw.flatMap(tn=>tn.includes("_")?tn.split("_"):[tn]).map(tn=>normalizeTN(tn)))];
 
 const mischsets={};
-produkte.forEach(p=>{
+produkte.filter(p=>clean(p["Standort"])===state.standort&&clean(p["Marke"])===state.marke).forEach(p=>{
   const mid=clean(p["Mischset_ID"]);
   if(!mid)return;
   if(!mischsets[mid])mischsets[mid]={VA:null,HA:null};
@@ -4221,7 +4237,7 @@ produkte.forEach(p=>{
 const results=produkte.filter(p=>
     clean(p["Standort"])===state.standort && 
     clean(p["Marke"])===state.marke && 
-    tnList.includes(clean(p["TN"])) &&
+    tnList.includes(normalizeTN(p["TN"])) &&
     clean(p["Aktiv"]) !== "Nein" // NEU: Inaktive Räder komplett ignorieren
 );
 
@@ -4371,7 +4387,8 @@ const results=produkte.filter(p=>
         const iconFuel=`<svg width="13" height="13" viewBox="0 0 24 24" fill="var(--text-secondary)"><path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11A2.5 2.5 0 0114.5 9a2.5 2.5 0 01-2.5-2.5c0-.78.36-1.47.92-1.94L11 3v14H5V5a2 2 0 012-2h6c1.1 0 2 .9 2 2v.17l2.29 2.29c.18.18.29.43.29.69V18a1 1 0 01-2 0v-1H5v2a2 2 0 002 2h12a2 2 0 002-2V9.5c0-.55-.22-1.05-.23-1.05z"/></svg>`;
         const iconWet=`<svg width="13" height="13" viewBox="0 0 24 24" fill="var(--text-secondary)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>`;
         const iconNoise=`<svg width="13" height="13" viewBox="0 0 24 24" fill="var(--text-secondary)"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>`;
-const noiseB=(db,kl)=>`<div style="display:inline-flex;align-items:center;background:var(--surface-3);border:1px solid var(--border);border-radius:4px;overflow:hidden;font-size:11px;font-weight:700;"><div style="display:flex;align-items:center;gap:3px;padding:4px 6px;color:var(--text-secondary);">${iconNoise}<span style="color:var(--text-muted);font-weight:500;font-size:10px;">Lärm</span></div><div style="padding:4px 6px;color:var(--text-primary);">${e(db)} dB</div><div style="background:${nc[kl]||"#888"};color:white;padding:4px 7px;">${e(kl)}</div></div>`;
+const badge=(icon,label,val)=>`<div style="display:inline-flex;align-items:center;background:var(--surface-3);border:1px solid var(--border);border-radius:4px;overflow:hidden;font-size:11px;font-weight:700;"><div style="display:flex;align-items:center;gap:3px;padding:4px 6px;color:var(--text-secondary);">${icon}<span style="color:var(--text-muted);font-weight:500;font-size:10px;">${label}</span></div><div style="background:${lc[val]||"#888"};color:${tc[val]||"#fff"};padding:4px 7px;">${e(val)}</div></div>`;
+        const noiseB=(db,kl)=>`<div style="display:inline-flex;align-items:center;background:var(--surface-3);border:1px solid var(--border);border-radius:4px;overflow:hidden;font-size:11px;font-weight:700;"><div style="display:flex;align-items:center;gap:3px;padding:4px 6px;color:var(--text-secondary);">${iconNoise}<span style="color:var(--text-muted);font-weight:500;font-size:10px;">Lärm</span></div><div style="padding:4px 6px;color:var(--text-primary);">${e(db)} dB</div><div style="background:${nc[kl]||"#888"};color:white;padding:4px 7px;">${e(kl)}</div></div>`;
          return `<div style="margin-top:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
           ${effizienz?badge(iconFuel,"Kraftstoff",effizienz):""}
           ${nasse?badge(iconWet,"Nasshaftung",nasse):""}
@@ -5727,20 +5744,48 @@ function renderAdminWkrItem(r){
       ${priceHtml}
       ${nettopreis ? `<div class="product-detail-row" style="text-align:right;font-size:13px;margin-top:6px;"><b>Netto EK:</b> ${e(formatPrice(nettopreis))} CHF</div>` : ""}
       
-      <div style="margin-top:16px; padding:10px; background:var(--surface-3); border-radius:6px; font-size:12px; text-align:left;">
-        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-          <span>Lager (Physisch):</span>
-          <b>${lager}</b>
-        </div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:4px; color:var(--warning);">
-          <span>Reserviert (aktiv):</span>
-          <b style="cursor:pointer; text-decoration:underline;" onclick="showReservationDetails('${js(tn)}')">${reserviert}</b>
-        </div>
-        <div style="display:flex; justify-content:space-between; border-top:1px solid var(--border); padding-top:4px; margin-top:4px; font-weight:700; color:${verfuegbar > 0 ? 'var(--success)' : 'var(--error)'};">
-          <span>Frei verfügbar:</span>
-          <span>${verfuegbar}</span>
-        </div>
-      </div>
+      ${(()=>{
+        const isMisch = !!clean(r["Mischset_ID"]);
+        if(isMisch){
+          // Mischbereifung: suche partner
+          const mid = clean(r["Mischset_ID"]);
+          const achse = clean(r["Achse"]);
+          const partner = produkte.find(p => clean(p["Mischset_ID"])===mid && clean(p["Achse"])!==(achse||"VA"));
+          const lagerVA = achse==="VA" ? lager : (parseInt(clean(partner?.["Lager"]),10)||0);
+          const lagerHA = achse==="HA" ? lager : (parseInt(clean(partner?.["Lager"]),10)||0);
+          const saetze = Math.min(Math.floor(lagerVA/2), Math.floor(lagerHA/2));
+          return `<div style="margin-top:16px;padding:10px;background:var(--surface-3);border-radius:6px;font-size:12px;text-align:left;">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);margin-bottom:8px;">Mischbereifung Lager</div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+              <span style="display:flex;align-items:center;gap:4px;"><span style="background:#0369a1;color:white;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700;">VA</span> Vorderachse</span>
+              <b style="color:${lagerVA>0?'var(--success)':'var(--text-muted)'};">${lagerVA} Stk</b>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+              <span style="display:flex;align-items:center;gap:4px;"><span style="background:#7c3aed;color:white;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700;">HA</span> Hinterachse</span>
+              <b style="color:${lagerHA>0?'var(--success)':'var(--text-muted)'};">${lagerHA} Stk</b>
+            </div>
+            <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:6px;margin-top:4px;font-weight:700;color:${saetze>0?'var(--success)':'var(--error)'};">
+              <span>= Verfügbare Sätze</span>
+              <span>${saetze} Sätze</span>
+            </div>
+          </div>`;
+        } else {
+          return `<div style="margin-top:16px; padding:10px; background:var(--surface-3); border-radius:6px; font-size:12px; text-align:left;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+              <span>Lager (Physisch):</span>
+              <b>${lager}</b>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px; color:var(--warning);">
+              <span>Reserviert (aktiv):</span>
+              <b style="cursor:pointer; text-decoration:underline;" onclick="showReservationDetails('${js(tn)}')">${reserviert}</b>
+            </div>
+            <div style="display:flex; justify-content:space-between; border-top:1px solid var(--border); padding-top:4px; margin-top:4px; font-weight:700; color:${verfuegbar > 0 ? 'var(--success)' : 'var(--error)'};">
+              <span>Frei verfügbar:</span>
+              <span>${verfuegbar}</span>
+            </div>
+          </div>`;
+        }
+      })()}
 
     ${isLowStock ? `<span class="stock-warning-chip" style="margin-top:8px; display:inline-block;">⚠ Kritischer Lager</span>` : ""}
       
@@ -5961,13 +6006,7 @@ function openEditWkrModal(tn){
   document.getElementById("editWkrReihe").value = mapEntry ? clean(mapEntry["Reihe"]) : "";
   document.getElementById("editWkrModell").value = mapEntry ? clean(mapEntry["Modell"]) : "";
   document.getElementById("editWkrMotor").value = mapEntry ? clean(mapEntry["Motor"]) : "";
-const isMisch = !!clean(row["Achse"]);
-document.getElementById("editWkrIsMisch").checked = isMisch;
-document.getElementById("editWkrMischFelder").style.display = isMisch ? "block" : "none";
-document.getElementById("editWkrAchse").value = clean(row["Achse"]) || "VA";
-document.getElementById("editWkrMischsetId").value = clean(row["Mischset_ID"]);
-document.getElementById("editWkrDimension_VA").value = clean(row["Dimension_VA"]);
-document.getElementById("editWkrDimension_HA").value = clean(row["Dimension_HA"]);
+
   document.getElementById("editWkrModal").classList.add("open");
 }
 
@@ -6095,23 +6134,28 @@ async function deleteTire(){
    ============================================================ */
 
 // Hilfsfunktion für die Suche
-   function calcWkrDiscount(prefix){
-  const vp = parsePrice(document.getElementById(`${prefix}WkrVP`)?.value);
-  if(!vp || vp <= 0){ alert("Bitte zuerst VP (Brutto) eingeben."); return; }
-  const angebot = Math.round(vp * 0.8);
-  const el = document.getElementById(`${prefix}WkrAngebotspreis`);
-  if(el) el.value = angebot;
-}
-function normalizeTN(v) { return clean(v).replace(/\s+/g, "").toUpperCase(); }
+function normalizeTN(v) { let s=clean(v).replace(/\s+/g,"").toUpperCase(); if(s.endsWith(".0"))s=s.slice(0,-2); return s; }
 
 function toggleMischFelder(prefix){
   const cb = document.getElementById(`${prefix}WkrIsMisch`);
   const mischFelder = document.getElementById(`${prefix}WkrMischFelder`);
   const normalFelder = document.getElementById(`${prefix}WkrNormalFelder`);
+  const lagerWrap = document.getElementById(`${prefix}WkrLagerWrap`);
   if(!cb) return;
   const checked = cb.checked;
   if(mischFelder) mischFelder.style.display = checked ? "block" : "none";
   if(normalFelder) normalFelder.style.display = checked ? "none" : "contents";
+  if(lagerWrap) lagerWrap.style.display = checked ? "none" : "";
+}
+
+function autoMischsetId(prefix){
+  const tnVA = clean(document.getElementById(`${prefix}WkrTN_VA`)?.value || "");
+  const standort = clean(document.getElementById(`${prefix}WkrStandort`)?.value || "");
+  const el = document.getElementById(`${prefix}WkrMischsetId`);
+  if(!el || !el.readOnly) return; // Wenn manuell bearbeitet, nicht überschreiben
+  if(tnVA && standort){
+    el.value = `${tnVA}_${standort}`;
+  }
 }
 
 function generateMischsetId(prefix){
@@ -6131,7 +6175,11 @@ function clearWkrForm(prefix){
   const isMisch=document.getElementById(`${prefix}WkrIsMisch`);if(isMisch)isMisch.checked=false;
   const mischFelder=document.getElementById(`${prefix}WkrMischFelder`);if(mischFelder)mischFelder.style.display="none";
   const normalFelder=document.getElementById(`${prefix}WkrNormalFelder`);if(normalFelder)normalFelder.style.display="contents";
-  ["MischsetId","TN_VA","TN_HA","Dimension_VA","Dimension_HA"].forEach(f=>{const el=document.getElementById(`${prefix}Wkr${f}`);if(el)el.value="";});
+  ["MischsetId","TN_VA","TN_HA","Dimension_VA","Dimension_HA","Lager_VA","Lager_HA"].forEach(f=>{const el=document.getElementById(`${prefix}Wkr${f}`);if(el)el.value="";});
+  const lagVA=document.getElementById(`${prefix}WkrLager_VA`);if(lagVA)lagVA.value="0";
+  const lagHA=document.getElementById(`${prefix}WkrLager_HA`);if(lagHA)lagHA.value="0";
+  const mischId=document.getElementById(`${prefix}WkrMischsetId`);if(mischId){mischId.value="";mischId.readOnly=true;}
+  const lagerWrap=document.getElementById(`${prefix}WkrLagerWrap`);if(lagerWrap)lagerWrap.style.display="";
 }
 
 async function saveNewWkr(){
@@ -6168,31 +6216,34 @@ async function saveNewWkr(){
 
   try {
     if(isMisch){
-      const mischId = clean(document.getElementById("newWkrMischsetId").value);
       const tnVA = clean(document.getElementById("newWkrTN_VA").value);
       const tnHA = clean(document.getElementById("newWkrTN_HA").value);
       const dimVA = clean(document.getElementById("newWkrDimension_VA").value);
       const dimHA = clean(document.getElementById("newWkrDimension_HA").value);
+      const lagerVA = clean(document.getElementById("newWkrLager_VA")?.value || "0");
+      const lagerHA = clean(document.getElementById("newWkrLager_HA")?.value || "0");
+      // Mischset_ID: auto aus TN_VA + Standort wenn leer
+      let mischId = clean(document.getElementById("newWkrMischsetId").value);
+      if(!mischId) mischId = `${tnVA}_${standort}`;
 
-      if(!mischId || !tnVA || !tnHA || !dimVA || !dimHA){
-        alert("Mischbereifung: Bitte Mischset_ID, beide Teilenummern und beide Dimensionen ausfüllen."); return;
+      if(!tnVA || !tnHA || !dimVA || !dimHA){
+        alert("Mischbereifung: Bitte beide Teilenummern und beide Dimensionen ausfüllen."); return;
       }
-      if(produkte.some(p=>clean(p["TN"])===tnVA)){alert("TN "+tnVA+" existiert bereits.");return;}
-      if(produkte.some(p=>clean(p["TN"])===tnHA)){alert("TN "+tnHA+" existiert bereits.");return;}
+      if(produkte.some(p=>normalizeTN(clean(p["TN"]))===normalizeTN(tnVA))){alert("TN "+tnVA+" existiert bereits.");return;}
+      if(produkte.some(p=>normalizeTN(clean(p["TN"]))===normalizeTN(tnHA))){alert("TN "+tnHA+" existiert bereits.");return;}
 
-      const rowVA = {...gemeinsam,"TN":tnVA,"Achse":"VA","Mischset_ID":mischId,"Dimension":dimVA,"Dimension_VA":dimVA,"Dimension_HA":dimHA};
-      const rowHA = {...gemeinsam,"TN":tnHA,"Achse":"HA","Mischset_ID":mischId,"Dimension":dimHA,"Dimension_VA":dimVA,"Dimension_HA":dimHA};
-      const mapVA = {"Marke":marke,"Reihe":reihe,"Modell":modell,"Motor":motor,"TN":tnVA};
-      const mapHA = {"Marke":marke,"Reihe":reihe,"Modell":modell,"Motor":motor,"TN":tnHA};
+      const rowVA = {...gemeinsam,"TN":tnVA,"Achse":"VA","Mischset_ID":mischId,"Dimension":"","Dimension_VA":dimVA,"Dimension_HA":dimHA,"Lager":lagerVA};
+      const rowHA = {...gemeinsam,"TN":tnHA,"Achse":"HA","Mischset_ID":mischId,"Dimension":"","Dimension_VA":dimVA,"Dimension_HA":dimHA,"Lager":lagerHA};
+      const mischTN = `${tnVA}_${tnHA}`;
+      const mapRow = {"Marke":marke,"Reihe":reihe,"Modell":modell,"Motor":motor,"TN":mischTN};
 
       await postToScript({action:"appendRow",sheet:"Produkte",row:rowVA});
       await postToScript({action:"appendRow",sheet:"Produkte",row:rowHA});
-      await postToScript({action:"appendRow",sheet:"Zuordnung",row:mapVA});
-      await postToScript({action:"appendRow",sheet:"Zuordnung",row:mapHA});
+      await postToScript({action:"appendRow",sheet:"Zuordnung",row:mapRow});
 
       produkte.push(rowVA); produkte.push(rowHA);
-      mapping.push(mapVA); mapping.push(mapHA);
-      alert("Mischbereifung gespeichert! VA ("+tnVA+") und HA ("+tnHA+") wurden automatisch angelegt.");
+      mapping.push(mapRow);
+      alert("✅ Mischbereifung gespeichert!\nVA: "+tnVA+" (Lager: "+lagerVA+")\nHA: "+tnHA+" (Lager: "+lagerHA+")")
 
     } else {
       const tn = clean(document.getElementById("newWkrTN").value);
