@@ -7,6 +7,11 @@
 
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<!-- NEU: Leaflet CSS & JS für die interaktive Standort-Karte -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
 <style>
 /* ============================================================
    CSS VARIABLES & THEME
@@ -1516,9 +1521,54 @@ body.mini-brand .vehicle-card:hover { background: var(--surface); }
 
 /* Versteckt die Labels auf dem Desktop */
 @media (min-width: 601px) {
-  .mobile-label { display: none !important; }
+  .mobile-label { display: none !important; }
 }
 
+/* ============================================================
+   NEUE MARKENAUSWAHL (Elegant Cards)
+   ============================================================ */
+.brand-grid { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-bottom: 40px; }
+.brand-card-v2 {
+  width: 280px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+.brand-card-v2::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(28,105,212,0.05), transparent);
+  opacity: 0; transition: opacity 0.3s;
+}
+.brand-card-v2:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  border-color: var(--accent);
+}
+.brand-card-v2:hover::before { opacity: 1; }
+.brand-card-v2 img { height: 60px; object-fit: contain; margin-bottom: 20px; transition: transform 0.3s; display: block; margin-left: auto; margin-right: auto; }
+.brand-card-v2:hover img { transform: scale(1.1); }
+.brand-card-v2-title { font-size: 20px; font-weight: 700; letter-spacing: 2px; color: var(--text-primary); }
+
+/* ============================================================
+   KARTEN POPUP STYLING (Leaflet)
+   ============================================================ */
+.leaflet-popup-content-wrapper { border-radius: 12px !important; box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important; background: var(--surface) !important; }
+.leaflet-popup-content { margin: 16px !important; text-align: center; font-family: var(--font-body); }
+.map-popup-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; color: var(--accent); }
+.map-popup-btn {
+  background: var(--accent); color: white; border: none; padding: 10px 16px; border-radius: 6px; 
+  font-weight: bold; cursor: pointer; margin-top: 12px; width: 100%; transition: 0.2s; font-family: var(--font-body);
+}
+.map-popup-btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
+.leaflet-container { font-family: var(--font-body); }
+</style>
 /* ============================================================
    NEUE PREMIUM BUTTONS (Hero & Standort)
    ============================================================ */
@@ -4469,42 +4519,31 @@ function renderWkrFlow(){
   const isWkrFlow = true;
 
  if (!state.marke) {
-    html += `<div class="brand-split-wrap">
-      <div class="brand-split-panel brand-split-bmw" onclick="selectMarke('BMW')">
-        <div class="brand-split-overlay"></div>
-        <div class="brand-split-content">
-          <img src="https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/BMW_Logo.jpg?raw=true" alt="BMW" class="brand-split-logo">
-          <div class="brand-split-name">BMW</div>
-          <div class="brand-split-sub">Winterkompletträder entdecken</div>
-          <div class="brand-split-arrow">→</div>
+    html += `
+      <div class="section-title">Wählen Sie Ihre Marke</div>
+      <div class="brand-grid">
+        <div class="brand-card-v2" onclick="selectMarke('BMW')">
+          <img src="https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/BMW_Logo.jpg?raw=true" alt="BMW">
+          <div class="brand-card-v2-title">BMW</div>
+        </div>
+        <div class="brand-card-v2" onclick="selectMarke('MINI')">
+          <img src="https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/MINI_Logo.jpg?raw=true" alt="MINI">
+          <div class="brand-card-v2-title">MINI</div>
         </div>
       </div>
-      <div class="brand-split-panel brand-split-mini" onclick="selectMarke('MINI')">
-        <div class="brand-split-overlay"></div>
-        <div class="brand-split-content">
-          <img src="https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/MINI_Logo.jpg?raw=true" alt="MINI" class="brand-split-logo">
-          <div class="brand-split-name">MINI</div>
-          <div class="brand-split-sub">Winterkompletträder entdecken</div>
-          <div class="brand-split-arrow">→</div>
-        </div>
-      </div>
-    </div>`;
+    `;
     return html;
   }
 
- if (!state.standort) {
-    const locs=[...new Set(produkte.filter(x=>clean(x["Marke"])===state.marke).map(x=>clean(x["Standort"])).filter(Boolean))];
+  if (!state.standort) {
     html += `
       <div class="section-title">Wählen Sie Ihren Standort</div>
-      <div style="display: flex; gap: 20px; justify-content: center; margin-bottom: 50px; flex-wrap: wrap;">
-        ${locs.map((s) => `
-          <button class="location-btn" onclick="selectStandort('${js(s)}')">
-            <span style="font-size: 20px;">📍</span> 
-            ${s === "GEB" ? "Aargau · Gebenstorf" : "Aargau · Hettenschwil"}
-          </button>
-        `).join("")}
+      <div style="max-width: 1000px; margin: 0 auto 50px;">
+        <div id="standortMap" style="height: 450px; width: 100%; border-radius: 16px; box-shadow: var(--shadow-md); z-index: 1;"></div>
       </div>
     `;
+    // Die Karte muss initialisiert werden, NACHDEM das HTML in den DOM gerendert wurde
+    setTimeout(initStandortMap, 50);
     return html;
   }
 
@@ -8592,7 +8631,58 @@ document.querySelectorAll(".modal-overlay").forEach(overlay=>{
     if(ev.target===this){this.classList.remove("open");if(this.id==="editTireModal"){editingTireId="";}if(this.id==="editWkrModal"){editingWkrTN="";}}
   });
 });
+/* ============================================================
+   INTERAKTIVE KARTEN-ANIMATION (Standortauswahl)
+   ============================================================ */
+function initStandortMap() {
+    const mapContainer = document.getElementById("standortMap");
+    if (!mapContainer) return;
+    
+    // Karte zentriert zwischen Gebenstorf und Hettenschwil
+    const map = L.map('standortMap').setView([47.525, 8.206], 12);
+    
+    // Moderner, heller Karten-Style (CartoDB)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap',
+        subdomains: 'abcd',
+        maxZoom: 19
+    }).addTo(map);
 
+    const standorte = [
+        { id: "GEB", name: "Gebenstorf", lat: 47.4828, lng: 8.2443, addr: "Landstrasse 35, 5412 Gebenstorf" },
+        { id: "HET", name: "Hettenschwil", lat: 47.5685, lng: 8.1694, addr: "Hauptstrasse 12, 5316 Hettenschwil" }
+    ];
+
+    standorte.forEach(st => {
+        // Blauer Standard-Marker
+        const marker = L.marker([st.lat, st.lng]).addTo(map);
+        
+        const popupHtml = `
+            <div class="map-popup-title">📍 Emmenegger ${st.name}</div>
+            <div style="font-size:12px; color:var(--text-secondary); margin-bottom: 8px;">${st.addr}</div>
+            <button class="map-popup-btn" onclick="triggerStandortZoom(${st.lat}, ${st.lng}, '${st.id}')">Diesen Standort wählen</button>
+        `;
+        marker.bindPopup(popupHtml);
+    });
+
+    // Speichere map Instanz global für den Flug-Zoom
+    window._standortMap = map;
+}
+
+window.triggerStandortZoom = function(lat, lng, id) {
+    if (window._standortMap) {
+        // Fliegt animiert zum Marker und zoomt auf Strassenebene hinein
+        window._standortMap.flyTo([lat, lng], 17, {
+            animate: true,
+            duration: 1.5 // 1.5 Sekunden Film-Animation
+        });
+        
+        // Nach der Animation wird die Auswahl tatsächlich gesetzt und das nächste Menü geladen
+        setTimeout(() => {
+            selectStandort(id);
+        }, 1600);
+    }
+};
 /* ============================================================
    INIT
 ============================================================ */
