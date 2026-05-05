@@ -6095,6 +6095,13 @@ async function deleteTire(){
    ============================================================ */
 
 // Hilfsfunktion für die Suche
+   function calcWkrDiscount(prefix){
+  const vp = parsePrice(document.getElementById(`${prefix}WkrVP`)?.value);
+  if(!vp || vp <= 0){ alert("Bitte zuerst VP (Brutto) eingeben."); return; }
+  const angebot = Math.round(vp * 0.8);
+  const el = document.getElementById(`${prefix}WkrAngebotspreis`);
+  if(el) el.value = angebot;
+}
 function normalizeTN(v) { return clean(v).replace(/\s+/g, "").toUpperCase(); }
 
 function toggleMischFelder(prefix){
