@@ -4681,8 +4681,10 @@ if (!state.marke) {
   html += `
     <div class="section-title">Wählen Sie Ihren Standort</div>
     <div style="max-width: 1000px; margin: 0 auto 50px;">
-     <div id="standortMap" style="height: 450px; width: 100%; border-radius: 16px; box-shadow: var(--shadow-md); z-index: 1;"></div>
-    </div>
+<div class="standort-map-frame">
+  <div id="standortMap"></div>
+  <div class="map-credit-cover"></div>
+</div>    </div>
   `;
   setTimeout(initStandortMap, 50);
   return html;
@@ -8856,7 +8858,7 @@ function initStandortMap() {
         map.invalidateSize();
     }, 150);
 }
-}
+
 
 window.triggerStandortZoom = function(lat, lng, id) {
     if (window._standortMap) {
