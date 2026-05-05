@@ -4550,26 +4550,22 @@ function renderWkrFlow(){
       return html;
   }
 
-  if (!state.marke) {
-    html += `
-      <div class="section-title">Wählen Sie Ihre Marke</div>
-
- if (!state.marke) {
-    html += `
-      <div class="section-title">Wählen Sie Ihre Marke</div>
-      <div class="brand-grid">
-        <div class="brand-card-v2" onclick="selectMarke('BMW')">
-          <img src="https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/BMW_Logo.jpg?raw=true" alt="BMW">
-          <div class="brand-card-v2-title">BMW</div>
-        </div>
-        <div class="brand-card-v2" onclick="selectMarke('MINI')">
-          <img src="https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/MINI_Logo.jpg?raw=true" alt="MINI">
-          <div class="brand-card-v2-title">MINI</div>
-        </div>
+if (!state.marke) {
+  html += `
+    <div class="section-title">Wählen Sie Ihre Marke</div>
+    <div class="brand-grid">
+      <div class="brand-card-v2" onclick="selectMarke('BMW')">
+        <img src="https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/BMW_Logo.jpg?raw=true" alt="BMW">
+        <div class="brand-card-v2-title">BMW</div>
       </div>
-    `;
-    return html;
-  }
+      <div class="brand-card-v2" onclick="selectMarke('MINI')">
+        <img src="https://github.com/michelcarricamarta-ui/emmenegger-wkr/blob/main/MINI_Logo.jpg?raw=true" alt="MINI">
+        <div class="brand-card-v2-title">MINI</div>
+      </div>
+    </div>
+  `;
+  return html;
+}
 
   if (!state.standort) {
     html += `
