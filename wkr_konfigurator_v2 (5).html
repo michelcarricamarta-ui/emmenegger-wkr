@@ -5520,7 +5520,7 @@ function renderAdminVororder(){
       const kundeName = clean(v["Kundenname"]) || "Unbekannt";
 
       // HTML mit .mobile-label für jedes td
-      html += `<tr style="border-bottom:1px solid var(--border); transition: background 0.2s;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'">
+      html += `<tr style="border-bottom:1px solid var(--border); transition: all 0.15s ease; cursor:pointer; border-left:3px solid transparent;" onclick="openVororderDetail('${js(clean(v["ID"]))}')" onmouseover="this.style.background='rgba(28,105,212,0.18)';this.style.borderLeftColor='var(--accent)';" onmouseout="this.style.background='transparent';this.style.borderLeftColor='transparent';">
         ${adminMode ? `<td style="padding:12px;font-weight:600;color:var(--text-primary);font-family:monospace;"><span class="mobile-label">ID</span>${e(clean(v["ID"]))}</td>` : ""}
         
         <td style="padding:12px;"><span class="mobile-label">Status</span>${vororderStatusBadge(v["Status"])}</td>
@@ -5562,9 +5562,7 @@ function renderAdminVororder(){
         
         ${isSuperAdmin ? `<td style="padding:12px;text-align:center;"><span class="mobile-label">Standort</span>${standort ? `<span style="font-size:11px;background:var(--surface-3);padding:2px 8px;border-radius:3px;font-weight:600;">${e(standort)}</span>` : "—"}</td>` : ""}
         
-        <td style="padding:12px;text-align:right;">
-         <button class="btn btn-secondary btn-sm" onclick="openVororderDetail('${js(clean(v["ID"]))}')" style="padding:6px 12px;font-size:12px;background:var(--surface);box-shadow:var(--shadow-sm);">Details</button>
-        </td>
+        <td style="padding:12px;text-align:right;color:var(--text-muted);font-size:16px;">›</td>
       </tr>`;
     });
 
