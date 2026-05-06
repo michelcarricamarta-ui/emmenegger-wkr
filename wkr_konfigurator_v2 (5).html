@@ -2486,6 +2486,63 @@ draw();
     </div>
   </div>
 </div>
+   <!-- WKR Offerte Modal -->
+<div id="wkrOfferteModal" class="modal-overlay">
+  <div class="modal-box wide">
+    <div class="modal-title">WKR-Offerte erstellen</div>
+    <div class="modal-subtitle" id="wkrOfferteSubtitle">Angebot für Kunden zusammenstellen und versenden</div>
+
+    <!-- Kundendaten -->
+    <div style="background:var(--surface-2);border-left:3px solid var(--accent);padding:10px 14px;margin-bottom:12px;border-radius:0 6px 6px 0;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Kundendaten</div>
+    </div>
+    <div class="form-grid">
+      <div class="form-field"><label>Kundenname *</label><input id="ofKundenname" type="text" placeholder="Vorname Nachname"></div>
+      <div class="form-field"><label>E-Mail *</label><input id="ofEmail" type="email" placeholder="kunde@example.com"></div>
+      <div class="form-field"><label>Kontrollschild</label><input id="ofKontrollschild" type="text" placeholder="z.B. AG 123456"></div>
+      <div class="form-field"><label>Fahrzeug</label><input id="ofFahrzeug" type="text" placeholder="z.B. BMW X1 U11"></div>
+      <div class="form-field"><label>FIN</label><input id="ofFIN" type="text" placeholder="Fahrgestellnummer"></div>
+    </div>
+
+    <!-- Positionen -->
+    <div style="background:var(--surface-2);border-left:3px solid var(--accent);padding:10px 14px;margin:18px 0 12px;border-radius:0 6px 6px 0;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Positionen</div>
+    </div>
+
+    <!-- Suche -->
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <input id="ofWkrSuche" type="text" placeholder="WKR suchen (Bezeichnung, TN, Modell...)" style="flex:1;" oninput="searchOfferteWkr()">
+    </div>
+    <div id="ofWkrSucheResultate" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:8px;max-height:200px;overflow-y:auto;margin-bottom:12px;"></div>
+
+    <!-- Positionen-Liste -->
+    <div id="ofPositionenListe" style="margin-bottom:16px;">
+      <div style="color:var(--text-muted);font-size:13px;text-align:center;padding:16px;">Noch keine Positionen hinzugefügt.</div>
+    </div>
+
+    <!-- Offerten-Details -->
+    <div style="background:var(--surface-2);border-left:3px solid var(--accent);padding:10px 14px;margin:18px 0 12px;border-radius:0 6px 6px 0;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Offerten-Details</div>
+    </div>
+    <div class="form-grid">
+      <div class="form-field"><label>Gültig bis *</label><input id="ofGueltigBis" type="date"></div>
+      <div class="form-field"><label>Verkäufer</label><input id="ofVerkaeufer" type="text" placeholder="z.B. Maik"></div>
+      <div class="form-field full"><label>Persönliche Nachricht</label><textarea id="ofNachricht" placeholder="z.B. Gerne stehen wir Ihnen für Fragen zur Verfügung..." rows="3"></textarea></div>
+      <div class="form-field full">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+          <input type="checkbox" id="ofCC" style="width:16px;height:16px;">
+          <span>Kopie an mich senden (CC)</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeWkrOfferteModal()">Schliessen</button>
+      <button class="btn btn-secondary" onclick="previewWkrOfferte()">👁 Vorschau</button>
+      <button class="btn btn-primary" onclick="sendWkrOfferte()">📧 Offerte senden</button>
+    </div>
+  </div>
+</div>
 <!-- New Vororder Modal -->
 <div id="newVororderModal" class="modal-overlay">
   <div class="modal-box wide">
@@ -7310,6 +7367,146 @@ async function reloadVororder(){
   render();
   await loadVororder();
   render();
+}
+   /* ============================================================
+   WKR OFFERTEN
+   ============================================================ */
+let offertePositionen = []; // Positionen der aktuellen Offerte
+let offerteVororderId = null; // Falls aus Vororder geöffnet
+
+function openNewWkrOfferteModal(vororderData) {
+  offertePositionen = [];
+  offerteVororderId = null;
+
+  // Felder leeren
+  ["ofKundenname","ofEmail","ofKontrollschild","ofFahrzeug","ofFIN",
+   "ofVerkaeufer","ofNachricht","ofWkrSuche"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+  document.getElementById("ofCC").checked = false;
+
+  // Gültig bis: heute + 14 Tage
+  const d = new Date();
+  d.setDate(d.getDate() + 14);
+  document.getElementById("ofGueltigBis").value = d.toISOString().split("T")[0];
+
+  // Falls aus Vororder geöffnet → Kundendaten vorausfüllen
+  if (vororderData) {
+    offerteVororderId = vororderData.id || null;
+    document.getElementById("ofKundenname").value = vororderData.kundenname || "";
+    document.getElementById("ofEmail").value = vororderData.email || "";
+    document.getElementById("ofKontrollschild").value = vororderData.kontrollschild || "";
+    document.getElementById("ofFahrzeug").value = vororderData.fahrzeug || "";
+    document.getElementById("ofFIN").value = vororderData.fin || "";
+    document.getElementById("ofVerkaeufer").value = vororderData.verkaeufer || "";
+    document.getElementById("wkrOfferteSubtitle").textContent =
+      `Verknüpft mit Vororder ${vororderData.id || ""}`;
+  } else {
+    document.getElementById("wkrOfferteSubtitle").textContent =
+      "Angebot für Kunden zusammenstellen und versenden";
+  }
+
+  renderOffertePositionen();
+  document.getElementById("ofWkrSucheResultate").style.display = "none";
+  document.getElementById("wkrOfferteModal").classList.add("active");
+}
+
+function closeWkrOfferteModal() {
+  document.getElementById("wkrOfferteModal").classList.remove("active");
+}
+
+function searchOfferteWkr() {
+  const q = (document.getElementById("ofWkrSuche").value || "").toLowerCase().trim();
+  const container = document.getElementById("ofWkrSucheResultate");
+  if (!q || q.length < 2) { container.style.display = "none"; return; }
+
+  const results = (window._wkrData || []).filter(r => {
+    return ["Bezeichnung","TN","Modell","Reihe","Dimension","Felgenhersteller"]
+      .some(k => (r[k]||"").toLowerCase().includes(q));
+  }).slice(0, 8);
+
+  if (!results.length) {
+    container.innerHTML = `<div style="padding:12px;color:var(--text-muted);font-size:13px;">Keine WKR gefunden.</div>`;
+    container.style.display = "block";
+    return;
+  }
+
+  container.innerHTML = results.map(r => {
+    const bezeichnung = clean(r["Bezeichnung"]) || "—";
+    const tn = clean(r["TN"]) || "";
+    const dim = clean(r["Dimension"]) || "";
+    const preis = clean(r["Listenpreis_CHF"]) || "";
+    const img = clean(r["Foto_URL"]) || "";
+    return `<div onclick="addOffertePosition(${JSON.stringify(r).replace(/"/g,'&quot;')})"
+      style="display:flex;align-items:center;gap:12px;padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);"
+      onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background=''">
+      ${img ? `<img src="${e(img)}" style="width:40px;height:40px;object-fit:contain;border-radius:4px;">` : `<div style="width:40px;height:40px;background:var(--surface-2);border-radius:4px;"></div>`}
+      <div style="flex:1;">
+        <div style="font-weight:600;font-size:13px;">${e(bezeichnung)}</div>
+        <div style="font-size:11px;color:var(--text-muted);">${tn ? `TN: ${e(tn)} · ` : ""}${e(dim)}</div>
+      </div>
+      <div style="font-weight:700;font-size:13px;color:var(--accent);">${preis ? `CHF ${e(preis)}` : ""}</div>
+    </div>`;
+  }).join("");
+  container.style.display = "block";
+}
+
+function addOffertePosition(r) {
+  offertePositionen.push({
+    bezeichnung: clean(r["Bezeichnung"]) || "",
+    tn: clean(r["TN"]) || "",
+    dimension: clean(r["Dimension"]) || "",
+    foto: clean(r["Foto_URL"]) || "",
+    euLabel: clean(r["EU_Label_URL"]) || "",
+    listenpreis: clean(r["Listenpreis_CHF"]) || "",
+    preis: clean(r["Listenpreis_CHF"]) || "",
+    anzahl: 4,
+    rabatt: ""
+  });
+  document.getElementById("ofWkrSuche").value = "";
+  document.getElementById("ofWkrSucheResultate").style.display = "none";
+  renderOffertePositionen();
+}
+
+function removeOffertePosition(idx) {
+  offertePositionen.splice(idx, 1);
+  renderOffertePositionen();
+}
+
+function renderOffertePositionen() {
+  const container = document.getElementById("ofPositionenListe");
+  if (!offertePositionen.length) {
+    container.innerHTML = `<div style="color:var(--text-muted);font-size:13px;text-align:center;padding:16px;">Noch keine Positionen hinzugefügt.</div>`;
+    return;
+  }
+  container.innerHTML = offertePositionen.map((p, i) => `
+    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;">
+      ${p.foto ? `<img src="${e(p.foto)}" style="width:50px;height:50px;object-fit:contain;border-radius:6px;flex-shrink:0;">` : `<div style="width:50px;height:50px;background:var(--surface-2);border-radius:6px;flex-shrink:0;"></div>`}
+      <div style="flex:1;">
+        <div style="font-weight:600;font-size:13px;">${e(p.bezeichnung)}</div>
+        <div style="font-size:11px;color:var(--text-muted);">${p.tn ? `TN: ${e(p.tn)} · ` : ""}${e(p.dimension)}</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <input type="number" min="1" value="${p.anzahl}" style="width:60px;text-align:center;"
+            onchange="offertePositionen[${i}].anzahl=parseInt(this.value)||1">
+          <span style="font-size:10px;color:var(--text-muted);text-align:center;">Anz.</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <input type="text" value="${e(p.preis)}" style="width:90px;"
+            placeholder="CHF" onchange="offertePositionen[${i}].preis=this.value">
+          <span style="font-size:10px;color:var(--text-muted);text-align:center;">Preis CHF</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <input type="text" value="${e(p.rabatt)}" style="width:70px;"
+            placeholder="z.B. 5%" onchange="offertePositionen[${i}].rabatt=this.value">
+          <span style="font-size:10px;color:var(--text-muted);text-align:center;">Rabatt</span>
+        </div>
+        <button onclick="removeOffertePosition(${i})" style="background:none;border:none;color:var(--error);cursor:pointer;font-size:18px;padding:4px;">✕</button>
+      </div>
+    </div>
+  `).join("");
 }
 let _vororderSaving = false;
 
