@@ -2981,7 +2981,7 @@ function getCartTotal(){
 function handleAddToCartMisch(tnVA, tnHA){
   const va = produkte.find(p => clean(p["TN"]) === clean(tnVA));
   const ha = produkte.find(p => clean(p["TN"]) === clean(tnHA));
-  if(!va || !ha){ showToast("Produkt nicht gefunden.", "warning", 4000); return; }
+  if(!va || !ha){ alert("Produkt nicht gefunden."); return; }
   const mischTN = `${tnVA}_${tnHA}`;
   const result = addToCart({
     tn: mischTN,
@@ -3361,7 +3361,7 @@ async function submitCheckout() {
       closeCheckoutModal();
       showCheckoutThankYou();
     } else {
-     showToast("Fehler beim Senden.", "error", 5000);
+      alert("Fehler: " + (res && res.message ? res.message : JSON.stringify(res)));
     }
   } catch (err) {
     alert("Netzwerkfehler: " + err.message);
@@ -5477,34 +5477,24 @@ function renderAdminVororder(){
     html += `<div class="empty-state"><div class="empty-icon">📋</div>Keine Vororders gefunden.<br><span style="font-size:12px;color:var(--text-muted);">${vororderLoaded ? "Versuche einen anderen Filter oder erfasse eine neue Vororder." : "Noch keine Daten geladen."}</span></div>`;
  } else {
     // Klasse "responsive-table" hinzugefügt!
+    const thStyle = "padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);";
     html += `<div style="margin-top:14px;">
       <table class="responsive-table" style="width:100%;border-collapse:collapse;font-size:13px;">
-     <thead>
+        <thead>
           <tr style="background:var(--surface-3);border-bottom:2px solid var(--border);">
-  ${adminMode ? `<th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">ID</th>` : ""}
-  <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Status</th>
-  <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Kunde</th>
-  <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Fahrzeug</th>
-  ${adminMode ? `<th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Typ / TN</th>` : ""}
-  <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Verkäufer</th>
-  ${adminMode ? `<th style="padding:8px 12px;text-align:center;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Anz.</th>` : ""}
-  <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Ablieferung</th>
-  ${isSuperAdmin ? `<th style="padding:8px 12px;text-align:center;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Standort</th>` : ""}
-  <th></th>
+            ${adminMode ? `<th style="${thStyle}">ID</th>` : ""}
+            <th style="${thStyle}">Status</th>
+            <th style="${thStyle}">Kunde</th>
+            <th style="${thStyle}">Fahrzeug</th>
+            ${adminMode ? `<th style="${thStyle}">Typ / TN</th>` : ""}
+            <th style="${thStyle}">Verkäufer</th>
+            ${adminMode ? `<th style="${thStyle};text-align:center;">Anz.</th>` : ""}
+            <th style="${thStyle}">Ablieferung</th>
+            ${isSuperAdmin ? `<th style="${thStyle};text-align:center;">Standort</th>` : ""}
+            <th></th>
           </tr>
           <tr style="background:var(--surface-2);">
   ${adminMode ? `<td style="padding:4px 8px;"><input type="text" placeholder="🔍 ID" value="${e(vororderFilter.suche)}" onchange="vororderFilter.suche=this.value;render();" style="width:100%;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td>` : ""}
-  <td></td>
-  <td style="padding:4px 8px;"><input type="text" placeholder="🔍 Kunde" value="${e(vororderFilter.suche)}" onchange="vororderFilter.suche=this.value;render();" style="width:100%;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td>
-  <td style="padding:4px 8px;"><input type="text" placeholder="🔍 Fahrzeug" value="${e(vororderFilter.suche)}" onchange="vororderFilter.suche=this.value;render();" style="width:100%;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td>
-  ${adminMode ? `<td style="padding:4px 8px;"><input type="text" placeholder="🔍 TN" value="${e(vororderFilter.suche)}" onchange="vororderFilter.suche=this.value;render();" style="width:100%;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td>` : ""}
-  <td style="padding:4px 8px;"><input type="text" placeholder="🔍 Verkäufer" value="${e(vororderFilter.suche)}" onchange="vororderFilter.suche=this.value;render();" style="width:100%;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td>
-  ${adminMode ? `<td></td>` : ""}
-  <td></td>
-  ${isSuperAdmin ? `<td></td>` : ""}
-  <td style="padding:4px 8px;text-align:right;"><button class="btn btn-secondary btn-sm" onclick="vororderFilter.suche='';render();" style="font-size:10px;padding:3px 8px;">Reset</button></td>
-</tr>
-        </thead> value="${e(vororderFilter.suche)}" onchange="vororderFilter.suche=this.value;render();" style="width:100%;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td>` : ""}
   <td></td>
   <td style="padding:4px 8px;"><input type="text" placeholder="🔍 Kunde" value="${e(vororderFilter.suche)}" onchange="vororderFilter.suche=this.value;render();" style="width:100%;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td>
   <td style="padding:4px 8px;"><input type="text" placeholder="🔍 Fahrzeug" value="${e(vororderFilter.suche)}" onchange="vororderFilter.suche=this.value;render();" style="width:100%;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td>
@@ -5997,7 +5987,7 @@ window.saveLagerBestellungBatch = async function(updates) {
       if (hasError) {
           alert("❌ Fehler beim Speichern im Google Sheet!\n\nServer-Antwort: " + errorMessage + "\n\n(Tipp: Heisst die neue Spalte im Google Sheet exakt 'Lager_Bestellung'?)");
       } else {
-         showToast("Lager-Bestellungen gespeichert.", "success");
+          alert("✅ Lager-Bestellungen erfolgreich im Google Sheet gespeichert!");
       }
   } catch(e) {
 showToast("Skript-Fehler: " + e.message, "error", 5000);
@@ -6707,7 +6697,7 @@ function toggleNewTireOtherBrand(){ const sel=document.getElementById("newTireHe
 function toggleEditTireOtherBrand(){ const sel=document.getElementById("editTireHerstellerSelect"); document.getElementById("editTireHerstellerOtherWrap").style.display=sel?.value==="Andere"?"block":"none"; }
 function openEditTireModal(rowId){
   const tire=reifen.find(r=>clean(r["ID"])===clean(rowId));
-   if(!tire){ showToast("Reifen nicht gefunden.", "info", 4000); return; }
+  if(!tire){ showToast("Reifen nicht gefunden.", "info", 4000); return; }
   editingTireId=clean(rowId);
   const currentHersteller=clean(tire["Hersteller"]);
   const isKnown=KNOWN_BRANDS.includes(currentHersteller);
@@ -6854,7 +6844,7 @@ async function saveEditedWkr(){
   const modell = clean(document.getElementById("editWkrModell").value);
   const motor = clean(document.getElementById("editWkrMotor").value);
 
-  if(!marke || !tn) { showToast("Marke und TN sind Pflichtfelder.", "warning", 4000); return; }
+  if(!marke || !tn) { alert("Marke und TN sind Pflichtfelder."); return; }
 
   const editIsMisch = document.getElementById("editWkrIsMisch")?.checked;
   const updates = {
@@ -7003,7 +6993,7 @@ async function saveEditedTire(){
   const bemerkung=clean(document.getElementById("editTireBemerkung").value);
   const bemSichtbar=clean(document.getElementById("editTireBemerkungSichtbar").value);
   const bild=getTireImage(hersteller,reifentyp);
-  if(!standort||!reifentyp||!hersteller||!profil||!pb||!qs||!zl||!tn||!anzahl||!vkpreis||!aktiv){showToast("Bitte alle Pflichtfelder ausfüllen.", "warning", 4000);return;}
+  if(!standort||!reifentyp||!hersteller||!profil||!pb||!qs||!zl||!tn||!anzahl||!vkpreis||!aktiv){alert("Bitte alle Pflichtfelder ausfüllen.");return;}
   _saving.editTire=true;
   const updates={"Standort":standort,"Reifentyp":reifentyp,"Hersteller":hersteller,"Profil":profil,"Profilbreite":pb,"Querschnitt":qs,"Zoll":zl,"Lastindex":lastindex,"Geschwindigkeitsindex":gi,"Runflat":runflat,"DOT":dot,"Teilenummer":tn,"Anzahl":anzahl,"EK Preis":ekpreis,"VK Preis":vkpreis,"Bild":bild,"Aktiv":aktiv,"Bemerkung":bemerkung,"Bemerkung sichtbar":bemSichtbar};
   try{const res=await postToScript({sheet:"Reifen",keyField:"ID",keyValue:editingTireId,updates});if(res==="OK"||(res&&res.status==="OK")){const row=reifen.find(r=>clean(r["ID"])===clean(editingTireId));if(row)Object.assign(row,updates);showToast("Reifen aktualisiert.", "success");closeEditTireModal();render();}else{alert("Fehler: "+JSON.stringify(res));}}catch(err){alert("Fehler: "+err.message);}finally{_saving.editTire=false;}
@@ -7013,7 +7003,7 @@ async function deleteTire(){
   if(!editingTireId)return;
   if(!confirm("Reifen wirklich löschen?"))return;
   _saving.deleteTire=true;
-  try{const res=await postToScript({action:"deleteRow",sheet:"Reifen",keyField:"ID",keyValue:editingTireId});if(res==="OK"||(res&&(res.status==="OK"||res==="OK"))){reifen=reifen.filter(r=>clean(r["ID"])!==clean(editingTireId));showToast("Reifen gelöscht.", "success");closeEditTireModal();render();}else{alert("Fehler: "+JSON.stringify(res));}}catch(err){alert("Fehler: "+err.message);}finally{_saving.deleteTire=false;}
+  try{const res=await postToScript({action:"deleteRow",sheet:"Reifen",keyField:"ID",keyValue:editingTireId});if(res==="OK"||(res&&(res.status==="OK"||res==="OK"))){reifen=reifen.filter(r=>clean(r["ID"])!==clean(editingTireId));alert("Reifen gelöscht.");closeEditTireModal();render();}else{alert("Fehler: "+JSON.stringify(res));}}catch(err){alert("Fehler: "+err.message);}finally{_saving.deleteTire=false;}
 }
 
 /* ============================================================
@@ -7146,8 +7136,8 @@ async function saveNewWkr(){
 
     } else {
       const tn = clean(document.getElementById("newWkrTN").value);
-      if(!tn){showToast("Teilenummer ausfüllen.", "warning", 4000);return;}
-      if(produkte.some(p=>clean(p["TN"])===tn)){showToast("TN existiert bereits.", "warning", 4000);return;}
+      if(!tn){alert("Teilenummer ausfüllen.");return;}
+      if(produkte.some(p=>clean(p["TN"])===tn)){alert("TN existiert bereits.");return;}
 
       const prodRow = {...gemeinsam,"TN":tn,"Achse":"","Mischset_ID":"","Dimension":clean(document.getElementById("newWkrDimension").value)};
       const mapRow = {"Marke":marke,"Reihe":reihe,"Modell":modell,"Motor":motor,"TN":tn};
@@ -7156,13 +7146,13 @@ async function saveNewWkr(){
       await postToScript({action:"appendRow",sheet:"Zuordnung",row:mapRow});
 
       produkte.push(prodRow); mapping.push(mapRow);
-      showToast("WKR gespeichert.", "success");
+      alert("WKR gespeichert! Das Rad ist nun im Konfigurator sichtbar.");
     }
 
     closeAddWkrModal();
     render();
   } catch(err){
-    showToast("Fehler beim Speichern: " + err.message, "error", 5000);
+    alert("Fehler beim Speichern: " + err.message);
   } finally {
     _saving.newWkr = false;
   }
@@ -7174,7 +7164,7 @@ async function deleteWkr(){
   if(!editingWkrTN)return;
   if(!confirm("WKR wirklich löschen?"))return;
   _saving.deleteWkr=true;
-  try{const res=await postToScript({action:"deleteRow",sheet:"Produkte",keyField:"TN",keyValue:editingWkrTN});if(res==="OK"||(res&&res.status==="OK")){produkte=produkte.filter(p=>clean(p["TN"])!==clean(editingWkrTN));showToast("WKR gelöscht.", "success");closeEditWkrModal();render();}else{alert("Fehler: "+JSON.stringify(res));}}catch(err){alert("Fehler: "+err.message);}finally{_saving.deleteWkr=false;}
+  try{const res=await postToScript({action:"deleteRow",sheet:"Produkte",keyField:"TN",keyValue:editingWkrTN});if(res==="OK"||(res&&res.status==="OK")){produkte=produkte.filter(p=>clean(p["TN"])!==clean(editingWkrTN));alert("WKR gelöscht.");closeEditWkrModal();render();}else{alert("Fehler: "+JSON.stringify(res));}}catch(err){alert("Fehler: "+err.message);}finally{_saving.deleteWkr=false;}
 }
 
 
@@ -7447,10 +7437,10 @@ async function saveNewVororder(){
         setTimeout(() => openVororderDetail(newVoId), 100);
       }
     } else {
-     showToast("Fehler beim Speichern.", "error", 5000);
+      alert("Fehler: " + JSON.stringify(res));
     }
   } catch(err) {
-    showToast("Fehler: " + err.message, "error", 5000);
+    alert("Fehler: " + err.message);
   } finally {
     _vororderSaving = false;
   }
@@ -7607,7 +7597,7 @@ function renderVororderDetail(){
 }
 async function deleteVororder(id){
   const vo = vororder.find(v => clean(v["ID"]) === clean(id));
-  if (!vo) { showToast("Vororder nicht gefunden.", "warning", 4000); return; }
+  if (!vo) { alert("Vororder nicht gefunden."); return; }
 
   const kunde = clean(vo["Kundenname"]) || "(kein Name)";
   const positionenCount = (positionenMap[id] || []).length;
@@ -7654,7 +7644,7 @@ async function saveVororderStatus(id){
   if (!newStatus) return;
   const vo = vororder.find(v => clean(v["ID"]) === clean(id));
   if (!vo) return;
-  if (clean(vo["Status"]) === newStatus) { showToast("Status ist bereits " + newStatus, "warning", 4000); return; }
+  if (clean(vo["Status"]) === newStatus) { alert("Status ist bereits " + newStatus); return; }
 
   // Auftragsnummer-Pflicht bei "Erledigt"
   if (newStatus === "Erledigt" && !clean(vo["Auftrag"])) {
@@ -7834,7 +7824,7 @@ async function submitInternalMail() {
     });
 
     if (res && res.status === "OK") {
-      showToast("E-Mail wurde versendet.", "success");
+      alert("✅ E-Mail wurde erfolgreich versendet.");
       closeInternalMailModal();
       
       // Status automatisch auf "Offeriert" setzen
@@ -8013,7 +8003,7 @@ function openNewPositionModal(voId){
 function openEditPositionModal(posId){
   const positionen = Object.values(positionenMap).flat();
   const pos = positionen.find(p => clean(p["PositionID"]) === clean(posId));
-  if (!pos) { showToast("Position nicht gefunden.", "warning", 4000); return; }
+  if (!pos) { alert("Position nicht gefunden."); return; }
   _posEditMode = { posId: posId, voId: clean(pos["VororderID"]) };
 
   document.getElementById("positionModalTitle").textContent = "Position bearbeiten";
@@ -8429,12 +8419,9 @@ async function sendMail(){
   const fin=clean(document.getElementById("interneOrderOderFIN")?.value);
   const ablieferung=clean(document.getElementById("internesAblieferdatum")?.value);
   const sendBtn=document.getElementById("sendBtn");
-  if(!name||!email||!plate){showToast("Bitte alle Pflichtfelder ausfüllen.", "warning", 4000);
-return;}
-  if(internalMode&&(!kundeName||!auftrag)){showToast("Kundenname und Auftragsnummer ausfüllen.", "warning", 4000);
-return;}
-  if(!/^[^ ]+@[^ ]+\.[a-z]{2,}$/i.test(email)){showToast("Ungültige E-Mail-Adresse.", "warning", 4000);
-return;}
+  if(!name||!email||!plate){alert("Pflichtfelder ausfüllen.");return;}
+  if(internalMode&&(!kundeName||!auftrag)){alert("Kundenname und Auftragsnummer ausfüllen.");return;}
+  if(!/^[^ ]+@[^ ]+\.[a-z]{2,}$/i.test(email)){alert("Ungültige E-Mail Adresse.");return;}
   const orig=sendBtn.textContent;
   sendBtn.textContent="Wird gesendet…";sendBtn.disabled=true;
   const fz=fahrzeuge.find(f=>clean(f["Marke"])===state.marke&&clean(f["Reihe"])===state.reihe&&clean(f["Modell"])===state.modell);
@@ -8452,9 +8439,7 @@ return;}
   formData.append("InternerModus",internalMode?"Ja":"Nein");formData.append("Auftragsnummer",auftrag);formData.append("Kundenname intern",kundeName);formData.append("Ordernummer / Fahrgestellnummer",fin);formData.append("Ablieferungsdatum",ablieferung);formData.append("Bemerkung",bemerkung);
   const message=`${internalMode?"Interne ":""}${art} über WKR Konfigurator.\n\nFahrzeug: ${state.marke||""} ${state.reihe||""} ${modellAnzeige} ${state.motor||""}\nStandort: ${state.standort||""}\nProdukt: ${selectedProduct.bezeichnung||""} | ${selectedProduct.marke||""} ${selectedProduct.dimension||""}\nPreis: ${selectedProduct.preis||""} CHF\n${(internalMode||adminMode)&&selectedProduct.nettopreis?`Netto: ${selectedProduct.nettopreis} CHF`:""}\n\nKundendaten:\nName: ${name} | E-Mail: ${email} | Kontrollschild: ${plate}\n${internalMode?`Auftragsnummer: ${auftrag} | Kundenname: ${kundeName}\nFIN/Order: ${fin} | Ablieferdatum: ${ablieferung}`:""}\n\nBemerkung: ${bemerkung}`;
   formData.append("message",message);
-  try{const response=await fetch("https://api.web3forms.com/submit",{method:"POST",body:formData});const data=await response.json();if(response.ok){showToast("Anfrage erfolgreich gesendet.", "success");
-["kundeName","kundeEmail","kundeKontrollschild","kundeBemerkung"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});document.getElementById("kundeArt").value="Anfrage";["interneAuftragsnummer","internerKundenname","interneOrderOderFIN","internesAblieferdatum"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});closeInquiryModal();}else{alert("Fehler: "+(data.message||"Unbekannter Fehler."));}}catch{showToast("Fehler. Bitte erneut versuchen.", "error", 5000);
-}finally{sendBtn.textContent=orig;sendBtn.disabled=false;}
+  try{const response=await fetch("https://api.web3forms.com/submit",{method:"POST",body:formData});const data=await response.json();if(response.ok){alert("Anfrage erfolgreich gesendet.");["kundeName","kundeEmail","kundeKontrollschild","kundeBemerkung"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});document.getElementById("kundeArt").value="Anfrage";["interneAuftragsnummer","internerKundenname","interneOrderOderFIN","internesAblieferdatum"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});closeInquiryModal();}else{alert("Fehler: "+(data.message||"Unbekannter Fehler."));}}catch{alert("Fehler. Bitte erneut versuchen.");}finally{sendBtn.textContent=orig;sendBtn.disabled=false;}
 }
    /* ============================================================
    CUSTOMER FLOW: Zwei-Button-Handler (Anfrage / Bestellung)
@@ -8463,8 +8448,7 @@ function sendCustomerInquiry(art){
   // Datenschutz-Pflicht prüfen
   const consent = document.getElementById("kundeDatenschutz");
   if (!consent || !consent.checked) {
-    showToast("Bitte Datenschutzhinweis bestätigen.", "warning", 4000);
-
+    alert("Bitte bestätigen Sie den Datenschutzhinweis, um fortzufahren.");
     if (consent) consent.focus();
     return;
   }
@@ -8515,10 +8499,8 @@ async function sendCustomerRequest(){
   const artFromHidden = clean(document.getElementById("kundeArtHidden")?.value);
   const art = artFromSelect || artFromHidden || "Anfrage";
   
-  if (!plate) { showToast("Bitte Kontrollschild eingeben.", "warning", 4000);
- return; }
-  if (!email) { showToast("Bitte E-Mail eingeben.", "warning", 4000);
- return; }
+  if (!plate) { alert("Bitte Kontrollschild eingeben."); return; }
+  if (!email) { alert("Bitte E-Mail eingeben."); return; }
   
   const submitBtn = document.querySelector("#inquiryModal .btn-primary");
   if (submitBtn) {
