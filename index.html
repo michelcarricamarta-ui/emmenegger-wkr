@@ -139,12 +139,12 @@ body {
   width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
   background: var(--surface-2); border: 1px solid var(--border);
   border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition);
-  color: var(--text-secondary); font-size: 15px;
+  color: var(--text-primary); font-size: 15px;
 }
 .icon-btn:hover { background: var(--surface-3); color: var(--text-primary); }
 .icon-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 .login-btn {
-  font-size: 12px; font-weight: 600; color: var(--text-secondary);
+  font-size: 12px; font-weight: 600; color: var(--text-primary);
   background: var(--surface-2); border: 1px solid var(--border);
   padding: 7px 12px; border-radius: var(--radius-sm);
   cursor: pointer; transition: var(--transition);
@@ -309,7 +309,7 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
 /* ============================================================
    SELECTION CARDS
    ============================================================ */
-.section-title { font-size: 22px; font-weight: 700; text-align: center; margin: 40px 0 28px; color: var(--text-primary); }
+.section-title { font-size: 24px; font-weight: 300; letter-spacing: 1px; text-align: center; margin: 40px 0 28px; color: var(--text-primary); }
 .card-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-bottom: 40px; }
 .sel-card {
   background: var(--surface); border: 1.5px solid var(--border);
@@ -318,7 +318,7 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
   display: flex; flex-direction: column; justify-content: center;
   align-items: center; text-align: center; font-size: 17px; font-weight: 700;
   transition: var(--transition); box-shadow: var(--shadow-sm);
-  border-top: 3px solid var(--accent); gap: 10px;
+  border-top: 2px solid var(--accent); gap: 10px;
 }
 .sel-card:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: var(--shadow-lg); }
 .sel-card.mini-theme { border-top-color: var(--mini-black); }
@@ -354,11 +354,11 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
 .products-title { font-size: 28px; font-weight: 300; color: var(--text-primary); margin-bottom: 6px; font-family: var(--font-display); }
 .products-meta { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); flex-wrap: wrap; gap: 8px; }
 .product-item { display: flex; gap: 32px; border-bottom: 1px solid var(--border); padding: 36px 0; align-items: flex-start; transition: var(--transition); }
-.product-item:hover { background: transparent; }
+.product-item:hover { background: var(--surface-2); margin: 0 -16px; padding-left: 16px; padding-right: 16px; border-radius: var(--radius-md); }
 .product-item.sold-out { opacity: 0.5; filter: grayscale(100%); }
 .product-item.inactive-tire { opacity: 0.6; filter: grayscale(80%); background: var(--surface-2); border-radius: var(--radius-md); padding: 20px; margin-bottom: 8px; }
 .product-image-wrap { flex-shrink: 0; width: 210px; }
-.product-image-wrap img { width: 210px; height: 170px; object-fit: contain; border-radius: var(--radius-md); cursor: zoom-in; transition: var(--transition); }
+.product-image-wrap img { width: 210px; height: 170px; object-fit: contain; border-radius: var(--radius-md); cursor: zoom-in; transition: var(--transition); background: var(--surface-2); padding: 8px; }
    /* Lightbox */
 .lightbox-overlay {
   position: fixed; inset: 0; z-index: 2000;
@@ -432,7 +432,7 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
 .dot-ok { font-size: 12px; font-weight: 700; color: var(--success); margin-top: 8px; }
 .product-right { width: 220px; flex-shrink: 0; text-align: right; }
 .price-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); margin-bottom: 6px; }
-.price-main { font-size: 26px; font-weight: 700; color: var(--text-primary); line-height: 1.1; margin-bottom: 4px; }
+.price-main { font-size: 28px; font-weight: 500; letter-spacing: -0.5px; color: var(--text-primary); line-height: 1.1; margin-bottom: 4px; }
 .price-main.sale { color: var(--error); }
 .price-old { font-size: 14px; text-decoration: line-through; color: var(--text-muted); margin-bottom: 4px; }
 .price-vat { font-size: 11px; color: var(--text-muted); margin-bottom: 16px; }
@@ -678,15 +678,14 @@ body:not(.mini-brand) .topbar { transition: background 0.3s ease, border-color 0
    ============================================================ */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
 .modal-overlay.open { display: flex; }
-.modal-box { background: var(--surface); border-radius: var(--radius-xl); padding: 32px; width: 100%; max-width: 580px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); border: 1px solid var(--border); animation: modalIn 0.25s cubic-bezier(0.4,0,0.2,1); }
-.modal-box.wide { max-width: 780px; }
+.modal-box { background: #ffffff; border-radius: var(--radius-xl); padding: 32px; width: 100%; max-width: 580px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); border: 1px solid var(--border); animation: modalIn 0.25s cubic-bezier(0.4,0,0.2,1); }.modal-box.wide { max-width: 780px; }
 @keyframes modalIn { from { opacity: 0; transform: translateY(12px) scale(0.97); } to { opacity: 1; transform: none; } }
 .modal-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; color: var(--text-primary); }
-.modal-subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+.modal-subtitle { font-size: 13px; color: var(--text-secondary); margin-bottom: 24px; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .form-grid .full { grid-column: 1 / -1; }
 .form-field { display: flex; flex-direction: column; gap: 5px; }
-.form-field label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-muted); }
+.form-field label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-secondary); }
 .form-field input, .form-field select, .form-field textarea { padding: 10px 12px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 13px; color: var(--text-primary); transition: var(--transition); width: 100%; }
 .form-field input:focus, .form-field select:focus, .form-field textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(28,105,212,0.1); background: var(--surface); }
 .form-field textarea { min-height: 80px; resize: vertical; }
@@ -939,7 +938,32 @@ body.mini-brand .btn-cart:hover { background: #111; color: white; }
    STOCK WARNING
    ============================================================ */
 .stock-warning-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning); border-radius: 20px; font-size: 11px; font-weight: 700; margin-left: 8px; }
-
+/* ============================================================
+   TOAST NOTIFICATIONS
+   ============================================================ */
+#toast-container {
+  position: fixed; bottom: 24px; right: 24px;
+  z-index: 9999; display: flex; flex-direction: column; gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 13px 18px;
+  box-shadow: var(--shadow-lg); font-size: 14px; font-weight: 500;
+  color: var(--text-primary); min-width: 280px; max-width: 400px;
+  pointer-events: all;
+  animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.toast.removing { animation: toastOut 0.25s ease forwards; }
+.toast-icon { font-size: 18px; flex-shrink: 0; }
+.toast-msg { flex: 1; line-height: 1.4; }
+.toast.success { border-left: 3px solid var(--success); }
+.toast.error   { border-left: 3px solid var(--error); }
+.toast.warning { border-left: 3px solid var(--warning); }
+.toast.info    { border-left: 3px solid var(--accent); }
+@keyframes toastIn  { from { opacity:0; transform:translateY(12px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes toastOut { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(8px); } }
 /* ============================================================
    MISC
    ============================================================ */
@@ -1820,6 +1844,7 @@ draw();
 </script>
 
    <!-- TOPBAR -->
+   <div id="toast-container"></div>
 <header class="topbar">
   <div class="topbar-inner">
     <div class="topbar-logo">
@@ -2974,13 +2999,13 @@ function handleAddToCartMisch(tnVA, tnHA){
     tnVA: tnVA,
     tnHA: tnHA
   });
-  if(result.alreadyIn){ alert("Dieses Produkt ist bereits in Ihrer Auswahl."); return; }
+  if(result.alreadyIn){ showToast("Dieses Produkt ist bereits in Ihrer Auswahl.", "warning", 4000); return; }
   render();
 }
 // Kunden-Aktion: Rad per TN aus produkte[] in den Warenkorb legen
 function handleAddToCart(tn){
   const p = produkte.find(x => clean(x["TN"]) === clean(tn));
-  if (!p) { alert("Produkt nicht gefunden."); return; }
+  if (!p) {showToast("Produkt nicht gefunden.", "info", 4000); return; }
 
   const result = addToCart({
     tn: clean(p["TN"]),
@@ -2997,7 +3022,7 @@ function handleAddToCart(tn){
   });
 
   if (result.alreadyIn) {
-    alert("Dieses Produkt ist bereits in Ihrer Auswahl.");
+    showToast("Dieses Produkt ist bereits in Ihrer Auswahl.", "warning", 4000);
     return;
   }
 
@@ -3147,8 +3172,7 @@ function clearCartWithConfirm() {
 
 function goToCheckout() {
   if (cart.length === 0) {
-    alert("Ihre Auswahl ist leer.");
-    return;
+showToast("Dieses Produkt ist bereits in Ihrer Auswahl.", "warning", 4000);    return;
   }
   closeCartModal();
   openCheckoutModal();
@@ -3269,7 +3293,7 @@ function updateIdentificationField() {
 }
 
 async function submitCheckout() {
-  if (cart.length === 0) { alert("Ihre Auswahl ist leer."); return; }
+  if (cart.length === 0) { showToast("Dieses Produkt ist bereits in Ihrer Auswahl.", "warning", 4000); return; }
 
   const name    = clean(document.getElementById("ckName")?.value);
   const email   = clean(document.getElementById("ckEmail")?.value);
@@ -3278,11 +3302,13 @@ async function submitCheckout() {
   const remark  = clean(document.getElementById("ckRemark")?.value);
   const privacy = document.getElementById("ckPrivacy")?.checked;
 
-  if (!name)    { alert("Bitte Name/Firma ausfüllen."); document.getElementById("ckName")?.focus();  return; }
-  if (!email)   { alert("Bitte E-Mail ausfüllen.");      document.getElementById("ckEmail")?.focus(); return; }
-  if (!phone)   { alert("Bitte Telefon ausfüllen.");     document.getElementById("ckPhone")?.focus(); return; }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(email)) { alert("Bitte eine gültige E-Mail-Adresse eingeben."); return; }
-  if (!privacy) { alert("Bitte Datenschutzerklärung bestätigen."); document.getElementById("ckPrivacy")?.focus(); return; }
+  if (!name)    { showToast("Bitte Name/Firma ausfüllen.", "warning", 4000);
+ document.getElementById("ckName")?.focus();  return; }
+  if (!email)   { showToast("Bitte E-Mail ausfüllen.", "warning", 4000);
+      document.getElementById("ckEmail")?.focus(); return; }
+  if (!phone)   { showToast("Bitte Telefon ausfüllen.", "warning", 4000);     document.getElementById("ckPhone")?.focus(); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(email)) { showToast("Bitte eine gültige E-Mail-Adresse eingeben.", "warning", 4000); return; }
+  if (!privacy) { showToast("Bitte Datenschutzerklärung bestätigen.", "warning", 4000); document.getElementById("ckPrivacy")?.focus(); return; }
 
   let vehicleIdType = "", vehicleIdValue = "";
   if (!customerMode) {
@@ -3932,8 +3958,7 @@ function shareConfig(){
   if(state.motor)    params.set("motor", state.motor);
   const url = window.location.href.split("?")[0] + "?" + params.toString();
   navigator.clipboard.writeText(url).then(()=>{
-    alert("Link wurde kopiert! Einfach einfügen und teilen.");
-  }).catch(()=>{
+showToast("Link wurde kopiert! Einfach einfügen und teilen.", "success");  }).catch(()=>{
     prompt("Link zum Kopieren:", url);
   });
 }
@@ -5452,9 +5477,22 @@ function renderAdminVororder(){
     html += `<div class="empty-state"><div class="empty-icon">📋</div>Keine Vororders gefunden.<br><span style="font-size:12px;color:var(--text-muted);">${vororderLoaded ? "Versuche einen anderen Filter oder erfasse eine neue Vororder." : "Noch keine Daten geladen."}</span></div>`;
  } else {
     // Klasse "responsive-table" hinzugefügt!
+    const thStyle = "padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);";
     html += `<div style="margin-top:14px;">
       <table class="responsive-table" style="width:100%;border-collapse:collapse;font-size:13px;">
         <thead>
+          <tr style="background:var(--surface-3);border-bottom:2px solid var(--border);">
+            ${adminMode ? `<th style="${thStyle}">ID</th>` : ""}
+            <th style="${thStyle}">Status</th>
+            <th style="${thStyle}">Kunde</th>
+            <th style="${thStyle}">Fahrzeug</th>
+            ${adminMode ? `<th style="${thStyle}">Typ / TN</th>` : ""}
+            <th style="${thStyle}">Verkäufer</th>
+            ${adminMode ? `<th style="${thStyle};text-align:center;">Anz.</th>` : ""}
+            <th style="${thStyle}">Ablieferung</th>
+            ${isSuperAdmin ? `<th style="${thStyle};text-align:center;">Standort</th>` : ""}
+            <th></th>
+          </tr>
           <tr style="background:var(--surface-2);">
   ${adminMode ? `<td style="padding:4px 8px;"><input type="text" placeholder="🔍 ID" value="${e(vororderFilter.suche)}" onchange="vororderFilter.suche=this.value;render();" style="width:100%;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td>` : ""}
   <td></td>
@@ -5482,7 +5520,7 @@ function renderAdminVororder(){
       const kundeName = clean(v["Kundenname"]) || "Unbekannt";
 
       // HTML mit .mobile-label für jedes td
-      html += `<tr style="border-bottom:1px solid var(--border); transition: background 0.2s;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'">
+      html += `<tr style="border-bottom:1px solid var(--border); transition: all 0.15s ease; cursor:pointer; border-left:3px solid transparent;" onclick="openVororderDetail('${js(clean(v["ID"]))}')" onmouseover="this.style.background='rgba(28,105,212,0.18)';this.style.borderLeftColor='var(--accent)';" onmouseout="this.style.background='transparent';this.style.borderLeftColor='transparent';">
         ${adminMode ? `<td style="padding:12px;font-weight:600;color:var(--text-primary);font-family:monospace;"><span class="mobile-label">ID</span>${e(clean(v["ID"]))}</td>` : ""}
         
         <td style="padding:12px;"><span class="mobile-label">Status</span>${vororderStatusBadge(v["Status"])}</td>
@@ -5524,9 +5562,7 @@ function renderAdminVororder(){
         
         ${isSuperAdmin ? `<td style="padding:12px;text-align:center;"><span class="mobile-label">Standort</span>${standort ? `<span style="font-size:11px;background:var(--surface-3);padding:2px 8px;border-radius:3px;font-weight:600;">${e(standort)}</span>` : "—"}</td>` : ""}
         
-        <td style="padding:12px;text-align:right;">
-         <button class="btn btn-secondary btn-sm" onclick="openVororderDetail('${js(clean(v["ID"]))}')" style="padding:6px 12px;font-size:12px;background:var(--surface);box-shadow:var(--shadow-sm);">Details</button>
-        </td>
+        <td style="padding:12px;text-align:right;color:var(--text-muted);font-size:16px;">›</td>
       </tr>`;
     });
 
@@ -5737,7 +5773,7 @@ function exportReifenCSV(){
    EXPORT: XLSX (SheetJS)
    ============================================================ */
 function exportWkrXLSX(){
-  if(typeof XLSX==="undefined"){ alert("Excel-Bibliothek nicht geladen. Bitte Seite neu laden."); return; }
+  if(typeof XLSX==="undefined"){ showToast("Excel-Bibliothek nicht geladen. Bitte Seite neu laden.", "warning", 5000); return; }
   const data = getWkrExportData();
   const headers = ["Marke","Standort","Bezeichnung","Reifen","Dimension","TN","Lager","Lagerort","VP","Angebotspreis","Nettopreis","Gezählt","Differenz","Bemerkung Inventur"];
   const rows = data.map(p => {
@@ -5836,7 +5872,7 @@ function getVororderExportData(){
   const standortFilter = clean(document.getElementById("exportVoStandort")?.value);
   
   if (!vororderLoaded) { 
-    alert("Bitte lade zuerst die Vororder-Daten (gehe kurz ins Vororder-Menü)."); 
+showToast("Bitte lade zuerst die Vororder-Daten.", "info", 4000);
     return null; 
   }
 
@@ -5952,7 +5988,7 @@ window.saveLagerBestellungBatch = async function(updates) {
           alert("✅ Lager-Bestellungen erfolgreich im Google Sheet gespeichert!");
       }
   } catch(e) {
-      alert("❌ Skript-Fehler: " + e.message);
+showToast("Skript-Fehler: " + e.message, "error", 5000);
   }
 };
 
@@ -6192,7 +6228,7 @@ function printSammelbestellung(){
           });
           
           if (updates.length === 0) {
-              alert("Keine Änderungen gefunden. Alles ist bereits gespeichert.");
+showToast("Keine Änderungen gefunden. Alles ist bereits gespeichert.", "info", 4000);
               btn.disabled = false;
               btn.innerText = "💾 + Lager speichern";
               return;
@@ -6659,7 +6695,7 @@ function toggleNewTireOtherBrand(){ const sel=document.getElementById("newTireHe
 function toggleEditTireOtherBrand(){ const sel=document.getElementById("editTireHerstellerSelect"); document.getElementById("editTireHerstellerOtherWrap").style.display=sel?.value==="Andere"?"block":"none"; }
 function openEditTireModal(rowId){
   const tire=reifen.find(r=>clean(r["ID"])===clean(rowId));
-  if(!tire){alert("Reifen nicht gefunden.");return;}
+  if(!tire){ showToast("Reifen nicht gefunden.", "info", 4000); return; }
   editingTireId=clean(rowId);
   const currentHersteller=clean(tire["Hersteller"]);
   const isKnown=KNOWN_BRANDS.includes(currentHersteller);
@@ -6695,7 +6731,7 @@ function closeAddWkrModal(){ document.getElementById("addWkrModal").classList.re
 function closeEditWkrModal(){ document.getElementById("editWkrModal").classList.remove("open"); editingWkrTN=""; }
 function openEditWkrModal(tn){
   const row = produkte.find(p => clean(p["TN"]) === clean(tn));
-  if(!row) { alert("WKR nicht gefunden."); return; }
+  if(!row) { showToast("WKR nicht gefunden.", "info", 4000); return; }
   
   editingWkrTN = clean(row["TN"]);
   
@@ -6890,8 +6926,7 @@ async function saveEditedWkr(){
       await postToScript({ action: "appendRow", sheet: "Zuordnung", row: mapUpdates });
     }
 
-    alert("WKR und Zuordnung erfolgreich aktualisiert.");
-    
+showToast("WKR und Zuordnung erfolgreich aktualisiert.", "success");    
     // Lokal aktualisieren
     const idx = produkte.findIndex(p => clean(p["TN"]) === editingWkrTN);
     if(idx !== -1) produkte[idx] = Object.assign(produkte[idx], updates);
@@ -6899,7 +6934,7 @@ async function saveEditedWkr(){
     closeEditWkrModal();
     render();
   } catch(err) {
-    alert("Fehler: " + err.message);
+showToast("Fehler: " + err.message, "error", 5000);
   }
 }
 /* ============================================================
@@ -6927,10 +6962,11 @@ async function saveNewTire(){
   const bemerkung=clean(document.getElementById("newTireBemerkung").value);
   const bemSichtbar=clean(document.getElementById("newTireBemerkungSichtbar").value);
   const bild=getTireImage(hersteller,reifentyp);
-  if(!standort||!reifentyp||!hersteller||!profil||!pb||!qs||!zl||!tn||!anzahl||!vkpreis||!aktiv){alert("Bitte alle Pflichtfelder ausfüllen.");return;}
+  if(!standort||!reifentyp||!hersteller||!profil||!pb||!qs||!zl||!tn||!anzahl||!vkpreis||!aktiv){showToast("Bitte alle Pflichtfelder ausfüllen.", "warning", 4000);
+return;}
   _saving.newTire=true;
   const newRow={"Standort":standort,"Reifentyp":reifentyp,"Hersteller":hersteller,"Profil":profil,"Profilbreite":pb,"Querschnitt":qs,"Zoll":zl,"Lastindex":lastindex,"Geschwindigkeitsindex":gi,"Runflat":runflat,"DOT":dot,"Teilenummer":tn,"Anzahl":anzahl,"EK Preis":ekpreis,"VK Preis":vkpreis,"Bild":bild,"Aktiv":aktiv,"Bemerkung":bemerkung,"Bemerkung sichtbar":bemSichtbar};
-  try{const res=await postToScript({action:"addRow",sheet:"Reifen",row:newRow});if(res&&res.status==="OK"){if(res.id)newRow.ID=res.id;reifen.push(newRow);alert("Reifen gespeichert.");closeAddTireModal();render();if(newRow.ID)printTireLabel(newRow.ID);}else{alert("Fehler: "+JSON.stringify(res));}}catch(err){alert("Fehler: "+err.message);}finally{_saving.newTire=false;}
+  try{const res=await postToScript({action:"addRow",sheet:"Reifen",row:newRow});if(res&&res.status==="OK"){if(res.id)newRow.ID=res.id;reifen.push(newRow);showToast("Reifen gespeichert.", "success");closeAddTireModal();render();if(newRow.ID)printTireLabel(newRow.ID);}else{alert("Fehler: "+JSON.stringify(res));}}catch(err){alert("Fehler: "+err.message);}finally{_saving.newTire=false;}
 }
 async function saveEditedTire(){
   if(_saving.editTire)return;
@@ -6958,7 +6994,7 @@ async function saveEditedTire(){
   if(!standort||!reifentyp||!hersteller||!profil||!pb||!qs||!zl||!tn||!anzahl||!vkpreis||!aktiv){alert("Bitte alle Pflichtfelder ausfüllen.");return;}
   _saving.editTire=true;
   const updates={"Standort":standort,"Reifentyp":reifentyp,"Hersteller":hersteller,"Profil":profil,"Profilbreite":pb,"Querschnitt":qs,"Zoll":zl,"Lastindex":lastindex,"Geschwindigkeitsindex":gi,"Runflat":runflat,"DOT":dot,"Teilenummer":tn,"Anzahl":anzahl,"EK Preis":ekpreis,"VK Preis":vkpreis,"Bild":bild,"Aktiv":aktiv,"Bemerkung":bemerkung,"Bemerkung sichtbar":bemSichtbar};
-  try{const res=await postToScript({sheet:"Reifen",keyField:"ID",keyValue:editingTireId,updates});if(res==="OK"||(res&&res.status==="OK")){const row=reifen.find(r=>clean(r["ID"])===clean(editingTireId));if(row)Object.assign(row,updates);alert("Reifen aktualisiert.");closeEditTireModal();render();}else{alert("Fehler: "+JSON.stringify(res));}}catch(err){alert("Fehler: "+err.message);}finally{_saving.editTire=false;}
+  try{const res=await postToScript({sheet:"Reifen",keyField:"ID",keyValue:editingTireId,updates});if(res==="OK"||(res&&res.status==="OK")){const row=reifen.find(r=>clean(r["ID"])===clean(editingTireId));if(row)Object.assign(row,updates);showToast("Reifen aktualisiert.", "success");closeEditTireModal();render();}else{alert("Fehler: "+JSON.stringify(res));}}catch(err){alert("Fehler: "+err.message);}finally{_saving.editTire=false;}
 }
 async function deleteTire(){
   if(_saving.deleteTire)return;
@@ -7881,7 +7917,7 @@ async function saveVoDetailChanges(){
       renderVororderDetail();
     }
   } catch(err) {
-    alert("Netzwerkfehler: " + err.message);
+showToast("Netzwerkfehler: " + err.message, "error", 5000);
     _voDetailEditMode = true;
     renderVororderDetail();
   }
@@ -9269,6 +9305,42 @@ async function startDatabaseMigration() {
     alert("Fehler bei der Migration: " + error.message);
     if(btn) btn.textContent = "❌ Fehler";
   }
+}
+   /* ============================================================
+   ESCAPE-TASTE: Schliesst offenes Modal
+   ============================================================ */
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Escape') return;
+  if (document.getElementById('vororderDetailModal')?.classList.contains('open')) { closeVororderDetail(); return; }
+  if (document.getElementById('positionModal')?.classList.contains('open'))       { closePositionModal(); return; }
+  if (document.getElementById('editWkrModal')?.classList.contains('open'))        { closeEditWkrModal(); return; }
+  if (document.getElementById('addWkrModal')?.classList.contains('open'))         { closeAddWkrModal(); return; }
+  if (document.getElementById('editTireModal')?.classList.contains('open'))       { closeEditTireModal(); return; }
+  if (document.getElementById('addTireModal')?.classList.contains('open'))        { closeAddTireModal(); return; }
+  if (document.getElementById('newVororderModal')?.classList.contains('open'))    { closeNewVororderModal(); return; }
+  if (document.getElementById('inquiryModal')?.classList.contains('open'))        { closeInquiryModal(); return; }
+  if (document.getElementById('checkoutModal')?.classList.contains('open'))       { closeCheckoutModal(); return; }
+  if (document.getElementById('cartModal')?.classList.contains('open'))           { closeCartModal(); return; }
+  if (document.getElementById('adminLoginModal')?.classList.contains('open'))     { closeAdminLoginModal(); return; }
+  if (document.getElementById('reservationInfoModal')?.classList.contains('open')){ document.getElementById('reservationInfoModal').classList.remove('open'); return; }
+});
+   /* ============================================================
+   TOAST NOTIFICATIONS
+   ============================================================ */
+function showToast(msg, type, duration) {
+  type = type || 'info';
+  duration = duration || 3500;
+  const icons = { success:'✅', error:'❌', warning:'⚠️', info:'ℹ️' };
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  toast.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span class="toast-msg">${msg}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add('removing');
+    setTimeout(() => toast.remove(), 280);
+  }, duration);
 }
 window.startDatabaseMigration = startDatabaseMigration;
 </script>
