@@ -4152,6 +4152,10 @@ function renderAdminSidebar(){
     </div>
     <div class="admin-nav-section">
       <div class="admin-nav-label">Tools</div>
+      <div class="admin-nav-label">Offerten</div>
+      <button class="admin-nav-item ${sec==="wkr_offerten"?"active":""}" onclick="selectAdminSection('wkr_offerten')">
+        <span class="nav-icon">📋</span>WKR-Offerten
+      </button>
       <button class="admin-nav-item ${sec==="inventur"?"active":""}" onclick="selectAdminSection('inventur')">
         <span class="nav-icon">📊</span> Inventur / Export
       </button>
@@ -4616,6 +4620,8 @@ function render(){
       if (!vororderLoaded && !vororderLoading) {
         loadVororder().then(() => render());
       }
+       } else if (state.adminSection === "wkr_offerten") {
+  contentHtml = `<div class="admin-content">${renderAdminWkrOfferten()}</div>`;
        } else if (state.adminSection === "inventur") {
       contentHtml = `<div class="admin-content">${renderAdminInventur()}</div>`;
     } else if (state.adminSection === "wkr_model") {
@@ -5570,6 +5576,21 @@ function renderAdminVororder(){
   }
 
   return html;
+}
+   function renderAdminWkrOfferten(){
+  return `
+  <div class="admin-content-header">
+    <div class="admin-content-title">WKR-Offerten</div>
+    <div class="admin-content-sub">Angebote für Kunden erstellen und versenden</div>
+  </div>
+  <div style="margin-bottom:20px;">
+    <button class="btn btn-primary" onclick="openNewWkrOfferteModal()">+ Neue WKR-Offerte</button>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:40px;text-align:center;color:var(--text-muted);">
+    <div style="font-size:48px;margin-bottom:12px;">📋</div>
+    <div style="font-size:16px;font-weight:600;margin-bottom:6px;">Noch keine Offerten vorhanden</div>
+    <div style="font-size:13px;">Erstelle eine neue WKR-Offerte über den Button oben.</div>
+  </div>`;
 }
 function renderAdminInventur(){
   return `<div class="admin-content-header">
