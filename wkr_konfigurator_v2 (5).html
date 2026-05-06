@@ -1806,14 +1806,17 @@ draw();
   }, {threshold:0.15});
   function init(){document.querySelectorAll(".fade-in-up").forEach(el=>obs.observe(el));}
   document.addEventListener("DOMContentLoaded",init);
-  const orig=window.render;
-  window.render=function(){if(orig)orig.apply(this,arguments);setTimeout(init,100);};
+  document.addEventListener("DOMContentLoaded",function(){
+    const _origRender=window.render;
+    window.render=function(){
+      if(_origRender)_origRender.apply(this,arguments);
+      setTimeout(init,100);
+    };
+  });
 })();
 </script>
 
-<!-- TOPBAR -->
-
-<!-- TOPBAR -->
+   <!-- TOPBAR -->
 <header class="topbar">
   <div class="topbar-inner">
     <div class="topbar-logo">
@@ -3275,7 +3278,7 @@ async function submitCheckout() {
   if (!name)    { alert("Bitte Name/Firma ausfüllen."); document.getElementById("ckName")?.focus();  return; }
   if (!email)   { alert("Bitte E-Mail ausfüllen.");      document.getElementById("ckEmail")?.focus(); return; }
   if (!phone)   { alert("Bitte Telefon ausfüllen.");     document.getElementById("ckPhone")?.focus(); return; }
-  if (!/^[^ ]+@[^ ]+\.[a-z]{2,}$/i.test(email)) { alert("Bitte eine gültige E-Mail-Adresse eingeben."); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(email)) { alert("Bitte eine gültige E-Mail-Adresse eingeben."); return; }
   if (!privacy) { alert("Bitte Datenschutzerklärung bestätigen."); document.getElementById("ckPrivacy")?.focus(); return; }
 
   let vehicleIdType = "", vehicleIdValue = "";
@@ -7067,12 +7070,7 @@ async function deleteWkr(){
   try{const res=await postToScript({action:"deleteRow",sheet:"Produkte",keyField:"TN",keyValue:editingWkrTN});if(res==="OK"||(res&&res.status==="OK")){produkte=produkte.filter(p=>clean(p["TN"])!==clean(editingWkrTN));alert("WKR gelöscht.");closeEditWkrModal();render();}else{alert("Fehler: "+JSON.stringify(res));}}catch(err){alert("Fehler: "+err.message);}finally{_saving.deleteWkr=false;}
 }
 
-/* ============================================================
-   API HELPER
-   ============================================================ */
-   /* ============================================================
-   USER INFO (aus Benutzer-Sheet)
-   ============================================================ */
+
    /* ============================================================
    VORORDER: Laden + Helpers
    ============================================================ */
@@ -8920,7 +8918,6 @@ async function loadCustomerToken(token){
     alert("Fehler beim Laden des Links. Bitte nochmal versuchen.");
   }
 }
-loadFromUrl();
 initTheme();
 loadCartFromStorage();
 updateCartBar();
