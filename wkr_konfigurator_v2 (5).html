@@ -5479,9 +5479,32 @@ function renderAdminVororder(){
     // Klasse "responsive-table" hinzugefügt!
     html += `<div style="margin-top:14px;">
       <table class="responsive-table" style="width:100%;border-collapse:collapse;font-size:13px;">
-        <thead>
+     <thead>
+          <tr style="background:var(--surface-3);border-bottom:2px solid var(--border);">
+  ${adminMode ? `<th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">ID</th>` : ""}
+  <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Status</th>
+  <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Kunde</th>
+  <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Fahrzeug</th>
+  ${adminMode ? `<th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Typ / TN</th>` : ""}
+  <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Verkäufer</th>
+  ${adminMode ? `<th style="padding:8px 12px;text-align:center;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Anz.</th>` : ""}
+  <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Ablieferung</th>
+  ${isSuperAdmin ? `<th style="padding:8px 12px;text-align:center;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Standort</th>` : ""}
+  <th></th>
+          </tr>
           <tr style="background:var(--surface-2);">
   ${adminMode ? `<td style="padding:4px 8px;"><input type="text" placeholder="🔍 ID" value="${e(vororderFilter.suche)}" onchange="vororderFilter.suche=this.value;render();" style="width:100%;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td>` : ""}
+  <td></td>
+  <td style="padding:4px 8px;"><input type="text" placeholder="🔍 Kunde" value="${e(vororderFilter.suche)}" onchange="vororderFilter.suche=this.value;render();" style="width:100%;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td>
+  <td style="padding:4px 8px;"><input type="text" placeholder="🔍 Fahrzeug" value="${e(vororderFilter.suche)}" onchange="vororderFilter.suche=this.value;render();" style="width:100%;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td>
+  ${adminMode ? `<td style="padding:4px 8px;"><input type="text" placeholder="🔍 TN" value="${e(vororderFilter.suche)}" onchange="vororderFilter.suche=this.value;render();" style="width:100%;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td>` : ""}
+  <td style="padding:4px 8px;"><input type="text" placeholder="🔍 Verkäufer" value="${e(vororderFilter.suche)}" onchange="vororderFilter.suche=this.value;render();" style="width:100%;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td>
+  ${adminMode ? `<td></td>` : ""}
+  <td></td>
+  ${isSuperAdmin ? `<td></td>` : ""}
+  <td style="padding:4px 8px;text-align:right;"><button class="btn btn-secondary btn-sm" onclick="vororderFilter.suche='';render();" style="font-size:10px;padding:3px 8px;">Reset</button></td>
+</tr>
+        </thead> value="${e(vororderFilter.suche)}" onchange="vororderFilter.suche=this.value;render();" style="width:100%;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td>` : ""}
   <td></td>
   <td style="padding:4px 8px;"><input type="text" placeholder="🔍 Kunde" value="${e(vororderFilter.suche)}" onchange="vororderFilter.suche=this.value;render();" style="width:100%;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td>
   <td style="padding:4px 8px;"><input type="text" placeholder="🔍 Fahrzeug" value="${e(vororderFilter.suche)}" onchange="vororderFilter.suche=this.value;render();" style="width:100%;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;"></td>
@@ -6684,8 +6707,7 @@ function toggleNewTireOtherBrand(){ const sel=document.getElementById("newTireHe
 function toggleEditTireOtherBrand(){ const sel=document.getElementById("editTireHerstellerSelect"); document.getElementById("editTireHerstellerOtherWrap").style.display=sel?.value==="Andere"?"block":"none"; }
 function openEditTireModal(rowId){
   const tire=reifen.find(r=>clean(r["ID"])===clean(rowId));
-  if(!tire)showToast("Reifen nicht gefunden.", "info", 4000);
-return;}
+   if(!tire){ showToast("Reifen nicht gefunden.", "info", 4000); return; }
   editingTireId=clean(rowId);
   const currentHersteller=clean(tire["Hersteller"]);
   const isKnown=KNOWN_BRANDS.includes(currentHersteller);
