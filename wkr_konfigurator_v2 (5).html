@@ -9269,6 +9269,24 @@ async function startDatabaseMigration() {
     if(btn) btn.textContent = "❌ Fehler";
   }
 }
+   /* ============================================================
+   ESCAPE-TASTE: Schliesst offenes Modal
+   ============================================================ */
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Escape') return;
+  if (document.getElementById('vororderDetailModal')?.classList.contains('open')) { closeVororderDetail(); return; }
+  if (document.getElementById('positionModal')?.classList.contains('open'))       { closePositionModal(); return; }
+  if (document.getElementById('editWkrModal')?.classList.contains('open'))        { closeEditWkrModal(); return; }
+  if (document.getElementById('addWkrModal')?.classList.contains('open'))         { closeAddWkrModal(); return; }
+  if (document.getElementById('editTireModal')?.classList.contains('open'))       { closeEditTireModal(); return; }
+  if (document.getElementById('addTireModal')?.classList.contains('open'))        { closeAddTireModal(); return; }
+  if (document.getElementById('newVororderModal')?.classList.contains('open'))    { closeNewVororderModal(); return; }
+  if (document.getElementById('inquiryModal')?.classList.contains('open'))        { closeInquiryModal(); return; }
+  if (document.getElementById('checkoutModal')?.classList.contains('open'))       { closeCheckoutModal(); return; }
+  if (document.getElementById('cartModal')?.classList.contains('open'))           { closeCartModal(); return; }
+  if (document.getElementById('adminLoginModal')?.classList.contains('open'))     { closeAdminLoginModal(); return; }
+  if (document.getElementById('reservationInfoModal')?.classList.contains('open')){ document.getElementById('reservationInfoModal').classList.remove('open'); return; }
+});
 window.startDatabaseMigration = startDatabaseMigration;
 </script>
 </body>
