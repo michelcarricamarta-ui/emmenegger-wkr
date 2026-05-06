@@ -4151,11 +4151,14 @@ function renderAdminSidebar(){
       </button>
     </div>
     <div class="admin-nav-section">
-      <div class="admin-nav-label">Tools</div>
       <div class="admin-nav-label">Offerten</div>
       <button class="admin-nav-item ${sec==="wkr_offerten"?"active":""}" onclick="selectAdminSection('wkr_offerten')">
-        <span class="nav-icon">📋</span>WKR-Offerten
+        <span class="nav-icon">📄</span> WKR-Offerten
       </button>
+    </div>
+
+    <div class="admin-nav-section">
+      <div class="admin-nav-label">Tools</div>
       <button class="admin-nav-item ${sec==="inventur"?"active":""}" onclick="selectAdminSection('inventur')">
         <span class="nav-icon">📊</span> Inventur / Export
       </button>
