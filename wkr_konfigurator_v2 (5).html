@@ -2981,7 +2981,7 @@ function getCartTotal(){
 function handleAddToCartMisch(tnVA, tnHA){
   const va = produkte.find(p => clean(p["TN"]) === clean(tnVA));
   const ha = produkte.find(p => clean(p["TN"]) === clean(tnHA));
-  if(!va || !ha){ alert("Produkt nicht gefunden."); return; }
+  if(!va || !ha){ showToast("Produkt nicht gefunden.", "warning", 4000); return; }
   const mischTN = `${tnVA}_${tnHA}`;
   const result = addToCart({
     tn: mischTN,
@@ -3361,7 +3361,7 @@ async function submitCheckout() {
       closeCheckoutModal();
       showCheckoutThankYou();
     } else {
-      alert("Fehler: " + (res && res.message ? res.message : JSON.stringify(res)));
+     showToast("Fehler beim Senden.", "error", 5000);
     }
   } catch (err) {
     alert("Netzwerkfehler: " + err.message);
@@ -5974,7 +5974,7 @@ window.saveLagerBestellungBatch = async function(updates) {
       if (hasError) {
           alert("❌ Fehler beim Speichern im Google Sheet!\n\nServer-Antwort: " + errorMessage + "\n\n(Tipp: Heisst die neue Spalte im Google Sheet exakt 'Lager_Bestellung'?)");
       } else {
-          alert("✅ Lager-Bestellungen erfolgreich im Google Sheet gespeichert!");
+         showToast("Lager-Bestellungen gespeichert.", "success");
       }
   } catch(e) {
 showToast("Skript-Fehler: " + e.message, "error", 5000);
@@ -6832,7 +6832,7 @@ async function saveEditedWkr(){
   const modell = clean(document.getElementById("editWkrModell").value);
   const motor = clean(document.getElementById("editWkrMotor").value);
 
-  if(!marke || !tn) { alert("Marke und TN sind Pflichtfelder."); return; }
+  if(!marke || !tn) { showToast("Marke und TN sind Pflichtfelder.", "warning", 4000); return; }
 
   const editIsMisch = document.getElementById("editWkrIsMisch")?.checked;
   const updates = {
@@ -6981,7 +6981,7 @@ async function saveEditedTire(){
   const bemerkung=clean(document.getElementById("editTireBemerkung").value);
   const bemSichtbar=clean(document.getElementById("editTireBemerkungSichtbar").value);
   const bild=getTireImage(hersteller,reifentyp);
-  if(!standort||!reifentyp||!hersteller||!profil||!pb||!qs||!zl||!tn||!anzahl||!vkpreis||!aktiv){alert("Bitte alle Pflichtfelder ausfüllen.");return;}
+  if(!standort||!reifentyp||!hersteller||!profil||!pb||!qs||!zl||!tn||!anzahl||!vkpreis||!aktiv){showToast("Bitte alle Pflichtfelder ausfüllen.", "warning", 4000);return;}
   _saving.editTire=true;
   const updates={"Standort":standort,"Reifentyp":reifentyp,"Hersteller":hersteller,"Profil":profil,"Profilbreite":pb,"Querschnitt":qs,"Zoll":zl,"Lastindex":lastindex,"Geschwindigkeitsindex":gi,"Runflat":runflat,"DOT":dot,"Teilenummer":tn,"Anzahl":anzahl,"EK Preis":ekpreis,"VK Preis":vkpreis,"Bild":bild,"Aktiv":aktiv,"Bemerkung":bemerkung,"Bemerkung sichtbar":bemSichtbar};
   try{const res=await postToScript({sheet:"Reifen",keyField:"ID",keyValue:editingTireId,updates});if(res==="OK"||(res&&res.status==="OK")){const row=reifen.find(r=>clean(r["ID"])===clean(editingTireId));if(row)Object.assign(row,updates);showToast("Reifen aktualisiert.", "success");closeEditTireModal();render();}else{alert("Fehler: "+JSON.stringify(res));}}catch(err){alert("Fehler: "+err.message);}finally{_saving.editTire=false;}
@@ -6991,7 +6991,7 @@ async function deleteTire(){
   if(!editingTireId)return;
   if(!confirm("Reifen wirklich löschen?"))return;
   _saving.deleteTire=true;
-  try{const res=await postToScript({action:"deleteRow",sheet:"Reifen",keyField:"ID",keyValue:editingTireId});if(res==="OK"||(res&&(res.status==="OK"||res==="OK"))){reifen=reifen.filter(r=>clean(r["ID"])!==clean(editingTireId));alert("Reifen gelöscht.");closeEditTireModal();render();}else{alert("Fehler: "+JSON.stringify(res));}}catch(err){alert("Fehler: "+err.message);}finally{_saving.deleteTire=false;}
+  try{const res=await postToScript({action:"deleteRow",sheet:"Reifen",keyField:"ID",keyValue:editingTireId});if(res==="OK"||(res&&(res.status==="OK"||res==="OK"))){reifen=reifen.filter(r=>clean(r["ID"])!==clean(editingTireId));showToast("Reifen gelöscht.", "success");closeEditTireModal();render();}else{alert("Fehler: "+JSON.stringify(res));}}catch(err){alert("Fehler: "+err.message);}finally{_saving.deleteTire=false;}
 }
 
 /* ============================================================
@@ -7124,8 +7124,8 @@ async function saveNewWkr(){
 
     } else {
       const tn = clean(document.getElementById("newWkrTN").value);
-      if(!tn){alert("Teilenummer ausfüllen.");return;}
-      if(produkte.some(p=>clean(p["TN"])===tn)){alert("TN existiert bereits.");return;}
+      if(!tn){showToast("Teilenummer ausfüllen.", "warning", 4000);return;}
+      if(produkte.some(p=>clean(p["TN"])===tn)){showToast("TN existiert bereits.", "warning", 4000);return;}
 
       const prodRow = {...gemeinsam,"TN":tn,"Achse":"","Mischset_ID":"","Dimension":clean(document.getElementById("newWkrDimension").value)};
       const mapRow = {"Marke":marke,"Reihe":reihe,"Modell":modell,"Motor":motor,"TN":tn};
@@ -7134,13 +7134,13 @@ async function saveNewWkr(){
       await postToScript({action:"appendRow",sheet:"Zuordnung",row:mapRow});
 
       produkte.push(prodRow); mapping.push(mapRow);
-      alert("WKR gespeichert! Das Rad ist nun im Konfigurator sichtbar.");
+      showToast("WKR gespeichert.", "success");
     }
 
     closeAddWkrModal();
     render();
   } catch(err){
-    alert("Fehler beim Speichern: " + err.message);
+    showToast("Fehler beim Speichern: " + err.message, "error", 5000);
   } finally {
     _saving.newWkr = false;
   }
@@ -7152,7 +7152,7 @@ async function deleteWkr(){
   if(!editingWkrTN)return;
   if(!confirm("WKR wirklich löschen?"))return;
   _saving.deleteWkr=true;
-  try{const res=await postToScript({action:"deleteRow",sheet:"Produkte",keyField:"TN",keyValue:editingWkrTN});if(res==="OK"||(res&&res.status==="OK")){produkte=produkte.filter(p=>clean(p["TN"])!==clean(editingWkrTN));alert("WKR gelöscht.");closeEditWkrModal();render();}else{alert("Fehler: "+JSON.stringify(res));}}catch(err){alert("Fehler: "+err.message);}finally{_saving.deleteWkr=false;}
+  try{const res=await postToScript({action:"deleteRow",sheet:"Produkte",keyField:"TN",keyValue:editingWkrTN});if(res==="OK"||(res&&res.status==="OK")){produkte=produkte.filter(p=>clean(p["TN"])!==clean(editingWkrTN));showToast("WKR gelöscht.", "success");closeEditWkrModal();render();}else{alert("Fehler: "+JSON.stringify(res));}}catch(err){alert("Fehler: "+err.message);}finally{_saving.deleteWkr=false;}
 }
 
 
@@ -7425,10 +7425,10 @@ async function saveNewVororder(){
         setTimeout(() => openVororderDetail(newVoId), 100);
       }
     } else {
-      alert("Fehler: " + JSON.stringify(res));
+     showToast("Fehler beim Speichern.", "error", 5000);
     }
   } catch(err) {
-    alert("Fehler: " + err.message);
+    showToast("Fehler: " + err.message, "error", 5000);
   } finally {
     _vororderSaving = false;
   }
@@ -7585,7 +7585,7 @@ function renderVororderDetail(){
 }
 async function deleteVororder(id){
   const vo = vororder.find(v => clean(v["ID"]) === clean(id));
-  if (!vo) { alert("Vororder nicht gefunden."); return; }
+  if (!vo) { showToast("Vororder nicht gefunden.", "warning", 4000); return; }
 
   const kunde = clean(vo["Kundenname"]) || "(kein Name)";
   const positionenCount = (positionenMap[id] || []).length;
@@ -7632,7 +7632,7 @@ async function saveVororderStatus(id){
   if (!newStatus) return;
   const vo = vororder.find(v => clean(v["ID"]) === clean(id));
   if (!vo) return;
-  if (clean(vo["Status"]) === newStatus) { alert("Status ist bereits " + newStatus); return; }
+  if (clean(vo["Status"]) === newStatus) { showToast("Status ist bereits " + newStatus, "warning", 4000); return; }
 
   // Auftragsnummer-Pflicht bei "Erledigt"
   if (newStatus === "Erledigt" && !clean(vo["Auftrag"])) {
@@ -7812,7 +7812,7 @@ async function submitInternalMail() {
     });
 
     if (res && res.status === "OK") {
-      alert("✅ E-Mail wurde erfolgreich versendet.");
+      showToast("E-Mail wurde versendet.", "success");
       closeInternalMailModal();
       
       // Status automatisch auf "Offeriert" setzen
@@ -7991,7 +7991,7 @@ function openNewPositionModal(voId){
 function openEditPositionModal(posId){
   const positionen = Object.values(positionenMap).flat();
   const pos = positionen.find(p => clean(p["PositionID"]) === clean(posId));
-  if (!pos) { alert("Position nicht gefunden."); return; }
+  if (!pos) { showToast("Position nicht gefunden.", "warning", 4000); return; }
   _posEditMode = { posId: posId, voId: clean(pos["VororderID"]) };
 
   document.getElementById("positionModalTitle").textContent = "Position bearbeiten";
