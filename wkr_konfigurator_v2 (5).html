@@ -7372,72 +7372,96 @@ async function reloadVororder(){
    WKR OFFERTEN
    ============================================================ */
 let offertePositionen = []; // Positionen der aktuellen Offerte
-   function previewWkrOfferte() {
-  const kundenname = clean(document.getElementById("ofKundenname").value);
-  const email = clean(document.getElementById("ofEmail").value);
-  const fahrzeug = clean(document.getElementById("ofFahrzeug").value);
-  const fin = clean(document.getElementById("ofFIN").value);
+  function previewWkrOfferte() {
+  const kundenname     = clean(document.getElementById("ofKundenname").value);
+  const email          = clean(document.getElementById("ofEmail").value);
+  const fahrzeug       = clean(document.getElementById("ofFahrzeug").value);
+  const fin            = clean(document.getElementById("ofFIN").value);
   const kontrollschild = clean(document.getElementById("ofKontrollschild").value);
-  const verkaeufer = clean(document.getElementById("ofVerkaeufer").value);
-  const nachricht = clean(document.getElementById("ofNachricht").value);
-  const gueltigBis = clean(document.getElementById("ofGueltigBis").value);
+  const verkaeufer     = clean(document.getElementById("ofVerkaeufer").value);
+  const nachricht      = clean(document.getElementById("ofNachricht").value);
+  const gueltigBis     = clean(document.getElementById("ofGueltigBis").value);
 
   if (!kundenname || !email) {
-    showToast("Bitte Kundenname und E-Mail ausfüllen.", "warning", 4000);
-    return;
+    showToast("Bitte Kundenname und E-Mail ausfüllen.", "warning", 4000); return;
   }
   if (!offertePositionen.length) {
-    showToast("Bitte mindestens eine Position hinzufügen.", "warning", 4000);
-    return;
+    showToast("Bitte mindestens eine Position hinzufügen.", "warning", 4000); return;
   }
 
   const today = new Date().toLocaleDateString("de-CH");
   const gueltigFormatted = gueltigBis
-    ? new Date(gueltigBis).toLocaleDateString("de-CH")
-    : "—";
-
- const total = offertePositionen.reduce((sum, p) => {
-  let n = parseFloat((p.preis || "").replace(/[^0-9.]/g, ""));
-  if (isFinite(n) && p.rabatt) {
-    const pct = parseFloat(p.rabatt.replace(/[^0-9.]/g, ""));
-    if (isFinite(pct) && pct > 0) n = n * (1 - pct / 100);
-  }
-  return sum + (isFinite(n) ? n : 0);
-}, 0);
+    ? new Date(gueltigBis).toLocaleDateString("de-CH") : "—";
+  const mehrerePositionen = offertePositionen.length > 1;
 
   const posHtml = offertePositionen.map((p, i) => {
-   const preisNum = parseFloat((p.preis || "").replace(/[^0-9.]/g, ""));
-let endpreis = preisNum;
-let rabattHtml = "";
-if (p.rabatt) {
-  const pct = parseFloat(p.rabatt.replace(/[^0-9.]/g, ""));
-  if (isFinite(pct) && pct > 0 && isFinite(preisNum)) {
-    endpreis = preisNum * (1 - pct / 100);
-    rabattHtml = `<div style="font-size:11px;color:#d97706;font-weight:700;">
-      Rabatt ${e(p.rabatt)}: <span style="text-decoration:line-through;color:#999;">${preisNum.toLocaleString("de-CH",{minimumFractionDigits:2})} CHF</span>
-    </div>`;
-  } else {
-    rabattHtml = `<div style="font-size:11px;color:#d97706;font-weight:700;">Rabatt: ${e(p.rabatt)}</div>`;
-  }
-}
-const preisFormatted = isFinite(endpreis)
-  ? endpreis.toLocaleString("de-CH", {minimumFractionDigits: 2}) + " CHF"
-  : "auf Anfrage";
+    const preisNum = parseFloat((p.preis || "").replace(/[^0-9.]/g, ""));
+    let endpreis = preisNum;
+    let rabattHtml = "";
+
+    if (p.rabatt) {
+      const pct = parseFloat(p.rabatt.replace(/[^0-9.]/g, ""));
+      if (isFinite(pct) && pct > 0 && isFinite(preisNum)) {
+        endpreis = preisNum * (1 - pct / 100);
+        rabattHtml = `
+          <div style="font-size:12px;color:#999;text-decoration:line-through;margin-top:2px;">
+            ${preisNum.toLocaleString("de-CH", {minimumFractionDigits:2})} CHF
+          </div>
+          <div style="font-size:11px;color:#d97706;font-weight:700;">− ${pct}% Rabatt</div>`;
+      } else {
+        rabattHtml = `<div style="font-size:11px;color:#d97706;font-weight:700;">Rabatt: ${e(p.rabatt)}</div>`;
+      }
+    }
+
+    const preisFormatted = isFinite(endpreis)
+      ? endpreis.toLocaleString("de-CH", {minimumFractionDigits:2}) + " CHF"
+      : "auf Anfrage";
+
     return `
       <tr>
-   <td style="padding:12px 8px;border-bottom:1px solid #eee;width:120px;">   
-</td>
-        <td style="padding:12px 8px;border-bottom:1px solid #eee;">
-          <div style="font-weight:700;font-size:14px;">${e(p.bezeichnung)}</div>
-          ${p.tn ? `<div style="font-size:11px;color:#666;font-family:monospace;">TN: ${e(p.tn)}</div>` : ""}
-          ${p.dimension ? `<div style="font-size:12px;color:#555;">${e(p.dimension)}</div>` : ""}
-          ${rabattHtml}
-          ${p.euLabel ? `<a href="${e(p.euLabel)}" target="_blank" style="font-size:11px;color:#1c69d4;">EU-Reifenlabel ansehen</a>` : ""}
+        <td style="padding:14px 10px;border-bottom:1px solid #eee;width:130px;vertical-align:top;">
+          ${p.foto
+            ? `<img src="${e(p.foto)}" style="width:120px;height:100px;object-fit:contain;border-radius:6px;background:#f5f5f5;padding:6px;display:block;">`
+            : `<div style="width:120px;height:100px;background:#f5f5f5;border-radius:6px;"></div>`}
         </td>
-        <td style="padding:12px 8px;border-bottom:1px solid #eee;text-align:center;font-weight:700;">${p.anzahl}</td>
-        <td style="padding:12px 8px;border-bottom:1px solid #eee;text-align:right;font-weight:700;color:#1c69d4;font-size:15px;">${preisFormatted}</td>
+        <td style="padding:14px 10px;border-bottom:1px solid #eee;vertical-align:top;">
+          <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${e(p.bezeichnung)}</div>
+          ${p.tn ? `<div style="font-size:11px;color:#888;font-family:monospace;margin-bottom:2px;">TN: ${e(p.tn)}</div>` : ""}
+          ${p.dimension ? `<div style="font-size:13px;color:#555;margin-bottom:4px;">${e(p.dimension)}</div>` : ""}
+          ${p.euLabel ? `<a href="${e(p.euLabel)}" target="_blank" style="font-size:11px;color:#1c69d4;text-decoration:none;">🔗 EU-Reifenlabel ansehen</a>` : ""}
+        </td>
+        <td style="padding:14px 10px;border-bottom:1px solid #eee;text-align:center;vertical-align:top;font-weight:700;font-size:15px;">${p.anzahl}</td>
+        <td style="padding:14px 10px;border-bottom:1px solid #eee;text-align:right;vertical-align:top;">
+          <div style="font-weight:700;font-size:16px;color:#1c69d4;">${preisFormatted}</div>
+          <div style="font-size:10px;color:#888;">inkl. MwSt.</div>
+          ${rabattHtml}
+        </td>
       </tr>`;
   }).join("");
+
+  // Footer: bei mehreren Positionen KEIN Gesamtbetrag
+  const footerHtml = mehrerePositionen
+    ? `<div style="background:#fffbeb;border-left:4px solid #d97706;padding:14px 18px;margin-top:14px;border-radius:0 6px 6px 0;">
+        <div style="font-weight:700;color:#92400e;margin-bottom:4px;">💡 Bitte wählen Sie einen Satz</div>
+        <div style="font-size:13px;color:#555;">Oben sehen Sie ${offertePositionen.length} verschiedene Angebote. Der Preis gilt jeweils für einen kompletten Satz (4 Räder). Teilen Sie uns Ihre Wahl mit — wir bestätigen umgehend.</div>
+       </div>`
+    : (() => {
+        const total = offertePositionen.reduce((sum, p) => {
+          let n = parseFloat((p.preis || "").replace(/[^0-9.]/g, ""));
+          if (isFinite(n) && p.rabatt) {
+            const pct = parseFloat(p.rabatt.replace(/[^0-9.]/g, ""));
+            if (isFinite(pct) && pct > 0) n = n * (1 - pct / 100);
+          }
+          return sum + (isFinite(n) ? n : 0);
+        }, 0);
+        return `<div style="background:#f0f5ff;border-left:4px solid #1c69d4;padding:14px 18px;margin-top:14px;display:flex;justify-content:space-between;align-items:center;border-radius:0 6px 6px 0;">
+          <div>
+            <div style="font-size:12px;color:#555;">Gesamtbetrag (1 Satz, 4 Räder)</div>
+            <div style="font-size:11px;color:#888;">inkl. MwSt. · Preisänderungen vorbehalten</div>
+          </div>
+          <div style="font-size:26px;font-weight:700;color:#1c69d4;">${total > 0 ? "CHF " + total.toLocaleString("de-CH", {minimumFractionDigits:2}) : "auf Anfrage"}</div>
+        </div>`;
+      })();
 
   const w = window.open("", "_blank");
   if (!w) { showToast("Popup blockiert. Bitte erlauben.", "warning", 4000); return; }
@@ -7448,29 +7472,32 @@ const preisFormatted = isFinite(endpreis)
     body{font-family:Arial,sans-serif;color:#1a1a1a;padding:40px;background:white;margin:0;}
     .wrap{max-width:860px;margin:0 auto;}
     .hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1c69d4;padding-bottom:20px;margin-bottom:28px;}
-    .hdr img{height:38px;width:auto;}
+    .hdr img{height:40px;width:auto;}
     .hdr-right h1{margin:0 0 4px;font-size:24px;color:#1c69d4;}
-    .hdr-right .meta{font-size:12px;color:#666;line-height:1.6;}
+    .hdr-right .meta{font-size:12px;color:#666;line-height:1.8;}
     .section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#1c69d4;margin:20px 0 8px;padding-bottom:4px;border-bottom:1px solid #ddd;}
     table.info{width:100%;border-collapse:collapse;margin-bottom:8px;}
     table.info td{padding:5px 0;font-size:13px;vertical-align:top;}
     table.info td:first-child{width:160px;font-weight:700;color:#555;}
     table.pos{width:100%;border-collapse:collapse;}
-    table.pos th{background:#f0f5ff;padding:10px 8px;text-align:left;font-size:11px;color:#555;text-transform:uppercase;letter-spacing:0.5px;}
+    table.pos th{background:#f0f5ff;padding:10px;text-align:left;font-size:11px;color:#555;text-transform:uppercase;letter-spacing:0.5px;}
     table.pos th:last-child{text-align:right;}
     table.pos th:nth-child(3){text-align:center;}
-    .total-box{background:#f0f5ff;border-left:4px solid #1c69d4;padding:14px 18px;margin-top:14px;display:flex;justify-content:space-between;align-items:center;border-radius:0 6px 6px 0;}
-    .total-box .lbl{font-size:12px;color:#555;}
-    .total-box .val{font-size:24px;font-weight:700;color:#1c69d4;}
     .nachricht{background:#fffbeb;border-left:3px solid #d97706;padding:12px 16px;border-radius:0 6px 6px 0;font-size:13px;line-height:1.6;white-space:pre-line;margin-top:16px;}
     .gueltig{background:#f0fdf4;border-left:3px solid #16a34a;padding:10px 16px;border-radius:0 6px 6px 0;font-size:13px;margin-top:10px;}
     .footer{margin-top:36px;padding-top:16px;border-top:1px solid #ccc;font-size:11px;color:#888;text-align:center;line-height:1.7;}
-    .actions{text-align:center;margin:24px 0;}
-    .actions button{background:#1c69d4;color:white;border:none;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;border-radius:6px;margin:0 6px;}
-    .actions button.sec{background:#666;}
-    @media print{.actions{display:none;}body{padding:15mm;}}
+    .actions{text-align:center;margin:28px 0 10px;}
+    .actions button{background:#1c69d4;color:white;border:none;padding:12px 28px;font-size:14px;font-weight:700;cursor:pointer;border-radius:6px;margin:0 6px;}
+    .actions button.sec{background:#6b7280;}
+    @media print{.actions{display:none !important;}body{padding:12mm;}}
   </style></head><body>
   <div class="wrap">
+
+    <div class="actions">
+      <button onclick="window.print()">🖨️ Als PDF speichern / Drucken</button>
+      <button class="sec" onclick="window.close()">✕ Schliessen</button>
+    </div>
+
     <div class="hdr">
       <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" alt="Emmenegger">
       <div class="hdr-right">
@@ -7492,26 +7519,22 @@ const preisFormatted = isFinite(endpreis)
       ${kontrollschild ? `<tr><td>Kontrollschild</td><td>${e(kontrollschild)}</td></tr>` : ""}
     </table>
 
-    <div class="section-title">Offerte</div>
+    <div class="section-title">
+      ${mehrerePositionen ? `Angebote (${offertePositionen.length} Varianten — bitte einen Satz wählen)` : "Offerte"}
+    </div>
     <table class="pos">
       <thead>
         <tr>
-          <th style="width:65px;"></th>
+          <th style="width:130px;"></th>
           <th>Produkt</th>
           <th style="text-align:center;width:60px;">Anz.</th>
-          <th style="text-align:right;width:130px;">Preis CHF</th>
+          <th style="text-align:right;width:150px;">Preis</th>
         </tr>
       </thead>
       <tbody>${posHtml}</tbody>
     </table>
 
-    <div class="total-box">
-      <div>
-        <div class="lbl">Gesamtbetrag (${offertePositionen.length} ${offertePositionen.length === 1 ? "Position" : "Positionen"})</div>
-        <div style="font-size:11px;color:#888;">inkl. MwSt. · Preisänderungen vorbehalten</div>
-      </div>
-      <div class="val">${total > 0 ? "CHF " + total.toLocaleString("de-CH", {minimumFractionDigits: 2}) : "auf Anfrage"}</div>
-    </div>
+    ${footerHtml}
 
     ${nachricht ? `<div class="nachricht"><b>Persönliche Nachricht:</b><br>${e(nachricht)}</div>` : ""}
 
@@ -7519,13 +7542,9 @@ const preisFormatted = isFinite(endpreis)
 
     <div class="footer">
       Emmenegger AG · BMW/MINI Händler · Gebenstorf &amp; Hettenschwil<br>
-      tv-g-fp@emmeneggerag.ch · Diese Offerte wurde über den WKR-Konfigurator erstellt.
+      tv-g-fp@emmeneggerag.ch
     </div>
 
-    <div class="actions">
-      <button onclick="window.print()">🖨️ Drucken / Als PDF speichern</button>
-      <button class="sec" onclick="window.close()">Schliessen</button>
-    </div>
   </div>
   </body></html>`);
   w.document.close();
