@@ -7372,6 +7372,151 @@ async function reloadVororder(){
    WKR OFFERTEN
    ============================================================ */
 let offertePositionen = []; // Positionen der aktuellen Offerte
+   function previewWkrOfferte() {
+  const kundenname = clean(document.getElementById("ofKundenname").value);
+  const email = clean(document.getElementById("ofEmail").value);
+  const fahrzeug = clean(document.getElementById("ofFahrzeug").value);
+  const fin = clean(document.getElementById("ofFIN").value);
+  const kontrollschild = clean(document.getElementById("ofKontrollschild").value);
+  const verkaeufer = clean(document.getElementById("ofVerkaeufer").value);
+  const nachricht = clean(document.getElementById("ofNachricht").value);
+  const gueltigBis = clean(document.getElementById("ofGueltigBis").value);
+
+  if (!kundenname || !email) {
+    showToast("Bitte Kundenname und E-Mail ausfüllen.", "warning", 4000);
+    return;
+  }
+  if (!offertePositionen.length) {
+    showToast("Bitte mindestens eine Position hinzufügen.", "warning", 4000);
+    return;
+  }
+
+  const today = new Date().toLocaleDateString("de-CH");
+  const gueltigFormatted = gueltigBis
+    ? new Date(gueltigBis).toLocaleDateString("de-CH")
+    : "—";
+
+  const total = offertePositionen.reduce((sum, p) => {
+    const n = parseFloat((p.preis || "").replace(/[^0-9.]/g, ""));
+    return sum + (isFinite(n) ? n : 0);
+  }, 0);
+
+  const posHtml = offertePositionen.map((p, i) => {
+    const preisNum = parseFloat((p.preis || "").replace(/[^0-9.]/g, ""));
+    const preisFormatted = isFinite(preisNum)
+      ? preisNum.toLocaleString("de-CH", {minimumFractionDigits: 2}) + " CHF"
+      : "auf Anfrage";
+    const rabattHtml = p.rabatt
+      ? `<div style="font-size:11px;color:#d97706;font-weight:700;">Rabatt: ${e(p.rabatt)}</div>`
+      : "";
+    return `
+      <tr>
+        <td style="padding:12px 8px;border-bottom:1px solid #eee;width:60px;">
+          ${p.foto ? `<img src="${e(p.foto)}" style="width:55px;height:55px;object-fit:contain;border-radius:4px;">` : ""}
+        </td>
+        <td style="padding:12px 8px;border-bottom:1px solid #eee;">
+          <div style="font-weight:700;font-size:14px;">${e(p.bezeichnung)}</div>
+          ${p.tn ? `<div style="font-size:11px;color:#666;font-family:monospace;">TN: ${e(p.tn)}</div>` : ""}
+          ${p.dimension ? `<div style="font-size:12px;color:#555;">${e(p.dimension)}</div>` : ""}
+          ${rabattHtml}
+          ${p.euLabel ? `<a href="${e(p.euLabel)}" target="_blank" style="font-size:11px;color:#1c69d4;">EU-Reifenlabel ansehen</a>` : ""}
+        </td>
+        <td style="padding:12px 8px;border-bottom:1px solid #eee;text-align:center;font-weight:700;">${p.anzahl}</td>
+        <td style="padding:12px 8px;border-bottom:1px solid #eee;text-align:right;font-weight:700;color:#1c69d4;font-size:15px;">${preisFormatted}</td>
+      </tr>`;
+  }).join("");
+
+  const w = window.open("", "_blank");
+  if (!w) { showToast("Popup blockiert. Bitte erlauben.", "warning", 4000); return; }
+
+  w.document.write(`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8">
+  <title>WKR-Offerte — ${e(kundenname)}</title>
+  <style>
+    body{font-family:Arial,sans-serif;color:#1a1a1a;padding:40px;background:white;margin:0;}
+    .wrap{max-width:860px;margin:0 auto;}
+    .hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1c69d4;padding-bottom:20px;margin-bottom:28px;}
+    .hdr img{height:38px;width:auto;}
+    .hdr-right h1{margin:0 0 4px;font-size:24px;color:#1c69d4;}
+    .hdr-right .meta{font-size:12px;color:#666;line-height:1.6;}
+    .section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#1c69d4;margin:20px 0 8px;padding-bottom:4px;border-bottom:1px solid #ddd;}
+    table.info{width:100%;border-collapse:collapse;margin-bottom:8px;}
+    table.info td{padding:5px 0;font-size:13px;vertical-align:top;}
+    table.info td:first-child{width:160px;font-weight:700;color:#555;}
+    table.pos{width:100%;border-collapse:collapse;}
+    table.pos th{background:#f0f5ff;padding:10px 8px;text-align:left;font-size:11px;color:#555;text-transform:uppercase;letter-spacing:0.5px;}
+    table.pos th:last-child{text-align:right;}
+    table.pos th:nth-child(3){text-align:center;}
+    .total-box{background:#f0f5ff;border-left:4px solid #1c69d4;padding:14px 18px;margin-top:14px;display:flex;justify-content:space-between;align-items:center;border-radius:0 6px 6px 0;}
+    .total-box .lbl{font-size:12px;color:#555;}
+    .total-box .val{font-size:24px;font-weight:700;color:#1c69d4;}
+    .nachricht{background:#fffbeb;border-left:3px solid #d97706;padding:12px 16px;border-radius:0 6px 6px 0;font-size:13px;line-height:1.6;white-space:pre-line;margin-top:16px;}
+    .gueltig{background:#f0fdf4;border-left:3px solid #16a34a;padding:10px 16px;border-radius:0 6px 6px 0;font-size:13px;margin-top:10px;}
+    .footer{margin-top:36px;padding-top:16px;border-top:1px solid #ccc;font-size:11px;color:#888;text-align:center;line-height:1.7;}
+    .actions{text-align:center;margin:24px 0;}
+    .actions button{background:#1c69d4;color:white;border:none;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;border-radius:6px;margin:0 6px;}
+    .actions button.sec{background:#666;}
+    @media print{.actions{display:none;}body{padding:15mm;}}
+  </style></head><body>
+  <div class="wrap">
+    <div class="hdr">
+      <img src="https://raw.githubusercontent.com/michelcarricamarta-ui/emmenegger-wkr/main/BMW_MINI_Emmenegger_rechtsbuendig_claim_rgb_pos.png" alt="Emmenegger">
+      <div class="hdr-right">
+        <h1>WKR-Offerte</h1>
+        <div class="meta">
+          Datum: <b>${today}</b><br>
+          Gültig bis: <b>${gueltigFormatted}</b><br>
+          ${verkaeufer ? `Ihr Ansprechpartner: <b>${e(verkaeufer)}</b>` : ""}
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Kunde</div>
+    <table class="info">
+      <tr><td>Name</td><td>${e(kundenname)}</td></tr>
+      <tr><td>E-Mail</td><td>${e(email)}</td></tr>
+      ${fahrzeug ? `<tr><td>Fahrzeug</td><td>${e(fahrzeug)}</td></tr>` : ""}
+      ${fin ? `<tr><td>FIN</td><td style="font-family:monospace;">${e(fin)}</td></tr>` : ""}
+      ${kontrollschild ? `<tr><td>Kontrollschild</td><td>${e(kontrollschild)}</td></tr>` : ""}
+    </table>
+
+    <div class="section-title">Offerte</div>
+    <table class="pos">
+      <thead>
+        <tr>
+          <th style="width:65px;"></th>
+          <th>Produkt</th>
+          <th style="text-align:center;width:60px;">Anz.</th>
+          <th style="text-align:right;width:130px;">Preis CHF</th>
+        </tr>
+      </thead>
+      <tbody>${posHtml}</tbody>
+    </table>
+
+    <div class="total-box">
+      <div>
+        <div class="lbl">Gesamtbetrag (${offertePositionen.length} ${offertePositionen.length === 1 ? "Position" : "Positionen"})</div>
+        <div style="font-size:11px;color:#888;">inkl. MwSt. · Preisänderungen vorbehalten</div>
+      </div>
+      <div class="val">${total > 0 ? "CHF " + total.toLocaleString("de-CH", {minimumFractionDigits: 2}) : "auf Anfrage"}</div>
+    </div>
+
+    ${nachricht ? `<div class="nachricht"><b>Persönliche Nachricht:</b><br>${e(nachricht)}</div>` : ""}
+
+    <div class="gueltig">✅ Diese Offerte ist gültig bis <b>${gueltigFormatted}</b>. Änderungen und Zwischenverkauf vorbehalten.</div>
+
+    <div class="footer">
+      Emmenegger AG · BMW/MINI Händler · Gebenstorf &amp; Hettenschwil<br>
+      tv-g-fp@emmeneggerag.ch · Diese Offerte wurde über den WKR-Konfigurator erstellt.
+    </div>
+
+    <div class="actions">
+      <button onclick="window.print()">🖨️ Drucken / Als PDF speichern</button>
+      <button class="sec" onclick="window.close()">Schliessen</button>
+    </div>
+  </div>
+  </body></html>`);
+  w.document.close();
+}
 let offerteVororderId = null; // Falls aus Vororder geöffnet
 
 function openNewWkrOfferteModal(vororderData) {
