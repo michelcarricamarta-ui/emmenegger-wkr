@@ -9671,8 +9671,8 @@ window.addEventListener('scroll', () => {
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
   
-  // 2. NEU: Firestore importieren (AKTUELLE VERSION 12.12.1)
-  import { getFirestore, collection, doc, setDoc, addDoc, writeBatch } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+  // 2. NEU: Firestore importieren (ERWEITERT um getDocs, updateDoc, deleteDoc)
+  import { getFirestore, collection, doc, setDoc, addDoc, writeBatch, getDocs, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
   // Deine bestehende Config
   const firebaseConfig = {
@@ -9688,9 +9688,17 @@ window.addEventListener('scroll', () => {
   // Firebase initialisieren
   const firebaseApp = initializeApp(firebaseConfig);
   const firebaseAuth = getAuth(firebaseApp);
-  
-  // 3. Firestore initialisieren
+
+  // Firestore Datenbank initialisieren
   const db = getFirestore(firebaseApp);
+
+  // --- WICHTIG: Hier machen wir die Befehle für die ganze Seite verfügbar ---
+  window.db = db;
+  window.getDocs = getDocs;
+  window.collection = collection;
+  window.addDoc = addDoc;
+  window.updateDoc = updateDoc;
+  window.doc = doc;
 
   // Auth-Funktionen global machen (wie bisher)
   window.firebaseAuth = firebaseAuth;
