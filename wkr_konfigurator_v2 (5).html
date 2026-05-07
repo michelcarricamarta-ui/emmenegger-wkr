@@ -5651,8 +5651,6 @@ function renderAdminVororder(){
       .then(snap => {
         const data = snap.docs.map(d => ({id: d.id, ...d.data()}));
         localStorage.setItem("wkr_offerten_cache", JSON.stringify(data));
-        offerten = data;
-        render();
       })
       .catch(e => console.error("Offerten laden:", e));
   }
