@@ -5651,6 +5651,11 @@ function renderAdminVororder(){
       .then(snap => {
         const data = snap.docs.map(d => ({id: d.id, ...d.data()}));
         localStorage.setItem("wkr_offerten_cache", JSON.stringify(data));
+        if (!window._offertenRendering) {
+          window._offertenRendering = true;
+          render();
+          setTimeout(() => { window._offertenRendering = false; }, 500);
+        }
       })
       .catch(e => console.error("Offerten laden:", e));
   }
@@ -7503,7 +7508,10 @@ const offerteRecord = {
   vororderId: offerteVororderId || ""
 };
 try {
-  await window.addDoc(window.collection(window.db, "wkr_offerten"), offerteRecord);
+  const docRef = await window.addDoc(window.collection(window.db, "wkr_offerten"), offerteRecord);
+  const cached = JSON.parse(localStorage.getItem("wkr_offerten_cache") || "[]");
+  cached.unshift({...offerteRecord, id: docRef.id});
+  localStorage.setItem("wkr_offerten_cache", JSON.stringify(cached));
 } catch(e) { console.error("Firestore Speicherfehler:", e); }
   const today = new Date().toLocaleDateString("de-CH");
   const gueltigFormatted = gueltigBis
