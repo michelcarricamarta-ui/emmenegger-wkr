@@ -5638,19 +5638,109 @@ function renderAdminVororder(){
   return html;
 }
    function renderAdminWkrOfferten(){
+  let offerten = [];
+  try {
+    offerten = JSON.parse(localStorage.getItem("wkr_offerten") || "[]");
+  } catch(e) {}
+function reopenOfferte(id) {
+  let offerten = [];
+  try { offerten = JSON.parse(localStorage.getItem("wkr_offerten") || "[]"); } catch(e) {}
+  const o = offerten.find(x => x.id === id);
+  if (!o) { showToast("Offerte nicht gefunden.", "warning", 3000); return; }
+  // Daten ins Modal laden und Vorschau öffnen
+  offertePositionen = JSON.parse(JSON.stringify(o.positionen || []));
+  offerteVororderId = o.vororderId || null;
+  document.getElementById("ofKundenname").value = o.kundenname || "";
+  document.getElementById("ofEmail").value = o.email || "";
+  document.getElementById("ofFahrzeug").value = o.fahrzeug || "";
+  document.getElementById("ofFIN").value = o.fin || "";
+  document.getElementById("ofKontrollschild").value = o.kontrollschild || "";
+  document.getElementById("ofVerkaeufer").value = o.verkaeufer || "";
+  document.getElementById("ofNachricht").value = o.nachricht || "";
+  document.getElementById("ofGueltigBis").value = o.gueltigBis || "";
+  previewWkrOfferte();
+}
+
+function deleteOfferte(id) {
+  if (!confirm("Offerte wirklich löschen?")) return;
+  try {
+    let offerten = JSON.parse(localStorage.getItem("wkr_offerten") || "[]");
+    offerten = offerten.filter(x => x.id !== id);
+    localStorage.setItem("wkr_offerten", JSON.stringify(offerten));
+    showToast("Offerte gelöscht.", "success", 3000);
+    render();
+  } catch(e) {}
+}
+  const leerHtml = `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:40px;text-align:center;color:var(--text-muted);">
+      <div style="font-size:48px;margin-bottom:12px;">📄</div>
+      <div style="font-size:16px;font-weight:600;margin-bottom:6px;">Noch keine Offerten vorhanden</div>
+      <div style="font-size:13px;">Erstelle eine neue WKR-Offerte über den Button oben.</div>
+    </div>`;
+
+  const listeHtml = offerten.length === 0 ? leerHtml : `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr style="background:var(--surface-3);">
+            <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">ID</th>
+            <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Datum</th>
+            <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Kunde</th>
+            <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Fahrzeug</th>
+            <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Positionen</th>
+            <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Gültig bis</th>
+            <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);">Verkäufer</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${offerten.map(o => {
+            const datum = new Date(o.datum).toLocaleDateString("de-CH");
+            const gueltig = o.gueltigBis
+              ? new Date(o.gueltigBis).toLocaleDateString("de-CH") : "—";
+            const isAbgelaufen = o.gueltigBis && new Date(o.gueltigBis) < new Date();
+            const posCount = (o.positionen || []).length;
+            return `<tr style="border-bottom:1px solid var(--border);transition:all 0.15s ease;cursor:pointer;border-left:3px solid transparent;"
+              onclick="reopenOfferte('${js(o.id)}')"
+              onmouseover="this.style.background='rgba(28,105,212,0.08)';this.style.borderLeftColor='var(--accent)';"
+              onmouseout="this.style.background='transparent';this.style.borderLeftColor='transparent';">
+              <td style="padding:12px 14px;font-family:monospace;font-size:11px;color:var(--text-muted);">${e(o.id)}</td>
+              <td style="padding:12px 14px;color:var(--text-secondary);">${datum}</td>
+              <td style="padding:12px 14px;">
+                <div style="font-weight:700;color:var(--text-primary);">${e(o.kundenname||"—")}</div>
+                ${o.email ? `<div style="font-size:11px;color:var(--text-muted);">${e(o.email)}</div>` : ""}
+              </td>
+              <td style="padding:12px 14px;color:var(--text-secondary);">${e(o.fahrzeug||"—")}</td>
+              <td style="padding:12px 14px;text-align:center;">
+                <span style="background:var(--surface-3);padding:2px 10px;border-radius:20px;font-size:12px;font-weight:700;">${posCount} WKR</span>
+              </td>
+              <td style="padding:12px 14px;">
+                <span style="font-weight:600;color:${isAbgelaufen ? "var(--error)" : "var(--success)"};">
+                  ${isAbgelaufen ? "⚠ " : "✓ "}${gueltig}
+                </span>
+              </td>
+              <td style="padding:12px 14px;color:var(--text-secondary);">${e(o.verkaeufer||"—")}</td>
+              <td style="padding:12px 14px;text-align:right;">
+                <button class="btn btn-danger btn-sm" style="font-size:11px;padding:4px 8px;"
+                  onclick="event.stopPropagation();deleteOfferte('${js(o.id)}')">🗑️</button>
+              </td>
+            </tr>`;
+          }).join("")}
+        </tbody>
+      </table>
+    </div>`;
+
   return `
-  <div class="admin-content-header">
-    <div class="admin-content-title">WKR-Offerten</div>
-    <div class="admin-content-sub">Angebote für Kunden erstellen und versenden</div>
-  </div>
-  <div style="margin-bottom:20px;">
-    <button class="btn btn-primary" onclick="openNewWkrOfferteModal()">+ Neue WKR-Offerte</button>
-  </div>
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:40px;text-align:center;color:var(--text-muted);">
-    <div style="font-size:48px;margin-bottom:12px;">📋</div>
-    <div style="font-size:16px;font-weight:600;margin-bottom:6px;">Noch keine Offerten vorhanden</div>
-    <div style="font-size:13px;">Erstelle eine neue WKR-Offerte über den Button oben.</div>
-  </div>`;
+    <div class="admin-content-header">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div class="admin-content-title">WKR-Offerten</div>
+          <div class="admin-content-sub">${offerten.length} Offerte${offerten.length !== 1 ? "n" : ""} gespeichert</div>
+        </div>
+        <button class="btn btn-primary" onclick="openNewWkrOfferteModal()">+ Neue WKR-Offerte</button>
+      </div>
+    </div>
+    ${listeHtml}`;
 }
 function renderAdminInventur(){
   return `<div class="admin-content-header">
@@ -7372,7 +7462,7 @@ async function reloadVororder(){
    WKR OFFERTEN
    ============================================================ */
 let offertePositionen = []; // Positionen der aktuellen Offerte
-  function previewWkrOfferte() {
+ async function previewWkrOfferte() {
   const kundenname     = clean(document.getElementById("ofKundenname").value);
   const email          = clean(document.getElementById("ofEmail").value);
   const fahrzeug       = clean(document.getElementById("ofFahrzeug").value);
@@ -7388,7 +7478,19 @@ let offertePositionen = []; // Positionen der aktuellen Offerte
   if (!offertePositionen.length) {
     showToast("Bitte mindestens eine Position hinzufügen.", "warning", 4000); return;
   }
-
+// Offerte in localStorage speichern
+const offerteRecord = {
+  id: "OF-" + Date.now(),
+  datum: new Date().toISOString(),
+  kundenname, email, fahrzeug, fin, kontrollschild,
+  verkaeufer, nachricht, gueltigBis,
+  positionen: JSON.parse(JSON.stringify(offertePositionen)),
+  vororderId: offerteVororderId || ""
+};
+try {
+  await window.addDoc(window.collection(window.db, "wkr_offerten"), offerteRecord);
+} catch(e) { console.error("Firestore Speicherfehler:", e); }
+} catch(e) {}
   const today = new Date().toLocaleDateString("de-CH");
   const gueltigFormatted = gueltigBis
     ? new Date(gueltigBis).toLocaleDateString("de-CH") : "—";
