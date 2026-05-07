@@ -7421,9 +7421,14 @@ function searchOfferteWkr() {
   const container = document.getElementById("ofWkrSucheResultate");
   if (!q || q.length < 2) { container.style.display = "none"; return; }
 
- const results = produkte.filter(r => {
-    return ["Bezeichnung","TN","Reifen","Dimension","Marke"]
+ const seen = new Set();
+const results = produkte.filter(r => {
+    const tn = clean(r["TN"]);
+    if (seen.has(tn)) return false;
+    const match = ["Bezeichnung","TN","Reifen","Dimension","Marke"]
       .some(k => (r[k]||"").toLowerCase().includes(q));
+    if (match) seen.add(tn);
+    return match;
   }).slice(0, 8);
    
   if (!results.length) {
@@ -7457,10 +7462,10 @@ function addOffertePosition(r) {
     bezeichnung: clean(r["Bezeichnung"]) || "",
     tn: clean(r["TN"]) || "",
     dimension: clean(r["Dimension"]) || "",
-    foto: clean(r["Foto_URL"]) || "",
-    euLabel: clean(r["EU_Label_URL"]) || "",
-    listenpreis: clean(r["Listenpreis_CHF"]) || "",
-    preis: clean(r["Listenpreis_CHF"]) || "",
+   foto: clean(r["Bild"]) || "",
+euLabel: clean(r["Link EU Label"]) || "",
+listenpreis: clean(r["Angebotspreis"]) || clean(r["VP"]) || "",
+preis: clean(r["Angebotspreis"]) || clean(r["VP"]) || "",
     anzahl: 4,
     rabatt: ""
   });
