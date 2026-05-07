@@ -9879,38 +9879,53 @@ function showToast(msg, type, duration) {
 }
    window.showToast = showToast;
 window.startDatabaseMigration = startDatabaseMigration;
-   // --- TEST EXPORT START ---
+  // --- VOLLSTÄNDIGER EXPORT START ---
 const testBtn = document.createElement("button");
-testBtn.innerHTML = "💾 Mache ein Test-Backup (Export)";
-testBtn.style.cssText = "position: fixed; bottom: 20px; right: 20px; padding: 15px; background: red; color: white; border-radius: 8px; cursor: pointer; z-index: 999999; font-size: 16px; font-weight: bold; border: 2px solid white; box-shadow: 0px 4px 10px rgba(0,0,0,0.5);";
+testBtn.innerHTML = "💾 Komplett-Backup (Alle Daten)";
+testBtn.style.cssText = "position: fixed; bottom: 20px; right: 20px; padding: 15px; background: #28a745; color: white; border-radius: 8px; cursor: pointer; z-index: 999999; font-size: 16px; font-weight: bold; border: 2px solid white; box-shadow: 0px 4px 10px rgba(0,0,0,0.5);";
 
 testBtn.onclick = async function() {
   try {
-    alert("Export startet... Bitte kurz warten.");
-    // Firebase abfragen
-    const snapshot = await window.getDocs(window.collection(window.db, "vororder"));
-    let alleDaten = [];
-    snapshot.docs.forEach(doc => alleDaten.push(doc.data()));
+    alert("Komplett-Export startet... Das kann einen Moment dauern.");
     
-    // Daten in eine Datei umwandeln und herunterladen
-    const textDatei = JSON.stringify(alleDaten, null, 2);
+    // Hier definieren wir alle "Blätter" (Collections), die wir haben
+    const sammlungen = ["vororder", "vororder_positionen", "produkte", "fahrzeuge", "reifen", "zuordnung", "wkr_offerten"];
+    let komplettesBackup = {};
+
+    // Wir gehen jede Sammlung nacheinander durch
+    for (const name of sammlungen) {
+      try {
+        const snapshot = await window.getDocs(window.collection(window.db, name));
+        komplettesBackup[name] = snapshot.docs.map(doc => ({ firebaseId: doc.id, ...doc.data() }));
+        console.log(`Sammlung ${name} geladen: ${komplettesBackup[name].length} Einträge`);
+      } catch (e) {
+        console.warn(`Sammlung ${name} konnte nicht geladen werden (evtl. leer oder Schreibfehler).`);
+        komplettesBackup[name] = [];
+      }
+    }
+
+    // Alles in eine Datei umwandeln
+    const textDatei = JSON.stringify(komplettesBackup, null, 2);
     const blob = new Blob([textDatei], { type: "application/json" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = "mein_firebase_test_backup.json";
+    
+    // Datum im Dateinamen für bessere Übersicht
+    const datum = new Date().toISOString().split('T')[0];
+    link.download = `WKR_Firebase_Backup_Gesamt_${datum}.json`;
     
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     
-    alert("Export fertig! Schau in deinen Downloads-Ordner.");
+    alert("Komplett-Export fertig! Alle Sammlungen sind in der Datei gespeichert.");
   } catch (error) {
-    console.error("Fehler beim Export:", error);
-    alert("Hoppla, das hat nicht geklappt. Stelle sicher, dass du eingeloggt bist und die Firebase-Regeln stimmen.");
+    console.error("Fehler beim Gesamt-Export:", error);
+    alert("Fehler beim Export. Details stehen in der F12-Konsole.");
   }
 };
 document.body.appendChild(testBtn);
-// --- TEST EXPORT ENDE ---
+// --- VOLLSTÄNDIGER EXPORT ENDE ---
 </script>
 </body>
 </html>
